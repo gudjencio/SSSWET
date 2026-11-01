@@ -129,3 +129,12 @@ ssswet-run --objective "wave propagation measurement methods" --domain physics -
 An optional contact email can be supplied with `--mailto`. Crossref results
 are discovery leads only and remain marked unverified. Network failures or
 empty results are reported without fabricating substitute evidence.
+
+### Shared knowledge across restarts
+
+The SQLite store also retains shared knowledge entries and their original
+validation flags. The engine reloads these entries when constructed with the
+same store. Unvalidated candidates remain unvalidated; only an explicit
+validated record appears in the verified-memory endpoint. Use
+`engine.remember_knowledge(MemoryItem(...))` to write a record through the
+persistent engine facade.
