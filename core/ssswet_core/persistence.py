@@ -282,6 +282,18 @@ class SQLiteResearchStore:
                 );
                 CREATE INDEX IF NOT EXISTS idx_transfers_target ON knowledge_transfers(target_campaign_id, state);
                 CREATE INDEX IF NOT EXISTS idx_transfers_source ON knowledge_transfers(source_campaign_id, state);
+                CREATE TABLE IF NOT EXISTS lab_verification_events (
+                    event_id TEXT PRIMARY KEY, plan_id TEXT NOT NULL, check_code TEXT NOT NULL,
+                    state TEXT NOT NULL, note TEXT NOT NULL, reviewer TEXT NOT NULL, created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_lab_verification_events_plan
+                    ON lab_verification_events(plan_id, check_code, created_at);
+                CREATE TRIGGER IF NOT EXISTS lab_verification_events_no_update
+                    BEFORE UPDATE ON lab_verification_events
+                    BEGIN SELECT RAISE(ABORT, 'verification events are append-only'); END;
+                CREATE TRIGGER IF NOT EXISTS lab_verification_events_no_delete
+                    BEFORE DELETE ON lab_verification_events
+                    BEGIN SELECT RAISE(ABORT, 'verification events are append-only'); END;
                 CREATE TABLE IF NOT EXISTS dispute_cases (\n                    case_id TEXT PRIMARY KEY,\n                    case_json TEXT NOT NULL,\n                    state TEXT NOT NULL,\n                    created_at TEXT NOT NULL,\n                    reviewed_at TEXT NOT NULL DEFAULT ''\n                );\n                CREATE INDEX IF NOT EXISTS idx_dispute_cases_state ON dispute_cases(state, created_at DESC);\n                CREATE TABLE IF NOT EXISTS knowledge (
                     item_key TEXT PRIMARY KEY,
                     statement TEXT NOT NULL,
@@ -1659,6 +1671,43 @@ class SQLiteResearchStore:
             "warning": "Graph contradictions are recorded claims, not adjudicated scientific disputes.",
         }
 
+
+
+    def append_lab_verification_event(self, event: dict) -> None:
+        required = ("event_id", "plan_id", "check_code", "state", "note", "reviewer", "created_at")
+        if not isinstance(event, dict) or any(not event.get(key) for key in required):
+            raise ValueError("A complete verification event is required")
+        if event["state"] not in {"in_progress", "completed", "blocked"}:
+            raise ValueError("Unsupported verification check state")
+        note = str(event["note"]).strip()
+        reviewer = str(event["reviewer"]).strip()
+        if not note or len(note) > 4000 or not reviewer or len(reviewer) > 200:
+            raise ValueError("Review note or reviewer length is invalid")
+        with self._connect() as connection:
+            connection.execute(
+                """INSERT INTO lab_verification_events(
+                    event_id, plan_id, check_code, state, note, reviewer, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (event["event_id"], event["plan_id"], event["check_code"],
+                 event["state"], note, reviewer, event["created_at"]),
+            )
+
+    def lab_verification_event_history(self, plan_id: str | None = None, limit: int = 500) -> list[dict]:
+        bounded = max(1, min(int(limit), 2000))
+        with self._connect() as connection:
+            if plan_id:
+                rows = connection.execute(
+                    """SELECT * FROM lab_verification_events
+                       WHERE plan_id = ? ORDER BY created_at, event_id LIMIT ?""",
+                    (plan_id, bounded),
+                ).fetchall()
+            else:
+                rows = connection.execute(
+                    """SELECT * FROM lab_verification_events
+                       ORDER BY created_at DESC, event_id LIMIT ?""",
+                    (bounded,),
+                ).fetchall()
+        return [dict(row) for row in rows]
 
     def save_dispute_case(self, case: dict) -> None:
         if not isinstance(case, dict) or not case.get("case_id"):
