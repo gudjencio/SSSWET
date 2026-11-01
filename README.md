@@ -1,192 +1,135 @@
 # SSSWET
 
 **Super Soldier Space Warping Engeriening Tech**  
-**ETDESS — traduction française de SSSWET**
+*ETDESS — Équivalent français du nom SSSWET*
 
-SSSWET is the project's official name. ETDESS is its French translation.
+SSSWET is an experimental, open research-software project for organizing scientific inquiry, computational studies, evidence review and collaboration between specialized research agents.
 
-## Mission
+The project explores a disciplined workflow for turning research questions into structured work, comparing approaches, documenting evidence and identifying what still needs to be tested. Ambitious scientific ideas are treated as hypotheses—not as established capabilities.
 
-SSSWET is an experimental research platform intended to organize computational research, simulations, verification, scientific literature review, and collaborative AI-agent workflows toward humanitarian technologies.
+## Project goals
 
-The project is designed to move from **idea → decomposition → research → testing → verification → reproducible evidence → real-world validation**, without pretending that an ambitious objective is already solved.
+- Organize research objectives into manageable tasks and specialist roles.
+- Support literature discovery and local document analysis.
+- Preserve source provenance and research history.
+- Represent hypotheses, findings, sources, datasets and experiments in a knowledge graph.
+- Identify research gaps and recorded contradictions for further review.
+- Plan experiments and keep simulations distinct from real-world observations.
+- Compare computational models and propose bounded follow-up scenarios.
+- Coordinate research campaigns, resources and knowledge transfers.
+- Provide a multilingual web interface and a local research environment.
 
-## Current architecture
+## Current capabilities
 
-The first executable research pipeline is now being assembled from independent layers:
+| Area | Available functionality |
+|---|---|
+| Research workflow | Task decomposition, role-based allocation, strategy changes and bounded orchestration |
+| Literature discovery | Crossref, OpenAlex and arXiv metadata discovery |
+| Local documents | JSON corpus and page-based PDF text extraction |
+| Model integration | Configurable OpenAI-compatible chat-completions provider |
+| Research memory | SQLite persistence for tasks, events, sources and shared knowledge |
+| Evidence provenance | DOI, dataset and provenance-group records |
+| Knowledge graph | Typed nodes and explicit relationships |
+| Research review | Gap analysis and contradiction reporting |
+| Experimentation | Structured plans, simulation records and real-observation records |
+| Simulation studies | Bounded multi-model comparisons and reproducible output records |
+| Optimization | Human-reviewed adaptive scenario proposals |
+| Campaign management | Milestones, resource quotas and cross-campaign knowledge transfers |
+| Web interface | Responsive interface with 15 initial language catalogues |
 
-- **Task Orchestrator** — queues objectives, schedules agents, preserves blocked work, and changes strategy.
-- **Task Decomposer** — converts a broad objective into smaller, independently checkable work units.
-- **Specialist Groups** — allows several research roles to collaborate on one task without requiring every agent to perform every job.
-- **Knowledge Exchange** — stores statements together with their evidence, confidence, and verification state.
-- **Strategy Selector** — rotates approaches when an attempt is blocked or inconclusive.
-- **Verification Engine** — performs independent checks and keeps uncertainty explicit.
-- **Safety Gate** — prevents insufficiently verified or high-risk conclusions from being treated as ready for real-world use.
-- **Provider Interface** — separates the orchestration system from future AI, computation, and research providers.
-- **Deterministic Demo Provider** — provides a local, credential-free implementation for development and testing.
-- **Simulation layer** — keeps simulated evidence distinct from physical evidence.
+Capabilities are implemented incrementally. The public web interface is a static application; the Python research engine runs locally and is not hosted by GitHub Pages.
 
-The provider boundary is intentional: real model/search providers can be connected later through adapters and environment-based credentials without placing secrets in the public repository.
+## Architecture
 
-## Core principles
+The repository is organized into two main parts:
 
-- No weapons development.
-- No intentional design of systems whose known purpose is to injure or kill people.
-- Agent agreement is never treated as proof.
-- Results are independently checked, reproduced where possible, and labelled with uncertainty and limitations.
-- High-risk medical, biological, aerospace, or physical applications require qualified human and regulatory review before real-world use.
-- Dangerous or unverified approaches are not published as actionable instructions.
-- Failed approaches are recorded at an appropriate level so the system can change strategy rather than silently repeating the same failure.
-- Research agents can be created, paused, replaced, or retired according to workload and verification needs.
-- Runtime self-modification of executable safety/orchestration code is not permitted; improvements are versioned, reviewed, tested, and released deliberately.
+- **`core/`** — Python research engine, command-line tools, local API, persistence, verification and simulation utilities.
+- **`web/`** — static multilingual web application and progressive web app assets.
 
-## Planned platform
+The local service binds to `127.0.0.1` by default and exposes read-only API endpoints for the web interface. Research state is stored locally in SQLite unless another database path is configured.
 
-- Dynamic multi-agent research orchestrator
-- Task decomposition and specialist-agent groups
-- Independent verification and adversarial review
-- Mathematical and scientific computation
-- Simulation and reproducibility tests
-- Shared validated knowledge
-- Research/source reliability scoring
-- Stuck-agent strategy changes and recovery
-- Safe checkpoints and state restoration
-- Public research summaries and changelog
-- Web interface
-- Downloadable desktop software
-- Mobile application
-- Versioned GitHub releases for major/global updates
-- Large multilingual interface
+## Getting started
 
-## Research areas
+### Requirements
 
-Mathematics, physics, engineering, materials science, robotics, computing, aerospace, space science, Earth sciences, biology and medicine can be represented as research domains. Extraordinary objectives are treated as hypotheses and research questions, never as guaranteed capabilities.
+- Python 3.11 or newer
+- Git
+- Node.js 22 or newer for web-interface checks
 
-## Scientific honesty
-
-SSSWET does **not** claim that software can guarantee zero errors or establish absolute physical safety merely through computation or AI consensus. Its goal is to push verification as far as practical: independent calculations, contradictory checks, simulations, reproducibility, source comparison, explicit uncertainty, and human validation where required.
-
-## Public project links
-
-- **Canonical web application (GitHub Pages):** https://gudjencio.github.io/SSSWET/
-- **Google Sites mirror:** embed the canonical URL above in a Google Sites page. See [Google Sites mirror setup](GOOGLE_SITES_MIRROR.md).
-- **Source repository:** https://github.com/gudjencio/SSSWET
-
-- X: https://x.com/ssswetech
-- Instagram: https://www.instagram.com/ssswetech
-- YouTube: https://www.youtube.com/@ssswetech
-- Contact: ssswetindustries@gmail.com
-
-## Run the local interface
-
-The repository includes a local, read-only interface backed by the Python core. It serves the web application and exposes local status, event summaries, and validated knowledge. It does not accept arbitrary public task submissions.
+### Install the research core
 
 ```bash
-cd core
+git clone https://github.com/gudjencio/SSSWET.git
+cd SSSWET/core
 python -m pip install -e .
 ssswet-local
 ```
 
-Then open `http://127.0.0.1:8765`. The default server binds only to the local computer. GitHub Pages remains a static preview and does not run the Python research engine.
+Open [http://127.0.0.1:8765](http://127.0.0.1:8765) in a browser.
+
+### Run a research task
+
+```bash
+ssswet-run --objective "Review methods for measuring wave propagation" --domain physics
+```
+
+A local JSON corpus can be supplied with `--corpus`. PDF extraction is available through the optional dependency:
+
+```bash
+python -m pip install -e ".[pdf]"
+ssswet-run --objective "Compare experimental methods" --domain physics --pdf ./paper.pdf
+```
+
+For literature metadata discovery, use `--provider crossref`, `openalex`, `arxiv` or `literature`. A compatible language-model provider can be configured with local environment variables; API credentials must never be committed to the repository.
+
+See the [core developer guide](core/README.md) for command options, provider configuration, data formats and API details.
+
+## Scientific integrity and responsible research
+
+SSSWET is a research-support tool, not an authority on scientific truth. Its outputs may be incomplete, inaccurate or biased.
+
+- Model agreement is not proof, and generated text is not a scientific source.
+- Bibliographic discovery does not establish the validity of a publication or claim.
+- Provenance indicators support review; they do not automatically establish source independence.
+- Simulation outputs are not real-world observations.
+- Optimization scores are not probabilities, confidence intervals or proof of an optimum.
+- Verification states require explicit evidence and review; they are not inferred from presentation or consensus.
+- Medical, biological, aerospace and other safety-critical work requires qualified domain experts, appropriate ethics review and all applicable legal and regulatory approvals.
+- The project does not provide instructions for weapon construction or intentional harm.
+- Physical experiments are not launched automatically. High-impact actions require human authorization.
+
+The project aims to make uncertainty, limitations, provenance and unresolved questions visible rather than conceal them.
+
+## Languages
+
+The web interface currently includes initial catalogues for English, French, Spanish, German, Italian, Portuguese, Dutch, Russian, Ukrainian, Arabic, Hebrew, Japanese, Korean, Chinese and Hindi.
+
+Arabic and Hebrew use right-to-left layout. Translation coverage and quality are evolving; contributions from fluent speakers are welcome.
+
+## Public links
+
+- **Web application:** [gudjencio.github.io/SSSWET](https://gudjencio.github.io/SSSWET/)
+- **Source code:** [github.com/gudjencio/SSSWET](https://github.com/gudjencio/SSSWET)
+- **Google Sites mirror instructions:** [GOOGLE_SITES_MIRROR.md](GOOGLE_SITES_MIRROR.md)
+- **X:** [@ssswetech](https://x.com/ssswetech)
+- **Instagram:** [@ssswetech](https://www.instagram.com/ssswetech)
+- **YouTube:** [@ssswetech](https://www.youtube.com/@ssswetech)
+- **Contact:** [ssswetindustries@gmail.com](mailto:ssswetindustries@gmail.com)
+
+The Google Sites page is intended to embed the canonical web application, avoiding a separate copy that could become outdated.
+
+## Development and contributions
+
+Bug reports, reproducible test cases, documentation improvements, accessibility work and translation reviews are welcome through the repository's issue tracker and pull requests.
+
+Please do not publish API keys, private datasets, personal information or confidential research material in issues or commits. Contributions should include relevant tests and clearly distinguish measured results, simulations, assumptions and hypotheses.
 
 ## Project status
 
-**Early architecture / active implementation.**
+SSSWET is under active development. Interfaces, APIs and data formats may change between releases. Features described as available are implemented in the repository, but their scientific usefulness depends on the quality of supplied data, methods and independent review.
 
-The repository is being built incrementally. Desktop and mobile packaging will use versioned releases so users can download a new build when substantial improvements are made.
+---
 
-## Author
-
-Gudjencio Hermann MARTIN
-
-## Persistent research history
-
-Local research runs can now be saved in SQLite and reopened through the
-read-only local interface. The CLI and interface can share the same database:
-
-```bash
-cd core
-python -m pip install -e .
-ssswet-run --objective "Study wave propagation" --domain physics --corpus documents.json
-ssswet-local
-```
-
-Both commands use `.ssswet/ssswet.sqlite3` by default. Research outputs are
-stored as unverified until the separate evidence and reproduction requirements
-are met. See [core documentation](core/README.md) for details.
-
-### External literature discovery
-
-The local research runner can query Crossref, OpenAlex or arXiv individually, or search Crossref and OpenAlex together with `--provider literature`:
-
-```bash
-ssswet-run --objective "wave propagation measurement methods" --domain physics --provider literature
-```
-
-The combined provider merges results from both catalogues and deduplicates matching DOI records while retaining provider provenance. Use `--provider crossref`, `--provider openalex` or `--provider arxiv` to query one catalogue only. arXiv adds preprint records and abstracts; these may not be peer reviewed.
-
-The returned publications are source leads, not verified conclusions. Bibliographic metadata, citation counts and cross-catalogue agreement do not establish scientific validity. All
-provider outputs remain explicitly unverified pending full source review,
-independent evidence and reproducibility.
-
-Shared knowledge entries and their validation states are also retained in the
-local SQLite database and reloaded when the engine restarts. Unverified
-candidates remain separate from verified knowledge.
-
-### Optional AI model connection
-
-An OpenAI-compatible language-model endpoint can be configured locally using
-`SSSWET_LLM_API_KEY`, `SSSWET_LLM_MODEL` and optionally
-`SSSWET_LLM_ENDPOINT`. Then run `ssswet-run --provider llm --objective "..."`.
-Credentials are never committed. Model responses remain unverified drafts;
-they are not scientific sources or validated discoveries. See
-[the core setup guide](core/README.md).
-
-
-### Local PDF research documents
-
-The local runner can extract text from PDF files page by page. Install the optional
-PDF dependency and pass one or more local files:
-
-```bash
-cd core
-python -m pip install -e ".[pdf]"
-ssswet-run --objective "Compare methods and limitations" --domain physics --pdf ./paper-one.pdf --pdf ./paper-two.pdf
-```
-
-PDFs stay on the local computer. Text extraction is bounded by file size,
-page count and per-page character limits. Scanned image-only PDFs need OCR
-and may produce no extracted text. Extracted passages are research material,
-not validated evidence.
-
-
-### Multilingual web interface
-
-The static web interface now has a centralized locale catalogue in
-[`web/locales.js`](web/locales.js), automatic browser-language detection,
-manual language selection and a remembered preference when browser storage
-is available. The first locale set includes English, French, Spanish, German,
-Italian, Portuguese, Dutch, Russian, Ukrainian, Arabic, Hebrew, Japanese,
-Korean, Chinese and Hindi.
-
-Arabic and Hebrew activate right-to-left document direction and dedicated
-layout rules. Missing locale keys fall back to English. GitHub Actions checks
-JavaScript syntax, required translation keys and RTL declarations.
-
-These initial translations are a foundation, not a claim of complete
-internationalization: native-speaker review, translated live backend events,
-date/number formatting, accessibility review and additional languages remain
-planned. The language catalogue can be expanded without rewriting the UI.
-
-
-## Public web deployment
-
-The static application in `web/` is deployed to GitHub Pages by
-[`.github/workflows/pages-deploy.yml`](.github/workflows/pages-deploy.yml)
-whenever the web application changes on `main`, or when manually triggered.
-If Pages has not previously been configured, select **GitHub Actions** under
-the repository's **Settings → Pages → Build and deployment** section.
-
-The Google Sites mirror embeds the canonical GitHub Pages URL rather than
-duplicating the app files. This keeps both entry points aligned after each
-deployment. See [the mirror guide](GOOGLE_SITES_MIRROR.md).
+**Project:** SSSWET  
+**French designation:** ETDESS  
+**Contact:** ssswetindustries@gmail.com
