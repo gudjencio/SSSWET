@@ -91,6 +91,11 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 })
             elif path == "/api/literature-watch":
                 self._json({"reports": store.literature_watch_history(limit=100)})
+            elif path == "/api/literature-watch/campaigns":
+                self._json({
+                    "subscriptions": store.campaign_watch_subscriptions(),
+                    "runs": store.campaign_watch_run_history(limit=200),
+                })
             elif path == "/api/knowledge-graph":
                 self._json(store.knowledge_graph(limit=500))
             elif path == "/api/research-gaps":
