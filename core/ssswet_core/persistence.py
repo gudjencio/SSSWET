@@ -151,6 +151,22 @@ class SQLiteResearchStore:
                     validated INTEGER NOT NULL,
                     created_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS collective_memory (
+                    memory_id TEXT PRIMARY KEY,
+                    campaign_id TEXT NOT NULL DEFAULT '',
+                    topic TEXT NOT NULL,
+                    statement TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    source_ids TEXT NOT NULL,
+                    provenance_group TEXT NOT NULL DEFAULT '',
+                    confidence REAL NOT NULL DEFAULT 0.0,
+                    review_note TEXT NOT NULL DEFAULT '',
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_collective_memory_topic ON collective_memory(topic);
+                CREATE INDEX IF NOT EXISTS idx_collective_memory_status ON collective_memory(status);
+                CREATE INDEX IF NOT EXISTS idx_collective_memory_campaign ON collective_memory(campaign_id);
                 CREATE INDEX IF NOT EXISTS idx_events_created ON events(id DESC);
                 CREATE INDEX IF NOT EXISTS idx_steps_task ON research_steps(task_id);
                 """
@@ -283,6 +299,57 @@ class SQLiteResearchStore:
             for row in rows
         ]
 
+
+
+    def save_collective_memory(self, record: object) -> None:
+        """Persist a traceable memory record without changing its review state."""
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO collective_memory(
+                    memory_id, campaign_id, topic, statement, status, source_ids,
+                    provenance_group, confidence, review_note, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(memory_id) DO UPDATE SET
+                    campaign_id=excluded.campaign_id, topic=excluded.topic,
+                    statement=excluded.statement, status=excluded.status,
+                    source_ids=excluded.source_ids,
+                    provenance_group=excluded.provenance_group,
+                    confidence=excluded.confidence, review_note=excluded.review_note,
+                    updated_at=excluded.updated_at
+                """,
+                (
+                    record.memory_id, record.campaign_id, record.topic,
+                    record.statement, record.status,
+                    json.dumps(list(record.source_ids), ensure_ascii=False),
+                    record.provenance_group, float(record.confidence),
+                    record.review_note, record.created_at, record.updated_at,
+                ),
+            )
+
+    def collective_memory_items(
+        self, *, status: str | None = None, campaign_id: str | None = None,
+        limit: int = 200,
+    ) -> list[dict]:
+        clauses = []
+        values: list[object] = []
+        if status:
+            clauses.append("status = ?")
+            values.append(status)
+        if campaign_id:
+            clauses.append("campaign_id = ?")
+            values.append(campaign_id)
+        query = "SELECT * FROM collective_memory"
+        if clauses:
+            query += " WHERE " + " AND ".join(clauses)
+        query += " ORDER BY updated_at DESC LIMIT ?"
+        values.append(max(1, min(int(limit), 500)))
+        with self._connect() as connection:
+            rows = connection.execute(query, values).fetchall()
+        return [
+            {**dict(row), "source_ids": json.loads(row["source_ids"])}
+            for row in rows
+        ]
 
     def register_source(self, source: object) -> None:
         """Insert or update a source's traceable bibliographic provenance."""
