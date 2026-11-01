@@ -7,6 +7,8 @@ SSSWET is an experimental, open research-software project for organizing scienti
 
 The project explores a disciplined workflow for turning research questions into structured work, comparing approaches, documenting evidence and identifying what still needs to be tested. Ambitious scientific ideas are treated as hypotheses—not as established capabilities.
 
+See [research contributions and future technology availability](docs/CONTRIBUTIONS.md) for the contribution process and the conditions governing any future product offer or delivery.
+
 ## Project goals
 
 - Organize research objectives into manageable tasks and specialist roles.
