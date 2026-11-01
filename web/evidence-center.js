@@ -24,7 +24,7 @@
       reviewer: fr ? "Campagne de revue" : "Review campaign", note: fr ? "Note" : "Note", created: fr ? "Créé" : "Created",
       assembledFrom: fr ? "Assemblé à partir des enregistrements existants" : "Assembled from existing records",
       separation: fr ? "Une revue du dossier ne constitue pas une validation scientifique. Les simulations, métadonnées et comparaisons restent des éléments à examiner, pas des preuves automatiquement établies." : "Reviewing a dossier does not establish scientific validity. Simulations, metadata and comparisons remain items for examination, not automatically established evidence.",
-      verification: fr ? "Plan de vérification ciblée" : "Targeted verification plan", checks: fr ? "Contrôles à examiner" : "Checks to review", reason: fr ? "Motif" : "Reason", noPlan: fr ? "Aucun plan associé aux comparaisons de ce dossier." : "No plan is associated with this dossier’s comparisons.", planUnavailable: fr ? "Les plans de vérification sont momentanément indisponibles." : "Verification plans are temporarily unavailable.", humanReview: fr ? "Revue humaine requise" : "Human review required", trace: fr ? "Chaîne de traçabilité" : "Traceability chain", traceText: fr ? "Question → sources → protocole → données → exécutions → reproductions → objections → revues → état des preuves" : "Question → sources → protocol → data → runs → reproductions → objections → reviews → evidence state"
+      verification: fr ? "Plan de vérification ciblée" : "Targeted verification plan", checks: fr ? "Contrôles à examiner" : "Checks to review", reason: fr ? "Motif" : "Reason", noPlan: fr ? "Aucun plan associé aux comparaisons de ce dossier." : "No plan is associated with this dossier’s comparisons.", planUnavailable: fr ? "Les plans de vérification sont momentanément indisponibles." : "Verification plans are temporarily unavailable.", pending: fr ? "À examiner" : "Pending", inProgress: fr ? "En cours" : "In progress", completed: fr ? "Terminé" : "Completed", blocked: fr ? "Bloqué" : "Blocked", reviewerLabel: fr ? "Identifiant du réviseur" : "Reviewer label", reviewNote: fr ? "Note de revue obligatoire" : "Required review note", saveReview: fr ? "Enregistrer la revue" : "Save review", saved: fr ? "Événement ajouté à l’historique." : "Event added to history.", humanReview: fr ? "Revue humaine requise" : "Human review required", trace: fr ? "Chaîne de traçabilité" : "Traceability chain", traceText: fr ? "Question → sources → protocole → données → exécutions → reproductions → objections → revues → état des preuves" : "Question → sources → protocol → data → runs → reproductions → objections → reviews → evidence state"
     };
   };
 
@@ -90,7 +90,27 @@
           const card = document.createElement("article"); card.className = "evidence-record evidence-verification-plan";
           card.append(field(labels.id, plan.plan_id), field(labels.state, plan.classification), field(labels.humanReview, plan.requires_human_review ? "Yes" : "No"));
           const list = document.createElement("ol"); list.className = "evidence-check-list";
-          (plan.checks || []).forEach((check) => { const item = document.createElement("li"); const title = document.createElement("strong"); title.textContent = check.instruction; const reason = document.createElement("p"); reason.textContent = labels.reason + ": " + text(check.reason); item.append(title, reason); list.append(item); });
+          (plan.checks || []).forEach((check) => {
+            const item = document.createElement("li"); const title = document.createElement("strong"); title.textContent = check.instruction; const reason = document.createElement("p"); reason.textContent = labels.reason + ": " + text(check.reason);
+            const state = document.createElement("p"); state.className = "evidence-review-state"; const stateLabels = {pending: labels.pending, in_progress: labels.inProgress, completed: labels.completed, blocked: labels.blocked}; state.textContent = (stateLabels[check.review_state] || labels.pending) + " · " + (check.review_history || []).length + " " + labels.events;
+            const form = document.createElement("form"); form.className = "evidence-review-form";
+            const reviewer = document.createElement("input"); reviewer.type = "text"; reviewer.maxLength = 200; reviewer.required = true; reviewer.placeholder = labels.reviewerLabel; reviewer.setAttribute("aria-label", labels.reviewerLabel);
+            const note = document.createElement("textarea"); note.maxLength = 4000; note.required = true; note.rows = 2; note.placeholder = labels.reviewNote; note.setAttribute("aria-label", labels.reviewNote);
+            const select = document.createElement("select"); select.setAttribute("aria-label", labels.state);
+            [["in_progress", labels.inProgress], ["completed", labels.completed], ["blocked", labels.blocked]].forEach(([value, label]) => { const option = document.createElement("option"); option.value = value; option.textContent = label; select.append(option); });
+            const submit = document.createElement("button"); submit.type = "submit"; submit.textContent = labels.saveReview; if (check.review_state === "completed") { form.hidden = true; }
+            const feedback = document.createElement("span"); feedback.className = "evidence-review-feedback"; feedback.setAttribute("aria-live", "polite");
+            form.append(reviewer, select, note, submit, feedback);
+            form.addEventListener("submit", async (event) => {
+              event.preventDefault(); submit.disabled = true; feedback.textContent = "…";
+              try {
+                const response = await fetch("/api/lab-verification-events", {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"}, body: JSON.stringify({plan_id: plan.plan_id, check_code: check.code, state: select.value, note: note.value, reviewer: reviewer.value})});
+                const payload = await response.json(); if (!response.ok) throw new Error(payload.error || "HTTP " + response.status);
+                feedback.textContent = labels.saved; form.hidden = true; state.textContent = (stateLabels[payload.event.state] || payload.event.state) + " · " + ((check.review_history || []).length + 1) + " " + labels.events;
+              } catch (error) { feedback.textContent = error.message; submit.disabled = false; }
+            });
+            item.append(title, reason, state, form); list.append(item);
+          });
           card.append(list); card.append(field(labels.validity, plan.scientific_validity_established ? "Yes" : labels.no)); verificationSection.append(card);
         });
       }).catch(() => { verificationStatus.textContent = labels.planUnavailable; });
