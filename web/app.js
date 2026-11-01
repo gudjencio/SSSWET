@@ -207,6 +207,16 @@
         ])
       },
       {
+        key: "digitalLab", path: "/api/digital-lab", list: null,
+        title: t.dashDigitalLab,
+        count: (a, p) => safeCount(p.protocol_count) + safeCount(p.run_count),
+        detail: (a, p) => dashboardMetrics([
+          [t.dashLabProtocols, safeCount(p.protocol_count)],
+          [t.dashLabRuns, safeCount(p.run_count)],
+          [t.dashLabPublished, (p.protocols || []).filter(x => x.state === "published").length]
+        ])
+      },
+      {
         key: "experiments", path: "/api/experiments", list: "experiments",
         title: t.dashExperiments,
         count: (a) => a.length,
