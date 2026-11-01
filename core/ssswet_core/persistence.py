@@ -539,3 +539,18 @@ class SQLiteResearchStore:
             plan["records"] = self.experiment_records(row["experiment_id"])
             overview.append(plan)
         return overview
+
+
+    def experiment_overview(self, limit: int = 100) -> list[dict]:
+        bounded_limit = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT experiment_id, plan_json FROM experiment_plans ORDER BY updated_at DESC LIMIT ?",
+                (bounded_limit,),
+            ).fetchall()
+        overview = []
+        for row in rows:
+            plan = json.loads(row["plan_json"])
+            plan["records"] = self.experiment_records(row["experiment_id"])
+            overview.append(plan)
+        return overview
