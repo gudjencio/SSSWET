@@ -211,13 +211,19 @@ class PrivateOrderRegistry:
         item.update({
             "paid_minor": paid, "balance_minor": due - paid,
             "payments": [dict(p) for p in payments],
-            "events": [{**dict(e), "details": json.loads(e.pop("details_json"))} for e in events],
+            "events": [self._event_payload(e) for e in events],
             "delivery_address_stored": False,
             "payment_provider_webhook_integrated": False,
         })
         item.pop("base_price_minor")
         item.pop("access_contribution_minor")
         return item
+
+    @staticmethod
+    def _event_payload(row: sqlite3.Row) -> dict:
+        event = dict(row)
+        event["details"] = json.loads(event.pop("details_json"))
+        return event
 
     def list_orders(self, limit: int = 100) -> dict:
         if not 1 <= limit <= 500:
