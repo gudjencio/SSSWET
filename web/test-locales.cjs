@@ -126,7 +126,7 @@ if (!pageSource.includes('data-tech="timetravel"')) throw new Error("Time travel
 console.log("Validated the PayPal research-funding route, conditional future product delivery wording and time-travel technology.");
 
 const portfolioConfig = fs.readFileSync(new URL("./donation-config.js", `file://${__filename}`), "utf8");
-const portfolioKeys = portfolioConfig.match(/const ssswetTechnologyKeys = \[([\\s\\S]*?)\];/);
+const portfolioKeys = portfolioConfig.match(/const ssswetTechnologyKeys = \[([\s\S]*?)\];/);
 if (!portfolioKeys) throw new Error("Research portfolio technology catalogue is missing.");
 for (const key of ["cellular", "longevity", "armor", "jetpack", "translator", "spacetime", "timetravel", "cleanenergy", "energyStorage", "water", "foodSystems", "climate", "biodiversity", "wildlife", "oceans", "reforestation", "agriculture", "circularEconomy", "airQuality", "mobility", "accessibility", "disasterResilience", "publicHealth", "sanitation", "education", "animalHealth", "materials", "carbonMonitoring", "pollinators", "artificialGravity", "medicalNanotechnology", "atmosphericRestoration"]) {
   if (!portfolioKeys[1].includes(`"${key}"`)) throw new Error(`Research portfolio is missing ${key}`);
