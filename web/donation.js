@@ -293,6 +293,27 @@
     const target = url.replace(/\\/$/, "") + "/" + encodeURIComponent(String(localPayment) + currency);
     window.open(target, "_blank", "noopener,noreferrer");
   });
+  document.getElementById("payment-reminder-save")?.addEventListener("click", async () => {
+    const email = document.getElementById("payment-reminder-email")?.value.trim() || "";
+    const frequency = document.getElementById("payment-reminder-frequency")?.value || "monthly";
+    const confirmed = document.getElementById("payment-reminder-first-paid")?.checked === true;
+    const status = document.getElementById("payment-reminder-status");
+    const endpoint = paymentLinks.PAYMENT_REMINDER_URL;
+    const fr = copy() === translations.fr;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !confirmed) { status.textContent = fr ? "Saisissez une adresse e-mail valide et confirmez le premier paiement." : "Enter a valid email address and confirm the first payment."; return; }
+    if (!endpoint || !endpoint.startsWith("https://")) { status.textContent = fr ? "Le service de rappels n’est pas encore déployé. Aucun e-mail n’a été enregistré ni envoyé." : "The reminder service has not been deployed yet. No email has been stored or sent."; return; }
+    const amount = Number(amountInput.value);
+    const usdTotal = amount / usdToLocalRate;
+    const split = document.getElementById("donation-payment-mode")?.value === "installments";
+    const count = split ? Math.max(1, Math.floor(usdTotal / 10)) : 1;
+    status.textContent = fr ? "Enregistrement de votre demande…" : "Registering your request…";
+    try {
+      const response = await fetch(endpoint, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"payment_reminder_register",email,frequency,technology:selectedTechnology,total_usd:Number(usdTotal.toFixed(2)),installments:count,first_payment_confirmed:true})});
+      const result = await response.json();
+      if (!response.ok || result.ok !== true) throw new Error(result.message || "Reminder registration failed");
+      status.textContent = fr ? "Votre demande de rappel a été enregistrée. Vérifiez votre boîte e-mail pour confirmer l’inscription." : "Your reminder request was recorded. Check your inbox to confirm the subscription.";
+    } catch (_) { status.textContent = fr ? "Impossible d’enregistrer le rappel. Réessayez plus tard ; aucun paiement automatique ne sera effectué." : "The reminder could not be registered. Please try again later; no automatic payment will be made."; }
+  });
   copyButton.addEventListener("click", async () => {
     const item = technologies[selectedTechnology];
     const amount = Number(amountInput.value);
