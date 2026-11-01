@@ -23,14 +23,17 @@
       ].filter(Boolean))];
       const failures = [];
       for (const base of candidates) {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 12000);
         try {
           const response = await fetch(new URL("/api/status", base).toString(), {
             method: "GET",
             mode: "cors",
             headers: { Accept: "application/json" },
             cache: "no-store",
-            signal: AbortSignal.timeout(12000)
+            signal: controller.signal
           });
+          window.clearTimeout(timeout);
           if (!response.ok) {
             failures.push(base + " · HTTP " + response.status);
             continue;
@@ -46,6 +49,7 @@
           window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:true,base}}));
           return base;
         } catch (error) {
+          window.clearTimeout(timeout);
           failures.push(base + " · " + (error.name === "AbortError" ? "timeout" : error.message));
         }
       }
