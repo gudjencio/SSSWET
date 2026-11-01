@@ -106,3 +106,11 @@ for (const technology of ["cellular", "longevity", "armor", "jetpack", "translat
 }
 if (!pageSource.includes('id="technology-dialog"') || !pageSource.includes('id="technology-grid"')) throw new Error("Technology showcase or contribution dialog is missing");
 console.log("Validated the technology catalogue and contribution-window integration.");
+const brandingSource = appSource;
+for (const required of ["ETDESS", "Équipements et technologies de distorsions spatiales pour super-soldats", "超兵士向け空間歪曲工学・技術", "applyProjectBranding", "automaticVoiceRetried", "dashboard-foldout"]) {
+  if (!brandingSource.includes(required)) throw new Error(`Branding, startup or compact layout feature missing: ${required}`);
+}
+for (const social of ["data-social=\"Instagram\"", "data-social=\"YouTube\"", "mailto:ssswetindustries@gmail.com", "<svg"]) {
+  if (!pageSource.includes(social)) throw new Error(`Social link feature missing: ${social}`);
+}
+console.log("Validated localized project branding, automatic voice attempt, compact panels and social icons.");
