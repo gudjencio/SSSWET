@@ -141,6 +141,15 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
             elif path == "/api/research-gaps":
                 from .research_gaps import ResearchGapAnalyzer
                 self._json(ResearchGapAnalyzer().report(store.knowledge_graph(limit=500)))
+            elif path == "/api/research-opportunities":
+                from .research_opportunities import ResearchOpportunitySynthesizer
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["100"])[0])
+                except ValueError:
+                    self._json({"error": "limit must be an integer"}, 400)
+                    return
+                self._json(ResearchOpportunitySynthesizer(store).build(limit=limit))
             elif path == "/api/research-relations":
                 from .research_relations import ResearchRelationDiscovery
                 params = parse_qs(parsed.query)
