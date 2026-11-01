@@ -51,3 +51,11 @@ Free-form text is not silently interpreted as structured scientific claims.
 
 Repeated detection of the same conflict does not create an unlimited queue of
 duplicate review tasks. Unresolved claims remain unresolved until reviewed.
+
+## Source quality rubric
+
+Source assessments record visible factors: peer review, primary-source status,
+availability of methods, known publication date, HTTPS URL and declared
+limitations. The resulting score is a prioritization aid, not a probability
+of truth and not a substitute for claim-level verification. A high source
+score never automatically upgrades a finding's verification state.
