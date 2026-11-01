@@ -253,15 +253,22 @@
     } else {
       fresh.forEach(item => knownOutputIds.add([item.task_id,item.agent_id,item.created_at].join("|")));
     }
-    if (!valid.length) {
-      feed.innerHTML = '<p class="bot-conversation-empty">'+esc(t().empty)+'</p>';
-      return;
-    }
-    feed.innerHTML = valid.slice(0,10).map((item,index) => {
+    const activeCount = Array.isArray(data.active_agents) ? data.active_agents.length : 0;
+    const thinking = {
+      en:"Research agents are working",fr:"Les agents travaillent en ce moment",es:"Los agentes están trabajando",
+      de:"Die Forschungsagenten arbeiten",it:"Gli agenti stanno lavorando",pt:"Os agentes estão a trabalhar",
+      nl:"Onderzoeksagenten zijn aan het werk",ru:"Исследовательские агенты работают",uk:"Дослідницькі агенти працюють",
+      ar:"وكلاء البحث يعملون الآن",he:"סוכני המחקר עובדים כעת",ja:"研究エージェントが作業中です",
+      ko:"연구 에이전트가 작업 중입니다",zh:"研究智能体正在工作",hi:"अनुसंधान एजेंट काम कर रहे हैं"
+    }[lang()] || "Research agents are working";
+    const messages = valid.slice(0,10).map((item,index) => {
       const count = Number(item.evidence_count || 0);
       const detail = count ? count+' '+t().evidence : t().noEvidence;
       return '<article class="bot-conversation-message"><div class="message-avatar" aria-hidden="true">'+(index+1)+'</div><div><strong>'+esc(roleName(item.role))+' · '+esc(item.agent_id || t().role)+'</strong><p>'+esc(item.summary)+'</p><small>'+esc(t().provisional)+' · '+esc(detail)+' · '+esc(time(item.created_at))+'</small></div></article>';
-    }).join("");
+    });
+    if (!valid.length) messages.push('<p class="bot-conversation-empty">'+esc(t().empty)+'</p>');
+    if (activeCount) messages.push('<div class="bot-thinking" style="--agent-count:'+Math.max(1,activeCount)+'"><span>'+esc(thinking)+' · '+activeCount+'</span><i></i><i></i><i></i></div>');
+    feed.innerHTML = messages.join("");
     if (speakNew && voiceEnabled && fresh.length) speak(fresh[fresh.length-1].summary);
   }
 
