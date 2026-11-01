@@ -108,6 +108,26 @@ class ResearchTimeline:
                 case.get("review_note", ""), references={"dispute_case_id": case["case_id"]},
             )
 
+        for protocol in self.store.lab_protocol_history(limit=500):
+            add(
+                "lab-protocol:" + protocol["protocol_id"] + ":" + str(protocol["version"]),
+                protocol.get("created_at"), "lab_protocol_published",
+                protocol.get("title", "Digital lab protocol"),
+                protocol.get("objective", ""), protocol.get("owner_campaign_id", ""),
+                {"protocol_id": protocol["protocol_id"], "version": protocol["version"],
+                 "reviewed_by": protocol.get("reviewed_by", "")},
+            )
+        for run in self.store.lab_run_history(limit=500):
+            add(
+                "lab-run:" + run["run_id"], run.get("recorded_at"),
+                "lab_run_recorded", "Digital lab run: " + run["run_id"],
+                run.get("method", ""), run.get("campaign_id", ""),
+                {"run_id": run["run_id"], "protocol_id": run.get("protocol_id", ""),
+                 "protocol_version": run.get("protocol_version", ""),
+                 "execution_kind": run.get("kind", ""),
+                 "independence_declared": run.get("independence_declared", False)},
+            )
+
         for review in self.store.peer_review_history(limit=500):
             add(
                 "peer-review-request:" + review["review_id"], review.get("created_at"),
