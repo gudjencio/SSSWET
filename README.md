@@ -73,6 +73,18 @@ SSSWET does **not** claim that software can guarantee zero errors or establish a
 - YouTube: https://www.youtube.com/@ssswetech
 - Contact: ssswetindustries@gmail.com
 
+## Run the local interface
+
+The repository includes a local, read-only interface backed by the Python core. It serves the web application and exposes local status, event summaries, and validated knowledge. It does not accept arbitrary public task submissions.
+
+```bash
+cd core
+python -m pip install -e .
+ssswet-local
+```
+
+Then open `http://127.0.0.1:8765`. The default server binds only to the local computer. GitHub Pages remains a static preview and does not run the Python research engine.
+
 ## Project status
 
 **Early architecture / active implementation.**
