@@ -9,6 +9,14 @@ The project explores a disciplined workflow for turning research questions into 
 
 See [research contributions and future technology availability](docs/CONTRIBUTIONS.md) for the contribution process and the conditions governing any future product offer or delivery.
 
+## Monthly PayPal contributions
+
+The contribution interface uses the PayPal subscription plan `P-75A66386EX5825057NLTZHII`. The base plan is USD 1 per month. The interface asks the supporter for a whole-dollar monthly amount and passes that value as the subscription `quantity`, so a quantity of 12 is intended to bill USD 12 per month.
+
+**Important PayPal plan requirement:** PayPal supports custom subscription quantities only when the billing plan has `quantity_supported: true`. PayPal's plan API defaults this field to `false`. Confirm that the live plan has quantity support enabled before advertising variable monthly amounts. If it is disabled, PayPal may reject quantities above 1; in that case, the plan must be recreated or updated using a quantity-supported pricing configuration. The PayPal SDK snippet alone, with `quantity: 1`, does not prove that custom quantities are enabled.
+
+The supporter approves the recurring subscription through PayPal. It is billed monthly until cancelled through PayPal. The interface does not collect card details or claim that a payment has succeeded before PayPal calls the approval callback. The subscription amount is denominated in USD; PayPal may display local currency or conversion information during checkout.
+
 ## Contributions and voluntary instalments
 
 Research contributions have a minimum value of **USD 10 per payment**. The interface converts this threshold into the visitor's display currency using an indicative live USD exchange rate; if the rate service is unavailable, it falls back to displaying USD rather than inventing a conversion.
