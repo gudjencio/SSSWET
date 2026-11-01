@@ -262,3 +262,6 @@ Protocol improvement proposals can be submitted and reviewed through the local P
 ## Descriptive laboratory statistics
 
 SSSWET can produce read-only descriptive summaries of recorded numeric laboratory outputs, grouped by protocol version and output field. Reports include sample size, mean, median, range, sample standard deviation, quartiles and potential outlier review flags. Values are never silently removed, and the summaries do not establish statistical significance, causality or scientific validity. See [descriptive laboratory output statistics](docs/LAB_STATISTICAL_SUMMARIES.md).
+
+
+The [public research portfolio](docs/CONTRIBUTIONS.md#public-research-portfolio-and-progress-records) explains how research stages, confirmed contribution totals, funding goals and future availability are reported transparently.
