@@ -1165,3 +1165,38 @@ a { color: #9fdcf0; }
 @media(prefers-reduced-motion:reduce) {
   .bot-stage-agent, .bot-stage-agent-content, .bot-stage-agents { animation:none !important; }
 }
+
+
+/* Gentle, occasional hop: agents stay upright and grounded. */
+.bot-stage-agents {
+  animation: none !important;
+  transform: none !important;
+}
+.bot-stage-agent,
+.bot-stage-agent-content {
+  animation: none !important;
+  transform: none !important;
+  translate: none !important;
+  rotate: none !important;
+}
+.bot-stage-agent {
+  align-items: center;
+  justify-content: center;
+}
+.bot-stage-agent .agent-avatar {
+  transform-origin: 50% 100%;
+  animation: bot-agent-occasional-hop 7.2s ease-in-out infinite !important;
+  will-change: transform;
+}
+.bot-stage-agent:nth-child(2n) .agent-avatar { animation-delay: -2.6s !important; }
+.bot-stage-agent:nth-child(3n) .agent-avatar { animation-delay: -4.8s !important; }
+@keyframes bot-agent-occasional-hop {
+  0%, 86%, 100% { transform: translateY(0) scale(1,1); }
+  89% { transform: translateY(-5px) scale(.98,1.025); }
+  92% { transform: translateY(0) scale(1.025,.975); }
+  95% { transform: translateY(-2px) scale(.995,1.01); }
+  98% { transform: translateY(0) scale(1,1); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .bot-stage-agent .agent-avatar { animation: none !important; }
+}
