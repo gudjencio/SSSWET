@@ -11,6 +11,9 @@
   const dashboardGrid = document.getElementById("dashboard-grid");
   let lastView = "ready";
   let dashboardRequest = 0;
+  let selectedKnowledgeNodeId = null;
+  let currentKnowledgeGraph = { nodes: [], edges: [] };
+  let currentResearchOpportunities = { opportunities: [] };
 
   const languageNames = Object.keys(locales).sort((a, b) => {
     if (a === "en") return -1;
@@ -164,14 +167,18 @@
 
 
   function renderOpportunityList(payload) {
+    currentResearchOpportunities = payload || { opportunities: [] };
     const container = document.getElementById("opportunity-list");
     container.replaceChildren();
     const t = currentTranslations();
-    const items = Array.isArray(payload && payload.opportunities) ? payload.opportunities : [];
+    let items = Array.isArray(payload && payload.opportunities) ? payload.opportunities : [];
+    if (selectedKnowledgeNodeId) {
+      items = items.filter(item => (item.graph_node_ids || []).includes(selectedKnowledgeNodeId));
+    }
     if (!items.length) {
       const empty = document.createElement("p");
       empty.className = "visual-empty";
-      empty.textContent = t.opportunityEmpty;
+      empty.textContent = selectedKnowledgeNodeId ? t.noNodeOpportunities : t.opportunityEmpty;
       container.append(empty);
       return;
     }
@@ -206,7 +213,88 @@
     container.append(notice);
   }
 
+  function renderNodeInspector(nodeId) {
+    const container = document.getElementById("node-inspector");
+    container.replaceChildren();
+    const t = currentTranslations();
+    const node = currentKnowledgeGraph.nodes.find(item => item.node_id === nodeId);
+    if (!node) {
+      const empty = document.createElement("p");
+      empty.className = "visual-empty";
+      empty.textContent = t.inspectorEmpty;
+      container.append(empty);
+      return;
+    }
+    const heading = document.createElement("h4");
+    heading.textContent = node.label || node.node_id;
+    const type = document.createElement("p");
+    type.className = "inspector-meta";
+    type.textContent = [node.node_type || t.unknownType, node.verification_state || t.unverifiedState].join(" · ");
+    const description = document.createElement("p");
+    description.textContent = node.description || t.noDescription;
+    const id = document.createElement("p");
+    id.className = "inspector-id";
+    id.textContent = t.nodeIdentifier + ": " + node.node_id;
+    container.append(heading, type, description, id);
+
+    const metadata = node.metadata && typeof node.metadata === "object" ? node.metadata : {};
+    const campaignId = metadata.campaign_id || node.campaign_id;
+    if (campaignId) {
+      const campaign = document.createElement("p");
+      campaign.className = "inspector-meta";
+      campaign.textContent = t.campaignsShort + ": " + String(campaignId);
+      container.append(campaign);
+    }
+    const related = currentKnowledgeGraph.edges.filter(edge =>
+      edge.source_id === nodeId || edge.target_id === nodeId
+    );
+    const relationHeading = document.createElement("h5");
+    relationHeading.textContent = t.recordedConnections + " (" + related.length + ")";
+    container.append(relationHeading);
+    if (!related.length) {
+      const none = document.createElement("p");
+      none.className = "visual-empty";
+      none.textContent = t.noRecordedConnections;
+      container.append(none);
+    } else {
+      const list = document.createElement("ul");
+      list.className = "inspector-connections";
+      related.slice(0, 30).forEach(edge => {
+        const otherId = edge.source_id === nodeId ? edge.target_id : edge.source_id;
+        const other = currentKnowledgeGraph.nodes.find(item => item.node_id === otherId);
+        const li = document.createElement("li");
+        const relation = document.createElement("strong");
+        relation.textContent = edge.relation || t.recordedRelation;
+        const target = document.createElement("button");
+        target.type = "button";
+        target.className = "text-link";
+        target.textContent = other ? (other.label || other.node_id) : otherId;
+        target.addEventListener("click", () => selectKnowledgeNode(otherId));
+        const note = document.createElement("span");
+        note.textContent = edge.note ? " — " + edge.note : "";
+        li.append(relation, document.createTextNode(" · "), target, note);
+        list.append(li);
+      });
+      container.append(list);
+    }
+    const disclaimer = document.createElement("p");
+    disclaimer.className = "visual-disclaimer";
+    disclaimer.textContent = t.nodeDisclaimer;
+    container.append(disclaimer);
+  }
+
+  function selectKnowledgeNode(nodeId) {
+    selectedKnowledgeNodeId = nodeId;
+    renderNodeInspector(nodeId);
+    renderOpportunityList(currentResearchOpportunities);
+    document.querySelectorAll(".knowledge-node").forEach(group => {
+      group.classList.toggle("is-selected", group.dataset.nodeId === nodeId);
+      group.setAttribute("aria-pressed", group.dataset.nodeId === nodeId ? "true" : "false");
+    });
+  }
+
   function renderKnowledgeMap(payload) {
+    currentKnowledgeGraph = payload || { nodes: [], edges: [] };
     const container = document.getElementById("knowledge-map");
     container.replaceChildren();
     const t = currentTranslations();
@@ -217,12 +305,16 @@
       empty.className = "visual-empty";
       empty.textContent = t.mapEmpty;
       container.append(empty);
+      renderNodeInspector(null);
       return;
+    }
+    if (selectedKnowledgeNodeId && !nodes.some(node => node.node_id === selectedKnowledgeNodeId)) {
+      selectedKnowledgeNodeId = null;
     }
     const ns = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(ns, "svg");
     svg.setAttribute("viewBox", "0 0 720 320");
-    svg.setAttribute("role", "img");
+    svg.setAttribute("role", "group");
     svg.setAttribute("aria-label", t.mapAccessible);
     const positions = new Map();
     nodes.forEach((node, index) => {
@@ -243,16 +335,29 @@
     nodes.forEach((node) => {
       const point = positions.get(node.node_id);
       const group = document.createElementNS(ns, "g");
-      group.setAttribute("class", "knowledge-node");
+      group.setAttribute("class", "knowledge-node" + (node.node_id === selectedKnowledgeNodeId ? " is-selected" : ""));
+      group.setAttribute("tabindex", "0");
+      group.setAttribute("role", "button");
+      group.setAttribute("aria-label", t.selectNode + ": " + (node.label || node.node_id));
+      group.setAttribute("aria-pressed", node.node_id === selectedKnowledgeNodeId ? "true" : "false");
+      group.dataset.nodeId = node.node_id;
       const circle = document.createElementNS(ns, "circle");
-      circle.setAttribute("cx", point.x); circle.setAttribute("cy", point.y); circle.setAttribute("r", "7");
+      circle.setAttribute("cx", point.x); circle.setAttribute("cy", point.y); circle.setAttribute("r", "8");
       const label = document.createElementNS(ns, "text");
       label.setAttribute("x", point.x); label.setAttribute("y", point.y + 22);
       label.setAttribute("text-anchor", "middle");
       label.textContent = String(node.label || node.node_id).slice(0, 28);
       const title = document.createElementNS(ns, "title");
       title.textContent = (node.label || node.node_id) + " · " + (node.node_type || "record") + " · " + (node.verification_state || "unverified");
-      group.append(circle, label, title); svg.append(group);
+      group.append(circle, label, title);
+      group.addEventListener("click", () => selectKnowledgeNode(node.node_id));
+      group.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectKnowledgeNode(node.node_id);
+        }
+      });
+      svg.append(group);
     });
     container.append(svg);
     const legend = document.createElement("p");
@@ -261,6 +366,7 @@
       + edges.filter(edge => positions.has(edge.source_id) && positions.has(edge.target_id)).length
       + " " + t.mapRelations + " · " + t.mapDisclaimer;
     container.append(legend);
+    renderNodeInspector(selectedKnowledgeNodeId);
   }
 
   async function showDashboard() {
