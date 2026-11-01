@@ -242,3 +242,54 @@ def test_peer_review_api_reports_assessments_without_verifying_claims(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_digital_lab_api_lists_published_protocols_and_recorded_runs(tmp_path):
+    import json
+    import threading
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+    from ssswet_core.digital_lab import DigitalLabService, LabProtocol, LabRun
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "digital-lab-api.sqlite3")
+    for cid in ("owner", "replica"):
+        campaign = create_campaign(
+            cid, cid, "Digital laboratory testing", "computational science",
+            [CampaignMilestone("m1", "Review", "Review protocol")],
+        )
+        store.save_campaign(set_campaign_state(campaign, "active"))
+    service = DigitalLabService(store)
+    service.publish_protocol(LabProtocol(
+        "protocol-api", 1, "API protocol", "Test a simple calculation", "owner",
+        ("Set input", "Calculate output"), ("x",), ("y",), {"x": "unitless"},
+        ("Same initial conditions",), ("Illustrative model only",),
+        ("No physical experiment is performed",), "published",
+        "reviewer", "Reviewed for clarity.",
+    ))
+    service.record_run(LabRun(
+        "run-api", "protocol-api", 1, "replica", "simulation",
+        {"x": 2}, {"y": 4}, "y = 2x", {"runtime": "Python"},
+        "model-v1", "replica-group", True,
+    ))
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with urlopen(f"http://127.0.0.1:{server.server_port}/api/digital-lab") as response:
+            payload = json.loads(response.read())
+        assert payload["protocol_count"] == 1
+        assert payload["run_count"] == 1
+        assert payload["protocols"][0]["content_hash"]
+        assert payload["runs"][0]["record_hash"]
+        assert payload["automatic_execution"] is False
+        assert payload["scientific_validity_established"] is False
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
