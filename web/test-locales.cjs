@@ -150,7 +150,7 @@ console.log('Validated the technology feasibility observatory interface.');
 
 const purchaseConfig=fs.readFileSync(new URL('./product-purchase-config.js', `file://${__filename}`),'utf8');
 new Function(purchaseConfig);
-for(const key of ['cellular','longevity','armor','jetpack','translator','spacetime','timetravel']) if(!purchaseConfig.includes(key+':')) throw new Error('Product purchase config missing '+key);
+for(const key of ['cellular','longevity','armor','jetpack','translator','spacetime','timetravel','cleanenergy','energyStorage','water','foodSystems','climate','biodiversity','wildlife','oceans','reforestation','agriculture','circularEconomy','airQuality','mobility','accessibility','disasterResilience','publicHealth','sanitation','education','animalHealth','materials','carbonMonitoring','pollinators']) if(!purchaseConfig.includes(key+':')) throw new Error('Product purchase config missing '+key);
 if(!purchaseConfig.includes('delivery_address_collection')||!purchaseConfig.includes('legal_review_required')) throw new Error('Product purchase safeguards missing.');
 console.log('Validated future product purchase gates and delivery safeguards.');
 
