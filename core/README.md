@@ -475,3 +475,33 @@ before a proposal is turned into another simulation run. The scores supplied
 to this bridge are operator assessments, not automatically inferred scientific
 measurements. Simulation output remains separate from real-world observation
 and verified findings.
+
+
+### Research campaign manager
+
+The campaign manager groups related work into explicit milestones without
+claiming that workflow completion equals scientific success. A campaign has
+a controlled lifecycle (`draft`, `active`, `paused`, `blocked`,
+`completed`). Completion is rejected until every milestone is marked
+completed. Milestones can link to study IDs and retain operator notes.
+
+```python
+from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+from ssswet_core.persistence import SQLiteResearchStore
+
+campaign = create_campaign(
+    "campaign-001",
+    "Wave propagation methods",
+    "Compare measurement approaches",
+    "physics",
+    [CampaignMilestone("review", "Literature review", "Map published methods")],
+)
+campaign = set_campaign_state(campaign, "active")
+SQLiteResearchStore().save_campaign(campaign)
+```
+
+Campaigns persist in SQLite and the local read-only API exposes their
+summaries at `/api/campaigns`. This first version tracks milestones and
+links; it does not yet schedule agents, allocate compute budgets, or launch
+experiments. Those capabilities will be added behind explicit operator
+approval and resource limits.
