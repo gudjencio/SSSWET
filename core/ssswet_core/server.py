@@ -224,6 +224,14 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 self._json({"campaigns": store.campaign_history(limit=100)})
             elif path == "/api/resources":
                 self._json({"snapshots": store.resource_snapshot_history(limit=50)})
+            elif path == "/api/lab-statistical-summaries":
+                from .lab_statistics import LabStatisticalSummarizer
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["200"])[0])
+                    self._json(LabStatisticalSummarizer(store).build(limit=limit))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/lab-discrepancies":
                 from .lab_discrepancies import LabDiscrepancyAnalyzer
                 params = parse_qs(parsed.query)
