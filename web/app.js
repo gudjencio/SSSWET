@@ -691,7 +691,7 @@
       }
     };
     const known = dictionaries[language] || dictionaries.en;
-    if (known[raw]) return known[raw];
+    if (known[raw]) return (language === "fr" ? "Information · " : "Info · ") + known[raw];
     const errorLike = /\b(error|failed|failure|exception|traceback|timeout|refused|unavailable)\b/i.test(raw);
     if (!errorLike) return raw;
     const details = raw
@@ -709,7 +709,13 @@
     lastView = "activity";
     const t = currentTranslations();
     try {
-      const events = await apiGet("/api/events");
+      let events;
+      try { events = await apiGet("/api/events"); }
+      catch (firstError) {
+        if (!/timeout|HTTP 5\\d{2}|temporar|connection reset/i.test(String(firstError && firstError.message || firstError))) throw firstError;
+        await new Promise(resolve => window.setTimeout(resolve, 650));
+        events = await apiGet("/api/events");
+      }
       const lines = events.slice(0, 8).map((event) => localizeResearchLog(event.message)).filter(Boolean);
       showMessage(lines.length ? lines.join(" • ") : t.noActivity);
     } catch { showMessage(t.offline); }
