@@ -676,7 +676,7 @@
       items.forEach((item) => {
         const summary = cleanDiscoverySummary(item.summary || item.statement || "");
         if (!summary) return;
-        const key = summary.replace(/\\s+/g, " ").toLocaleLowerCase();
+        const key = summary.replace(/\s+/g, " ").toLocaleLowerCase();
         if (!groups.has(key)) groups.set(key, { summary, roles: new Map(), count: 0 });
         const group = groups.get(key);
         const role = String(item.role || "research").replace(/_/g, " ");
@@ -714,9 +714,18 @@
           ? (document.documentElement.lang.toLowerCase().startsWith("fr")
             ? ` · ${group.count} agents` : ` · ${group.count} agents`)
           : "";
-        paragraph.append(marker, document.createTextNode(
-          ` [UNVERIFIED · ${roles}]${countLabel} ${group.summary}`
-        ));
+        const status = document.createElement("span");
+        status.className = "discovery-status";
+        status.textContent = document.documentElement.lang.toLowerCase().startsWith("fr")
+          ? "Non vérifié" : "Unverified";
+        const metadata = document.createElement("span");
+        metadata.className = "discovery-meta";
+        metadata.textContent = roles + countLabel;
+        const summaryText = document.createElement("span");
+        summaryText.className = "discovery-summary";
+        summaryText.textContent = group.summary;
+        paragraph.append(marker, status, metadata, summaryText);
+        feed.append(paragraph);
         feed.append(paragraph);
       });
 
