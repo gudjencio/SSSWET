@@ -17,6 +17,49 @@
   let currentCampaigns = [];
   let currentTimelinePayload = { events: [], total_events: 0, event_kinds: [] };
 
+
+  const brandNames = {
+    en: ["SSSWET", "Super Soldier's Space Warping Engineering & Tech"],
+    fr: ["ETDESS", "Équipements et technologies de distorsions spatiales pour super-soldats"],
+    ja: ["SSSWET", "超兵士向け空間歪曲工学・技術"],
+    es: ["SSSWET", "Ingeniería y tecnología de distorsión espacial para supersoldados"],
+    de: ["SSSWET", "Weltraumkrümmungsingenieurwesen und -technologie für Supersoldaten"],
+    it: ["SSSWET", "Ingegneria e tecnologia della distorsione spaziale per supersoldati"],
+    pt: ["SSSWET", "Engenharia e tecnologia de distorção espacial para supersoldados"],
+    nl: ["SSSWET", "Ruimtevervormingstechniek en -technologie voor supersoldaten"],
+    ru: ["SSSWET", "Инженерия и технологии искривления пространства для суперсолдат"],
+    uk: ["SSSWET", "Інженерія та технології викривлення простору для суперсолдатів"],
+    ar: ["SSSWET", "هندسة وتقنيات تشويه الفضاء للجنود الخارقين"],
+    he: ["SSSWET", "הנדסה וטכנולוגיית עיוות מרחב לחיילי־על"],
+    ko: ["SSSWET", "슈퍼 솔저를 위한 공간 왜곡 공학 및 기술"],
+    zh: ["SSSWET", "超级士兵空间扭曲工程与技术"],
+    hi: ["SSSWET", "सुपर सैनिकों के लिए अंतरिक्ष विकृति अभियांत्रिकी और प्रौद्योगिकी"],
+    id: ["SSSWET", "Rekayasa dan teknologi pelengkungan ruang untuk prajurit super"],
+    tr: ["SSSWET", "Süper askerler için uzay bükme mühendisliği ve teknolojisi"],
+    pl: ["SSSWET", "Inżynieria i technologia zakrzywiania przestrzeni dla superżołnierzy"],
+    bn: ["SSSWET", "সুপার সৈনিকদের জন্য মহাকাশ বক্রায়ন প্রকৌশল ও প্রযুক্তি"],
+    sw: ["SSSWET", "Uhandisi na teknolojia ya kupinda kwa anga kwa askari bora"],
+    vi: ["SSSWET", "Kỹ thuật và công nghệ bẻ cong không gian dành cho siêu chiến binh"],
+    fa: ["SSSWET", "مهندسی و فناوری خمیدگی فضا برای ابرسربازان"],
+    ur: ["SSSWET", "سپر سپاہیوں کے لیے خلائی انحراف کی انجینئرنگ اور ٹیکنالوجی"],
+    ta: ["SSSWET", "சூப்பர் வீரர்களுக்கான விண்வெளி வளைவு பொறியியல் மற்றும் தொழில்நுட்பம்"],
+    te: ["SSSWET", "సూపర్ సైనికుల కోసం అంతరిక్ష వక్రీకరణ ఇంజినీరింగ్ మరియు సాంకేతికత"]
+  };
+  function applyProjectBranding(code) {
+    const pair = brandNames[code] || brandNames.en;
+    const mark = document.getElementById("brand-mark");
+    const subtitle = document.getElementById("brand-subtitle");
+    const heading = document.getElementById("title");
+    if (mark) mark.textContent = pair[0];
+    if (subtitle) subtitle.textContent = pair[1];
+    if (heading) heading.textContent = pair[0];
+    document.title = pair[0] + " — " + pair[1];
+    document.querySelectorAll(".social-corner a").forEach(link => {
+      link.title = link.dataset.social || link.title;
+      link.setAttribute("aria-label", link.dataset.social || link.getAttribute("aria-label"));
+    });
+  }
+
   const languageCatalog = window.SSSWET_LANGUAGE_CATALOG || Object.keys(locales).map(code => code + "|" + (locales[code].name || code));
   const languageCodes = languageCatalog.map(item => item.split("|")[0]);
   function languageLabel(code, selectedCode) {
@@ -59,7 +102,7 @@
   function currentTranslations() { return { ...fallback, ...(locales[translationSource(currentLanguage())] || {}) }; }
 
   const voiceToggle = document.getElementById("voice-toggle");
-  let voiceEnabled = false;
+  let voiceEnabled = Boolean(window.speechSynthesis && typeof SpeechSynthesisUtterance !== "undefined");
   let availableVoices = [];
   const speechSynthesisApi = window.speechSynthesis || null;
   function refreshVoices() {
@@ -186,6 +229,7 @@
     const selected = locales[requested] ? requested : "en";
     const t = { ...fallback, ...(locales[translationSource(selected)] || {}) };
     const direction = t.dir === "rtl" ? "rtl" : "ltr";
+    applyProjectBranding(selected);
     document.documentElement.lang = selected;
     document.documentElement.dir = direction;
     document.body.dir = direction;
@@ -272,12 +316,16 @@
       article.append(avatar, identity, speakButton);
       roles.append(article);
     });
-    fragment.append(roles);
+    const agentDetails = document.createElement("details");
+    agentDetails.className = "agent-details";
+    const agentSummary = document.createElement("summary");
+    agentSummary.textContent = currentLanguage() === "fr" ? "Découvrir les agents et leur méthode" : "Meet the agents & explore their workflow";
+    agentDetails.append(agentSummary, roles);
 
     const stepsTitle = document.createElement("p");
     stepsTitle.className = "agent-section-title";
     stepsTitle.textContent = copy.stepsTitle || (currentLanguage() === "fr" ? "Étapes de recherche" : "Research workflow");
-    fragment.append(stepsTitle);
+    agentDetails.append(stepsTitle);
     const steps = document.createElement("ol");
     steps.className = "agent-steps";
     copy.steps.forEach((step) => {
@@ -285,12 +333,12 @@
       item.textContent = step;
       steps.append(item);
     });
-    fragment.append(steps);
+    agentDetails.append(steps);
 
     const questionsTitle = document.createElement("p");
     questionsTitle.className = "agent-section-title";
     questionsTitle.textContent = copy.questionsTitle || (currentLanguage() === "fr" ? "Questions proposées" : "Suggested questions");
-    fragment.append(questionsTitle);
+    agentDetails.append(questionsTitle);
     const questions = document.createElement("div");
     questions.className = "agent-questions";
     const actions = [
@@ -306,12 +354,13 @@
       button.addEventListener("click", action);
       questions.append(button);
     });
-    fragment.append(questions);
+    agentDetails.append(questions);
 
     const note = document.createElement("p");
     note.className = "agent-disclaimer";
     note.textContent = copy.disclaimer;
-    fragment.append(note);
+    agentDetails.append(note);
+    fragment.append(agentDetails);
     feed.replaceChildren(fragment);
     if (voiceEnabled) speakWelcome(copy);
   }
@@ -1110,6 +1159,27 @@
     speechSynthesisApi.addEventListener?.("resume", updateVoiceControls);
   }
   setLanguage(safeReadLanguage() || preferredLanguage());
+  // Browsers may permit speech synthesis on page load; if blocked, retry once after the first user interaction.
+  let automaticVoiceRetried = false;
+  if (voiceEnabled) {
+    window.addEventListener("pointerdown", () => {
+      if (automaticVoiceRetried || speechSynthesisApi?.speaking) return;
+      automaticVoiceRetried = true;
+      const copy = (window.SSSWET_AGENT_COPY || {})[translationSource(currentLanguage())] || (window.SSSWET_AGENT_COPY || {}).en;
+      if (copy) speakWelcome(copy);
+    }, { once: true, passive: true });
+  }
+  document.querySelectorAll("#dashboard > section").forEach(section => {
+    const heading = section.querySelector("h3, h2");
+    if (!heading || section.parentElement.tagName === "DETAILS") return;
+    const foldout = document.createElement("details");
+    foldout.className = "dashboard-foldout";
+    const summary = document.createElement("summary");
+    summary.textContent = heading.textContent.trim();
+    section.parentNode.insertBefore(foldout, section);
+    foldout.append(summary, section);
+  });
+  window.setInterval(refreshStatus, 15000);
   capitalizeInterfaceText(document.body);
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
