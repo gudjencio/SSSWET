@@ -177,6 +177,12 @@ class DigitalLabService:
         same_parameters = _canonical(left["parameters"]) == _canonical(right["parameters"])
         differences = _compare_values(left["outputs"], right["outputs"], tolerance)
         comparable = same_protocol and same_kind and same_parameters
+        shared_source_ids = sorted(set(left.get("source_ids", [])) & set(right.get("source_ids", [])))
+        shared_dataset_ids = sorted(set(left.get("dataset_ids", [])) & set(right.get("dataset_ids", [])))
+        distinct_provenance_groups = bool(
+            left.get("provenance_group") and right.get("provenance_group")
+            and left["provenance_group"] != right["provenance_group"]
+        )
         result = {
             "comparison_id": sha256(f"{left_run_id}|{right_run_id}|{tolerance}".encode()).hexdigest(),
             "left_run_id": left_run_id,
@@ -187,10 +193,14 @@ class DigitalLabService:
             "different_campaigns": left["campaign_id"] != right["campaign_id"],
             "independence_declared_by_both": bool(left["independence_declared"] and right["independence_declared"]),
             "independence_independently_verified": False,
+            "provenance_groups_distinct": distinct_provenance_groups,
+            "shared_source_ids": shared_source_ids,
+            "shared_dataset_ids": shared_dataset_ids,
             "comparable": comparable,
             "independent_reproduction_candidate": (
                 comparable and left["campaign_id"] != right["campaign_id"]
                 and left["independence_declared"] and right["independence_declared"]
+                and distinct_provenance_groups and not shared_source_ids and not shared_dataset_ids
             ),
             "outputs_match_within_tolerance": comparable and not differences,
             "tolerance": tolerance,
