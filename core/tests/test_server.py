@@ -153,3 +153,41 @@ def test_scientific_memory_api_exposes_versions_and_review_suggestions(tmp_path)
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_research_timeline_endpoint_returns_chronological_records(tmp_path):
+    import json
+    import threading
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.knowledge_graph import KnowledgeNode
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+    from ssswet_core.scientific_memory import ScientificMemoryService, ScientificMemoryVersion
+
+    store = SQLiteResearchStore(tmp_path / "timeline-api.sqlite3")
+    store.add_knowledge_node(KnowledgeNode(
+        "finding-1", "finding", "First recorded finding",
+        created_at="2026-09-01T12:00:00+00:00",
+    ))
+    ScientificMemoryService(store).add_version(ScientificMemoryVersion.create(
+        "memory-1", "wave-topic", "Wave topic", "A candidate research statement",
+    ))
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with urlopen(f"http://127.0.0.1:{server.server_port}/api/research-timeline") as response:
+            payload = json.loads(response.read())
+        assert payload["total_events"] == 2
+        assert payload["chronology_is_not_validation"] is True
+        assert {item["kind"] for item in payload["events"]} == {
+            "knowledge_recorded", "memory_version"
+        }
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
