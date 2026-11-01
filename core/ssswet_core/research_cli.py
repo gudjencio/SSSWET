@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 from .pipeline import ResearchPipeline
@@ -12,6 +13,7 @@ from .providers import (
     CrossrefProvider,
     DeterministicDemoProvider,
     LocalCorpusProvider,
+    OpenAICompatibleProvider,
 )
 
 
@@ -38,14 +40,25 @@ def main() -> None:
     parser.add_argument("--domain", default="general")
     parser.add_argument("--corpus", help="Optional JSON file containing local source documents")
     parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
-    parser.add_argument("--provider", choices=("demo", "crossref"), default="demo")
+    parser.add_argument("--provider", choices=("demo", "crossref", "llm"), default="demo")
     parser.add_argument("--mailto", default="", help="Optional contact email for Crossref requests")
+    parser.add_argument("--model", default=os.getenv("SSSWET_LLM_MODEL", ""))
+    parser.add_argument(
+        "--endpoint",
+        default=os.getenv("SSSWET_LLM_ENDPOINT", "https://api.openai.com/v1/chat/completions"),
+    )
     args = parser.parse_args()
 
     if args.corpus:
         provider = LocalCorpusProvider(load_corpus(args.corpus))
     elif args.provider == "crossref":
         provider = CrossrefProvider(mailto=args.mailto)
+    elif args.provider == "llm":
+        provider = OpenAICompatibleProvider(
+            api_key=os.getenv("SSSWET_LLM_API_KEY", ""),
+            model=args.model,
+            endpoint=args.endpoint,
+        )
     else:
         provider = DeterministicDemoProvider()
 
