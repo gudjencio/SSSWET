@@ -94,3 +94,12 @@ def test_invalid_limits_are_rejected():
         ReproducibilityIntelligence(FakeStore()).build(limit=0)
     with pytest.raises(ValueError):
         ReproducibilityIntelligence(FakeStore()).build(limit=True)
+
+def test_independent_match_requires_verified_declaration_and_separate_provenance():
+    store = FakeStore(
+        [_run("run-a", "campaign-a", "origin-a"), _run("run-b", "campaign-b", "origin-b")],
+        [_comparison(independence_independently_verified=True)],
+    )
+    protocol = ReproducibilityIntelligence(store).build()["protocols"][0]
+    assert protocol["status"] == "independent_match_evidence_recorded"
+    assert protocol["reproducibility_evidence_index"] == 100
