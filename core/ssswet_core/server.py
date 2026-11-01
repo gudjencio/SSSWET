@@ -89,6 +89,34 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                         limit=limit,
                     ),
                 })
+            elif path == "/api/scientific-memory":
+                from .scientific_memory import ScientificMemoryService
+                params = parse_qs(parsed.query)
+                query = params.get("q", [""])[0]
+                try:
+                    limit = int(params.get("limit", ["200"])[0])
+                except ValueError:
+                    self._json({"error": "The limit parameter must be an integer"}, 400)
+                    return
+                self._json(ScientificMemoryService(store).overview(query=query, limit=limit))
+            elif path == "/api/scientific-memory/suggestions":
+                from .scientific_memory import ScientificMemoryService
+                from .research_gaps import ResearchGapAnalyzer
+                overview = ScientificMemoryService(store).overview(limit=500)
+                gaps = ResearchGapAnalyzer().report(store.knowledge_graph(limit=500))
+                contested = [
+                    {"version_id": item["version_id"], "memory_key": item["memory_key"],
+                     "topic": item["topic"], "statement": item["statement"],
+                     "graph_node_ids": item["contested_graph_node_ids"],
+                     "suggestion": "Review the linked contradiction and compare source methods and provenance."}
+                    for item in overview["versions"] if item["contested_by_graph"]
+                ]
+                self._json({
+                    "research_gaps": gaps.get("gaps", []),
+                    "contested_memory": contested,
+                    "automatic_task_creation": False,
+                    "scientific_validity_established": False,
+                })
             elif path == "/api/literature-watch":
                 self._json({"reports": store.literature_watch_history(limit=100)})
             elif path == "/api/literature-watch/campaigns":
