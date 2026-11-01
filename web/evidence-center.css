@@ -58,3 +58,12 @@ html[dir="rtl"] .evidence-center, html[dir="rtl"] .evidence-dossier { direction:
 .evidence-board-form button { justify-self: start; padding: 8px 10px; border-radius: 8px; font-size: 10px; }
 .evidence-board-review { border-color: #383126; }
 @media (max-width: 520px) { .evidence-board-form { grid-template-columns: 1fr; } .evidence-board-form > * { grid-column: 1; } }
+
+.evidence-integrity { border-top: 1px solid #292929; padding-top: 10px; }
+.evidence-risk-form { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 9px; border: 1px solid #3a3026; border-radius: 10px; background: rgba(255,255,255,.015); }
+.evidence-risk-form input, .evidence-risk-form select, .evidence-risk-form textarea { min-width: 0; width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #343434; border-radius: 7px; background: #101010; color: #ddd; font: inherit; font-size: 10px; }
+.evidence-risk-form textarea { grid-column: 1 / -1; min-height: 64px; resize: vertical; }
+.evidence-risk-form button { justify-self: start; padding: 8px 10px; border-radius: 8px; font-size: 10px; }
+.evidence-integrity-warning { padding: 8px 10px; border-inline-start: 3px solid #c58b48; background: rgba(197,139,72,.08); color: #e0bd8e; font-size: 10px; }
+.evidence-integrity-risk { border-color: #463729; }
+@media (max-width: 520px) { .evidence-risk-form { grid-template-columns: 1fr; } .evidence-risk-form > * { grid-column: 1; } }
