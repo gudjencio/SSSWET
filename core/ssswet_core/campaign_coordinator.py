@@ -60,7 +60,7 @@ class CampaignCoordinator:
         specs = list(subtasks)
         if not specs or len(specs) > 100:
             raise ValueError("A work batch must contain between 1 and 100 subtasks")
-        if not parent_task_id.strip():
+        if not isinstance(parent_task_id, str) or not parent_task_id.strip():
             raise ValueError("A parent task ID is required")
 
         if campaign_id not in self.resources.quotas:
@@ -75,6 +75,8 @@ class CampaignCoordinator:
                 raise ValueError("Every subtask needs an objective")
             if not isinstance(role, str) or not role.strip():
                 raise ValueError("Every subtask needs a specialist role")
+            if isinstance(priority, bool) or not isinstance(priority, int) or not 1 <= priority <= 10:
+                raise ValueError("Every subtask priority must be an integer from 1 to 10")
             task_id = f"{parent_task_id}:{index:03d}"
             requests.append(WorkRequest(
                 task_id=task_id,
@@ -122,6 +124,37 @@ class CampaignCoordinator:
     ) -> None:
         self.resources.finish(task_id, success=success, actual_units=actual_units)
         self._save_snapshot()
+
+    def resume_milestone(self, campaign_id: str, milestone_id: str, reason: str) -> None:
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError("A review note is required to resume a blocked milestone")
+        campaign_data = self.store.get_campaign(campaign_id)
+        if campaign_data is None:
+            raise ValueError(f"Unknown campaign: {campaign_id}")
+        if campaign_data.get("state") != "active":
+            raise ValueError("Research campaign must be active before a milestone is resumed")
+        from .campaigns import CampaignMilestone, ResearchCampaign
+
+        campaign = ResearchCampaign(
+            campaign_id=campaign_data["campaign_id"],
+            title=campaign_data["title"],
+            objective=campaign_data["objective"],
+            domain=campaign_data["domain"],
+            state=campaign_data["state"],
+            milestones=tuple(CampaignMilestone(**item) for item in campaign_data["milestones"]),
+            warnings=tuple(campaign_data.get("warnings", ())),
+        )
+        milestone = next(
+            (item for item in campaign.milestones if item.milestone_id == milestone_id),
+            None,
+        )
+        if milestone is None:
+            raise ValueError(f"Unknown milestone: {milestone_id}")
+        if milestone.state != "blocked":
+            raise ValueError("Only blocked milestones can be resumed")
+        self.store.save_campaign(update_milestone(
+            campaign, milestone_id, "in_progress", notes=reason.strip()
+        ))
 
     def block_milestone(self, campaign_id: str, milestone_id: str, note: str) -> None:
         campaign_data = self.store.get_campaign(campaign_id)
