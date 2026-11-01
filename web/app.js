@@ -254,6 +254,16 @@
         }
       },
       {
+        key: "collaboration", path: "/api/collaboration/recommendations", list: "recommendations",
+        title: t.dashCollaboration,
+        count: (a) => a.length,
+        detail: (a) => dashboardMetrics([
+          [t.dashRecommendations, a.length],
+          [t.dashTargets, new Set(a.map(x => x.target_campaign_id)).size],
+          [t.dashUnverified, a.filter(x => x.verification_state === "unverified").length]
+        ])
+      },
+      {
         key: "campaignWatch", path: "/api/literature-watch/campaigns", list: null,
         title: t.dashCampaignWatch,
         count: (a, p) => (p.subscriptions || []).filter(x => x.enabled).length,
