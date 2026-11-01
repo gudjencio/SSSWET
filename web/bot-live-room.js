@@ -227,6 +227,14 @@
     $("bot-stage-caption").textContent = selected.length
       ? (isActive ? t().stageActive : t().stageRecent)
       : t().stageEmpty;
+    const signature = JSON.stringify(selected.map(agent => ({
+      id: agent.id || agent.agent_id,
+      role: agent.role || "",
+      active: isActive,
+      review: !isActive && String(agent.role || "").includes("verif")
+    })));
+    if (stage.dataset.renderSignature === signature) return;
+    stage.dataset.renderSignature = signature;
     stage.innerHTML = selected.map((agent,index) => {
       const role = roleName(agent.role);
       const activeClass = isActive ? "is-active" : (String(agent.role||"").includes("verif") ? "is-review" : "");
