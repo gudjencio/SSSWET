@@ -209,30 +209,75 @@ class ResearchPipeline:
 
             results.extend(completed_steps[index] for index in sorted(completed_steps))
 
-            # Share each completed output with the other members of this task's team.
-            # These are review handoffs, not generated dialogue or scientific approval.
+            # Share outputs, then let each recipient run one independent literature
+            # check on a teammate's work. A review is a research lead, never approval.
             if self.store and len(results) > 1:
-                for sender in results:
-                    for recipient in results:
-                        if sender.agent_id == recipient.agent_id:
-                            continue
-                        summary = sender.result.summary.strip()
-                        if not summary:
-                            continue
+                handoffs = []
+                for index, sender in enumerate(results):
+                    recipient = results[(index + 1) % len(results)]
+                    summary = sender.result.summary.strip()
+                    if not summary:
+                        continue
+                    message_id = self.store.publish_agent_message(
+                        task_id=task.id,
+                        sender_agent_id=sender.agent_id,
+                        sender_role=sender.subtask.role,
+                        recipient_agent_id=recipient.agent_id,
+                        recipient_role=recipient.subtask.role,
+                        message_type="peer_review_request",
+                        content=(
+                            "Independent review requested. Examine this unverified teammate output; "
+                            "do not assume it is correct: " + summary[:3000]
+                        ),
+                    )
+                    handoffs.append((message_id, sender, recipient))
+
+                for message_id, sender, reviewer in handoffs:
+                    original = self.store.agent_message(message_id)
+                    if not original:
+                        continue
+                    review_objective = (
+                        "Independently search for scholarly literature relevant to this research "
+                        "output. Look for evidence that could support, qualify, or challenge it. "
+                        "Do not infer agreement from search results. Original task: "
+                        + task.objective[:900]
+                        + ". Teammate output: "
+                        + str(original["content"])[-3000:]
+                    )
+                    try:
+                        review_result = self.provider.investigate(
+                            review_objective, "independent_peer_review"
+                        )
+                        evidence_text = " | ".join(review_result.evidence[:4])
+                        response = (
+                            f"Review of handoff #{message_id}. Independent literature-search pass "
+                            f"completed by {reviewer.role}. {review_result.summary[:1800]} "
+                            f"Evidence leads: {evidence_text[:2200] or 'No usable evidence leads returned.'} "
+                            f"Uncertainty: {review_result.uncertainty:.2f}. "
+                            "Assessment remains provisional; this is not approval or verification."
+                        )
                         self.store.publish_agent_message(
                             task_id=task.id,
-                            sender_agent_id=sender.agent_id,
-                            sender_role=sender.subtask.role,
-                            recipient_agent_id=recipient.agent_id,
-                            recipient_role=recipient.subtask.role,
-                            message_type="peer_review_request",
-                            content=(
-                                "A teammate's research output is available for independent review. "
-                                "This handoff is unverified and does not establish agreement: "
-                                + summary[:4000]
-                            ),
+                            sender_agent_id=reviewer.id,
+                            sender_role=reviewer.role,
+                            recipient_agent_id=sender.agent_id,
+                            recipient_role=sender.subtask.role,
+                            message_type="peer_review_response",
+                            content=response[:4000],
                         )
-
+                        self.engine.orchestrator.events.append(ResearchEvent(
+                            "peer_review_completed",
+                            "A teammate's output received an independent literature-search review; no approval was implied.",
+                            task.id,
+                            reviewer.id,
+                        ))
+                    except Exception as error:
+                        self.engine.orchestrator.events.append(ResearchEvent(
+                            "peer_review_blocked",
+                            f"An independent peer-review search could not complete ({type(error).__name__}); the original output remains unverified.",
+                            task.id,
+                            reviewer.id,
+                        ))
 
             # Provider output is not automatically promoted to a verified finding.
             self.engine.orchestrator.complete(task, agents[0].id, accepted=True)
