@@ -275,6 +275,12 @@ def test_digital_lab_api_lists_published_protocols_and_recorded_runs(tmp_path):
         {"x": 2}, {"y": 4}, "y = 2x", {"runtime": "Python"},
         "model-v1", "replica-group", True,
     ))
+    service.record_run(LabRun(
+        "run-api-2", "protocol-api", 1, "owner", "simulation",
+        {"x": 2}, {"y": 4}, "y = 2x", {"runtime": "Python"},
+        "model-v1", "owner-group", True,
+    ))
+    service.compare_runs("run-api", "run-api-2")
     server = ThreadingHTTPServer(
         ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
     )
@@ -284,7 +290,9 @@ def test_digital_lab_api_lists_published_protocols_and_recorded_runs(tmp_path):
         with urlopen(f"http://127.0.0.1:{server.server_port}/api/digital-lab") as response:
             payload = json.loads(response.read())
         assert payload["protocol_count"] == 1
-        assert payload["run_count"] == 1
+        assert payload["run_count"] == 2
+        assert payload["comparison_count"] == 1
+        assert payload["comparisons"][0]["scientific_validity_established"] is False
         assert payload["protocols"][0]["content_hash"]
         assert payload["runs"][0]["record_hash"]
         assert payload["automatic_execution"] is False
