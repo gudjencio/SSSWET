@@ -1,0 +1,36 @@
+.parameter-sensitivity-panel {
+  margin-top: 22px;
+  padding: 18px;
+  border: 1px solid #302c25;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(255,255,255,.025), rgba(255,255,255,.008));
+}
+.parameter-sensitivity-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.parameter-sensitivity-heading h3 { margin: 0; color: #e6dfd2; font-size: 14px; font-weight: 500; }
+.parameter-sensitivity-heading span { display: block; margin-top: 5px; color: #777; font-size: 10px; }
+.parameter-sensitivity-status { color: #9c927f; font-size: 10px; }
+.parameter-sensitivity-list { display: grid; gap: 10px; }
+.sensitivity-card { min-width: 0; padding: 12px; border: 1px solid #35312a; border-radius: 10px; background: rgba(0,0,0,.2); }
+.sensitivity-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.sensitivity-card-heading h4 { margin: 0; color: #e3ddd2; font-size: 12px; font-weight: 500; overflow-wrap: anywhere; }
+.sensitivity-badge { padding: 4px 7px; border: 1px solid #51432e; border-radius: 20px; color: #cbb58d; font-size: 9px; }
+.sensitivity-badge[data-state="incomplete_design"] { border-color: #493c32; color: #b99478; }
+.sensitivity-field { display: grid; grid-template-columns: minmax(110px, .7fr) minmax(0, 1.3fr); gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,.045); font-size: 10px; }
+.sensitivity-label { color: #777; }
+.sensitivity-value { color: #c7c1b6; overflow-wrap: anywhere; }
+.sensitivity-parameter { margin-top: 10px; padding: 9px; border: 1px solid #292721; border-radius: 8px; }
+.sensitivity-parameter h5, .sensitivity-issues h5 { margin: 0 0 6px; color: #d6c7a9; font-size: 10px; font-weight: 500; }
+.sensitivity-issues { margin-top: 10px; padding: 9px; border-inline-start: 2px solid #98734b; background: rgba(152,115,75,.06); }
+.sensitivity-issues strong { color: #d5b88e; font-size: 10px; }
+.sensitivity-issues p { margin: 4px 0; color: #9c8a76; font-size: 10px; }
+.sensitivity-interactions, .sensitivity-disclaimer, .sensitivity-empty { color: #988d79; font-size: 10px; line-height: 1.55; }
+.sensitivity-disclaimer { color: #777; }
+@media (max-width: 520px) {
+  .parameter-sensitivity-panel { padding: 12px; }
+  .sensitivity-field { grid-template-columns: 1fr; gap: 3px; }
+}
