@@ -243,6 +243,7 @@
   }
 
   function renderFeed(data, speakNew) {
+    const handoffs = Array.isArray(data.agent_messages) ? data.agent_messages : [];
     const outputs = Array.isArray(data.recent_outputs) ? data.recent_outputs : [];
     const valid = outputs.filter(item => item.summary && String(item.summary).trim());
     const latestIds = new Set(valid.map(item => [item.task_id,item.agent_id,item.created_at].join("|")));
@@ -261,12 +262,17 @@
       ar:"وكلاء البحث يعملون الآن",he:"סוכני המחקר עובדים כעת",ja:"研究エージェントが作業中です",
       ko:"연구 에이전트가 작업 중입니다",zh:"研究智能体正在工作",hi:"अनुसंधान एजेंट काम कर रहे हैं"
     }[lang()] || "Research agents are working";
-    const messages = valid.slice(0,10).map((item,index) => {
+    const handoffCards = handoffs.slice(0,8).map((item,index) => {
+      const heading = esc(roleName(item.sender_role))+' → '+esc(roleName(item.recipient_role));
+      const state = item.review_state === "awaiting_review" ? (lang()==="fr"?"transmis · en attente d’examen":"shared · awaiting review") : esc(item.review_state);
+      return '<article class="bot-conversation-message bot-handoff-message"><div class="message-avatar" aria-hidden="true">↗</div><div><strong>'+heading+'</strong><p>'+esc(item.content)+'</p><small>'+esc(item.message_type.replaceAll("_"," "))+' · '+esc(state)+' · '+esc(time(item.created_at))+'</small></div></article>';
+    });
+    const messages = handoffCards.concat(valid.slice(0,10).map((item,index) => {
       const count = Number(item.evidence_count || 0);
       const detail = count ? count+' '+t().evidence : t().noEvidence;
       return '<article class="bot-conversation-message"><div class="message-avatar" aria-hidden="true">'+(index+1)+'</div><div><strong>'+esc(roleName(item.role))+' · '+esc(item.agent_id || t().role)+'</strong><p>'+esc(item.summary)+'</p><small>'+esc(t().provisional)+' · '+esc(detail)+' · '+esc(time(item.created_at))+'</small></div></article>';
-    });
-    if (!valid.length) messages.push('<p class="bot-conversation-empty">'+esc(t().empty)+'</p>');
+    }));
+    if (!valid.length && !handoffCards.length) messages.push('<p class="bot-conversation-empty">'+esc(t().empty)+'</p>');
     if (activeCount) messages.push('<div class="bot-thinking" style="--agent-count:'+Math.max(1,activeCount)+'"><span>'+esc(thinking)+' · '+activeCount+'</span><i></i><i></i><i></i></div>');
     feed.innerHTML = messages.join("");
     if (speakNew && voiceEnabled && fresh.length) speak(fresh[fresh.length-1].summary);
