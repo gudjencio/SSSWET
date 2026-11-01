@@ -23,8 +23,10 @@
     if(mainLabel) mainLabel.setAttribute("aria-label",t.caption);
     if(caption) caption.textContent=t.caption;
     if(note) note.textContent=t.note;
-    const networkLabel=$("bot-control-network-label"), coreNetworkLabel=$("bot-core-network-label");
-    if(networkLabel) networkLabel.textContent=(lang()==="fr"?"ETDESS":"SSSWET")+" · "+t.network;
+    const brand=(lang()==="fr"?"ETDESS":"SSSWET");
+    const networkLabel=$("bot-control-network-label"), coreNetworkLabel=$("bot-core-network-label"), coreBrand=$("bot-core-brand");
+    if(networkLabel) networkLabel.textContent=brand+" · "+t.network;
+    if(coreBrand) coreBrand.textContent=brand;
     if(coreNetworkLabel) coreNetworkLabel.textContent=t.network;
     if(sideTitle) sideTitle.textContent=t.agent;
     if(sideCaption) sideCaption.textContent=t.activityRecorded || t.recent;
