@@ -673,3 +673,35 @@ Subscriptions and run history are available through the read-only
 not a background daemon. Provider failures are recorded by exception type and
 do not create findings. Monitoring never registers sources, changes collective
 memory, changes campaign milestones or marks claims verified.
+
+
+### Explainable cross-campaign collaboration
+
+The read-only endpoint `/api/collaboration/recommendations` compares campaign-
+tagged knowledge graph nodes with the declared objectives, domains and
+milestones of other active campaigns. It returns lexical overlap, matched
+terms, an explainable rationale and the source node's existing verification
+state. The score is a transparent vocabulary-coverage heuristic, not a
+probability of relevance or truth.
+
+Recommendations do not create transfers. An operator must explicitly select
+a recommendation and call the local Python API:
+
+```python
+from ssswet_core.collaboration_recommender import CollaborationRecommender
+from ssswet_core.persistence import SQLiteResearchStore
+
+store = SQLiteResearchStore()
+recommender = CollaborationRecommender(store)
+recommendations = recommender.recommend()
+if recommendations:
+    transfer = recommender.create_transfer(
+        recommendations[0].recommendation_id,
+        requester="research-operator",
+    )
+```
+
+The resulting hand-off enters the existing pending/accepted/rejected review
+workflow. Acceptance does not upgrade a node's verification state. Pending
+transfers are excluded from duplicate recommendations. Only active campaigns
+are eligible; a paused or completed campaign is not suggested as a recipient.
