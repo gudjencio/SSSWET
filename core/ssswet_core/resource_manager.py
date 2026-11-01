@@ -21,6 +21,7 @@ class WorkRequest:
     estimated_units: float = 1.0
     priority: int = 5
     deduplication_key: str = ""
+    milestone_id: str = ""
 
 
 @dataclass
@@ -186,13 +187,13 @@ class ResourceManager:
         return {
             "queued": [
                 {"task_id": item.task_id, "campaign_id": item.campaign_id,
-                 "role": item.role, "priority": item.priority}
+                 "milestone_id": item.milestone_id, "role": item.role, "priority": item.priority}
                 for item in self.queue
             ],
             "active": [
                 {"task_id": item.request.task_id, "campaign_id": item.request.campaign_id,
-                 "agent_id": item.agent_id, "role": item.request.role,
-                 "attempt": item.attempt, "state": item.state}
+                 "agent_id": item.agent_id, "milestone_id": item.request.milestone_id,
+                 "role": item.request.role, "attempt": item.attempt, "state": item.state}
                 for item in self.assignments.values()
             ],
             "campaign_quotas": {
