@@ -737,3 +737,57 @@ if candidates:
         "independent-reviewer",
     )
 ```
+
+
+### Versioned scientific memory
+
+The append-only scientific-memory ledger preserves each revision as an immutable
+snapshot. A memory key groups versions of the same research topic. The first
+snapshot starts at version 1; every later revision must explicitly identify
+the current version it supersedes and provide a review note. Previous versions
+remain available for audit and comparison.
+
+```python
+from ssswet_core.persistence import SQLiteResearchStore
+from ssswet_core.scientific_memory import (
+    ScientificMemoryService,
+    ScientificMemoryVersion,
+)
+
+store = SQLiteResearchStore()
+memory = ScientificMemoryService(store)
+
+memory.add_version(ScientificMemoryVersion.create(
+    "wave-speed-v1",
+    "wave-speed-method",
+    "Wave-speed estimation",
+    "A candidate method estimates speed from repeated observations",
+    campaign_id="campaign-001",
+    graph_node_ids=("finding-wave-001",),
+    experiment_ids=("experiment-wave-001",),
+    source_ids=("paper-001",),
+))
+
+memory.revise(
+    "wave-speed-v1",
+    "wave-speed-v2",
+    statement="Revised method after reviewing the measurement assumptions",
+    status="reviewed",
+    review_note="Updated after an explicit review of the cited method.",
+)
+```
+
+The local read-only endpoint `/api/scientific-memory` returns versions, current
+entries, historical entries and links to graph contradictions. Add
+`?q=wave%20speed` for lexical retrieval. The endpoint
+`/api/scientific-memory/suggestions` combines recorded research gaps with
+linked contradiction review leads. Neither endpoint modifies memory or queues
+new work.
+
+A linked explicit `contradicts` edge marks an entry as contested for review;
+it does not determine which claim is correct. Older versions are labelled
+potentially outdated when a newer version exists, but they are never deleted.
+The workflow states `candidate`, `reviewed`, `contested` and `archived`
+are not scientific verification states. Search scores are lexical heuristics,
+not confidence or truth. No model agreement, review status or graph link
+automatically promotes a claim to verified knowledge.
