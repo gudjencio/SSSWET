@@ -108,6 +108,27 @@ class ResearchTimeline:
                 case.get("review_note", ""), references={"dispute_case_id": case["case_id"]},
             )
 
+        for review in self.store.peer_review_history(limit=500):
+            add(
+                "peer-review-request:" + review["review_id"], review.get("created_at"),
+                "peer_review_requested", "Cross-campaign peer review requested",
+                review.get("question", ""), review.get("source_campaign_id", ""),
+                {"review_id": review["review_id"], "node_id": review.get("node_id", ""),
+                 "reviewer_campaign_ids": review.get("reviewer_campaign_ids", [])},
+            )
+            for submission in review.get("submissions", []):
+                add(
+                    "peer-review-submission:" + submission["submission_id"],
+                    submission.get("submitted_at"), "peer_review_submitted",
+                    "Peer review: " + submission.get("outcome", ""),
+                    submission.get("assessment", ""),
+                    submission.get("reviewer_campaign_id", ""),
+                    {"review_id": review["review_id"],
+                     "submission_id": submission["submission_id"],
+                     "source_ids": submission.get("source_ids", []),
+                     "independence_declared": submission.get("independence_confirmed", False)},
+                )
+
         for report in self.store.literature_watch_history(limit=500):
             add(
                 "literature-watch:" + report["watch_id"], report.get("created_at"),
