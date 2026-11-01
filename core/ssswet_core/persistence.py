@@ -173,6 +173,23 @@ class SQLiteResearchStore:
                     report_json TEXT NOT NULL,
                     created_at TEXT NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS campaign_watch_subscriptions (
+                    subscription_id TEXT PRIMARY KEY,
+                    campaign_id TEXT NOT NULL,
+                    subscription_json TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_campaign_watch_due
+                    ON campaign_watch_subscriptions(campaign_id, updated_at);
+                CREATE TABLE IF NOT EXISTS campaign_watch_runs (
+                    run_id TEXT PRIMARY KEY,
+                    subscription_id TEXT NOT NULL,
+                    campaign_id TEXT NOT NULL,
+                    run_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_campaign_watch_runs
+                    ON campaign_watch_runs(campaign_id, subscription_id, created_at DESC);
                 CREATE INDEX IF NOT EXISTS idx_literature_watch_created
                     ON literature_watch_reports(created_at DESC);
                 CREATE INDEX IF NOT EXISTS idx_events_created ON events(id DESC);
@@ -382,6 +399,109 @@ class SQLiteResearchStore:
                 (max(1, min(int(limit), 200)),),
             ).fetchall()
         return [json.loads(row["report_json"]) for row in rows]
+
+
+    def save_campaign_watch_subscription(self, subscription: object) -> None:
+        from .campaign_literature_watch import subscription_to_dict
+        payload = subscription_to_dict(subscription)
+        with self._connect() as connection:
+            connection.execute(
+                """INSERT INTO campaign_watch_subscriptions(
+                    subscription_id, campaign_id, subscription_json, updated_at
+                ) VALUES (?, ?, ?, ?)
+                ON CONFLICT(subscription_id) DO UPDATE SET
+                    campaign_id=excluded.campaign_id,
+                    subscription_json=excluded.subscription_json,
+                    updated_at=excluded.updated_at""",
+                (subscription.subscription_id, subscription.campaign_id,
+                 json.dumps(payload, ensure_ascii=False, sort_keys=True),
+                 subscription.created_at),
+            )
+
+    def get_campaign_watch_subscription(self, subscription_id: str) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT subscription_json FROM campaign_watch_subscriptions WHERE subscription_id=?",
+                (subscription_id,),
+            ).fetchone()
+        return json.loads(row["subscription_json"]) if row else None
+
+    def campaign_watch_subscriptions(self, campaign_id: str | None = None) -> list[dict]:
+        with self._connect() as connection:
+            if campaign_id:
+                rows = connection.execute(
+                    "SELECT subscription_json FROM campaign_watch_subscriptions WHERE campaign_id=? ORDER BY updated_at DESC",
+                    (campaign_id,),
+                ).fetchall()
+            else:
+                rows = connection.execute(
+                    "SELECT subscription_json FROM campaign_watch_subscriptions ORDER BY updated_at DESC"
+                ).fetchall()
+        return [json.loads(row["subscription_json"]) for row in rows]
+
+    def due_campaign_watch_subscriptions(self, now_iso: str, limit: int = 20) -> list[dict]:
+        rows = self.campaign_watch_subscriptions()
+        due = [
+            item for item in rows
+            if item.get("enabled") and item.get("next_run_at")
+            and item["next_run_at"] <= now_iso
+        ]
+        return sorted(due, key=lambda item: (item["next_run_at"], item["subscription_id"]))[
+            :max(1, min(int(limit), 100))
+        ]
+
+    def mark_campaign_watch_run(
+        self, subscription_id: str, last_run_at: str, next_run_at: str
+    ) -> None:
+        current = self.get_campaign_watch_subscription(subscription_id)
+        if current is None:
+            raise ValueError("Unknown campaign watch subscription")
+        current["last_run_at"] = last_run_at
+        current["next_run_at"] = next_run_at
+        with self._connect() as connection:
+            connection.execute(
+                "UPDATE campaign_watch_subscriptions SET subscription_json=?, updated_at=? WHERE subscription_id=?",
+                (json.dumps(current, ensure_ascii=False, sort_keys=True),
+                 last_run_at, subscription_id),
+            )
+
+    def save_campaign_watch_run(self, run: object) -> None:
+        from .campaign_literature_watch import run_to_dict
+        payload = run_to_dict(run)
+        with self._connect() as connection:
+            connection.execute(
+                """INSERT INTO campaign_watch_runs(
+                    run_id, subscription_id, campaign_id, run_json, created_at
+                ) VALUES (?, ?, ?, ?, ?)""",
+                (run.run_id, run.subscription_id, run.campaign_id,
+                 json.dumps(payload, ensure_ascii=False, sort_keys=True), run.created_at),
+            )
+
+    def campaign_watch_run_history(
+        self, campaign_id: str | None = None, limit: int = 100
+    ) -> list[dict]:
+        bounded = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            if campaign_id:
+                rows = connection.execute(
+                    "SELECT run_json FROM campaign_watch_runs WHERE campaign_id=? ORDER BY created_at DESC, run_id LIMIT ?",
+                    (campaign_id, bounded),
+                ).fetchall()
+            else:
+                rows = connection.execute(
+                    "SELECT run_json FROM campaign_watch_runs ORDER BY created_at DESC, run_id LIMIT ?",
+                    (bounded,),
+                ).fetchall()
+        return [json.loads(row["run_json"]) for row in rows]
+
+    def campaign_watch_seen_ids(self, campaign_id: str, subscription_id: str) -> set[str]:
+        seen: set[str] = set()
+        for run in self.campaign_watch_run_history(campaign_id, limit=500):
+            if run.get("subscription_id") != subscription_id or run.get("error"):
+                continue
+            seen.update(run.get("new_candidate_ids", []))
+            seen.update(run.get("previously_seen_ids", []))
+        return seen
 
     def register_source(self, source: object) -> None:
         """Insert or update a source's traceable bibliographic provenance."""
