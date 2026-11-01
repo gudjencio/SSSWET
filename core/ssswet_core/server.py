@@ -172,6 +172,18 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     "completed_tasks": sum(1 for task in tasks if task.get("status") == "complete"),
                     "blocked_tasks": sum(1 for task in tasks if task.get("status") == "blocked"),
                     "recent_events": recent_events[:30],
+                    "recent_outputs": [
+                        {
+                            "task_id": step.get("task_id"),
+                            "agent_id": step.get("agent_id"),
+                            "role": step.get("role"),
+                            "summary": step.get("summary"),
+                            "evidence_count": len(step.get("evidence", [])),
+                            "classification": step.get("classification", "unverified"),
+                            "created_at": step.get("created_at"),
+                        }
+                        for step in steps[:16]
+                    ],
                 })
             elif path == "/api/discoveries":
                 self._json(store.recent_steps(50))
