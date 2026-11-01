@@ -505,3 +505,46 @@ summaries at `/api/campaigns`. This first version tracks milestones and
 links; it does not yet schedule agents, allocate compute budgets, or launch
 experiments. Those capabilities will be added behind explicit operator
 approval and resource limits.
+
+
+### Campaign resource manager
+
+`ssswet_core.resource_manager.ResourceManager` provides bounded scheduling
+for campaign work. It tracks queued and active tasks, specialist roles,
+priority, campaign-level parallelism, estimated/reserved/consumed resource
+units, duplicate-work keys and per-task attempt history.
+
+A failed assignment releases its agent and is requeued up to the configured
+attempt limit. Exhausted failures remain visible and cannot be silently
+resubmitted under the same task ID. Actual resource usage is checked against
+the campaign quota before the assignment is closed. The manager exposes a
+serializable `snapshot()`; snapshots can be persisted with
+`SQLiteResearchStore.save_resource_snapshot` and read from the local
+read-only `/api/resources` endpoint.
+
+```python
+from ssswet_core.resource_manager import ResourceManager, WorkRequest
+from ssswet_core.persistence import SQLiteResearchStore
+
+manager = ResourceManager(max_active_assignments=8, max_attempts=3)
+manager.configure_campaign("campaign-001", max_parallel=2, max_units=50)
+manager.submit(WorkRequest(
+    task_id="task-001",
+    campaign_id="campaign-001",
+    objective="Compare published measurement methods",
+    role="literature_analyst",
+    estimated_units=2,
+    priority=2,
+    deduplication_key="campaign-001:literature-review",
+))
+assignments = manager.dispatch()
+# The caller runs only approved, bounded work and reports its outcome:
+if assignments:
+    manager.finish(assignments[0].request.task_id, success=True, actual_units=1.5)
+SQLiteResearchStore().save_resource_snapshot("snapshot-001", manager.snapshot())
+```
+
+This is a deterministic local scheduler, not a self-running cloud cluster.
+Resource units are operator-defined accounting units, not a claim about CPU,
+GPU, energy or monetary cost. Snapshot persistence is explicit; it does not
+yet restore live agent processes or automatically resume interrupted work.
