@@ -841,22 +841,26 @@ class SQLiteResearchStore:
     def experiment_records(self, experiment_id: str) -> list[dict]:
         with self._connect() as connection:
             rows = connection.execute(
-                "SELECT record_json FROM experiment_records WHERE experiment_id = ? ORDER BY created_at, record_id",
+                "SELECT record_json, created_at FROM experiment_records WHERE experiment_id = ? ORDER BY created_at, record_id",
                 (experiment_id,),
             ).fetchall()
-        return [json.loads(row["record_json"]) for row in rows]
+        return [
+            {**json.loads(row["record_json"]), "recorded_at": row["created_at"]}
+            for row in rows
+        ]
 
 
     def experiment_overview(self, limit: int = 100) -> list[dict]:
         bounded_limit = max(1, min(int(limit), 500))
         with self._connect() as connection:
             rows = connection.execute(
-                "SELECT experiment_id, plan_json FROM experiment_plans ORDER BY updated_at DESC LIMIT ?",
+                "SELECT experiment_id, plan_json, updated_at FROM experiment_plans ORDER BY updated_at DESC LIMIT ?",
                 (bounded_limit,),
             ).fetchall()
         overview = []
         for row in rows:
             plan = json.loads(row["plan_json"])
+            plan["updated_at"] = row["updated_at"]
             plan["records"] = self.experiment_records(row["experiment_id"])
             overview.append(plan)
         return overview
@@ -866,12 +870,13 @@ class SQLiteResearchStore:
         bounded_limit = max(1, min(int(limit), 500))
         with self._connect() as connection:
             rows = connection.execute(
-                "SELECT experiment_id, plan_json FROM experiment_plans ORDER BY updated_at DESC LIMIT ?",
+                "SELECT experiment_id, plan_json, updated_at FROM experiment_plans ORDER BY updated_at DESC LIMIT ?",
                 (bounded_limit,),
             ).fetchall()
         overview = []
         for row in rows:
             plan = json.loads(row["plan_json"])
+            plan["updated_at"] = row["updated_at"]
             plan["records"] = self.experiment_records(row["experiment_id"])
             overview.append(plan)
         return overview
