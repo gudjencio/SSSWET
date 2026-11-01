@@ -215,3 +215,6 @@ See [Interdisciplinary relation discovery](docs/INTERDISCIPLINARY_RELATIONS.md) 
 
 
 The digital laboratory also exposes a read-only cross-campaign reproduction matrix at `/api/digital-lab/reproduction-matrix`. It groups runs by exact protocol version and identifies cross-campaign pairs awaiting comparison. Run comparisons report environment and code/model-reference differences explicitly; the matrix does not execute experiments or certify reproduction.
+
+
+Protocol improvement proposals can be submitted and reviewed through the local Python service. The read-only queue is available at `/api/digital-lab/proposals`. Only the active campaign that owns the published protocol can accept or reject a proposal. Acceptance publishes a new immutable protocol version; rejection preserves the existing version. Proposal events retain the rationale and review note. This workflow is not scientific validation.
