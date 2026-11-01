@@ -35,5 +35,8 @@ class KnowledgeMemory:
             and (needle in item.statement.casefold() or needle in item.key.casefold())
         ]
 
+    def export_validated(self) -> list[dict[str, object]]:
+        return [item.__dict__.copy() for item in self._items.values() if item.validated]
+
     def export(self) -> list[dict[str, object]]:
         return [item.__dict__.copy() for item in self._items.values()]
