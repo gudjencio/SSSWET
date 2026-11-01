@@ -1,7 +1,5 @@
 /* Public payment destinations. No private credentials belong in this file. */
 window.SSSWET_DONATION_LINKS = {
-  PAYPAL_ME: "https://www.paypal.com/paypalme/gudjencio",
-  PAYPAL_NCP_10_USD: "https://www.paypal.com/ncp/payment/6LP3JL8UD8JL4",
   PAYPAL_CLIENT_ID: "ATI2NOt8eqI1RNJFG_s8e1id5ODtJcqJ8WPSgMuASmk6mJqqiUmxSnuNBUGBGA0ZWZw8lJxRfQ-zZ5Qt",
   PAYPAL_SUBSCRIPTION_PLAN_ID: "P-75A66386EX5825057NLTZHII"
 };
