@@ -726,7 +726,6 @@
         summaryText.textContent = group.summary;
         paragraph.append(marker, status, metadata, summaryText);
         feed.append(paragraph);
-        feed.append(paragraph);
       });
 
       if (voiceEnabled) Array.from(groups.values()).slice(0, 5).forEach(group => {
