@@ -120,7 +120,7 @@
     const language = copy() === translations.fr ? "fr" : "en";
     title.textContent = item[language][0];
     description.textContent = item[language][1];
-    amountInput.value = minimumLocal.toFixed(2);
+    amountInput.value = String(minimumLocal);
     updateAmounts();
     if (typeof modal.showModal === "function") modal.showModal();
     else modal.setAttribute("open", "");
