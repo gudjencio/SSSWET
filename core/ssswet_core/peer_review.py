@@ -53,7 +53,7 @@ class PeerReviewSubmission:
     method: str
     source_ids: tuple[str, ...]
     provenance_group: str
-    independence_confirmed: bool
+    independence_confirmed: bool = False
     limitations: str = ""
     submitted_at: str = ""
 
