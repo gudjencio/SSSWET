@@ -738,3 +738,62 @@ def test_research_journal_api_lists_entries_and_accepts_local_append(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_private_order_api_is_loopback_only_and_tracks_verified_payments(tmp_path):
+    import json
+    import threading
+    from urllib.error import HTTPError
+    from urllib.request import Request, urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.order_registry import PrivateOrderRegistry
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "orders-api-research.sqlite3")
+    orders = PrivateOrderRegistry(tmp_path / "orders-api.sqlite3")
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0),
+        make_handler(SSSWETEngine(store=store), store, orders),
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        request = Request(
+            base + "/api/private/orders",
+            data=json.dumps({
+                "technology": "time-travel", "currency": "EUR",
+                "base_price": "80.00", "access_contribution": "8.00",
+            }).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urlopen(request) as response:
+            order = json.loads(response.read())["order"]
+            assert response.status == 201
+        order_id = order["order_id"]
+
+        payment = Request(
+            base + f"/api/private/orders/{order_id}/payments",
+            data=json.dumps({
+                "amount": "88.00", "currency": "EUR", "provider": "PayPal",
+                "provider_reference": "verified-ref-1", "verified_by": "local operator",
+            }).encode(),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urlopen(payment) as response:
+            result = json.loads(response.read())["order"]
+        assert result["state"] == "paid"
+        assert result["balance_minor"] == 0
+
+        with urlopen(base + f"/api/private/orders/{order_id}") as response:
+            detail = json.loads(response.read())
+        assert detail["delivery_address_stored"] is False
+        assert detail["payments"][0]["provider_reference"] == "verified-ref-1"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
