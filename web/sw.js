@@ -1,4 +1,4 @@
-const CACHE = "ssswet-web-v26";
+const CACHE = "ssswet-web-v27";
 const ASSETS = ["./", "./index.html", "./styles.css", "./locales.js", "./app.js", "./evidence-center.js", "./evidence-center.css", "./evidence-graph.js", "./evidence-graph.css", "./lab-discrepancies.js", "./lab-discrepancies.css", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
