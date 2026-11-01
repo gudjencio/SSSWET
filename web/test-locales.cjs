@@ -118,7 +118,7 @@ console.log("Validated localized project branding, automatic voice attempt, comp
 const donationSourceLatest = fs.readFileSync(new URL("./donation.js", `file://${__filename}`), "utf8");
 const paymentConfig = fs.readFileSync(new URL("./donation-config.js", `file://${__filename}`), "utf8");
 new Function(donationSourceLatest);
-for (const feature of ["timetravel", "Time travel research", "Voyage dans le temps", "PayPal", "paymentLinks.PAYPAL", "future purchase and delivery", "ongoing effort to make them possible"]) {
+for (const feature of ["timetravel", "Time travel research", "Voyage dans le temps", "PayPal", "PAYPAL_SUBSCRIPTION_PLAN_ID", "monthly contribution", "ongoing effort to make them possible"]) {
   if (!donationSourceLatest.includes(feature)) throw new Error(`Research funding feature missing: ${feature}`);
 }
 if (!paymentConfig.includes("https://www.paypal.com/paypalme/gudjencio")) throw new Error("The official PayPal destination is not configured.");
