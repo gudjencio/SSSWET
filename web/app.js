@@ -549,7 +549,10 @@
     const programme = form.elements.programme_id.value;
     const latest = [...(priorityAssessmentReport.ranked || []), ...(priorityAssessmentReport.incomplete || [])]
       .find(item => item.programme_id === programme);
-    if (!latest) return;
+    if (!latest) {
+      priorityCriteria.forEach(([key]) => { if (form.elements[key]) form.elements[key].value = ""; });
+      return;
+    }
     priorityCriteria.forEach(([key]) => {
       const field = form.elements[key];
       if (field) field.value = latest.scores[key] == null ? "" : String(latest.scores[key]);
