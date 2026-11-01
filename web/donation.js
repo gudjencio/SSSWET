@@ -171,6 +171,29 @@
     fr: { eyebrow:"TECHNOLOGIES DU FUTUR · PRIORITÉS DE RECHERCHE", title:"Choisissez une technologie à soutenir", intro:"Découvrez les axes de recherche et ouvrez une fenêtre de contribution pour la technologie que vous souhaitez encourager.", disclaimer:"Ces axes ne signifient pas que les technologies existent ou soient réalisables aujourd'hui. Le projet poursuivra continuellement les recherches, les essais et les améliorations pour tenter de les rendre possibles. Les contributions financent la recherche et le développement ; elles ne constituent pas un achat et ne garantissent aucun résultat. Si une technologie devient réalisable et qu'un produit est effectivement développé, une offre et des conditions de livraison seront communiquées séparément.", explore:"Découvrir et contribuer", dialogEyebrow:"FINANCER LA RECHERCHE ET LE DÉVELOPPEMENT", amountLabel:"Montant indicatif de la contribution", repeatLabel:"Nombre de contributions distinctes", perContribution:"Montant de la contribution", totalLabel:"Récapitulatif", currencyNote:"La devise est estimée à partir des paramètres régionaux du navigateur. Le minimum indicatif est l'équivalent de 0,50 €.", paymentMissing:"Le lien de contribution PayPal est indisponible.", paymentReady:"Vous allez accéder à la page PayPal du projet. Confirmez-y le montant et la devise.", checkout:"Continuer vers PayPal", copySummary:"Copier le récapitulatif du financement", paymentDisclaimer:"Votre contribution finance les recherches en cours, et non l'achat d'un produit existant. Vous pouvez contribuer autant de fois que vous le souhaitez ; chaque paiement est distinct. PayPal ouvre la page du compte du projet : saisissez et confirmez le montant choisi et une devise acceptée. Si une technologie est un jour développée et disponible, une éventuelle offre d'achat et de livraison sera annoncée séparément, avec ses propres conditions.", invalid:"Saisissez au moins l'équivalent de 0,50 €.", copied:"Récapitulatif copié.", copyError:"Copie automatique impossible. Veuillez sélectionner et copier le récapitulatif." }
   };
   const copy = () => translations[(document.documentElement.lang || "en").startsWith("fr") ? "fr" : "en"];
+  function applyPaymentLanguage() {
+    const fr = copy() === translations.fr;
+    const labels = {
+      mode: fr ? "Modalité de paiement" : "Payment plan",
+      single: fr ? "Paiement unique" : "One-time payment",
+      installments: fr ? "Fractionner en échéances volontaires d’au moins 10 USD" : "Split into voluntary instalments of at least USD 10",
+      reminderTitle: fr ? "Rappels de paiement" : "Payment reminders",
+      reminderDescription: fr ? "Après le premier paiement, vous pouvez demander des rappels volontaires par e-mail pour la prochaine échéance. Aucun prélèvement automatique ne sera effectué." : "After completing the first payment, you may request voluntary email reminders for the next instalment. No automatic charge will be made.",
+      email: fr ? "Adresse e-mail" : "Email address",
+      frequency: fr ? "Fréquence des rappels" : "Reminder frequency",
+      weekly: fr ? "Une fois par semaine" : "Once a week",
+      monthly: fr ? "Une fois par mois" : "Once a month",
+      yearly: fr ? "Une fois par an" : "Once a year",
+      confirmation: fr ? "Je confirme avoir effectué le premier paiement." : "I confirm that I have completed the first payment.",
+      save: fr ? "Demander les rappels par e-mail" : "Request email reminders"
+    };
+    const set = (id, value) => { const element = document.getElementById(id); if (element) element.textContent = value; };
+    set("donation-mode-label", labels.mode); set("donation-mode-single", labels.single); set("donation-mode-installments", labels.installments);
+    set("payment-reminder-title", labels.reminderTitle); set("payment-reminder-description", labels.reminderDescription);
+    set("payment-reminder-email-label", labels.email); set("payment-reminder-frequency-label", labels.frequency);
+    set("payment-reminder-weekly", labels.weekly); set("payment-reminder-monthly", labels.monthly); set("payment-reminder-yearly", labels.yearly);
+    set("payment-reminder-confirm-label", labels.confirmation); set("payment-reminder-save-label", labels.save);
+  }
   let selectedTechnology = null;
   let currency = "EUR";
   let minimumLocal = 10;
@@ -199,7 +222,7 @@
     perOutput.textContent = valid ? formatMoney(installmentLocal) : "—";
     totalOutput.textContent = valid ? formatMoney(amount) + " · " + new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(amountUsd) : "—";
     const countOutput = document.getElementById("donation-installment-summary");
-    if (countOutput) countOutput.textContent = split ? installmentCount + " separate payments · " + new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(installmentUsd) + " each" : "One-time payment";
+    if (countOutput) countOutput.textContent = split ? (copy() === translations.fr ? installmentCount + " paiements distincts · " + new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(installmentUsd) + " chacun" : installmentCount + " separate payments · " + new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(installmentUsd) + " each") : (copy() === translations.fr ? "Paiement unique" : "One-time payment");
     const paymentConfigured = typeof paymentLinks.PAYPAL_ME === "string" && paymentLinks.PAYPAL_ME.startsWith("https://www.paypal.com/paypalme/gudjencio");
     checkout.disabled = !valid || !paymentConfigured || (split && installmentUsd < 10);
     paymentStatus.textContent = !valid ? copy().invalid : paymentConfigured ? copy().paymentReady : copy().paymentMissing;
@@ -225,13 +248,13 @@
       amountInput.step = digits === 0 ? "1" : "0.01";
       if (Number(amountInput.value) < minimumLocal) amountInput.value = String(minimumLocal);
       rateReady = true;
-      currencyNote.textContent = "Minimum: USD 10 · live indicative exchange rate. The payment provider may apply its own rate or fees."; 
+      currencyNote.textContent = copy() === translations.fr ? "Minimum : 10 USD · taux de change indicatif actualisé. Le prestataire peut appliquer son propre taux ou des frais." : "Minimum: USD 10 · live indicative exchange rate. The payment provider may apply its own rate or fees."; 
     } catch (_) {
       currency = "USD"; usdToLocalRate = 1; minimumLocal = 10;
       amountInput.min = "10"; amountInput.step = "0.01";
       if (Number(amountInput.value) < 10) amountInput.value = "10";
       currencyLabel.textContent = "USD"; rateReady = true;
-      currencyNote.textContent = "Exchange rate unavailable: amounts are shown in USD to preserve the exact minimum.";
+      currencyNote.textContent = copy() === translations.fr ? "Taux indisponible : les montants sont affichés en USD pour préserver le minimum exact." : "Exchange rate unavailable: amounts are shown in USD to preserve the exact minimum.";
     }
     updateAmounts();
   }
@@ -347,6 +370,7 @@
     }
   });
   currencyNote.textContent = copy().currencyNote;
+  applyPaymentLanguage();
   renderPortfolio();
   chooseCurrency();
   window.addEventListener("languagechange", () => window.location.reload());
@@ -367,6 +391,7 @@
       title.textContent = item[language][0]; description.textContent = item[language][1];
     }
     currencyNote.textContent = copy().currencyNote;
+    applyPaymentLanguage();
     renderPortfolio();
     updateAmounts();
   });
