@@ -851,3 +851,36 @@ Independence is explicitly self-declared, not authenticated. Campaign
 separation alone does not prove independent people, data, methods or funding.
 A peer-review outcome is not a vote and does not alter a finding's verification
 state or automatically resolve a contradiction.
+
+
+### Shared digital laboratory
+
+The DigitalLabService stores reviewed, versioned protocols and append-only execution records. Protocol versions require a named reviewer and review note before publication. A reproduction run must come from a different active campaign, reference a published protocol version, and include all required parameters and expected outputs.
+
+~~~python
+from ssswet_core.digital_lab import DigitalLabService, LabProtocol, LabRun
+
+lab = DigitalLabService(store)
+lab.publish_protocol(LabProtocol(
+    "protocol-001", 1, "Illustrative numerical protocol",
+    "Compare a documented model output", "campaign-owner",
+    ("Record the input", "Apply the stated equation", "Record the output"),
+    ("input",), ("output",), {"input": "unitless", "output": "unitless"},
+    ("Use the same initial condition",),
+    ("Illustrative model only",),
+    ("No physical experiment is executed by the software",),
+    "published", "reviewer-id", "Reviewed for clarity and reproducibility.",
+))
+lab.record_run(LabRun(
+    "run-001", "protocol-001", 1, "campaign-replica", "simulation",
+    {"input": 2}, {"output": 4}, "Declared model equation v1",
+    {"runtime": "Python", "version": "3"},
+    "model-reference-v1", "replica-team-provenance", True,
+    ("Simulation only; not a physical observation",),
+))
+comparison = lab.compare_runs("run-owner", "run-001", tolerance=0.001)
+~~~
+
+The local read-only endpoint GET /api/digital-lab exposes the registry. Protocol and run records are immutable and include SHA-256 content fingerprints. Comparisons require the same protocol version, execution kind and exact input parameters. A tolerance applies only to numeric outputs. Field-level differences are retained for review.
+
+The independent_reproduction_candidate flag is a screening signal only: it requires distinct campaign IDs and self-declared independence by both teams, but does not authenticate independence. Agreement does not establish scientific truth, and no comparison changes a finding's verification state. SSSWET records supplied results; it does not execute submitted protocols or physical experiments.
