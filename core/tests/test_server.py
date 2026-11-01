@@ -405,3 +405,51 @@ def test_digital_lab_protocol_proposals_api_is_read_only(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_research_opportunities_endpoint_combines_review_leads(tmp_path):
+    import json
+    import threading
+    from urllib.error import HTTPError
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.knowledge_graph import KnowledgeNode
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "research-opportunities-api.sqlite3")
+    store.add_knowledge_node(KnowledgeNode(
+        "hypothesis-api", "hypothesis", "Wave propagation measurement",
+        "Estimate wave speed from repeated observations",
+        metadata={"campaign_id": "physics"},
+    ))
+    store.add_knowledge_node(KnowledgeNode(
+        "finding-api", "finding", "Wave propagation measurement",
+        "Estimate wave speed from repeated observations",
+        metadata={"campaign_id": "engineering"},
+    ))
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        with urlopen(base + "/api/research-opportunities") as response:
+            payload = json.loads(response.read())
+        assert payload["signal_counts"]["interdisciplinary_links"] == 1
+        assert payload["requires_human_review"] is True
+        assert payload["automatic_task_creation"] is False
+        assert payload["graph_mutated"] is False
+        assert payload["scientific_validity_established"] is False
+        try:
+            urlopen(base + "/api/research-opportunities?limit=invalid")
+        except HTTPError as error:
+            assert error.code == 400
+        else:
+            raise AssertionError("Invalid limit must be rejected")
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
