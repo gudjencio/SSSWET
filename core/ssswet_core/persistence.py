@@ -113,6 +113,42 @@ class SQLiteResearchStore:
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
                 CREATE INDEX IF NOT EXISTS idx_experiment_records_plan ON experiment_records(experiment_id);
+                CREATE TABLE IF NOT EXISTS lab_protocols (
+                    protocol_id TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    protocol_json TEXT NOT NULL,
+                    state TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY(protocol_id, version)
+                );
+                CREATE INDEX IF NOT EXISTS idx_lab_protocols_state
+                    ON lab_protocols(state, created_at DESC);
+                CREATE TABLE IF NOT EXISTS lab_runs (
+                    run_id TEXT PRIMARY KEY,
+                    protocol_id TEXT NOT NULL,
+                    protocol_version INTEGER NOT NULL,
+                    campaign_id TEXT NOT NULL,
+                    run_json TEXT NOT NULL,
+                    recorded_at TEXT NOT NULL,
+                    FOREIGN KEY(protocol_id, protocol_version)
+                        REFERENCES lab_protocols(protocol_id, version)
+                );
+                CREATE INDEX IF NOT EXISTS idx_lab_runs_protocol
+                    ON lab_runs(protocol_id, protocol_version, recorded_at DESC);
+                CREATE INDEX IF NOT EXISTS idx_lab_runs_campaign
+                    ON lab_runs(campaign_id, recorded_at DESC);
+                CREATE TRIGGER IF NOT EXISTS lab_protocols_no_update
+                    BEFORE UPDATE ON lab_protocols
+                    BEGIN SELECT RAISE(ABORT, 'lab protocol versions are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS lab_protocols_no_delete
+                    BEFORE DELETE ON lab_protocols
+                    BEGIN SELECT RAISE(ABORT, 'lab protocol versions are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS lab_runs_no_update
+                    BEFORE UPDATE ON lab_runs
+                    BEGIN SELECT RAISE(ABORT, 'lab run records are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS lab_runs_no_delete
+                    BEFORE DELETE ON lab_runs
+                    BEGIN SELECT RAISE(ABORT, 'lab run records are immutable'); END;
                 CREATE TABLE IF NOT EXISTS adaptive_cycles (
                     cycle_id TEXT PRIMARY KEY,
                     study_id TEXT NOT NULL,
@@ -907,6 +943,92 @@ class SQLiteResearchStore:
             plan["records"] = self.experiment_records(row["experiment_id"])
             overview.append(plan)
         return overview
+
+
+    def save_lab_protocol(self, protocol: object) -> dict:
+        from dataclasses import asdict
+        payload = asdict(protocol)
+        if protocol.state != "published":
+            raise ValueError("Only published protocol versions can be shared")
+        with self._connect() as connection:
+            owner = connection.execute(
+                "SELECT campaign_json FROM research_campaigns WHERE campaign_id = ?",
+                (protocol.owner_campaign_id,),
+            ).fetchone()
+            # Local research setups may not have registered campaign metadata;
+            # the protocol owner is still explicitly named and retained.
+            if owner is not None and json.loads(owner["campaign_json"]).get("state") != "active":
+                raise ValueError("Protocol owner campaign must be active")
+            connection.execute(
+                """INSERT INTO lab_protocols(
+                    protocol_id, version, protocol_json, state, created_at
+                ) VALUES (?, ?, ?, ?, ?)""",
+                (protocol.protocol_id, protocol.version,
+                 json.dumps(payload, ensure_ascii=False, sort_keys=True),
+                 protocol.state, protocol.created_at),
+            )
+        return payload
+
+    def get_lab_protocol(self, protocol_id: str, version: int) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT protocol_json FROM lab_protocols WHERE protocol_id = ? AND version = ?",
+                (protocol_id, version),
+            ).fetchone()
+        return json.loads(row["protocol_json"]) if row else None
+
+    def lab_protocol_history(self, limit: int = 200) -> list[dict]:
+        bounded = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            rows = connection.execute(
+                """SELECT protocol_json FROM lab_protocols
+                   ORDER BY created_at DESC, protocol_id, version DESC LIMIT ?""",
+                (bounded,),
+            ).fetchall()
+        return [json.loads(row["protocol_json"]) for row in rows]
+
+    def save_lab_run(self, run: object) -> dict:
+        from dataclasses import asdict
+        payload = asdict(run)
+        with self._connect() as connection:
+            protocol = connection.execute(
+                "SELECT state FROM lab_protocols WHERE protocol_id = ? AND version = ?",
+                (run.protocol_id, run.protocol_version),
+            ).fetchone()
+            if protocol is None or protocol["state"] != "published":
+                raise ValueError("Lab run requires a published protocol version")
+            campaign = connection.execute(
+                "SELECT campaign_json FROM research_campaigns WHERE campaign_id = ?",
+                (run.campaign_id,),
+            ).fetchone()
+            if campaign is not None and json.loads(campaign["campaign_json"]).get("state") != "active":
+                raise ValueError("Reproducing campaign must be active")
+            connection.execute(
+                """INSERT INTO lab_runs(
+                    run_id, protocol_id, protocol_version, campaign_id,
+                    run_json, recorded_at
+                ) VALUES (?, ?, ?, ?, ?, ?)""",
+                (run.run_id, run.protocol_id, run.protocol_version, run.campaign_id,
+                 json.dumps(payload, ensure_ascii=False, sort_keys=True),
+                 run.recorded_at),
+            )
+        return payload
+
+    def get_lab_run(self, run_id: str) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT run_json FROM lab_runs WHERE run_id = ?", (run_id,)
+            ).fetchone()
+        return json.loads(row["run_json"]) if row else None
+
+    def lab_run_history(self, limit: int = 200) -> list[dict]:
+        bounded = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT run_json FROM lab_runs ORDER BY recorded_at DESC, run_id LIMIT ?",
+                (bounded,),
+            ).fetchall()
+        return [json.loads(row["run_json"]) for row in rows]
 
 
     def save_adaptive_cycle(self, cycle_id: str, cycle: object) -> None:
