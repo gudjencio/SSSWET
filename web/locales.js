@@ -1439,3 +1439,48 @@ Object.entries(window.SSSWET_LOCALES).forEach(([code, locale]) => {
  const values = SSSWET_VOICE_TRANSPORT[code] || SSSWET_VOICE_TRANSPORT.en;
  locale.voiceRead = values[0]; locale.voicePause = values[1]; locale.voiceResume = values[2]; locale.voiceStop = values[3]; locale.voiceReady = values[4]; locale.voiceSpeaking = values[5]; locale.voicePaused = values[6];
 });
+
+
+/* Additional interface copy for the research, evidence and laboratory panels. */
+Object.assign(window.SSSWET_LOCALES.en, {
+  extraDiscrepancyTitle:"Discrepancy review",
+  extraSensitivityTitle:"Parameter sensitivity studies",
+  extraSensitivityCaption:"Controlled variation plans · documented ranges · uncertainty · human review",
+  extraInteractionTitle:"Pairwise parameter interactions",
+  extraInteractionCaption:"Two-factor factorial proposals · explicit candidate pairs · human review",
+  extraStatisticsTitle:"Descriptive laboratory statistics",
+  extraStatisticsLoading:"Loading recorded numeric outputs…",
+  extraStatisticsNote:"Descriptive summaries only. Potential outliers are review flags and are never removed automatically.",
+  extraEvidenceTitle:"Evidence Center",
+  extraEvidenceCaption:"Traceable dossiers, reviews and explicit limitations",
+  extraEvidenceLoading:"Loading evidence lifecycle…",
+  extraPriorityTitle:"Research programme priorities",
+  extraPriorityCaption:"Transparent scoring · documented reasoning · human review",
+  extraAssessmentSummary:"Record or update an assessment",
+  extraFeasibilityTitle:"Technology Feasibility Observatory",
+  extraJournalTitle:"Research journal",
+  extraJournalCaption:"Append-only project history · evidence labels · hash-chain integrity",
+  extraJournalFormTitle:"Record a project update",
+  extraJournalSubmit:"Add immutable journal entry"
+});
+Object.assign(window.SSSWET_LOCALES.fr, {
+  extraDiscrepancyTitle:"Examen des écarts",
+  extraSensitivityTitle:"Études de sensibilité des paramètres",
+  extraSensitivityCaption:"Plans de variation contrôlée · plages documentées · incertitudes · examen humain",
+  extraInteractionTitle:"Interactions entre paramètres par paires",
+  extraInteractionCaption:"Propositions factorielles à deux facteurs · paires candidates explicites · examen humain",
+  extraStatisticsTitle:"Statistiques descriptives du laboratoire",
+  extraStatisticsLoading:"Chargement des résultats numériques enregistrés…",
+  extraStatisticsNote:"Synthèses descriptives uniquement. Les valeurs atypiques potentielles sont signalées pour examen et ne sont jamais supprimées automatiquement.",
+  extraEvidenceTitle:"Centre des preuves",
+  extraEvidenceCaption:"Dossiers traçables, examens et limites explicites",
+  extraEvidenceLoading:"Chargement du cycle de vie des preuves…",
+  extraPriorityTitle:"Priorités des programmes de recherche",
+  extraPriorityCaption:"Notation transparente · raisonnement documenté · examen humain",
+  extraAssessmentSummary:"Enregistrer ou mettre à jour une évaluation",
+  extraFeasibilityTitle:"Observatoire de faisabilité technologique",
+  extraJournalTitle:"Journal de recherche",
+  extraJournalCaption:"Historique du projet en ajout seul · classification des preuves · intégrité de la chaîne de hachage",
+  extraJournalFormTitle:"Enregistrer une mise à jour du projet",
+  extraJournalSubmit:"Ajouter une entrée immuable au journal"
+});
