@@ -21,7 +21,12 @@ const required = [
   "dashMedium", "dashLow", "dashCycles", "dashRecent",
   "dashEndpointUnavailable", "dashNoData"
 ];
+const fullyTranslated = new Set(["en", "fr", "es", "de", "it", "pt", "nl", "ru", "uk", "ar", "he", "ja", "ko", "zh", "hi"]);
 for (const [code, locale] of Object.entries(locales)) {
+  if (!locale.name || !["ltr", "rtl"].includes(locale.dir)) {
+    throw new Error(`Locale ${code} must define a name and text direction`);
+  }
+  if (!fullyTranslated.has(code)) continue;
   for (const key of required) {
     if (typeof locale[key] !== "string" || !locale[key].trim()) {
       throw new Error(`Locale ${code} is missing a valid "${key}" translation`);
@@ -34,11 +39,19 @@ for (const [code, locale] of Object.entries(locales)) {
 if (locales.ar.dir !== "rtl" || locales.he.dir !== "rtl") {
   throw new Error("Arabic and Hebrew must use right-to-left layout");
 }
-console.log(`Validated ${Object.keys(locales).length} locales and ${required.length} required interface strings.`);
+console.log(`Validated ${Object.keys(locales).length} selectable locales, ${context.window.SSSWET_LANGUAGE_CATALOG.length} language options, and ${fullyTranslated.size} complete translations.`);
 
 const agentCopy = context.window.SSSWET_AGENT_COPY;
-if (!agentCopy || Object.keys(agentCopy).length !== Object.keys(locales).length) {
-  throw new Error("Every interface locale must have a localized first-load agent introduction");
+if (!agentCopy || !fullyTranslated.size) {
+  throw new Error("The first-load agent introduction catalogue is missing");
+}
+if (!Array.isArray(context.window.SSSWET_LANGUAGE_CATALOG) ||
+    context.window.SSSWET_LANGUAGE_CATALOG.length < 180) {
+  throw new Error("The complete selectable language catalogue is missing");
+}
+const languageCodes = context.window.SSSWET_LANGUAGE_CATALOG.map(item => item.split("|")[0]);
+if (new Set(languageCodes).size !== languageCodes.length) {
+  throw new Error("The language catalogue contains duplicate language codes");
 }
 for (const [code, copy] of Object.entries(agentCopy)) {
   if (!locales[code]) throw new Error(`Agent introduction has no matching locale: ${code}`);
