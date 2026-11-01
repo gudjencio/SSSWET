@@ -248,6 +248,8 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                     self._json(LabVerificationPlanner(store).build(limit=limit))
                 except ValueError as exc:
                     self._json({"error": str(exc)}, 400)
+            elif path == "/api/lab-verification-events":
+                self._json({"events": store.lab_verification_event_history(limit=1000), "append_only": True})
             elif path == "/api/disputes":
                 from .disputes import DisputeResolutionService
                 service = DisputeResolutionService(store)
@@ -287,7 +289,30 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 super().do_GET()
 
         def do_POST(self) -> None:
-            self.send_error(405, "The public interface is read-only")
+            from urllib.parse import urlsplit
+            if self.client_address[0] not in {"127.0.0.1", "::1"}:
+                self.send_error(403, "Verification reviews are restricted to the local machine")
+                return
+            if urlsplit(self.path).path != "/api/lab-verification-events":
+                self.send_error(405, "Unsupported write operation")
+                return
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if length < 1 or length > 8192:
+                    self._json({"error": "Request body must be between 1 and 8192 bytes"}, 400)
+                    return
+                payload = json.loads(self.rfile.read(length))
+                if not isinstance(payload, dict):
+                    raise ValueError("A JSON object is required")
+                from .lab_verification import LabVerificationPlanner
+                event = LabVerificationPlanner(store).record_check_review(
+                    str(payload.get("plan_id", "")), str(payload.get("check_code", "")),
+                    str(payload.get("state", "")), str(payload.get("note", "")),
+                    str(payload.get("reviewer", "")),
+                )
+                self._json({"event": event, "append_only": True}, 201)
+            except (ValueError, TypeError, json.JSONDecodeError) as exc:
+                self._json({"error": str(exc)}, 400)
 
         def do_PUT(self) -> None:
             self.send_error(405, "The public interface is read-only")
