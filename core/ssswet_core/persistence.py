@@ -55,6 +55,22 @@ class SQLiteResearchStore:
                     state_json TEXT NOT NULL,
                     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
+                CREATE TABLE IF NOT EXISTS agent_messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    task_id TEXT NOT NULL,
+                    sender_agent_id TEXT NOT NULL,
+                    sender_role TEXT NOT NULL,
+                    recipient_agent_id TEXT NOT NULL,
+                    recipient_role TEXT NOT NULL,
+                    message_type TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    review_state TEXT NOT NULL DEFAULT 'awaiting_review',
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_agent_messages_task
+                    ON agent_messages(task_id, id DESC);
+                CREATE INDEX IF NOT EXISTS idx_agent_messages_recipient
+                    ON agent_messages(recipient_agent_id, review_state, id DESC);
                 CREATE TABLE IF NOT EXISTS research_steps (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     task_id TEXT NOT NULL,
@@ -68,6 +84,12 @@ class SQLiteResearchStore:
                     classification TEXT NOT NULL DEFAULT 'unverified',
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
+                CREATE TRIGGER IF NOT EXISTS agent_messages_no_update
+                    BEFORE UPDATE ON agent_messages
+                    BEGIN SELECT RAISE(ABORT, 'agent messages are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS agent_messages_no_delete
+                    BEFORE DELETE ON agent_messages
+                    BEGIN SELECT RAISE(ABORT, 'agent messages are immutable'); END;
                 CREATE TABLE IF NOT EXISTS sources (
                     source_id TEXT PRIMARY KEY,
                     doi TEXT NOT NULL DEFAULT '',
@@ -419,6 +441,40 @@ class SQLiteResearchStore:
                         float(step.result.uncertainty),
                     ),
                 )
+
+    def publish_agent_message(
+        self, *, task_id: str, sender_agent_id: str, sender_role: str,
+        recipient_agent_id: str, recipient_role: str, message_type: str,
+        content: str,
+    ) -> int:
+        """Persist a traceable agent-to-agent handoff without implying peer approval."""
+        values = [task_id, sender_agent_id, sender_role, recipient_agent_id,
+                  recipient_role, message_type, content]
+        if any(not isinstance(value, str) or not value.strip() for value in values):
+            raise ValueError("Agent message fields must be non-empty strings")
+        if sender_agent_id == recipient_agent_id:
+            raise ValueError("An agent cannot send a peer handoff to itself")
+        with self._connect() as connection:
+            cursor = connection.execute(
+                """INSERT INTO agent_messages(
+                    task_id, sender_agent_id, sender_role, recipient_agent_id,
+                    recipient_role, message_type, content
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                tuple(value.strip() for value in values),
+            )
+            return int(cursor.lastrowid)
+
+    def recent_agent_messages(self, limit: int = 50, task_id: str | None = None) -> list[dict]:
+        query = "SELECT * FROM agent_messages"
+        values: list[object] = []
+        if task_id:
+            query += " WHERE task_id = ?"
+            values.append(task_id)
+        query += " ORDER BY id DESC LIMIT ?"
+        values.append(max(1, min(int(limit), 200)))
+        with self._connect() as connection:
+            rows = connection.execute(query, values).fetchall()
+        return [dict(row) for row in rows]
 
     def save_research_worker_state(self, state: dict) -> None:
         """Persist the latest autonomous worker heartbeat for live supervision."""
