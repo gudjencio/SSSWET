@@ -23,6 +23,10 @@ The project explores a disciplined workflow for turning research questions into 
 
 The read-only reproducibility intelligence service summarizes recorded comparisons by protocol and exposes a transparent five-part evidence-completeness index. Matching outputs do not count as independent verification unless that verification is explicitly recorded. Missing comparisons produce no score, and parameter sensitivity remains unassessed until normalized sweep metadata exists. The index is not a measure of scientific truth or validity. See [the reproducibility intelligence documentation](docs/REPRODUCIBILITY_INTELLIGENCE.md).
 
+## Pairwise parameter interaction planning
+
+Published protocols can explicitly nominate pairs of parameters for balanced two-factor factorial study proposals. The read-only planner builds bounded scenario grids from declared factor levels, holds other parameters at their baselines, and reports incomplete definitions rather than guessing. It does not estimate interaction effects, assign run order, establish causality, or execute studies. See [pairwise parameter interaction planning](docs/PARAMETER_INTERACTION_PLANNING.md).
+
 ## Parameter sensitivity planning
 
 Published laboratory protocols can carry explicit parameter ranges, units, baseline values, measurement uncertainty, replicate counts and safety constraints. The read-only sensitivity planner turns complete metadata into a one-factor-at-a-time scenario matrix for human review. Missing definitions remain visible instead of being guessed. The planner does not estimate causal effects or parameter interactions, create tasks, execute experiments or establish scientific validity. See [parameter sensitivity planning](docs/PARAMETER_SENSITIVITY_PLANNING.md).
