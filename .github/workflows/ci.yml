@@ -30,6 +30,7 @@ jobs:
           node-version: "22"
       - name: Validate web interface scripts and locales
         run: |
+          node --check web/technology-feasibility.js
           node --check web/research-journal.js
           node --check web/app.js
           node --check web/locales.js
