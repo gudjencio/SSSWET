@@ -1,3 +1,8 @@
 """SSSWET core orchestration package."""
 
-__version__ = "0.1.0"
+from .engine import SSSWETEngine
+from .models import Agent, Finding, Task, VerificationState
+
+__version__ = "0.2.0"
+
+__all__ = ["SSSWETEngine", "Agent", "Finding", "Task", "VerificationState", "__version__"]
