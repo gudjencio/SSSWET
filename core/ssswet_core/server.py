@@ -15,11 +15,16 @@ from .engine import SSSWETEngine
 from .persistence import SQLiteResearchStore
 
 WEB_ROOT = Path(__file__).resolve().parents[2] / "web"
-ALLOWED_WEB_ORIGINS = {
+DEFAULT_WEB_ORIGINS = {
     "https://gudjencio.github.io",
     "https://sites.google.com",
     "http://sites.google.com",
 }
+ALLOWED_WEB_ORIGINS = {
+    origin.strip()
+    for origin in os.environ.get("SSSWET_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+} or DEFAULT_WEB_ORIGINS
 
 
 def public_status(engine: SSSWETEngine, store: SQLiteResearchStore | None = None) -> dict[str, Any]:
@@ -631,10 +636,10 @@ def _background_research_worker(database: str, interval_minutes: float) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the local SSSWET interface and autonomous research workers")
-    parser.add_argument("--host", default="127.0.0.1", help="Bind address (default: loopback only)")
-    parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
-    parser.add_argument("--orders-database", default=".ssswet/orders.sqlite3", help="Private order register path")
+    parser.add_argument("--host", default=os.environ.get("SSSWET_HOST", "127.0.0.1"), help="Bind address")
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "8765")))
+    parser.add_argument("--database", default=os.environ.get("SSSWET_DATABASE", ".ssswet/ssswet.sqlite3"), help="SQLite research history path")
+    parser.add_argument("--orders-database", default=os.environ.get("SSSWET_ORDERS_DATABASE", ".ssswet/orders.sqlite3"), help="Private order register path")
     parser.add_argument("--admin-token", default=os.environ.get("SSSWET_ADMIN_TOKEN"), help="Private order dashboard token (or SSSWET_ADMIN_TOKEN environment variable)")
     parser.add_argument("--research-interval-minutes", type=float, default=float(os.environ.get("SSSWET_RESEARCH_INTERVAL_MINUTES", "60")), help="Minutes between autonomous full-catalogue research cycles (default: 60)")
     parser.add_argument("--disable-background-research", action="store_true", help="Start the local interface without autonomous research workers")
