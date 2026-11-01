@@ -108,9 +108,7 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 except ValueError:
                     self._json({"error": "The limit parameter must be an integer"}, 400)
                     return
-                self._json(ResearchTimeline(store).build(
-                    campaign_id=campaign_id, limit=limit
-                ))
+                self._json(ResearchTimeline(store).build(campaign_id=campaign_id, limit=limit))
             elif path == "/api/scientific-memory/suggestions":
                 from .scientific_memory import ScientificMemoryService
                 from .research_gaps import ResearchGapAnalyzer
@@ -159,9 +157,7 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 except ValueError:
                     self._json({"error": "limit and minimum_shared_terms must be integers"}, 400)
                     return
-                self._json(ResearchRelationDiscovery(store).discover(
-                    limit=limit, minimum_shared_terms=minimum
-                ))
+                self._json(ResearchRelationDiscovery(store).discover(limit=limit, minimum_shared_terms=minimum))
             elif path == "/api/digital-lab":
                 from .digital_lab import DigitalLabService
                 params = parse_qs(parsed.query)
@@ -198,6 +194,28 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                     self._json({"error": "The limit parameter must be an integer"}, 400)
                     return
                 self._json(DatasetRegistry(store).overview(limit=limit))
+            elif path == "/api/evidence-dossiers":
+                from .evidence_dossiers import EvidenceDossierService
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["100"])[0])
+                except ValueError:
+                    self._json({"error": "The limit parameter must be an integer"}, 400)
+                    return
+                try:
+                    self._json(EvidenceDossierService(store).overview(limit=limit))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
+            elif path.startswith("/api/evidence-dossiers/"):
+                from .evidence_dossiers import EvidenceDossierService
+                dossier_id = path[len("/api/evidence-dossiers/"):].strip("/")
+                if not dossier_id:
+                    self._json({"error": "dossier id is required"}, 400)
+                    return
+                try:
+                    self._json(EvidenceDossierService(store).get(dossier_id))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 404)
             elif path == "/api/experiments":
                 self._json({"experiments": store.experiment_overview(limit=100)})
             elif path == "/api/optimization":
