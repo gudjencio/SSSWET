@@ -195,6 +195,8 @@ Research campaigns can request a structured review of a knowledge-graph item by 
 
 The local read-only endpoint /api/collaboration/peer-reviews reports requests and submissions. The dashboard summarizes open and completed reviews. Review submissions are append-only; one submission is accepted per assigned reviewer campaign and request. Peer-review activity also appears in the research timeline.
 
+Review reports also provide a descriptive synthesis: mixed or unanimous outcome patterns, distinct methods, repeated source identifiers, repeated provenance groups, and submitted limitations. This is a transparency aid, not a vote or an adjudication.
+
 An independence declaration is self-reported and is not independently authenticated. Different campaign identifiers do not prove independent personnel, data, methods, or funding. Review outcomes are recorded perspectives, not votes that establish truth. No review automatically changes a knowledge node's verification state or resolves a scientific dispute.
 
 
