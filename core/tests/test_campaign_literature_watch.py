@@ -24,7 +24,10 @@ def active_campaign(store, state="active"):
         "watch-campaign", "Orbital research", "Study orbital dynamics", "physics",
         [CampaignMilestone("m1", "Literature review", "Review scholarly publications")],
     )
-    store.save_campaign(set_campaign_state(campaign, state))
+    campaign = set_campaign_state(campaign, "active")
+    if state != "active":
+        campaign = set_campaign_state(campaign, state)
+    store.save_campaign(campaign)
 
 
 def test_campaign_watch_runs_when_due_and_deduplicates_seen_items(tmp_path):
