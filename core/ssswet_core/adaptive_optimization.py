@@ -7,7 +7,6 @@ estimate statistical confidence, or claim global optimality.
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
-from hashlib import sha256
 from typing import Any
 import json
 import math
@@ -91,7 +90,6 @@ class AdaptiveScenarioOptimizer:
 
         observed_ids = set(observation_ids)
         observed_candidates = set()
-        observed_parameter_keys = set()
         for candidate in candidates:
             if candidate.scenario_id in observed_ids:
                 observed_candidates.add(candidate.scenario_id)
