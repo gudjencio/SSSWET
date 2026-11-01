@@ -72,7 +72,7 @@
     });
     safeSaveLanguage(selected);
     refreshStatus();
-    if (lastView === "ready") showMessage(t.ready);
+    if (lastView === "ready") showAgentWelcome();
     else if (lastView === "discoveries") showDiscoveries();
     else if (lastView === "activity") showActivity();
     else if (lastView === "verified") showVerified();
@@ -88,6 +88,78 @@
     marker.textContent = "●";
     paragraph.append(marker, document.createTextNode(" " + message));
     feed.replaceChildren(paragraph);
+  }
+
+  function showAgentWelcome() {
+    const copy = (window.SSSWET_AGENT_COPY || {})[currentLanguage()]
+      || (window.SSSWET_AGENT_COPY || {}).en;
+    if (!copy) { showMessage(currentTranslations().ready); return; }
+    lastView = "ready";
+    dashboard.hidden = true;
+    feed.hidden = false;
+    const fragment = document.createDocumentFragment();
+    const intro = document.createElement("p");
+    intro.className = "feed-line agent-intro";
+    const marker = document.createElement("span");
+    marker.textContent = "●";
+    const lead = document.createElement("strong");
+    lead.textContent = copy.welcome;
+    intro.append(marker, lead, document.createTextNode(" " + copy.summary));
+    fragment.append(intro);
+
+    const roles = document.createElement("div");
+    roles.className = "agent-role-list";
+    copy.roles.forEach((role) => {
+      const article = document.createElement("article");
+      article.className = "agent-role";
+      const heading = document.createElement("strong");
+      heading.textContent = role.name;
+      const description = document.createElement("p");
+      description.textContent = role.description;
+      article.append(heading, description);
+      roles.append(article);
+    });
+    fragment.append(roles);
+
+    const stepsTitle = document.createElement("p");
+    stepsTitle.className = "agent-section-title";
+    stepsTitle.textContent = copy.stepsTitle;
+    fragment.append(stepsTitle);
+    const steps = document.createElement("ol");
+    steps.className = "agent-steps";
+    copy.steps.forEach((step) => {
+      const item = document.createElement("li");
+      item.textContent = step;
+      steps.append(item);
+    });
+    fragment.append(steps);
+
+    const questionsTitle = document.createElement("p");
+    questionsTitle.className = "agent-section-title";
+    questionsTitle.textContent = copy.questionsTitle;
+    fragment.append(questionsTitle);
+    const questions = document.createElement("div");
+    questions.className = "agent-questions";
+    const actions = [
+      ["working", showActivity],
+      ["evidence", showDiscoveries],
+      ["review", showVerified]
+    ];
+    actions.forEach(([key, action]) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "agent-question";
+      button.textContent = copy.questions[key];
+      button.addEventListener("click", action);
+      questions.append(button);
+    });
+    fragment.append(questions);
+
+    const note = document.createElement("p");
+    note.className = "agent-disclaimer";
+    note.textContent = copy.disclaimer;
+    fragment.append(note);
+    feed.replaceChildren(fragment);
   }
 
   async function apiGet(path) {
