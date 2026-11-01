@@ -48,11 +48,20 @@ class SSSWETEngine:
         self.simulated_findings.append(finding)
         return finding
 
-    def verify_with_independent_evidence(self, finding: Finding, *evidence: str) -> Finding:
+    def verify_with_independent_evidence(
+        self,
+        finding: Finding,
+        *evidence: str,
+        source_ids: tuple[str, ...] = (),
+    ) -> Finding:
         current = finding
-        for item in evidence:
-            current = self.verifier.independent_check(current, item)
+        for index, item in enumerate(evidence):
+            source_id = source_ids[index] if index < len(source_ids) else None
+            current = self.verifier.independent_check(current, item, source_id)
         return current
+
+    def record_reproduction(self, finding: Finding, reproduction_id: str) -> Finding:
+        return self.verifier.require_reproduction(finding, reproduction_id)
 
     def publishable(self, finding: Finding) -> tuple[bool, list[str]]:
         return self.safety.assess(finding)
