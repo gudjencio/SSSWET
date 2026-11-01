@@ -13,7 +13,7 @@ from .persistence import SQLiteResearchStore
 WEB_ROOT = Path(__file__).resolve().parents[2] / "web"
 
 
-def public_status(engine: SSSWETEngine, store: SQLiteResearchStore) -> dict[str, Any]:
+def public_status(engine: SSSWETEngine, store: SQLiteResearchStore | None = None) -> dict[str, Any]:
     agents = list(engine.orchestrator.bot_manager.agents.values())
     return {
         "service": "SSSWET",
@@ -21,10 +21,19 @@ def public_status(engine: SSSWETEngine, store: SQLiteResearchStore) -> dict[str,
         "agents_total": len(agents),
         "agents_active": sum(1 for agent in agents if agent.load > 0),
         "tasks_queued": len(engine.orchestrator.tasks),
-        "events_total": len(store.recent_events(200)),
-        "research_runs": len(store.recent_tasks(100)),
+        "events_total": len(store.recent_events(200)) if store else len(engine.orchestrator.events),
+        "research_runs": len(store.recent_tasks(100)) if store else 0,
         "verified_knowledge": len(engine.memory.validated()),
     }
+
+
+def public_events(engine: SSSWETEngine, store: SQLiteResearchStore | None = None) -> list[dict[str, Any]]:
+    if store:
+        return store.recent_events(50)
+    return [
+        {"kind": event.kind, "message": event.message, "task_id": event.task_id, "agent_id": event.agent_id}
+        for event in engine.orchestrator.events[-50:]
+    ]
 
 
 def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
@@ -47,7 +56,7 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
             if path == "/api/status":
                 self._json(public_status(engine, store))
             elif path == "/api/events":
-                self._json(store.recent_events(50))
+                self._json(public_events(engine, store))
             elif path == "/api/work":
                 self._json(store.recent_tasks(30))
             elif path == "/api/discoveries":
