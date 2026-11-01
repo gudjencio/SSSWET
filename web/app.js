@@ -673,7 +673,7 @@ function classifyDiscovery(group) {
     if (/\b(crossref|openalex|doi|bibliographic|bibliography|publication|journal article|citation|references found)\b/.test(text)) return "bibliographic";
     if (/\b(experiment|experimental|measurement|measured|observed|observation|laboratory result|dataset|simulation result|test result)\b/.test(text)) return "experimental";
     if (/\b(hypothesis|hypotheses|hypothesize|hypothesised|hypothesized|proposed mechanism|conjecture|research question)\b/.test(text)) return "hypothesis";
-    if (/\b(verify|verification|verified|validation|validated|reproducib|independent review|peer review|evidence check)\b/.test(text)) return "verification";
+    if (/\b(verify|verifier|verification|verified|validation|validated|reproducib|independent review|peer review|reviewer|evidence check)\b/.test(text)) return "verification";
     return "other";
   }
 
