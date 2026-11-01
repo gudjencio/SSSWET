@@ -253,3 +253,66 @@ html[dir="rtl"] .agent-steps { padding-inline-start: 0; padding-inline-end: 22px
 .lab-stat-disclaimer, .lab-stat-empty, .lab-statistics-note { color: #77736b; font-size: 9px; line-height: 1.5; }
 .lab-stat-disclaimer { margin: 9px 0 0; }
 @media (max-width: 620px) { .lab-statistics-list { grid-template-columns: 1fr; } }
+
+
+/* Refined dark visual language: subtle color depth, restrained glow and black edges. */
+body {
+  background:
+    radial-gradient(ellipse at 50% 14%, rgba(105, 91, 173, .13), transparent 34rem),
+    radial-gradient(ellipse at 8% 55%, rgba(39, 113, 126, .075), transparent 28rem),
+    radial-gradient(ellipse at 92% 78%, rgba(130, 76, 120, .065), transparent 30rem),
+    #020202;
+}
+.app-shell { isolation: isolate; }
+.brand-mark { text-shadow: 0 0 22px rgba(164, 149, 255, .22); }
+.hero { margin-top: 5vh; margin-bottom: 22px; }
+h1 { font-size: clamp(38px, 7vw, 70px); letter-spacing: .12em; line-height: 1; }
+.mission { margin-top: 14px; }
+.panel {
+  border-color: #171717;
+  background: linear-gradient(145deg, rgba(18, 18, 23, .96), rgba(7, 8, 11, .96) 58%, rgba(10, 8, 13, .98));
+  box-shadow: 0 28px 90px rgba(0,0,0,.68), 0 0 55px rgba(111, 91, 170, .055), inset 0 1px rgba(255,255,255,.045);
+}
+button {
+  border-color: #25232d;
+  background: linear-gradient(115deg, rgba(31, 29, 42, .8), rgba(14, 17, 21, .96) 55%, rgba(17, 14, 22, .9));
+}
+button:hover { border-color: #5a5274; background: linear-gradient(115deg, rgba(47, 40, 66, .82), rgba(17, 23, 29, .98)); }
+.feed {
+  border: 1px solid #17171b;
+  background: linear-gradient(145deg, rgba(15, 17, 22, .94), rgba(5, 5, 7, .98));
+}
+.dashboard-card, .timeline-panel, .node-inspector, .agent-role {
+  background: linear-gradient(145deg, rgba(26, 25, 36, .46), rgba(10, 12, 15, .72) 70%, rgba(7, 7, 9, .8));
+  border-color: #202027;
+}
+.agent-role-list { display: grid; gap: 9px; margin: 13px 0 17px; }
+.agent-role { display: flex; align-items: center; gap: 13px; padding: 12px; border: 1px solid #25232d; border-radius: 14px; }
+.agent-role-copy { min-width: 0; }
+.agent-role-copy > strong { color: #e9e6f4; font-size: 11px; letter-spacing: .035em; }
+.agent-role p { margin: 5px 0 0; color: #92909c; font-size: 10px; line-height: 1.5; }
+.agent-avatar {
+  position: relative; flex: 0 0 42px; width: 42px; height: 42px; display: grid; place-items: center;
+  border: 1px solid rgba(169, 154, 220, .26); border-radius: 13px;
+  background: radial-gradient(circle at 50% 30%, rgba(160, 143, 226, .23), rgba(14, 15, 21, .95) 72%);
+  box-shadow: inset 0 0 18px rgba(142, 123, 206, .08), 0 0 18px rgba(122, 103, 180, .08);
+  animation: agent-float 3.4s ease-in-out infinite;
+}
+.agent-avatar-2 { animation-delay: -.8s; }
+.agent-avatar-3 { animation-delay: -1.6s; }
+.agent-robot-head { position: absolute; top: 9px; width: 22px; height: 17px; border: 1.5px solid #bdb1e8; border-radius: 6px; background: linear-gradient(145deg, #29243d, #11131a); box-shadow: 0 0 10px rgba(180, 160, 255, .2); }
+.agent-robot-head::before { content: ""; position: absolute; width: 5px; height: 4px; left: 7px; top: -5px; border-radius: 4px 4px 0 0; background: #a99ae0; }
+.agent-robot-head i { position: absolute; top: 6px; left: 5px; width: 3px; height: 3px; border-radius: 50%; background: #d9d0ff; box-shadow: 0 0 5px #b8a8ff; animation: agent-blink 4s infinite; }
+.agent-robot-head i + i { left: 13px; animation-delay: .15s; }
+.agent-robot-body { position: absolute; top: 27px; width: 17px; height: 9px; border: 1px solid #8175b0; border-radius: 4px 4px 6px 6px; background: linear-gradient(90deg, #242039, #12151d); }
+.agent-robot-body::before, .agent-robot-body::after { content: ""; position: absolute; top: 2px; width: 3px; height: 6px; border-radius: 3px; background: #8f82c2; }
+.agent-robot-body::before { left: -5px; } .agent-robot-body::after { right: -5px; }
+@keyframes agent-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes agent-blink { 0%, 45%, 49%, 100% { opacity: 1; } 47% { opacity: .12; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+@media (max-width: 620px) {
+  h1 { font-size: clamp(34px, 10vw, 54px); }
+  .agent-role { align-items: flex-start; }
+}
