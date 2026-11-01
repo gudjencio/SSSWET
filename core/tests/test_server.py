@@ -358,3 +358,50 @@ def test_digital_lab_reproduction_matrix_endpoint_is_read_only(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_digital_lab_protocol_proposals_api_is_read_only(tmp_path):
+    import json
+    import threading
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.digital_lab import DigitalLabService, LabProtocol
+    from ssswet_core.protocol_proposals import ProtocolProposalService
+    from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "protocol-proposals-api.sqlite3")
+    for campaign_id in ("owner", "proposer"):
+        campaign = create_campaign(
+            campaign_id, campaign_id, "Protocol review", "computational science",
+            [CampaignMilestone("m1", "Review", "Review protocol")],
+        )
+        store.save_campaign(set_campaign_state(campaign, "active"))
+    DigitalLabService(store).publish_protocol(LabProtocol(
+        "shared-protocol", 1, "Shared model", "Record a numerical output",
+        "owner", ("Run declared equation",), ("input",), ("output",),
+        {}, ("same input",), ("Illustrative only",), ("No physical experiment",),
+        "published", "reviewer", "Reviewed for clarity",
+    ))
+    ProtocolProposalService(store).submit(
+        "proposal-api", "shared-protocol", 1, "proposer",
+        {"objective": "Record and compare a numerical output"},
+        "Clarify the objective.",
+    )
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with urlopen(f"http://127.0.0.1:{server.server_port}/api/digital-lab/proposals") as response:
+            payload = json.loads(response.read())
+        assert payload["pending_count"] == 1
+        assert payload["proposals"][0]["proposal_id"] == "proposal-api"
+        assert payload["proposal_acceptance_establishes_scientific_validity"] is False
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
