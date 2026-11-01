@@ -330,6 +330,7 @@
     }
     capitalizeInterfaceText(document.body);
     safeSaveLanguage(selected);
+    window.dispatchEvent(new CustomEvent("ssswet-language-changed", {detail:{language:selected}}));
     refreshStatus();
     if (lastView === "ready") showAgentWelcome();
     else if (lastView === "discoveries") showDiscoveries();
