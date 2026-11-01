@@ -1,0 +1,11 @@
+{
+  "name": "SSSWET",
+  "short_name": "SSSWET",
+  "description": "Super Soldier Space Warping Engeriening Tech",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#030303",
+  "theme_color": "#050505",
+  "lang": "en",
+  "icons": []
+}
