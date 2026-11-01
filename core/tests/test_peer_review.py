@@ -83,3 +83,40 @@ def test_peer_review_requires_note_and_method(tmp_path):
             "submission-1", "review-1", "reviewer-a", "supports", "", "Method",
             independence_confirmed=True,
         )
+
+
+def test_peer_review_synthesis_exposes_disagreement_and_shared_provenance(tmp_path):
+    store = setup(tmp_path)
+    service = PeerReviewService(store)
+    service.request(
+        "review-synthesis", "source", "claim-1",
+        ["reviewer-a", "reviewer-b"], "coordinator",
+        "Do independent methods support the claim?",
+    )
+    service.submit(
+        "submission-a", "review-synthesis", "reviewer-a", "supports",
+        "The derivation is plausible but needs a larger sample.",
+        "Independent analytical derivation", source_ids=("shared-paper", "paper-a"),
+        provenance_group="shared-lab", independence_confirmed=True,
+        limitations="Small sample size",
+    )
+    service.submit(
+        "submission-b", "review-synthesis", "reviewer-b", "challenges",
+        "The derivation depends on an untested boundary condition.",
+        "Independent numerical sensitivity analysis", source_ids=("shared-paper", "paper-b"),
+        provenance_group="shared-lab", independence_confirmed=True,
+        limitations="Boundary condition not measured",
+    )
+    report = service.report()
+    item = report["reviews"][0]
+    synthesis = item["review_synthesis"]
+    assert synthesis["outcome_pattern"] == "mixed"
+    assert synthesis["distinct_outcomes"] == ["challenges", "supports"]
+    assert synthesis["reviewer_campaign_count"] == 2
+    assert synthesis["shared_source_ids"] == ["shared-paper"]
+    assert synthesis["shared_provenance_groups"] == ["shared-lab"]
+    assert len(synthesis["distinct_methods"]) == 2
+    assert synthesis["submissions_with_limitations"] == 2
+    assert synthesis["majority_vote_used_for_adjudication"] is False
+    assert item["scientific_validity_established"] is False
+    assert report["automatic_adjudication"] is False
