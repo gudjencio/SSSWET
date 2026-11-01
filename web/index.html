@@ -23,7 +23,15 @@
     <section class="hero" aria-labelledby="title"><div class="status-dot"></div><p class="eyebrow" id="system-status" data-i18n="status">RESEARCH INTERFACE</p><h1 id="title">SSSWET</h1><p class="mission" data-i18n="mission">Research ideas. Test them. Verify them. Never confuse a hypothesis with reality.</p></section>
     <section class="panel" aria-label="Research interface">
       <div class="bot-status"><span data-i18n="agents">Research agents</span><strong id="agent-count">00</strong><span class="separator">·</span><span data-i18n="verification">verification-first</span></div>
-      <div class="voice-controls"><button id="voice-toggle" class="voice-toggle" type="button" aria-pressed="false" data-i18n="voiceEnable">Enable voice</button><span class="voice-note" data-i18n="voiceHint">Choose natural voices for spoken research updates.</span></div>
+      <div class="voice-controls">
+<button id="voice-toggle" class="voice-toggle" type="button" aria-pressed="false" data-i18n="voiceEnable">Enable voice</button>
+<button id="voice-read" class="voice-utility" type="button" data-i18n="voiceRead" disabled>Read current update</button>
+<button id="voice-pause" class="voice-utility" type="button" data-i18n="voicePause" disabled>Pause</button>
+<button id="voice-resume" class="voice-utility" type="button" data-i18n="voiceResume" disabled>Resume</button>
+<button id="voice-stop" class="voice-utility" type="button" data-i18n="voiceStop" disabled>Stop</button>
+<span class="voice-note" data-i18n="voiceHint">Choose natural voices for spoken research updates.</span>
+<span id="voice-status" class="voice-status" role="status" aria-live="polite" data-i18n="voiceReady">Voice is off</span>
+</div>
       <div class="actions"><button data-action="dashboard" data-i18n="dashboard">Global science dashboard</button><button data-action="discover" data-i18n="discover">What did you discover?</button><button data-action="working" data-i18n="working">What are you working on?</button><button data-action="verified" data-i18n="verified">Latest verified results</button></div>
       <section id="dashboard" class="dashboard" aria-label="Global science dashboard" hidden>
         <div class="dashboard-heading"><h2 data-i18n="dashboard">Global science dashboard</h2><button class="refresh-button" type="button" data-action="dashboard" data-i18n="refresh">Refresh</button></div>
