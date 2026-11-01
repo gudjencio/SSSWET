@@ -692,14 +692,14 @@
     };
     const known = dictionaries[language] || dictionaries.en;
     if (known[raw]) return known[raw];
-    const errorLike = /\\b(error|failed|failure|exception|traceback|timeout|refused|unavailable)\\b/i.test(raw);
+    const errorLike = /\b(error|failed|failure|exception|traceback|timeout|refused|unavailable)\b/i.test(raw);
     if (!errorLike) return raw;
     const details = raw
-      .replace(/\\bConnection refused\\b/gi, language === "fr" ? "Connexion refusée" : "Connection refused")
-      .replace(/\\bPermission denied\\b/gi, language === "fr" ? "Autorisation refusée" : "Permission denied")
-      .replace(/\\bTimeout\\b/gi, language === "fr" ? "Délai d’attente dépassé" : "Timeout")
-      .replace(/\\bService unavailable\\b/gi, language === "fr" ? "Service indisponible" : "Service unavailable")
-      .replace(/\\bHTTP (\\d{3})\\b/gi, language === "fr" ? "Réponse HTTP $1" : "HTTP $1");
+      .replace(/\bConnection refused\b/gi, language === "fr" ? "Connexion refusée" : "Connection refused")
+      .replace(/\bPermission denied\b/gi, language === "fr" ? "Autorisation refusée" : "Permission denied")
+      .replace(/\bTimeout\b/gi, language === "fr" ? "Délai d’attente dépassé" : "Timeout")
+      .replace(/\bService unavailable\b/gi, language === "fr" ? "Service indisponible" : "Service unavailable")
+      .replace(/\bHTTP (\d{3})\b/gi, language === "fr" ? "Réponse HTTP $1" : "HTTP $1");
     return language === "fr"
       ? "Erreur technique à examiner : " + details
       : "Technical error requiring review: " + details;
