@@ -112,7 +112,7 @@ class SQLiteResearchStore:
                     record_json TEXT NOT NULL,
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
-                CREATE INDEX IF NOT EXISTS idx_experiment_records_plan ON experiment_records(experiment_id);
+                CREATE INDEX IF NOT EXISTS idx_experiment_records_plan ON experiment_records(experiment_id);\n                CREATE TABLE IF NOT EXISTS adaptive_cycles (\n                    cycle_id TEXT PRIMARY KEY,\n                    study_id TEXT NOT NULL,\n                    cycle_json TEXT NOT NULL,\n                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n                );\n                CREATE INDEX IF NOT EXISTS idx_adaptive_cycles_study ON adaptive_cycles(study_id);
                 CREATE TABLE IF NOT EXISTS knowledge (
                     item_key TEXT PRIMARY KEY,
                     statement TEXT NOT NULL,
@@ -554,3 +554,47 @@ class SQLiteResearchStore:
             plan["records"] = self.experiment_records(row["experiment_id"])
             overview.append(plan)
         return overview
+
+
+    def save_adaptive_cycle(self, cycle_id: str, cycle: object) -> None:
+        from .adaptive_cycle import adaptive_cycle_to_dict
+        if not isinstance(cycle_id, str) or not cycle_id.strip():
+            raise ValueError("cycle_id is required")
+        payload = adaptive_cycle_to_dict(cycle)
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO adaptive_cycles(cycle_id, study_id, cycle_json)
+                VALUES (?, ?, ?)
+                ON CONFLICT(cycle_id) DO UPDATE SET
+                    study_id=excluded.study_id,
+                    cycle_json=excluded.cycle_json
+                """,
+                (cycle_id, cycle.study_id, json.dumps(payload, ensure_ascii=False, sort_keys=True)),
+            )
+
+    def get_adaptive_cycle(self, cycle_id: str) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT cycle_json FROM adaptive_cycles WHERE cycle_id = ?",
+                (cycle_id,),
+            ).fetchone()
+        return json.loads(row["cycle_json"]) if row else None
+
+    def adaptive_cycle_history(self, study_id: str | None = None, limit: int = 100) -> list[dict]:
+        bounded_limit = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            if study_id is None:
+                rows = connection.execute(
+                    "SELECT cycle_id, cycle_json, created_at FROM adaptive_cycles ORDER BY created_at DESC, cycle_id LIMIT ?",
+                    (bounded_limit,),
+                ).fetchall()
+            else:
+                rows = connection.execute(
+                    "SELECT cycle_id, cycle_json, created_at FROM adaptive_cycles WHERE study_id = ? ORDER BY created_at DESC, cycle_id LIMIT ?",
+                    (study_id, bounded_limit),
+                ).fetchall()
+        return [
+            {"cycle_id": row["cycle_id"], "created_at": row["created_at"], **json.loads(row["cycle_json"])}
+            for row in rows
+        ]
