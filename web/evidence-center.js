@@ -107,7 +107,7 @@
     boardForm.addEventListener("submit", async (event) => {
       event.preventDefault(); boardSubmit.disabled = true; boardFeedback.textContent = "…";
       try {
-        const response = await fetch("/api/scientific-review-board/reviews", {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"}, body: JSON.stringify({
+        const response = await window.ssswetApiFetch("/api/scientific-review-board/reviews", {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"}, body: JSON.stringify({
           dossier_id: dossier.dossier_id, reviewer_id: boardReviewer.value, verdict: verdict.value,
           conflict_status: conflict.value, rationale: rationale.value, methods_assessment: methods.value,
           limitations: limitations.value, evidence_refs: refs.value.split(",").map((item) => item.trim()).filter(Boolean)
@@ -153,7 +153,7 @@
     riskForm.addEventListener("submit", async (event) => {
       event.preventDefault(); riskSubmit.disabled = true; riskFeedback.textContent = "…";
       try {
-        const response = await fetch("/api/research-integrity/risks", {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"}, body: JSON.stringify({
+        const response = await window.ssswetApiFetch("/api/research-integrity/risks", {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"}, body: JSON.stringify({
           dossier_id: dossier.dossier_id, category: category.value, severity: severity.value,
           description: description.value, reviewer_label: riskReviewer.value, state: riskState.value, mitigation: mitigation.value, authorization_reference: authorization.value
         })});
@@ -190,7 +190,7 @@
             form.addEventListener("submit", async (event) => {
               event.preventDefault(); submit.disabled = true; feedback.textContent = "…";
               try {
-                const response = await fetch("/api/lab-verification-events", {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"}, body: JSON.stringify({plan_id: plan.plan_id, check_code: check.code, state: select.value, note: note.value, reviewer: reviewer.value})});
+                const response = await window.ssswetApiFetch("/api/lab-verification-events", {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"}, body: JSON.stringify({plan_id: plan.plan_id, check_code: check.code, state: select.value, note: note.value, reviewer: reviewer.value})});
                 const payload = await response.json(); if (!response.ok) throw new Error(payload.error || "HTTP " + response.status);
                 feedback.textContent = labels.saved; form.hidden = true; state.textContent = (stateLabels[payload.event.state] || payload.event.state) + " · " + ((check.review_history || []).length + 1) + " " + labels.events;
               } catch (error) { feedback.textContent = error.message; submit.disabled = false; }
