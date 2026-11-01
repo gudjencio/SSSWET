@@ -55,3 +55,23 @@ def test_timeline_marks_contradiction_edges_as_events_not_conclusions(tmp_path):
     edge = next(event for event in result["events"] if event["kind"] == "relationship_recorded")
     assert edge["title"] == "contradicts"
     assert edge["scientific_validity_established"] is False
+
+
+def test_timeline_includes_experiment_plan_and_record_database_timestamps(tmp_path):
+    from ssswet_core.experimentation import draft_experiment_plan, make_experiment_record
+
+    store = SQLiteResearchStore(tmp_path / "experiment-timeline.sqlite3")
+    plan = draft_experiment_plan("experiment-1", "hypothesis-1", "A testable hypothesis")
+    store.save_experiment_plan(plan)
+    record = make_experiment_record(
+        "record-1", "experiment-1", "simulation",
+        {"output": 3}, "A documented simulation method",
+    )
+    store.save_experiment_record(record)
+    result = ResearchTimeline(store).build()
+    kinds = {event["kind"] for event in result["events"]}
+    assert "experiment_plan_updated" in kinds
+    assert "experiment_recorded" in kinds
+    recorded = next(event for event in result["events"] if event["kind"] == "experiment_recorded")
+    assert recorded["references"]["execution_kind"] == "simulation"
+    assert recorded["scientific_validity_established"] is False
