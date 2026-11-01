@@ -1,60 +1,66 @@
 # SSSWET
 
-**Scientific Systems for Safe World Exploration & Technology**
+**Super Soldier Space Warping Engeriening Tech**  
+**ETDESS — traduction française : Équipe de Technologie pour le Développement de l'Exploration Spatiale et du Soldiering?**
+
+> SSSWET is the project's official name and expansion. The project explores ambitious scientific and technological questions with a strict humanitarian, verification-first approach.
+
+## Mission
 
 SSSWET is an experimental research platform intended to help organize computational research, simulations, verification, scientific literature review, and collaborative AI-agent workflows toward humanitarian technologies.
 
-## Core principle
+The project is designed to move from **idea → research → test → verification → reproducible evidence → real-world validation**, without pretending that an ambitious objective is already solved.
 
-SSSWET starts from an idea and works toward a testable reality. It does not treat an ambitious goal as already solved: every result must be classified, checked, reproduced where possible, and accompanied by its limitations.
-
-The system is designed to become progressively more capable through better decomposition of problems, independent verification, knowledge sharing, simulation, and learning from failed approaches.
-
-## Safety principles
+## Core principles
 
 - No weapons development.
 - No intentional design of systems whose known purpose is to injure or kill people.
-- High-risk scientific conclusions are never presented as guaranteed safe merely because agents agree.
-- Medical, biological, aerospace, and other high-risk research remains subject to appropriate human scientific and regulatory review before real-world application.
-- Dangerous or unverified approaches are recorded only at a high level and are not published as actionable instructions.
-- Automatic checkpoints protect the project from harmful or invalid changes.
+- Agents may investigate difficult scientific questions, but agreement between agents is never treated as proof.
+- Results are independently checked, reproduced where possible, and labelled with uncertainty and limitations.
+- High-risk medical, biological, aerospace, or physical applications require qualified human and regulatory review before real-world use.
+- Dangerous or unverified approaches are not published as actionable instructions.
+- Failed approaches are not silently forgotten: the system records them at an appropriate level and changes strategy.
+- The system can create, pause, replace, or retire research agents according to workload and verification needs.
 
-## Planned components
+## Planned platform
 
 - Dynamic multi-agent research orchestrator
 - Task decomposition and specialist-agent groups
 - Independent verification and adversarial review
 - Mathematical and scientific computation
 - Simulation and reproducibility tests
-- Knowledge exchange between research agents
+- Shared validated knowledge
 - Research/source reliability scoring
 - Stuck-agent strategy changes and recovery
-- Checkpoints and safe-state restoration
+- Safe checkpoints and state restoration
 - Public research summaries and changelog
 - Web interface
-- Desktop applications
-- Mobile applications
-- Versioned releases through GitHub
-- Multilingual user interface
+- Downloadable desktop software
+- Mobile application
+- Versioned GitHub releases for major/global updates
+- Large multilingual interface
 
 ## Research areas
 
-The initial architecture is intended to support mathematics, physics, engineering, biology, medicine, materials science, aerospace, robotics, computing, Earth sciences, and space science.
+Mathematics, physics, engineering, materials science, robotics, computing, aerospace, space science, Earth sciences, biology and medicine can be represented as research domains. Extraordinary objectives are treated as hypotheses and research questions, never as guaranteed capabilities.
 
-Extraordinary objectives such as advanced protective equipment, human-assistance robotics, safer flight systems, extreme-environment exploration, advanced propulsion concepts, and fundamental questions about space-time are treated as research questions rather than assumed technological capabilities.
+## Scientific honesty
 
-## Important scientific limitation
+SSSWET does **not** claim that software can guarantee zero errors or establish absolute physical safety merely through computation or AI consensus. Its goal is to push verification as far as practical: independent calculations, contradictory checks, simulations, reproducibility, source comparison, explicit uncertainty, and human validation where required.
 
-No software system can honestly guarantee zero errors or prove that a physical technology is safe with absolute certainty without appropriate evidence. SSSWET therefore aims for extremely strong verification, independent reproduction, explicit uncertainty, and conservative safety gates rather than a false claim of mathematical certainty.
+## Public project links
+
+- X: https://x.com/ssswetech
+- Instagram: https://www.instagram.com/ssswetech
+- YouTube: https://www.youtube.com/@ssswetech
+- Contact: ssswetindustries@gmail.com
 
 ## Project status
 
-**Early architecture / initialization.**
+**Early architecture / active implementation.**
 
-The repository will grow incrementally. Major releases will be versioned so desktop and mobile users can download updated builds when substantial changes are made.
+The repository is being built incrementally. Desktop and mobile packaging will use versioned releases so users can download a new build when substantial improvements are made.
 
 ## Author
 
 Gudjencio Hermann MARTIN
-
-Project email: `ssswetindustries@gmail.com`
