@@ -134,3 +134,29 @@ html[dir="rtl"] .contact { direction: ltr; unicode-bidi: isolate; }
 html[dir="rtl"] .dashboard { direction: rtl; text-align: right; }
 html[dir="rtl"] .dashboard-heading { flex-direction: row-reverse; }
 @media (max-width: 480px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+.research-map, .opportunity-panel { margin-top: 22px; padding-top: 18px; border-top: 1px solid #252525; }
+.subsection-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.subsection-heading h3 { margin: 0; font-size: 13px; letter-spacing: .04em; }
+.subsection-heading span { color: #777; font-size: 10px; text-align: right; }
+.knowledge-map { overflow: hidden; border: 1px solid #222; border-radius: 16px; background: radial-gradient(circle at center, rgba(255,255,255,.035), transparent 65%), #080808; }
+.knowledge-map svg { display: block; width: 100%; height: auto; min-height: 180px; }
+.knowledge-edge { stroke: #555; stroke-width: 1.2; opacity: .72; }
+.knowledge-node circle { fill: #f2f2f2; stroke: #999; stroke-width: 2; }
+.knowledge-node text { fill: #aaa; font-size: 10px; }
+.map-legend, .visual-empty, .visual-disclaimer { margin: 0; padding: 10px 12px; color: #858585; font-size: 10px; line-height: 1.55; }
+.opportunity-list { display: grid; gap: 8px; }
+.opportunity-item { border: 1px solid #292929; border-radius: 13px; background: rgba(255,255,255,.018); overflow: hidden; }
+.opportunity-item summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px; cursor: pointer; list-style-position: inside; }
+.opportunity-item summary strong { color: #e5e5e5; font-size: 11px; font-weight: 650; }
+.opportunity-meta { flex: 0 0 auto; color: #999; font-size: 9px; letter-spacing: .07em; }
+.opportunity-body { padding: 0 13px 12px; color: #aaa; font-size: 11px; line-height: 1.55; overflow-wrap: anywhere; }
+.opportunity-body p { margin: 7px 0; }
+.opportunity-references { color: #777; font-size: 9px; }
+.visual-disclaimer { border-top: 1px solid #222; margin-top: 8px; }
+html[dir="rtl"] .subsection-heading, html[dir="rtl"] .opportunity-item summary { flex-direction: row-reverse; }
+@media (max-width: 520px) {
+  .subsection-heading { align-items: flex-start; flex-direction: column; }
+  .subsection-heading span { text-align: start; }
+  .opportunity-item summary { align-items: flex-start; flex-direction: column; gap: 6px; }
+}
