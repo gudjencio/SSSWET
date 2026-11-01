@@ -1182,3 +1182,260 @@ Object.entries(SSSWET_NEXT_VOICE_LABELS).forEach(([code, labels]) => {
     voiceHint: SSSWET_NEXT_VOICE_HINTS[code]
   });
 });
+
+const SSSWET_VOICE_TRANSPORT = {
+  "en": [
+    "Read current update",
+    "Pause",
+    "Resume",
+    "Stop",
+    "Voice is off",
+    "Speaking",
+    "Voice paused",
+    "Voice ready"
+  ],
+  "fr": [
+    "Lire la mise à jour",
+    "Pause",
+    "Reprendre",
+    "Arrêter",
+    "Voix désactivée",
+    "Lecture en cours",
+    "Voix en pause",
+    "Voix prête"
+  ],
+  "es": [
+    "Leer la actualización",
+    "Pausar",
+    "Reanudar",
+    "Detener",
+    "Voz desactivada",
+    "Hablando",
+    "Voz en pausa",
+    "Voz lista"
+  ],
+  "de": [
+    "Aktuelle Meldung vorlesen",
+    "Pausieren",
+    "Fortsetzen",
+    "Stopp",
+    "Stimme aus",
+    "Spricht",
+    "Stimme pausiert",
+    "Stimme bereit"
+  ],
+  "it": [
+    "Leggi aggiornamento",
+    "Pausa",
+    "Riprendi",
+    "Ferma",
+    "Voce disattivata",
+    "Lettura in corso",
+    "Voce in pausa",
+    "Voce pronta"
+  ],
+  "pt": [
+    "Ler atualização",
+    "Pausar",
+    "Retomar",
+    "Parar",
+    "Voz desativada",
+    "Falando",
+    "Voz pausada",
+    "Voz pronta"
+  ],
+  "nl": [
+    "Huidige update voorlezen",
+    "Pauzeren",
+    "Hervatten",
+    "Stoppen",
+    "Stem uit",
+    "Aan het spreken",
+    "Stem gepauzeerd",
+    "Stem gereed"
+  ],
+  "ru": [
+    "Прочитать обновление",
+    "Пауза",
+    "Продолжить",
+    "Остановить",
+    "Голос выключен",
+    "Идёт озвучивание",
+    "Голос на паузе",
+    "Голос готов"
+  ],
+  "uk": [
+    "Прочитати оновлення",
+    "Пауза",
+    "Продовжити",
+    "Зупинити",
+    "Голос вимкнено",
+    "Озвучування",
+    "Голос на паузі",
+    "Голос готовий"
+  ],
+  "ar": [
+    "قراءة التحديث الحالي",
+    "إيقاف مؤقت",
+    "استئناف",
+    "إيقاف",
+    "الصوت متوقف",
+    "جارٍ التحدث",
+    "الصوت متوقف مؤقتًا",
+    "الصوت جاهز"
+  ],
+  "he": [
+    "הקראת העדכון הנוכחי",
+    "השהיה",
+    "המשך",
+    "עצירה",
+    "הקול כבוי",
+    "מקריא",
+    "הקול מושהה",
+    "הקול מוכן"
+  ],
+  "ja": [
+    "現在の更新を読み上げる",
+    "一時停止",
+    "再開",
+    "停止",
+    "音声オフ",
+    "読み上げ中",
+    "一時停止中",
+    "音声の準備完了"
+  ],
+  "ko": [
+    "현재 업데이트 읽기",
+    "일시정지",
+    "다시 시작",
+    "중지",
+    "음성 꺼짐",
+    "읽는 중",
+    "일시정지됨",
+    "음성 준비 완료"
+  ],
+  "zh": [
+    "朗读当前更新",
+    "暂停",
+    "继续",
+    "停止",
+    "语音已关闭",
+    "正在朗读",
+    "语音已暂停",
+    "语音已就绪"
+  ],
+  "hi": [
+    "वर्तमान अपडेट पढ़ें",
+    "रोकें",
+    "फिर शुरू करें",
+    "बंद करें",
+    "आवाज़ बंद है",
+    "बोल रहा है",
+    "आवाज़ रुकी हुई है",
+    "आवाज़ तैयार है"
+  ],
+  "id": [
+    "Bacakan pembaruan",
+    "Jeda",
+    "Lanjutkan",
+    "Hentikan",
+    "Suara nonaktif",
+    "Sedang berbicara",
+    "Suara dijeda",
+    "Suara siap"
+  ],
+  "tr": [
+    "Güncellemeyi oku",
+    "Duraklat",
+    "Sürdür",
+    "Durdur",
+    "Ses kapalı",
+    "Konuşuyor",
+    "Ses duraklatıldı",
+    "Ses hazır"
+  ],
+  "pl": [
+    "Odczytaj aktualizację",
+    "Wstrzymaj",
+    "Wznów",
+    "Zatrzymaj",
+    "Głos wyłączony",
+    "Odczytywanie",
+    "Głos wstrzymany",
+    "Głos gotowy"
+  ],
+  "bn": [
+    "বর্তমান আপডেট পড়ুন",
+    "বিরতি",
+    "আবার শুরু",
+    "থামান",
+    "কণ্ঠস্বর বন্ধ",
+    "কথা বলা হচ্ছে",
+    "কণ্ঠস্বর বিরতিতে",
+    "কণ্ঠস্বর প্রস্তুত"
+  ],
+  "sw": [
+    "Soma sasisho",
+    "Sitisha",
+    "Endelea",
+    "Simamisha",
+    "Sauti imezimwa",
+    "Inazungumza",
+    "Sauti imesitishwa",
+    "Sauti iko tayari"
+  ],
+  "vi": [
+    "Đọc bản cập nhật",
+    "Tạm dừng",
+    "Tiếp tục",
+    "Dừng",
+    "Đã tắt giọng nói",
+    "Đang đọc",
+    "Đã tạm dừng",
+    "Giọng nói sẵn sàng"
+  ],
+  "fa": [
+    "خواندن به‌روزرسانی",
+    "مکث",
+    "ادامه",
+    "توقف",
+    "صدا خاموش است",
+    "در حال خواندن",
+    "صدا متوقف شده است",
+    "صدا آماده است"
+  ],
+  "ur": [
+    "موجودہ اپ ڈیٹ پڑھیں",
+    "وقفہ",
+    "جاری رکھیں",
+    "روکیں",
+    "آواز بند ہے",
+    "بول رہا ہے",
+    "آواز رکی ہوئی ہے",
+    "آواز تیار ہے"
+  ],
+  "ta": [
+    "தற்போதைய புதுப்பிப்பைப் படிக்கவும்",
+    "இடைநிறுத்தம்",
+    "தொடரவும்",
+    "நிறுத்தவும்",
+    "குரல் அணைக்கப்பட்டது",
+    "பேசுகிறது",
+    "குரல் இடைநிறுத்தப்பட்டது",
+    "குரல் தயார்"
+  ],
+  "te": [
+    "ప్రస్తుత అప్‌డేట్ చదవండి",
+    "విరామం",
+    "కొనసాగించండి",
+    "ఆపండి",
+    "వాయిస్ ఆఫ్‌లో ఉంది",
+    "మాట్లాడుతోంది",
+    "వాయిస్ నిలిపివేయబడింది",
+    "వాయిస్ సిద్ధంగా ఉంది"
+  ]
+};
+Object.entries(window.SSSWET_LOCALES).forEach(([code, locale]) => {
+ const values = SSSWET_VOICE_TRANSPORT[code] || SSSWET_VOICE_TRANSPORT.en;
+ locale.voiceRead = values[0]; locale.voicePause = values[1]; locale.voiceResume = values[2]; locale.voiceStop = values[3]; locale.voiceReady = values[4]; locale.voiceSpeaking = values[5]; locale.voicePaused = values[6];
+});
