@@ -14,3 +14,4 @@ pythonpath = ["."]
 
 [project.scripts]
 ssswet-local = "ssswet_core.server:main"
+ssswet-run = "ssswet_core.research_cli:main"
