@@ -132,6 +132,10 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                 steps = store.recent_steps(200)
                 recent_events = store.recent_events(100)
                 task_by_id = {item["task_id"]: item for item in tasks}
+                review_task_ids = {
+                    step.get("task_id") for step in steps
+                    if str(step.get("classification", "unverified")).lower() in {"unverified", "pending", "candidate"}
+                }
                 pending_reviews = sum(
                     1 for step in steps
                     if str(step.get("classification", "unverified")).lower() in {"unverified", "pending", "candidate"}
@@ -140,9 +144,10 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                 seen_agents = set()
                 for step in steps:
                     agent_id = step.get("agent_id")
-                    if not agent_id or agent_id in seen_agents:
+                    agent_key = (agent_id, step.get("task_id"))
+                    if not agent_id or agent_key in seen_agents:
                         continue
-                    seen_agents.add(agent_id)
+                    seen_agents.add(agent_key)
                     task = task_by_id.get(step.get("task_id"), {})
                     recent_agents.append({
                         "id": agent_id,
@@ -159,7 +164,10 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     "worker": worker,
                     "active_agents": active_agents,
                     "recent_agents": recent_agents,
-                    "recent_tasks": tasks[:32],
+                    "recent_tasks": [
+                        {**task, "review_required": task["task_id"] in review_task_ids}
+                        for task in tasks[:32]
+                    ],
                     "pending_review_outputs": pending_reviews,
                     "completed_tasks": sum(1 for task in tasks if task.get("status") == "complete"),
                     "blocked_tasks": sum(1 for task in tasks if task.get("status") == "blocked"),
