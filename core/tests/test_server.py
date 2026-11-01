@@ -191,3 +191,54 @@ def test_research_timeline_endpoint_returns_chronological_records(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_peer_review_api_reports_assessments_without_verifying_claims(tmp_path):
+    import json
+    import threading
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+    from ssswet_core.knowledge_graph import KnowledgeNode
+    from ssswet_core.peer_review import PeerReviewService
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "peer-review-api.sqlite3")
+    for cid in ("source", "reviewer"):
+        campaign = create_campaign(
+            cid, cid, "Review wave propagation", "physics",
+            [CampaignMilestone("m1", "Review", "Review methods")],
+        )
+        store.save_campaign(set_campaign_state(campaign, "active"))
+    store.add_knowledge_node(KnowledgeNode(
+        "claim", "finding", "Candidate claim",
+        metadata={"campaign_id": "source"},
+    ))
+    service = PeerReviewService(store)
+    service.request(
+        "review", "source", "claim", ["reviewer"], "operator",
+        "Can the method be independently reproduced?",
+    )
+    service.submit(
+        "submission", "review", "reviewer", "inconclusive",
+        "The available information is insufficient.",
+        "Independent method review", independence_confirmed=True,
+    )
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with urlopen(f"http://127.0.0.1:{server.server_port}/api/collaboration/peer-reviews") as response:
+            payload = json.loads(response.read())
+        assert payload["reviews"][0]["submission_count"] == 1
+        assert payload["reviews"][0]["outcome_summary"]["inconclusive"] == 1
+        assert payload["reviews"][0]["independence_independently_verified"] is False
+        assert payload["scientific_validity_established"] is False
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
