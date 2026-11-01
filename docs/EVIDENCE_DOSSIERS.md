@@ -9,7 +9,7 @@ A dossier can reference:
 - published protocol versions;
 - recorded laboratory runs and their provenance;
 - registered dataset versions and content fingerprints;
-- recorded cross-campaign comparisons;
+- recorded cross-campaign comparisons, including their comparison criteria, parameter and environment checks, output differences, tolerance, provenance overlap, and review requirements;
 - literature/source records;
 - peer-review cases;
 - dispute cases and explicit objections.
@@ -42,3 +42,17 @@ Dossier assembly and review are local service operations rather than public HTTP
 A dossier records provenance and review context; it does not replace the underlying records. Scientific conclusions should remain traceable to the original protocol, run, dataset, comparison and source records.
 
 For simulations, model outputs and computational reproductions, the dossier preserves the distinction between a reproducible computation and a real-world observation.
+
+
+## Comparison assessment
+
+When a dossier includes a recorded laboratory comparison, the snapshot retains the full comparison assessment rather than only the database row identifier. This includes:
+
+- whether the runs use the same published protocol version, execution kind and parameters;
+- whether their recorded environments and code or model references match;
+- output differences and the declared numerical tolerance;
+- campaign separation, declared independence, provenance groups and shared source or dataset references;
+- whether the pair is an independent-reproduction candidate;
+- the explicit requirement for human review.
+
+An independent-reproduction candidate is only a screening result based on recorded metadata. It is not independent verification, and matching outputs do not establish scientific validity. A comparison with incompatible conditions remains visible so reviewers can investigate the cause rather than silently excluding it.
