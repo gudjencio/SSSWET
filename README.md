@@ -186,3 +186,12 @@ preserves event types and references so that a simulation, observation,
 literature lead, memory revision, or contradiction review is not flattened
 into the same kind of result. Chronological order is not scientific validation;
 the endpoint is read-only and never starts work automatically.
+
+
+## Cross-campaign peer review
+
+Research campaigns can request a structured review of a knowledge-graph item by one or more other active campaigns. Reviewers submit an outcome (supports, challenges, inconclusive, or unable_to_assess), an assessment, a method, optional source identifiers, limitations, and an explicit independence declaration.
+
+The local read-only endpoint /api/collaboration/peer-reviews reports requests and submissions. The dashboard summarizes open and completed reviews. Review submissions are append-only; one submission is accepted per assigned reviewer campaign and request. Peer-review activity also appears in the research timeline.
+
+An independence declaration is self-reported and is not independently authenticated. Different campaign identifiers do not prove independent personnel, data, methods, or funding. Review outcomes are recorded perspectives, not votes that establish truth. No review automatically changes a knowledge node's verification state or resolves a scientific dispute.
