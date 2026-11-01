@@ -518,9 +518,11 @@ priority and retry history.
 The coordinator records resource snapshots after queueing, dispatch and task
 completion. Failed assignments are retried according to the resource manager's
 configured limit. When a required task exhausts its retries, the associated
-milestone is marked blocked for operator review. Successful provider passes
-leave the milestone in progress: campaign workflow completion remains a
-separate, explicit review decision.
+milestone is marked blocked for operator review. A blocked milestone can
+only be resumed through an explicit review note using
+`CampaignCoordinator.resume_milestone`. Successful provider passes leave the
+milestone in progress: campaign workflow completion remains a separate,
+explicit review decision.
 
 ```python
 from ssswet_core.campaign_coordinator import CampaignCoordinator
