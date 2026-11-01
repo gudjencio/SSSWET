@@ -661,8 +661,8 @@
     if (bibliographic) {
       const count = bibliographic[1];
       return document.documentElement.lang.toLowerCase().startsWith("fr")
-        ? \`Découverte bibliographique : \${count} références uniques trouvées dans Crossref et OpenAlex. Les DOI en double ont été regroupés ; la qualité scientifique des références reste à vérifier.\`
-        : \`Bibliographic discovery: \${count} unique references found in Crossref and OpenAlex. Duplicate DOIs were merged; the scientific quality of these references remains unverified.\`;
+        ? "Découverte bibliographique : " + count + " références uniques trouvées dans Crossref et OpenAlex. Les DOI en double ont été regroupés ; la qualité scientifique des références reste à vérifier."
+        : "Bibliographic discovery: " + count + " unique references found in Crossref and OpenAlex. Duplicate DOIs were merged; the scientific quality of these references remains unverified.";
     }
     return summary;
   }
