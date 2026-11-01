@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
+from math import isfinite
 from typing import Any
 import json
 
@@ -100,6 +101,20 @@ class LabRun:
         _canonical(self.environment)
 
 
+def _verify_fingerprint(record: dict, field: str) -> bool:
+    """Verify a stored protocol/run against its canonical SHA-256 fingerprint."""
+    digest = record.get(field)
+    if not isinstance(digest, str) or len(digest) != 64:
+        return False
+    payload = dict(record)
+    payload[field] = ""
+    try:
+        actual = sha256(_canonical(payload).encode("utf-8")).hexdigest()
+    except (TypeError, ValueError):
+        return False
+    return actual == digest
+
+
 def _compare_values(left: Any, right: Any, tolerance: float, path: str = "") -> list[dict]:
     if isinstance(left, dict) and isinstance(right, dict):
         differences = []
@@ -146,6 +161,8 @@ class DigitalLabService:
         protocol = self.store.get_lab_protocol(run.protocol_id, run.protocol_version)
         if protocol is None or protocol["state"] != "published":
             raise ValueError("Run requires an existing published protocol version")
+        if not _verify_fingerprint(protocol, "content_hash"):
+            raise ValueError("Published protocol fingerprint check failed; the record may have been altered")
         if run.campaign_id == protocol["owner_campaign_id"]:
             raise ValueError("A reproduction run must be recorded by another campaign")
         if not set(protocol["required_parameters"]).issubset(run.parameters):
@@ -161,14 +178,17 @@ class DigitalLabService:
         return self.store.save_lab_run(run)
 
     def compare_runs(self, left_run_id: str, right_run_id: str, tolerance: float = 0.0) -> dict:
-        if tolerance < 0:
-            raise ValueError("Tolerance must be non-negative")
+        if isinstance(tolerance, bool) or not isinstance(tolerance, (int, float)) or not isfinite(tolerance) or tolerance < 0:
+            raise ValueError("Tolerance must be a finite, non-negative number")
+        tolerance = float(tolerance)
         left = self.store.get_lab_run(left_run_id)
         right = self.store.get_lab_run(right_run_id)
         if left is None or right is None:
             raise ValueError("Both lab runs must exist")
         if left_run_id == right_run_id:
             raise ValueError("A run cannot be compared with itself")
+        if not _verify_fingerprint(left, "record_hash") or not _verify_fingerprint(right, "record_hash"):
+            raise ValueError("Lab run fingerprint check failed; a record may have been altered")
         same_protocol = (
             left["protocol_id"] == right["protocol_id"]
             and left["protocol_version"] == right["protocol_version"]
@@ -220,10 +240,27 @@ class DigitalLabService:
         protocols = self.store.lab_protocol_history(limit=limit)
         runs = self.store.lab_run_history(limit=limit)
         comparisons = self.store.lab_comparison_history(limit=limit)
+        protocol_integrity = [
+            {"protocol_id": item.get("protocol_id"), "version": item.get("version"),
+             "intact": _verify_fingerprint(item, "content_hash")}
+            for item in protocols
+        ]
+        run_integrity = [
+            {"run_id": item.get("run_id"),
+             "intact": _verify_fingerprint(item, "record_hash")}
+            for item in runs
+        ]
         return {
             "protocols": protocols,
             "runs": runs,
             "comparisons": comparisons,
+            "integrity": {
+                "protocols_checked": len(protocol_integrity),
+                "runs_checked": len(run_integrity),
+                "all_intact": all(x["intact"] for x in protocol_integrity + run_integrity),
+                "protocols": protocol_integrity,
+                "runs": run_integrity,
+            },
             "protocol_count": len(protocols),
             "run_count": len(runs),
             "comparison_count": len(comparisons),
