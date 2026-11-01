@@ -85,7 +85,7 @@ class ResourceManager:
             raise ValueError("Estimated resource units must be positive")
         if not 1 <= request.priority <= 10:
             raise ValueError("Priority must be between 1 and 10")
-        if request.task_id in self.assignments or request.task_id in self.completed:
+        if request.task_id in self.assignments or request.task_id in self.completed or request.task_id in self.failed:
             raise ValueError("Task is already assigned or completed")
         if any(item.task_id == request.task_id for item in self.queue):
             raise ValueError("Task is already queued")
