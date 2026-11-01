@@ -6,14 +6,14 @@ import pytest
 from ssswet_core.reproducibility_intelligence import ReproducibilityIntelligence
 
 
-def _run(run_id, campaign, provenance):
+def _run(run_id, campaign, provenance, source_ids=(), dataset_ids=()):
     item = {
         "run_id": run_id, "protocol_id": "protocol-a", "protocol_version": 1,
         "campaign_id": campaign, "kind": "simulation", "parameters": {"seed": 1},
         "outputs": {"value": 42}, "method": "fixed method", "environment": {"python": "3"},
         "code_or_model_reference": "model@v1", "provenance_group": provenance,
         "independence_declared": True, "limitations": [], "recorded_at": "2026-01-01T00:00:00+00:00",
-        "source_ids": [], "dataset_ids": [], "record_hash": "",
+        "source_ids": list(source_ids), "dataset_ids": list(dataset_ids), "record_hash": "",
     }
     canonical = json.dumps(item, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
     item["record_hash"] = hashlib.sha256(canonical.encode()).hexdigest()
@@ -73,8 +73,9 @@ def test_recorded_divergence_is_reported_and_reduces_evidence_index():
 
 def test_shared_sources_prevent_provenance_separation_credit():
     store = FakeStore(
-        [_run("run-a", "campaign-a", "origin-a"), _run("run-b", "campaign-b", "origin-b")],
-        [_comparison(shared_source_ids=["paper-1"])],
+        [_run("run-a", "campaign-a", "origin-a", source_ids=("paper-1",)),
+         _run("run-b", "campaign-b", "origin-b", source_ids=("paper-1",))],
+        [_comparison()],
     )
     protocol = ReproducibilityIntelligence(store).build()["protocols"][0]
     assert protocol["reproducibility_evidence_index"] == 60
