@@ -84,14 +84,10 @@ The local review API can generate evidence-linked checklists for recorded labora
 | Campaign coordination | Pipeline-integrated milestone scheduling, specialist allocation, resource quotas, retry tracking and explicit completion review |
 | Web interface | Responsive multilingual interface, global dashboard, knowledge-network visualization and expandable research-opportunity reviews |
 
-Capabilities are implemented incrementally. The public web interface is static, while the Python research engine runs locally on the operator's computer. The browser can discover that loopback engine from the official GitHub Pages and Google Sites origins when it is running and the browser permits local-network access; GitHub Pages does not host the engine or its SQLite data.
+Capabilities are implemented incrementally. The public web interface is static and the Python research engine can run locally or as a separately hosted service. GitHub Pages and Google Sites do not execute Python or store the research database. The hosted deployment files provide a persistent-disk configuration; a hosting account must approve and complete that deployment before live cloud data is available. See [hosted deployment](docs/HOSTED_DEPLOYMENT.md).
 
 
-The global dashboard visualizes a bounded view of recorded knowledge-graph
-nodes and declared edges, and lists research-gap and interdisciplinary-link
-opportunities with their graph and campaign references. These are review
-leads only: the dashboard does not infer missing scientific relationships,
-create tasks or validate claims. The live dashboard requires the local Python service. When the public page is opened in a browser on the same computer as that service, the interface attempts a restricted cross-origin connection to `127.0.0.1:8765`; Chrome and other browsers may ask for local-network access. If the engine is unavailable or permission is denied, the interface switches to offline guidance and retries automatically. A static Pages deployment does not host or expose the local SQLite research state. See [research opportunity synthesis](docs/RESEARCH_OPPORTUNITIES.md).
+The global dashboard visualizes recorded knowledge-graph nodes and declared edges, and lists research-gap and interdisciplinary-link opportunities for human review. The hosted dashboard connects to the separately deployed API configured in `web/api-config.js`; local loopback discovery remains available for development. The cloud service and persistent disk must be provisioned before live public data is available. See [research opportunity synthesis](docs/RESEARCH_OPPORTUNITIES.md) and [hosted deployment](docs/HOSTED_DEPLOYMENT.md).
 
 ## Architecture
 
