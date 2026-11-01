@@ -24,7 +24,7 @@
       reviewer: fr ? "Campagne de revue" : "Review campaign", note: fr ? "Note" : "Note", created: fr ? "Créé" : "Created",
       assembledFrom: fr ? "Assemblé à partir des enregistrements existants" : "Assembled from existing records",
       separation: fr ? "Une revue du dossier ne constitue pas une validation scientifique. Les simulations, métadonnées et comparaisons restent des éléments à examiner, pas des preuves automatiquement établies." : "Reviewing a dossier does not establish scientific validity. Simulations, metadata and comparisons remain items for examination, not automatically established evidence.",
-      verification: fr ? "Plan de vérification ciblée" : "Targeted verification plan", checks: fr ? "Contrôles à examiner" : "Checks to review", reason: fr ? "Motif" : "Reason", noPlan: fr ? "Aucun plan associé aux comparaisons de ce dossier." : "No plan is associated with this dossier’s comparisons.", planUnavailable: fr ? "Les plans de vérification sont momentanément indisponibles." : "Verification plans are temporarily unavailable.", pending: fr ? "À examiner" : "Pending", inProgress: fr ? "En cours" : "In progress", completed: fr ? "Terminé" : "Completed", blocked: fr ? "Bloqué" : "Blocked", reviewerLabel: fr ? "Identifiant du réviseur" : "Reviewer label", reviewNote: fr ? "Note de revue obligatoire" : "Required review note", saveReview: fr ? "Enregistrer la revue" : "Save review", saved: fr ? "Événement ajouté à l’historique." : "Event added to history.", humanReview: fr ? "Revue humaine requise" : "Human review required", trace: fr ? "Chaîne de traçabilité" : "Traceability chain", traceText: fr ? "Question → sources → protocole → données → exécutions → reproductions → objections → revues → état des preuves" : "Question → sources → protocol → data → runs → reproductions → objections → reviews → evidence state"
+      scientificBoard: fr ? "Comité de revue scientifique" : "Scientific Review Board", boardLoading: fr ? "Chargement des évaluations…" : "Loading assessments…", boardEmpty: fr ? "Aucune évaluation indépendante enregistrée." : "No independent assessments recorded.", reviewerId: fr ? "Identifiant du réviseur" : "Reviewer label", verdict: fr ? "Évaluation" : "Assessment", supports: fr ? "Soutient" : "Supports", challenges: fr ? "Conteste" : "Challenges", mixed: fr ? "Mitigé" : "Mixed", abstains: fr ? "S’abstient" : "Abstains", conflict: fr ? "Conflit d’intérêts" : "Conflict of interest", noneDeclared: fr ? "Aucun déclaré" : "None declared", potential: fr ? "Potentiel" : "Potential", confirmed: fr ? "Confirmé" : "Confirmed", rationale: fr ? "Justification" : "Rationale", methodsAssessment: fr ? "Évaluation des méthodes" : "Methods assessment", limitations: fr ? "Limites" : "Limitations", evidenceRefs: fr ? "Références (séparées par des virgules)" : "Evidence references (comma-separated)", submitAssessment: fr ? "Soumettre l’évaluation" : "Submit assessment", boardSaved: fr ? "Évaluation enregistrée dans l’historique." : "Assessment saved to the review history.", disagreement: fr ? "Des évaluations divergentes sont enregistrées." : "Divergent assessments are recorded.", noConsensus: fr ? "Aucun consensus automatique" : "No automatic consensus",verification: fr ? "Plan de vérification ciblée" : "Targeted verification plan", checks: fr ? "Contrôles à examiner" : "Checks to review", reason: fr ? "Motif" : "Reason", noPlan: fr ? "Aucun plan associé aux comparaisons de ce dossier." : "No plan is associated with this dossier’s comparisons.", planUnavailable: fr ? "Les plans de vérification sont momentanément indisponibles." : "Verification plans are temporarily unavailable.", pending: fr ? "À examiner" : "Pending", inProgress: fr ? "En cours" : "In progress", completed: fr ? "Terminé" : "Completed", blocked: fr ? "Bloqué" : "Blocked", reviewerLabel: fr ? "Identifiant du réviseur" : "Reviewer label", reviewNote: fr ? "Note de revue obligatoire" : "Required review note", saveReview: fr ? "Enregistrer la revue" : "Save review", saved: fr ? "Événement ajouté à l’historique." : "Event added to history.", humanReview: fr ? "Revue humaine requise" : "Human review required", trace: fr ? "Chaîne de traçabilité" : "Traceability chain", traceText: fr ? "Question → sources → protocole → données → exécutions → reproductions → objections → revues → état des preuves" : "Question → sources → protocol → data → runs → reproductions → objections → reviews → evidence state"
     };
   };
 
@@ -77,6 +77,46 @@
     panel.append(collection(labels.disputes, dossier.disputes, (item) => recordCard([[labels.id, item.case_id], [labels.state, item.status], [labels.note, item.summary || item.description]])));
     const reviews = (dossier.events || []).filter((event) => event.kind === "review"); panel.append(collection(labels.review, reviews, (item) => recordCard([[labels.reviewer, item.reviewer_campaign_id], [labels.decision, item.decision], [labels.note, item.note], [labels.created, item.created_at]])));
     panel.append(collection(labels.eventsTitle, dossier.events, (item) => recordCard([[labels.id, item.event_id], ["Kind", item.kind], [labels.created, item.created_at], ["Dossier", item.dossier_id]])));
+    const boardSection = document.createElement("section"); boardSection.className = "evidence-section evidence-review-board";
+    const boardHeading = document.createElement("h5"); boardHeading.textContent = labels.scientificBoard; boardSection.append(boardHeading);
+    const boardStatus = document.createElement("p"); boardStatus.className = "evidence-muted"; boardStatus.textContent = labels.boardLoading; boardSection.append(boardStatus);
+    const boardList = document.createElement("div"); boardList.className = "evidence-record-list"; boardSection.append(boardList);
+    const boardForm = document.createElement("form"); boardForm.className = "evidence-board-form";
+    const boardReviewer = document.createElement("input"); boardReviewer.required = true; boardReviewer.maxLength = 200; boardReviewer.placeholder = labels.reviewerId; boardReviewer.setAttribute("aria-label", labels.reviewerId);
+    const verdict = document.createElement("select"); verdict.setAttribute("aria-label", labels.verdict);
+    [["supports", labels.supports], ["challenges", labels.challenges], ["mixed", labels.mixed], ["abstains", labels.abstains]].forEach(([value, label]) => { const option = document.createElement("option"); option.value = value; option.textContent = label; verdict.append(option); });
+    const conflict = document.createElement("select"); conflict.setAttribute("aria-label", labels.conflict);
+    [["none_declared", labels.noneDeclared], ["potential", labels.potential], ["confirmed", labels.confirmed]].forEach(([value, label]) => { const option = document.createElement("option"); option.value = value; option.textContent = label; conflict.append(option); });
+    const rationale = document.createElement("textarea"); rationale.required = true; rationale.maxLength = 4000; rationale.placeholder = labels.rationale; rationale.setAttribute("aria-label", labels.rationale);
+    const methods = document.createElement("textarea"); methods.required = true; methods.maxLength = 4000; methods.placeholder = labels.methodsAssessment; methods.setAttribute("aria-label", labels.methodsAssessment);
+    const limitations = document.createElement("textarea"); limitations.required = true; limitations.maxLength = 4000; limitations.placeholder = labels.limitations; limitations.setAttribute("aria-label", labels.limitations);
+    const refs = document.createElement("input"); refs.placeholder = labels.evidenceRefs; refs.maxLength = 3000; refs.setAttribute("aria-label", labels.evidenceRefs);
+    const boardSubmit = document.createElement("button"); boardSubmit.type = "submit"; boardSubmit.textContent = labels.submitAssessment;
+    const boardFeedback = document.createElement("span"); boardFeedback.className = "evidence-review-feedback"; boardFeedback.setAttribute("aria-live", "polite");
+    boardForm.append(boardReviewer, verdict, conflict, rationale, methods, limitations, refs, boardSubmit, boardFeedback); boardSection.append(boardForm); panel.append(boardSection);
+    const loadBoard = () => get("/api/scientific-review-board?dossier_id=" + encodeURIComponent(dossier.dossier_id)).then((report) => {
+      boardList.replaceChildren(); const reviews = Array.isArray(report.reviews) ? report.reviews : [];
+      const summary = (report.summaries || [])[0];
+      boardStatus.textContent = reviews.length ? (summary?.disagreement_recorded ? labels.disagreement + " · " : "") + reviews.length + " " + labels.events + " · " + labels.noConsensus : labels.boardEmpty;
+      reviews.forEach((review) => {
+        const item = recordCard([[labels.reviewerId, review.reviewer_id], [labels.verdict, review.verdict], [labels.conflict, review.conflict_status], [labels.rationale, review.rationale], [labels.methodsAssessment, review.methods_assessment], [labels.limitations, review.limitations], [labels.evidenceRefs, (review.evidence_refs || []).join(", ")], [labels.created, review.created_at]]);
+        item.classList.add("evidence-board-review"); boardList.append(item);
+      });
+    }).catch(() => { boardStatus.textContent = labels.planUnavailable; });
+    loadBoard();
+    boardForm.addEventListener("submit", async (event) => {
+      event.preventDefault(); boardSubmit.disabled = true; boardFeedback.textContent = "…";
+      try {
+        const response = await fetch("/api/scientific-review-board/reviews", {method: "POST", headers: {"Content-Type": "application/json", "Accept": "application/json"}, body: JSON.stringify({
+          dossier_id: dossier.dossier_id, reviewer_id: boardReviewer.value, verdict: verdict.value,
+          conflict_status: conflict.value, rationale: rationale.value, methods_assessment: methods.value,
+          limitations: limitations.value, evidence_refs: refs.value.split(",").map((item) => item.trim()).filter(Boolean)
+        })});
+        const payload = await response.json(); if (!response.ok) throw new Error(payload.error || "HTTP " + response.status);
+        boardFeedback.textContent = labels.boardSaved; boardForm.reset(); await loadBoard();
+      } catch (error) { boardFeedback.textContent = error.message; }
+      finally { boardSubmit.disabled = false; }
+    });
     const verificationSection = document.createElement("section"); verificationSection.className = "evidence-section evidence-verification";
     const verificationHeading = document.createElement("h5"); verificationHeading.textContent = labels.verification; verificationSection.append(verificationHeading);
     const verificationStatus = document.createElement("p"); verificationStatus.className = "evidence-muted"; verificationStatus.textContent = "…"; verificationSection.append(verificationStatus); panel.append(verificationSection);
