@@ -213,51 +213,89 @@
   }
   function updateAmounts() {
     const amount = Number(amountInput.value);
-    const valid = rateReady && Number.isFinite(amount) && amount >= minimumLocal;
-    const amountUsd = amount / usdToLocalRate;
-    const split = document.getElementById("donation-payment-mode")?.value === "installments";
-    const installmentCount = split && valid ? Math.max(1, Math.floor(amountUsd / 10)) : 1;
-    const installmentLocal = amount / installmentCount;
-    const installmentUsd = amountUsd / installmentCount;
-    perOutput.textContent = valid ? formatMoney(installmentLocal) : "—";
-    totalOutput.textContent = valid ? formatMoney(amount) + " · " + new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(amountUsd) : "—";
-    const countOutput = document.getElementById("donation-installment-summary");
-    if (countOutput) countOutput.textContent = split ? (copy() === translations.fr ? installmentCount + " paiements distincts · " + new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(installmentUsd) + " chacun" : installmentCount + " separate payments · " + new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(installmentUsd) + " each") : (copy() === translations.fr ? "Paiement unique" : "One-time payment");
-    const paymentConfigured = typeof paymentLinks.PAYPAL_ME === "string" && paymentLinks.PAYPAL_ME.startsWith("https://www.paypal.com/paypalme/gudjencio");
-    checkout.disabled = !valid || !paymentConfigured || (split && installmentUsd < 10);
-    paymentStatus.textContent = !valid ? copy().invalid : paymentConfigured ? copy().paymentReady : copy().paymentMissing;
+    const valid = Number.isInteger(amount) && amount >= 1 && amount <= 100000;
+    const money = new Intl.NumberFormat(copy() === translations.fr ? "fr-FR" : "en-US", {style:"currency",currency:"USD",minimumFractionDigits:2}).format(amount || 0);
+    perOutput.textContent = valid ? money + " / month" : "—";
+    totalOutput.textContent = valid ? new Intl.NumberFormat(copy() === translations.fr ? "fr-FR" : "en-US", {style:"currency",currency:"USD"}).format(amount * 12) + " / year" : "—";
+    currencyLabel.textContent = copy() === translations.fr ? "USD / mois" : "USD / month";
+    const configured = Boolean(paymentLinks.PAYPAL_CLIENT_ID && paymentLinks.PAYPAL_SUBSCRIPTION_PLAN_ID);
+    paymentStatus.textContent = !valid ? copy().invalid : configured ? copy().paymentReady : copy().paymentMissing;
   }
-  async function chooseCurrency() {
-    const region = localeRegion();
-    currency = currencyByRegion[region] || "USD";
-    currencyLabel.textContent = currency;
-    const digits = ["JPY", "KRW"].includes(currency) ? 0 : 2;
-    try {
-      if (currency === "USD") usdToLocalRate = 1;
-      else {
-        const response = await fetch("https://open.er-api.com/v6/latest/USD", {cache:"no-store"});
-        if (!response.ok) throw new Error("Exchange-rate service unavailable");
-        const data = await response.json();
-        const rate = Number(data.rates && data.rates[currency]);
-        if (!Number.isFinite(rate) || rate <= 0) throw new Error("Exchange rate unavailable");
-        usdToLocalRate = rate;
-        rates[currency] = rate;
-      }
-      minimumLocal = Math.ceil(10 * usdToLocalRate * Math.pow(10,digits)) / Math.pow(10,digits);
-      amountInput.min = String(minimumLocal);
-      amountInput.step = digits === 0 ? "1" : "0.01";
-      if (Number(amountInput.value) < minimumLocal) amountInput.value = String(minimumLocal);
-      rateReady = true;
-      currencyNote.textContent = copy() === translations.fr ? "Minimum : 10 USD · taux de change indicatif actualisé. Le prestataire peut appliquer son propre taux ou des frais." : "Minimum: USD 10 · live indicative exchange rate. The payment provider may apply its own rate or fees."; 
-    } catch (_) {
-      currency = "USD"; usdToLocalRate = 1; minimumLocal = 10;
-      amountInput.min = "10"; amountInput.step = "0.01";
-      if (Number(amountInput.value) < 10) amountInput.value = "10";
-      currencyLabel.textContent = "USD"; rateReady = true;
-      currencyNote.textContent = copy() === translations.fr ? "Taux indisponible : les montants sont affichés en USD pour préserver le minimum exact." : "Exchange rate unavailable: amounts are shown in USD to preserve the exact minimum.";
-    }
+  function chooseCurrency() {
+    amountInput.min = "1";
+    amountInput.max = "100000";
+    amountInput.step = "1";
+    amountInput.value = String(Math.max(1, Math.round(Number(amountInput.value) || 1)));
+    currencyLabel.textContent = copy() === translations.fr ? "USD / mois" : "USD / month";
+    currencyNote.textContent = copy() === translations.fr
+      ? "Choisissez votre montant mensuel en USD. PayPal affichera les conditions de l’abonnement avant validation."
+      : "Choose your monthly amount in USD. PayPal will display the subscription terms before approval.";
     updateAmounts();
   }
+
+  let paypalButtonsRendered = false;
+  let paypalSdkPromise = null;
+  function loadPayPalSdk() {
+    if (window.paypal && window.paypal.Buttons) return Promise.resolve(window.paypal);
+    if (paypalSdkPromise) return paypalSdkPromise;
+    paypalSdkPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector('script[data-ssswet-paypal-sdk="true"]');
+      if (existing) {
+        existing.addEventListener("load", () => resolve(window.paypal), {once:true});
+        existing.addEventListener("error", reject, {once:true});
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://www.paypal.com/sdk/js?client-id=" + encodeURIComponent(paymentLinks.PAYPAL_CLIENT_ID) + "&vault=true&intent=subscription";
+      script.dataset.sdkIntegrationSource = "button-factory";
+      script.dataset.ssswetPaypalSdk = "true";
+      script.onload = () => window.paypal && window.paypal.Buttons ? resolve(window.paypal) : reject(new Error("PayPal SDK did not initialize."));
+      script.onerror = () => reject(new Error("Unable to load PayPal SDK."));
+      document.head.appendChild(script);
+    });
+    return paypalSdkPromise;
+  }
+  async function renderPayPalSubscriptionButton() {
+    const container = document.getElementById("paypal-button-container-P-75A66386EX5825057NLTZHII");
+    if (!container || paypalButtonsRendered) return;
+    try {
+      const paypal = await loadPayPalSdk();
+      if (!paypal || !paypal.Buttons) throw new Error("PayPal Buttons are unavailable.");
+      paypal.Buttons({
+        style: {shape:"pill", color:"blue", layout:"vertical", label:"paypal"},
+        createSubscription: function(data, actions) {
+          const amount = Number(amountInput.value);
+          if (!Number.isInteger(amount) || amount < 1 || amount > 100000) {
+            paymentStatus.textContent = copy() === translations.fr ? "Saisissez un montant mensuel entier d’au moins 1 USD." : "Enter a whole monthly amount of at least USD 1.";
+            return Promise.reject(new Error("Invalid monthly contribution amount."));
+          }
+          return actions.subscription.create({
+            plan_id: paymentLinks.PAYPAL_SUBSCRIPTION_PLAN_ID,
+            quantity: String(amount)
+          });
+        },
+        onApprove: function(data) {
+          paymentStatus.textContent = copy() === translations.fr
+            ? "Abonnement PayPal approuvé. Vous pouvez gérer ou annuler vos paiements récurrents depuis votre compte PayPal. Référence : " + data.subscriptionID
+            : "PayPal subscription approved. You can manage or cancel recurring payments from your PayPal account. Reference: " + data.subscriptionID;
+        },
+        onCancel: function() {
+          paymentStatus.textContent = copy() === translations.fr ? "Création de l’abonnement annulée." : "Subscription setup was cancelled.";
+        },
+        onError: function(error) {
+          console.error("[SSSWET] PayPal subscription error:", error);
+          paymentStatus.textContent = copy() === translations.fr
+            ? "PayPal n’a pas pu créer l’abonnement. Vérifiez que le plan autorise les quantités personnalisées et réessayez."
+            : "PayPal could not create the subscription. Check that the plan supports custom quantities, then try again.";
+        }
+      }).render("#paypal-button-container-P-75A66386EX5825057NLTZHII");
+      paypalButtonsRendered = true;
+    } catch (error) {
+      console.error("[SSSWET] PayPal SDK error:", error);
+      paymentStatus.textContent = copy() === translations.fr ? "Impossible de charger PayPal pour le moment. Actualisez la page et réessayez." : "PayPal could not be loaded right now. Refresh the page and try again.";
+    }
+  }
+
   function renderPortfolio() {
     const language = copy() === translations.fr ? "fr" : "en";
     const labels = portfolioLabels[language];
@@ -293,18 +331,20 @@
     const record = portfolio[key] || {};
     const detail = document.getElementById("technology-dialog-progress");
     if (detail) { const labels=portfolioLabels[language]; const stages={planning:labels.planning,literature_review:labels.literature,feasibility:labels.feasibility,prototype:labels.prototype,validation:labels.validation,available:labels.available}; const money=value=>new Intl.NumberFormat(language,{style:"currency",currency:"EUR"}).format(value); const goal=Number.isFinite(record.funding_goal_eur)&&record.funding_goal_eur>0?money(record.funding_goal_eur):labels.notSet; const total=Number.isFinite(record.confirmed_contributions_eur)&&record.confirmed_contributions_eur>=0?money(record.confirmed_contributions_eur):labels.unknown; detail.textContent=labels.stage+": "+(stages[record.stage]||labels.unknown)+" · "+labels.confirmed+": "+total+" · "+labels.goal+": "+goal; }
-    amountInput.value = String(minimumLocal);
+    amountInput.value = "1";
     updateAmounts();
     if (typeof modal.showModal === "function") modal.showModal();
     else modal.setAttribute("open", "");
+    renderPayPalSubscriptionButton();
   }
   grid.addEventListener("click", event => {
     const button = event.target.closest("button[data-tech]");
     if (button) openTechnology(button.dataset.tech);
   });
   amountInput.addEventListener("input", updateAmounts);
-  document.getElementById("donation-payment-mode")?.addEventListener("change", updateAmounts);
-  checkout.addEventListener("click", () => {
+  amountInput.addEventListener("change", updateAmounts);
+  /* PayPal renders its own secure subscription button below. */
+  if (false) checkout.addEventListener("click", () => {
     const url = paymentLinks.PAYPAL_ME;
     const amount = Number(amountInput.value);
     if (!url || !url.startsWith("https://www.paypal.com/paypalme/gudjencio") || !Number.isFinite(amount) || amount < minimumLocal || !rateReady) return;
@@ -315,34 +355,6 @@
     const localPayment = Math.ceil((amount / count) * Math.pow(10,digits)) / Math.pow(10,digits);
     const target = url.replace(/\/$/, "") + "/" + encodeURIComponent(String(localPayment) + currency);
     window.open(target, "_blank", "noopener,noreferrer");
-  });
-  document.getElementById("payment-reminder-save")?.addEventListener("click", async () => {
-    const email = document.getElementById("payment-reminder-email")?.value.trim() || "";
-    const frequency = document.getElementById("payment-reminder-frequency")?.value || "monthly";
-    const confirmed = document.getElementById("payment-reminder-first-paid")?.checked === true;
-    const status = document.getElementById("payment-reminder-status");
-    const endpoint = paymentLinks.PAYMENT_REMINDER_URL;
-    const fr = copy() === translations.fr;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !confirmed) { status.textContent = fr ? "Saisissez une adresse e-mail valide et confirmez le premier paiement." : "Enter a valid email address and confirm the first payment."; return; }
-    if (!endpoint || !endpoint.startsWith("https://")) { status.textContent = fr ? "Le service de rappels n’est pas encore déployé. Aucun e-mail n’a été enregistré ni envoyé." : "The reminder service has not been deployed yet. No email has been stored or sent."; return; }
-    const amount = Number(amountInput.value);
-    const usdTotal = amount / usdToLocalRate;
-    const split = document.getElementById("donation-payment-mode")?.value === "installments";
-    const count = split ? Math.max(1, Math.floor(usdTotal / 10)) : 1;
-    status.textContent = fr ? "Enregistrement de votre demande…" : "Registering your request…";
-    try {
-      const reminderPayload = {type:"payment_reminder_register",email,frequency,technology:selectedTechnology,total_usd:Number(usdTotal.toFixed(2)),installments:count,installment_usd:Number((usdTotal/count).toFixed(2)),language:document.documentElement.lang || "en",first_payment_confirmed:true};
-      const formBody = new URLSearchParams({payload:JSON.stringify(reminderPayload)});
-      await fetch(endpoint, {method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:formBody});
-      status.textContent = fr ? "Demande envoyée. Vérifiez votre boîte e-mail pour confirmer l’inscription. Si aucun message n’arrive, vérifiez la configuration du service." : "Request sent. Check your inbox to confirm the subscription. If no message arrives, check the service configuration.";
-    } catch (_) { status.textContent = fr ? "Impossible d’enregistrer le rappel. Réessayez plus tard ; aucun paiement automatique ne sera effectué." : "The reminder could not be registered. Please try again later; no automatic payment will be made."; }
-  });
-  copyButton.addEventListener("click", async () => {
-    const item = technologies[selectedTechnology];
-    const amount = Number(amountInput.value);
-    const summary = [item ? item[copy() === translations.fr ? "fr" : "en"][0] : "SSSWET", "Research contribution: " + formatMoney(amount), "Payment destination: PayPal", "Enter the amount manually on the PayPal page. Future product delivery is conditional on actual development, feasibility and separate terms."].join("\n");
-    try { await navigator.clipboard.writeText(summary); paymentStatus.textContent = copy().copied; }
-    catch (_) { paymentStatus.textContent = copy().copyError; }
   });
   document.querySelectorAll("[data-tech-copy]").forEach(element => {
     const key = element.dataset.techCopy;
@@ -391,7 +403,6 @@
       title.textContent = item[language][0]; description.textContent = item[language][1];
     }
     currencyNote.textContent = copy().currencyNote;
-    applyPaymentLanguage();
     renderPortfolio();
     updateAmounts();
   });
