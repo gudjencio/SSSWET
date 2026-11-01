@@ -124,3 +124,14 @@ for (const feature of ["timetravel", "Time travel research", "Voyage dans le tem
 if (!paymentConfig.includes("https://www.paypal.com/paypalme/gudjencio")) throw new Error("The official PayPal destination is not configured.");
 if (!pageSource.includes('data-tech="timetravel"')) throw new Error("Time travel is missing from the public technology catalogue.");
 console.log("Validated the PayPal research-funding route, conditional future product delivery wording and time-travel technology.");
+
+const portfolioConfig = fs.readFileSync(new URL("./donation-config.js", `file://${__filename}`), "utf8");
+for (const key of ["cellular", "longevity", "armor", "jetpack", "translator", "spacetime", "timetravel"]) {
+  if (!portfolioConfig.includes(key + ":")) throw new Error(`Research portfolio is missing ${key}`);
+}
+for (const field of ["funding_goal_eur: null", "confirmed_contributions_eur: null", 'stage: "planning"', 'prototype: false', 'availability: "not_available"']) {
+  if (!portfolioConfig.includes(field)) throw new Error(`Research portfolio transparency field missing: ${field}`);
+}
+if (!donationSourceLatest.includes("renderPortfolio") || !donationSourceLatest.includes("PayPal.Me does not synchronize")) throw new Error("Research progress display or manual-ledger disclosure is missing.");
+if (!pageSource.includes('id="portfolio-manual-note"') || !pageSource.includes('id="technology-dialog-progress"')) throw new Error("Research portfolio interface is missing.");
+console.log("Validated the seven-theme research portfolio, unpublished unknowns, manual PayPal ledger disclosure and progress interface.");
