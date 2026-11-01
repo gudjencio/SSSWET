@@ -141,7 +141,7 @@ def test_pipeline_reports_live_agent_activity():
 
 
 
-def test_pipeline_publishes_peer_review_handoffs_between_agents(tmp_path):
+def test_pipeline_runs_independent_peer_review_searches(tmp_path):
     from ssswet_core.persistence import SQLiteResearchStore
     store = SQLiteResearchStore(tmp_path / "peer-handoffs.sqlite3")
     pipeline = ResearchPipeline(store=store)
@@ -149,8 +149,11 @@ def test_pipeline_publishes_peer_review_handoffs_between_agents(tmp_path):
         "Study a harmless mathematical optimization problem", "math"
     )
     messages = store.recent_agent_messages(task_id=task_id)
+    requests = [item for item in messages if item["message_type"] == "peer_review_request"]
+    responses = [item for item in messages if item["message_type"] == "peer_review_response"]
     assert len(steps) == 2
-    assert len(messages) == 2
-    assert {item["message_type"] for item in messages} == {"peer_review_request"}
-    assert {item["review_state"] for item in messages} == {"awaiting_review"}
+    assert len(requests) == 2
+    assert len(responses) == 2
     assert all(item["sender_agent_id"] != item["recipient_agent_id"] for item in messages)
+    assert all("not approval or verification" in item["content"] for item in responses)
+    assert all(item["review_state"] == "awaiting_review" for item in requests)
