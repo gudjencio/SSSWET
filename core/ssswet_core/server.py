@@ -68,6 +68,8 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
             elif path == "/api/research-gaps":
                 from .research_gaps import ResearchGapAnalyzer
                 self._json(ResearchGapAnalyzer().report(store.knowledge_graph(limit=500)))
+            elif path == "/api/experiments":
+                self._json({"experiments": store.experiment_overview(limit=100)})
             elif path == "/health":
                 self._json({"status": "ok"})
             elif path.startswith("/api/"):
