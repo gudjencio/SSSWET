@@ -265,3 +265,8 @@ SSSWET can produce read-only descriptive summaries of recorded numeric laborator
 
 
 The [public research portfolio](docs/CONTRIBUTIONS.md#public-research-portfolio-and-progress-records) explains how research stages, confirmed contribution totals, funding goals and future availability are reported transparently.
+
+
+## Research journal
+
+The local research engine includes an append-only, hash-chained journal for dated technology-programme updates. Entries retain explicit classifications (hypothesis, literature, simulation, prototype, observation, independent review or project update), evidence references and progress states. The journal API reports chain integrity separately from scientific validity. Local journal writes are restricted to loopback clients; the static public site does not accept remote submissions.
