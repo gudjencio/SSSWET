@@ -667,9 +667,24 @@
     return summary;
   }
 
+function classifyDiscovery(group) {
+    const text = (group.summary + " " + Array.from(group.roles.keys()).join(" ")).toLowerCase();
+    if (/\b(error|exception|traceback|failed|failure|unavailable|timeout|connection refused|http 5\d\d)\b/.test(text)) return "technical";
+    if (/\b(crossref|openalex|doi|bibliographic|bibliography|publication|journal article|citation|references found)\b/.test(text)) return "bibliographic";
+    if (/\b(experiment|experimental|measurement|measured|observed|observation|laboratory result|dataset|simulation result|test result)\b/.test(text)) return "experimental";
+    if (/\b(hypothesis|hypotheses|hypothesize|hypothesised|hypothesized|proposed mechanism|conjecture|research question)\b/.test(text)) return "hypothesis";
+    if (/\b(verify|verification|verified|validation|validated|reproducib|independent review|peer review|evidence check)\b/.test(text)) return "verification";
+    return "other";
+  }
+
   async function showDiscoveries() {
     lastView = "discoveries";
     const t = currentTranslations();
+    const isFrench = document.documentElement.lang.toLowerCase().startsWith("fr");
+    const categoryLabels = isFrench
+      ? { all: "Toutes les catégories", bibliographic: "Découvertes bibliographiques", hypothesis: "Hypothèses", experimental: "Résultats expérimentaux", verification: "Vérifications", technical: "Alertes techniques", other: "Autres informations" }
+      : { all: "All categories", bibliographic: "Bibliographic discoveries", hypothesis: "Hypotheses", experimental: "Experimental results", verification: "Verification", technical: "Technical alerts", other: "Other information" };
+    const categoryOrder = ["bibliographic", "hypothesis", "experimental", "verification", "technical", "other"];
     try {
       const items = await apiGet("/api/discoveries");
       const groups = new Map();
@@ -683,11 +698,11 @@
         group.roles.set(role, (group.roles.get(role) || 0) + 1);
         group.count += 1;
       });
-
+      const entries = Array.from(groups.values()).map(group => ({ ...group, category: classifyDiscovery(group) }));
       dashboard.hidden = true;
       feed.hidden = false;
       feed.replaceChildren();
-      if (!groups.size) {
+      if (!entries.length) {
         const empty = document.createElement("p");
         empty.className = "feed-line";
         empty.textContent = t.noDiscoveries;
@@ -696,39 +711,70 @@
       }
 
       const heading = document.createElement("p");
-      heading.className = "feed-line";
-      heading.textContent = document.documentElement.lang.toLowerCase().startsWith("fr")
-        ? `${items.length} étapes examinées · ${groups.size} message(s) distinct(s)`
-        : `${items.length} steps reviewed · ${groups.size} distinct message(s)`;
+      heading.className = "feed-line discovery-heading";
+      heading.textContent = isFrench
+        ? items.length + " étapes examinées · " + entries.length + " messages distincts"
+        : items.length + " steps reviewed · " + entries.length + " distinct messages";
       feed.append(heading);
 
-      groups.forEach((group) => {
-        const paragraph = document.createElement("p");
-        paragraph.className = "feed-line";
-        const marker = document.createElement("span");
-        marker.textContent = "●";
-        const roles = Array.from(group.roles.entries())
-          .map(([role, count]) => count > 1 ? `${role} ×${count}` : role)
-          .join(", ");
-        const countLabel = group.count > 1
-          ? (document.documentElement.lang.toLowerCase().startsWith("fr")
-            ? ` · ${group.count} agents` : ` · ${group.count} agents`)
-          : "";
-        const status = document.createElement("span");
-        status.className = "discovery-status";
-        status.textContent = document.documentElement.lang.toLowerCase().startsWith("fr")
-          ? "Non vérifié" : "Unverified";
-        const metadata = document.createElement("span");
-        metadata.className = "discovery-meta";
-        metadata.textContent = roles + countLabel;
-        const summaryText = document.createElement("span");
-        summaryText.className = "discovery-summary";
-        summaryText.textContent = group.summary;
-        paragraph.append(marker, status, metadata, summaryText);
-        feed.append(paragraph);
+      const toolbar = document.createElement("div");
+      toolbar.className = "discovery-toolbar";
+      const filterLabel = document.createElement("label");
+      filterLabel.className = "discovery-filter-label";
+      filterLabel.textContent = isFrench ? "Filtrer les résultats" : "Filter results";
+      const filter = document.createElement("select");
+      filter.className = "discovery-filter";
+      filter.setAttribute("aria-label", filterLabel.textContent);
+      [["all", categoryLabels.all], ...categoryOrder.map(key => [key, categoryLabels[key]])].forEach(([value, label]) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label + (value === "all" ? "" : " (" + entries.filter(entry => entry.category === value).length + ")");
+        filter.append(option);
       });
+      toolbar.append(filterLabel, filter);
+      feed.append(toolbar);
 
-      if (voiceEnabled) Array.from(groups.values()).slice(0, 5).forEach(group => {
+      const list = document.createElement("div");
+      list.className = "discovery-list";
+      feed.append(list);
+      const renderEntries = () => {
+        list.replaceChildren();
+        const visible = filter.value === "all" ? entries : entries.filter(entry => entry.category === filter.value);
+        if (!visible.length) {
+          const empty = document.createElement("p");
+          empty.className = "feed-line";
+          empty.textContent = isFrench ? "Aucun résultat dans cette catégorie." : "No results in this category.";
+          list.append(empty);
+          return;
+        }
+        visible.forEach(group => {
+          const paragraph = document.createElement("article");
+          paragraph.className = "feed-line discovery-item category-" + group.category;
+          const top = document.createElement("div");
+          top.className = "discovery-item-top";
+          const category = document.createElement("span");
+          category.className = "discovery-category category-" + group.category;
+          category.textContent = categoryLabels[group.category];
+          const status = document.createElement("span");
+          status.className = "discovery-status";
+          status.textContent = isFrench ? "Non vérifié" : "Unverified";
+          top.append(category, status);
+          const metadata = document.createElement("p");
+          metadata.className = "discovery-meta";
+          metadata.textContent = Array.from(group.roles.entries())
+            .map(([role, count]) => count > 1 ? role + " ×" + count : role)
+            .join(", ") + (group.count > 1 ? (isFrench ? " · " + group.count + " agents" : " · " + group.count + " agents") : "");
+          const summaryText = document.createElement("p");
+          summaryText.className = "discovery-summary";
+          summaryText.textContent = group.summary;
+          paragraph.append(top, metadata, summaryText);
+          list.append(paragraph);
+        });
+      };
+      filter.addEventListener("change", renderEntries);
+      renderEntries();
+
+      if (voiceEnabled) entries.slice(0, 5).forEach(group => {
         const role = Array.from(group.roles.keys()).join(" ").toLowerCase();
         const agentIndex = /evidence|method|data|protocol|source/.test(role) ? 1
           : /integrity|review|ethic|safety|risk/.test(role) ? 2 : 0;
