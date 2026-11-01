@@ -31,6 +31,7 @@ The project explores a disciplined workflow for turning research questions into 
 | Evidence provenance | DOI, dataset and provenance-group records |
 | Knowledge graph | Typed nodes and explicit relationships |
 | Research review | Gap analysis and contradiction reporting |
+| Interdisciplinary discovery | Explainable cross-campaign relation suggestions for human review |
 | Experimentation | Structured plans, simulation records and real-observation records |
 | Simulation studies | Bounded multi-model comparisons and reproducible output records |
 | Optimization | Human-reviewed adaptive scenario proposals |
@@ -206,3 +207,6 @@ A separate research campaign can record a reproduction attempt against a publish
 The read-only endpoint /api/digital-lab exposes protocol and run records. The research timeline includes publication and run-recording events. Run comparisons require the same protocol version, execution kind, and exact parameters; numeric outputs can be compared using an explicitly supplied tolerance. Differences are reported field by field, and comparison reports are stored immutably with source and dataset references. Independent reproduction candidacy requires distinct campaigns, self-declared independence from both teams, distinct non-empty provenance groups, and no shared source or dataset identifiers. Independence is not independently authenticated.
 
 Agreement is not scientific validation. The comparison does not select a winning model, certify the methods, or change any knowledge verification state. Simulations and real observations are never mixed as equivalent evidence.
+
+
+See [Interdisciplinary relation discovery](docs/INTERDISCIPLINARY_RELATIONS.md) for the local API and review boundaries.
