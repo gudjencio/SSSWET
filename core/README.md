@@ -888,3 +888,18 @@ The independent_reproduction_candidate flag is a screening signal only: it requi
 ## Interdisciplinary relation discovery
 
 The read-only `GET /api/research-relations` endpoint proposes explainable lexical overlaps between knowledge-graph records in different campaigns. Each suggestion lists shared terms, a normalized Jaccard score and its method. It never creates graph edges or establishes scientific validity; researchers must review context and provenance. See `docs/INTERDISCIPLINARY_RELATIONS.md`.
+
+
+### Cross-campaign reproduction tracking
+
+The shared digital laboratory now provides a read-only reproduction matrix
+through `GET /api/digital-lab/reproduction-matrix`. It groups recorded runs
+by exact protocol version, lists participating campaigns, and identifies
+cross-campaign run pairs that have not yet been compared. The matrix does not
+run comparisons or experiments automatically.
+
+Each run comparison also reports environment equality, field-level environment
+differences and whether the code/model references match. Environment changes
+are surfaced for expert interpretation rather than silently ignored or
+automatically treated as disqualifying. Candidate reproduction remains a
+review status, not proof of independence or scientific validity.
