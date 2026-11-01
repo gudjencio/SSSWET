@@ -124,6 +124,13 @@ class ResearchPipeline:
             else:
                 task.status = TaskStatus.BLOCKED
                 self.engine.orchestrator.tasks.append(task)
+                resource_state = self.campaign_coordinator.snapshot()
+                if any(task_id in resource_state["failed_task_ids"] for task_id in task_ids):
+                    self.campaign_coordinator.block_milestone(
+                        campaign_id,
+                        milestone_id,
+                        "At least one required work item exhausted its retry policy; operator review is required.",
+                    )
                 self.engine.orchestrator.events.append(ResearchEvent(
                     "campaign_work_blocked",
                     "Campaign work remains queued or exhausted its retry policy.",
