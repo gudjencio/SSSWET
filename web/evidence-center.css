@@ -50,3 +50,11 @@ html[dir="rtl"] .evidence-center, html[dir="rtl"] .evidence-dossier { direction:
 .evidence-review-state { color: #c6a978 !important; }
 
 .evidence-review-history { margin: 4px 0 0; padding: 6px 8px; border-inline-start: 2px solid #39332a; color: #777; font-size: 9px; overflow-wrap: anywhere; }
+
+.evidence-review-board { padding-top: 10px; border-top: 1px solid #292929; }
+.evidence-board-form { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 9px; border: 1px solid #302b23; border-radius: 10px; background: rgba(255,255,255,.015); }
+.evidence-board-form input, .evidence-board-form select, .evidence-board-form textarea { min-width: 0; width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #343434; border-radius: 7px; background: #101010; color: #ddd; font: inherit; font-size: 10px; }
+.evidence-board-form textarea { grid-column: 1 / -1; min-height: 58px; resize: vertical; }
+.evidence-board-form button { justify-self: start; padding: 8px 10px; border-radius: 8px; font-size: 10px; }
+.evidence-board-review { border-color: #383126; }
+@media (max-width: 520px) { .evidence-board-form { grid-template-columns: 1fr; } .evidence-board-form > * { grid-column: 1; } }
