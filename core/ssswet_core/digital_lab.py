@@ -44,6 +44,7 @@ class LabProtocol:
     reviewed_by: str = ""
     review_note: str = ""
     created_at: str = ""
+    content_hash: str = ""
 
     def __post_init__(self):
         required = (self.protocol_id, self.title, self.objective, self.owner_campaign_id)
@@ -76,6 +77,7 @@ class LabRun:
     independence_declared: bool
     limitations: tuple[str, ...] = ()
     recorded_at: str = ""
+    record_hash: str = ""
 
     def __post_init__(self):
         required = (self.run_id, self.protocol_id, self.campaign_id, self.method)
@@ -129,9 +131,11 @@ class DigitalLabService:
             raise ValueError("Published protocols require procedure, parameters and expected outputs")
         if not protocol.controls or not protocol.limitations:
             raise ValueError("Published protocols require controls and stated limitations")
-        if not protocol.created_at:
-            from dataclasses import replace
-            protocol = replace(protocol, created_at=_now())
+        from dataclasses import replace
+        protocol = replace(protocol, created_at=protocol.created_at or _now(), content_hash="")
+        payload = asdict(protocol)
+        digest = sha256(_canonical(payload).encode("utf-8")).hexdigest()
+        protocol = replace(protocol, content_hash=digest)
         return self.store.save_lab_protocol(protocol)
 
     def record_run(self, run: LabRun) -> dict:
@@ -146,9 +150,10 @@ class DigitalLabService:
             raise ValueError("Run is missing expected protocol outputs")
         if run.kind not in RUN_KINDS:
             raise ValueError("Unsupported run kind")
-        if not run.recorded_at:
-            from dataclasses import replace
-            run = replace(run, recorded_at=_now())
+        from dataclasses import replace
+        run = replace(run, recorded_at=run.recorded_at or _now(), record_hash="")
+        digest = sha256(_canonical(asdict(run)).encode("utf-8")).hexdigest()
+        run = replace(run, record_hash=digest)
         return self.store.save_lab_run(run)
 
     def compare_runs(self, left_run_id: str, right_run_id: str, tolerance: float = 0.0) -> dict:
@@ -179,6 +184,10 @@ class DigitalLabService:
             "independence_declared_by_both": bool(left["independence_declared"] and right["independence_declared"]),
             "independence_independently_verified": False,
             "comparable": comparable,
+            "independent_reproduction_candidate": (
+                comparable and left["campaign_id"] != right["campaign_id"]
+                and left["independence_declared"] and right["independence_declared"]
+            ),
             "outputs_match_within_tolerance": comparable and not differences,
             "tolerance": tolerance,
             "differences": differences,
