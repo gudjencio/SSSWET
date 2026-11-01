@@ -9,7 +9,7 @@ description = "Verification-first research orchestration core for SSSWET"
 requires-python = ">=3.11"
 dependencies = []
 
-[tool.pytest.ini_options]
+[project.optional-dependencies]\npdf = ["pypdf>=5,<7"]\n\n[tool.pytest.ini_options]
 pythonpath = ["."]
 
 [project.scripts]
