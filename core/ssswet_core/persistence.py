@@ -126,6 +126,12 @@ class SQLiteResearchStore:
                     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
                 CREATE INDEX IF NOT EXISTS idx_campaigns_updated ON research_campaigns(updated_at DESC);
+                CREATE TABLE IF NOT EXISTS resource_snapshots (
+                    snapshot_id TEXT PRIMARY KEY,
+                    snapshot_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_resource_snapshots_created ON resource_snapshots(created_at DESC);
                 CREATE TABLE IF NOT EXISTS knowledge (
                     item_key TEXT PRIMARY KEY,
                     statement TEXT NOT NULL,
@@ -645,5 +651,31 @@ class SQLiteResearchStore:
             ).fetchall()
         return [
             {**json.loads(row["campaign_json"]), "updated_at": row["updated_at"]}
+            for row in rows
+        ]
+
+
+    def save_resource_snapshot(self, snapshot_id: str, snapshot: dict) -> None:
+        if not isinstance(snapshot_id, str) or not snapshot_id.strip():
+            raise ValueError("snapshot_id is required")
+        if not isinstance(snapshot, dict):
+            raise TypeError("snapshot must be a dictionary")
+        encoded = json.dumps(snapshot, ensure_ascii=False, sort_keys=True, allow_nan=False)
+        with self._connect() as connection:
+            connection.execute(
+                "INSERT INTO resource_snapshots(snapshot_id, snapshot_json) VALUES (?, ?)",
+                (snapshot_id, encoded),
+            )
+
+    def resource_snapshot_history(self, limit: int = 50) -> list[dict]:
+        bounded_limit = max(1, min(int(limit), 200))
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT snapshot_id, snapshot_json, created_at FROM resource_snapshots ORDER BY created_at DESC, snapshot_id LIMIT ?",
+                (bounded_limit,),
+            ).fetchall()
+        return [
+            {"snapshot_id": row["snapshot_id"], "created_at": row["created_at"],
+             "snapshot": json.loads(row["snapshot_json"])}
             for row in rows
         ]
