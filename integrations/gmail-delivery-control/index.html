@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en"><head><base target="_top"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{color-scheme:dark;font-family:Arial,sans-serif;background:#09090c;color:#e8e4ef}body{max-width:920px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:22px;font-weight:600}h2{font-size:15px;margin:0 0 14px}p,.hint{color:#aaa1b4;font-size:12px;line-height:1.65}
+section{margin:20px 0;padding:18px;border:1px solid #302a3a;border-radius:14px;background:#111016}
+label{display:grid;gap:6px;margin:10px 0;color:#bcb3c9;font-size:11px}input,textarea{box-sizing:border-box;width:100%;padding:10px;border:1px solid #393344;border-radius:8px;background:#09090c;color:#eee;font:inherit}
+textarea{min-height:90px;resize:vertical}button{padding:10px 14px;border:1px solid #62517b;border-radius:8px;background:#211a2c;color:#e9ddff;cursor:pointer;font-size:11px}
+button:disabled{opacity:.45;cursor:wait}.thread{padding:12px 0;border-top:1px solid #292432}.thread strong{display:block;font-size:12px}.thread small{display:block;color:#999;font-size:10px;margin:5px 0}
+.danger{border-color:#765c45;color:#f1cda8}.status{min-height:22px;color:#c8b7e4}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}code{color:#d5b8ff}
+</style></head><body>
+<h1>SSSWET — Private Gmail delivery control</h1>
+<p>Private owner-only tool for institutional email drafts and final delivery correspondence. It never sends email automatically.</p>
+<div id="status" class="status" role="status">Loading labelled delivery threads…</div>
+<section><h2>Institutional outreach — create a draft</h2>
+<p>Contact an organization or public authority only when the project genuinely needs its expertise, authorization or guidance. Complete the factual details, then review the draft in Gmail before deciding whether to send it.</p>
+<form id="draft-form">
+<label>Recipient email<input name="recipient" type="email" required></label><label>Organization / department<input name="organization" required></label>
+<label>Technology under consideration<input name="technology" required></label><label>Specific request and objective<textarea name="objective" required></textarea></label>
+<label>Project context, current evidence, limitations and relevant details<textarea name="details" required></textarea></label>
+<label>Best proposed first steps<textarea name="startingPoint" required></textarea></label><label>Subject (optional)<input name="subject"></label>
+<button type="submit">Create Gmail draft (do not send)</button></form></section>
+<section><h2>Delivery emails awaiting final verification</h2>
+<p>First verify the full payment in the official payment account and verify that the buyer actually received the technology. Then apply the Gmail label <code>SSSWET/Delivery-Complete</code> to the corresponding thread. Only labelled threads appear below.</p>
+<div class="row"><button id="refresh" type="button">Refresh list</button><span class="hint">No bulk actions.</span></div><div id="threads"></div></section>
+<script>
+const statusNode=document.getElementById("status"),threadsNode=document.getElementById("threads");
+function showError(error){statusNode.textContent=error&&error.message?error.message:String(error);}
+function loadThreads(){statusNode.textContent="Checking private Gmail label…";threadsNode.replaceChildren();google.script.run.withSuccessHandler(renderThreads).withFailureHandler(showError).getDeliveryThreads();}
+function renderThreads(data){threadsNode.replaceChildren();if(data.needsLabel){statusNode.textContent="Create Gmail label "+data.label+" and apply it only after manual review.";return;}
+statusNode.textContent=data.threads.length+" labelled thread(s) found.";if(!data.threads.length){threadsNode.textContent="No delivery threads are awaiting verification.";return;}
+data.threads.forEach(thread=>{const card=document.createElement("article");card.className="thread";const title=document.createElement("strong");title.textContent=thread.subject||"(no subject)";
+const meta=document.createElement("small");meta.textContent=thread.from+" · "+new Date(thread.date).toLocaleString()+" · "+thread.messageCount+" message(s)";
+const snippet=document.createElement("p");snippet.textContent=thread.snippet;
+const paid=document.createElement("label"),paidCheck=document.createElement("input");paidCheck.type="checkbox";paidCheck.style.width="auto";paid.append(paidCheck,document.createTextNode("I independently verified that the full payment has cleared."));
+const received=document.createElement("label"),receivedCheck=document.createElement("input");receivedCheck.type="checkbox";receivedCheck.style.width="auto";received.append(receivedCheck,document.createTextNode("I independently verified that the buyer received the technology."));
+const button=document.createElement("button");button.className="danger";button.textContent="Move this email thread to Gmail Trash";button.disabled=true;
+function update(){button.disabled=!(paidCheck.checked&&receivedCheck.checked);}paidCheck.addEventListener("change",update);receivedCheck.addEventListener("change",update);
+button.addEventListener("click",()=>{if(!paidCheck.checked||!receivedCheck.checked||!confirm("Final check: full payment is cleared AND delivery is confirmed. Move this one labelled thread to Gmail Trash?"))return;
+button.disabled=true;statusNode.textContent="Verifying and moving thread…";
+google.script.run.withSuccessHandler(result=>{statusNode.textContent=result.message;loadThreads();}).withFailureHandler(error=>{showError(error);button.disabled=false;}).moveVerifiedDeliveryToTrash(thread.id,"PAYMENT_AND_DELIVERY_VERIFIED");});
+card.append(title,meta,snippet,paid,received,button);threadsNode.append(card);});}
+document.getElementById("refresh").addEventListener("click",loadThreads);
+const draftForm=document.getElementById("draft-form");
+draftForm.addEventListener("submit",event=>{event.preventDefault();const form=event.currentTarget,button=form.querySelector('button[type="submit"]');button.disabled=true;
+const data=Object.fromEntries(new FormData(form).entries());statusNode.textContent="Creating a draft in Gmail…";
+google.script.run.withSuccessHandler(result=>{statusNode.textContent=result.message+" Review it in Gmail before sending.";draftForm.reset();button.disabled=false;}).withFailureHandler(error=>{showError(error);button.disabled=false;}).createInstitutionalDraft(data);});
+loadThreads();
+</script></body></html>
