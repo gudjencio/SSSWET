@@ -125,3 +125,17 @@ def test_negative_tolerance_is_rejected(tmp_path):
     service.record_run(make_run("run-b", "campaign-b", 4))
     with pytest.raises(ValueError, match="non-negative"):
         service.compare_runs("run-a", "run-b", -0.1)
+
+
+def test_shared_dataset_prevents_independent_reproduction_candidate(tmp_path):
+    from dataclasses import replace
+
+    _, service = setup(tmp_path)
+    left = replace(make_run("run-a", "campaign-a", 4), dataset_ids=("shared-dataset",))
+    right = replace(make_run("run-b", "campaign-b", 4), dataset_ids=("shared-dataset",))
+    service.record_run(left)
+    service.record_run(right)
+    result = service.compare_runs("run-a", "run-b")
+    assert result["comparable"] is True
+    assert result["shared_dataset_ids"] == ["shared-dataset"]
+    assert result["independent_reproduction_candidate"] is False
