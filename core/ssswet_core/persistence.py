@@ -120,6 +120,12 @@ class SQLiteResearchStore:
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
                 CREATE INDEX IF NOT EXISTS idx_adaptive_cycles_study ON adaptive_cycles(study_id);
+                CREATE TABLE IF NOT EXISTS research_campaigns (
+                    campaign_id TEXT PRIMARY KEY,
+                    campaign_json TEXT NOT NULL,
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_campaigns_updated ON research_campaigns(updated_at DESC);
                 CREATE TABLE IF NOT EXISTS knowledge (
                     item_key TEXT PRIMARY KEY,
                     statement TEXT NOT NULL,
@@ -603,5 +609,41 @@ class SQLiteResearchStore:
                 ).fetchall()
         return [
             {"cycle_id": row["cycle_id"], "created_at": row["created_at"], **json.loads(row["cycle_json"])}
+            for row in rows
+        ]
+
+
+    def save_campaign(self, campaign: object) -> None:
+        from .campaigns import campaign_to_dict
+        payload = campaign_to_dict(campaign)
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO research_campaigns(campaign_id, campaign_json)
+                VALUES (?, ?)
+                ON CONFLICT(campaign_id) DO UPDATE SET
+                    campaign_json=excluded.campaign_json,
+                    updated_at=CURRENT_TIMESTAMP
+                """,
+                (campaign.campaign_id, json.dumps(payload, ensure_ascii=False, sort_keys=True)),
+            )
+
+    def get_campaign(self, campaign_id: str) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT campaign_json FROM research_campaigns WHERE campaign_id = ?",
+                (campaign_id,),
+            ).fetchone()
+        return json.loads(row["campaign_json"]) if row else None
+
+    def campaign_history(self, limit: int = 100) -> list[dict]:
+        bounded_limit = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT campaign_json, updated_at FROM research_campaigns ORDER BY updated_at DESC, campaign_id LIMIT ?",
+                (bounded_limit,),
+            ).fetchall()
+        return [
+            {**json.loads(row["campaign_json"]), "updated_at": row["updated_at"]}
             for row in rows
         ]
