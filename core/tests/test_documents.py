@@ -18,7 +18,7 @@ class FakePage:
 
 
 class FakeReader:
-    pages = [FakePage("  First page\\nwith methods.  "), FakePage("Second page results.")]
+    pages = [FakePage("  First page\nwith methods.  "), FakePage("Second page results.")]
     metadata = SimpleNamespace(title="A Research Paper")
     is_encrypted = False
 
