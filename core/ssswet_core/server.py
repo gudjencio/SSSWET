@@ -224,6 +224,18 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 self._json({"campaigns": store.campaign_history(limit=100)})
             elif path == "/api/resources":
                 self._json({"snapshots": store.resource_snapshot_history(limit=50)})
+            elif path == "/api/lab-discrepancies":
+                from .lab_discrepancies import LabDiscrepancyAnalyzer
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["200"])[0])
+                except ValueError:
+                    self._json({"error": "limit must be an integer"}, 400)
+                    return
+                try:
+                    self._json(LabDiscrepancyAnalyzer(store).build(limit=limit))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/disputes":
                 from .disputes import DisputeResolutionService
                 service = DisputeResolutionService(store)
