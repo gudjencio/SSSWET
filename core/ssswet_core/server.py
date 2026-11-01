@@ -99,6 +99,18 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                     self._json({"error": "The limit parameter must be an integer"}, 400)
                     return
                 self._json(ScientificMemoryService(store).overview(query=query, limit=limit))
+            elif path == "/api/research-timeline":
+                from .research_timeline import ResearchTimeline
+                params = parse_qs(parsed.query)
+                campaign_id = params.get("campaign_id", [""])[0]
+                try:
+                    limit = int(params.get("limit", ["200"])[0])
+                except ValueError:
+                    self._json({"error": "The limit parameter must be an integer"}, 400)
+                    return
+                self._json(ResearchTimeline(store).build(
+                    campaign_id=campaign_id, limit=limit
+                ))
             elif path == "/api/scientific-memory/suggestions":
                 from .scientific_memory import ScientificMemoryService
                 from .research_gaps import ResearchGapAnalyzer
