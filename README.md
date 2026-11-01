@@ -68,6 +68,10 @@ SSSWET does **not** claim that software can guarantee zero errors or establish a
 
 ## Public project links
 
+- **Canonical web application (GitHub Pages):** https://gudjencio.github.io/SSSWET/
+- **Google Sites mirror:** embed the canonical URL above in a Google Sites page. See [Google Sites mirror setup](GOOGLE_SITES_MIRROR.md).
+- **Source repository:** https://github.com/gudjencio/SSSWET
+
 - X: https://x.com/ssswetech
 - Instagram: https://www.instagram.com/ssswetech
 - YouTube: https://www.youtube.com/@ssswetech
@@ -173,3 +177,16 @@ These initial translations are a foundation, not a claim of complete
 internationalization: native-speaker review, translated live backend events,
 date/number formatting, accessibility review and additional languages remain
 planned. The language catalogue can be expanded without rewriting the UI.
+
+
+## Public web deployment
+
+The static application in `web/` is deployed to GitHub Pages by
+[`.github/workflows/pages-deploy.yml`](.github/workflows/pages-deploy.yml)
+whenever the web application changes on `main`, or when manually triggered.
+If Pages has not previously been configured, select **GitHub Actions** under
+the repository's **Settings → Pages → Build and deployment** section.
+
+The Google Sites mirror embeds the canonical GitHub Pages URL rather than
+duplicating the app files. This keeps both entry points aligned after each
+deployment. See [the mirror guide](GOOGLE_SITES_MIRROR.md).
