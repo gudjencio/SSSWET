@@ -53,7 +53,10 @@ def test_does_not_suggest_same_campaign_or_existing_relationship(tmp_path):
     from ssswet_core.knowledge_graph import KnowledgeEdge
     store.add_knowledge_edge(KnowledgeEdge("n1", "n3", "related_to"))
     report = ResearchRelationDiscovery(store).discover()
-    pairs = {(item["source_node_id"], item["target_node_id"]) for item in report["suggestions"]}\n    assert ("n1", "n2") not in pairs\n    assert ("n1", "n3") not in pairs\n    assert ("n2", "n3") in pairs
+    pairs = {(item["source_node_id"], item["target_node_id"]) for item in report["suggestions"]}
+    assert ("n1", "n2") not in pairs
+    assert ("n1", "n3") not in pairs
+    assert ("n2", "n3") in pairs
 
 
 def test_discovery_is_deterministic_and_bounded(tmp_path):
