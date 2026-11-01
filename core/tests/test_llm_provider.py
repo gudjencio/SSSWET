@@ -45,6 +45,8 @@ def test_llm_provider_sends_prompt_and_returns_unverified_draft(monkeypatch):
     assert seen["authorization"] == "Bearer test-secret"
     assert seen["body"]["model"] == "test-model"
     assert "Never invent citations" in seen["body"]["messages"][0]["content"]
+    assert "warm, approachable, encouraging" in seen["body"]["messages"][0]["content"]
+    assert "remain rigorous" in seen["body"]["messages"][0]["content"]
     assert seen["timeout"] <= 90
 
 
