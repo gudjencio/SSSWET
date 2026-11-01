@@ -61,6 +61,8 @@ def test_reproduction_comparison_records_matching_conditions_and_outputs(tmp_pat
     assert result["independent_reproduction_candidate"] is True
     assert result["independence_independently_verified"] is False
     assert result["scientific_validity_established"] is False
+    assert len(store.lab_comparison_history()) == 1
+    assert service.overview()["comparison_count"] == 1
 
 
 def test_parameter_or_protocol_mismatch_prevents_reproduction_claim(tmp_path):
