@@ -9,6 +9,9 @@
   const labels = () => {
     const fr = isFrench();
     return {
+      title: fr ? "Études de sensibilité des paramètres" : "Parameter sensitivity studies",
+      caption: fr ? "Plans de variation contrôlée · plages documentées · incertitudes · revue humaine" : "Controlled variation plans · documented ranges · uncertainty · human review",
+      refresh: fr ? "Actualiser" : "Refresh",
       loading: fr ? "Préparation des plans…" : "Preparing study plans…",
       unavailable: fr ? "Les plans de sensibilité sont momentanément indisponibles." : "Sensitivity plans are temporarily unavailable.",
       empty: fr ? "Aucun protocole publié ne contient encore de définition complète de sensibilité." : "No published protocol contains sensitivity definitions yet.",
@@ -44,6 +47,11 @@
 
   async function load() {
     const l = labels();
+    const title = document.getElementById("parameter-sensitivity-title");
+    const caption = document.getElementById("parameter-sensitivity-caption");
+    if (title) title.textContent = l.title;
+    if (caption) caption.textContent = l.caption;
+    if (refresh) refresh.textContent = l.refresh;
     root.replaceChildren();
     status.textContent = l.loading;
     try {
