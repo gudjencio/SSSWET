@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
+from .contradiction import ContradictionDetector, ResearchClaim, ClaimConflict
 from .memory import KnowledgeMemory
-from .models import Finding, ResearchEvent, Task, TaskStatus, VerificationState
+from .models import Finding, ResearchEvent, Task
 from .orchestrator import ResearchOrchestrator
 from .safety import SafetyGate
 from .strategies import StrategySelector
@@ -30,6 +31,8 @@ class SSSWETEngine:
         self.verifier = VerificationEngine()
         self.safety = SafetyGate()
         self.strategies = StrategySelector()
+        self.contradictions = ContradictionDetector()
+        self._conflict_review_tasks: dict[tuple[str, str, tuple[str, ...]], str] = {}
         self.simulated_findings: list[Finding] = []
 
     def submit(self, objective: str, domain: str = "general", priority: int = 5) -> Task:
@@ -40,11 +43,7 @@ class SSSWETEngine:
         return self.orchestrator.schedule()
 
     def prepare_finding(self, task: Task, summary: str) -> Finding:
-        finding = Finding(
-            task_id=task.id,
-            summary=summary,
-            metadata={"domain": task.domain},
-        )
+        finding = Finding(task_id=task.id, summary=summary, metadata={"domain": task.domain})
         self.simulated_findings.append(finding)
         return finding
 
@@ -62,6 +61,36 @@ class SSSWETEngine:
 
     def record_reproduction(self, finding: Finding, reproduction_id: str) -> Finding:
         return self.verifier.require_reproduction(finding, reproduction_id)
+
+    def review_claims(
+        self,
+        claims: list[ResearchClaim],
+        parent_task_id: str | None = None,
+    ) -> list[ClaimConflict]:
+        """Detect explicit disagreements and queue one independent review per conflict."""
+        conflicts = self.contradictions.compare(claims)
+        for conflict in conflicts:
+            signature = (
+                conflict.subject,
+                conflict.predicate,
+                tuple(sorted(conflict.values, key=str.casefold)),
+            )
+            if signature in self._conflict_review_tasks:
+                continue
+            objective = (
+                f"Independently review conflicting claims about {conflict.subject} "
+                f"({conflict.predicate}): {', '.join(conflict.values)}. "
+                "Check source quality, methods, context and uncertainty; do not "
+                "assume either claim is correct."
+            )
+            review_task = self.submit(objective, domain="verification", priority=1)
+            self._conflict_review_tasks[signature] = review_task.id
+            self.orchestrator.events.append(ResearchEvent(
+                "disagreement_detected",
+                "Conflicting sourced claims detected; an independent review was queued.",
+                parent_task_id or review_task.id,
+            ))
+        return conflicts
 
     def publishable(self, finding: Finding) -> tuple[bool, list[str]]:
         return self.safety.assess(finding)
