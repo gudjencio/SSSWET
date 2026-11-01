@@ -58,6 +58,14 @@
           <div id="knowledge-map" class="knowledge-map" aria-label="Interactive knowledge graph"></div>
           <aside id="node-inspector" class="node-inspector" aria-live="polite"><p class="visual-empty" data-i18n="inspectorEmpty">Select a node to inspect its details and recorded connections.</p></aside>
         </section>
+        <section class="timeline-panel" aria-labelledby="timeline-title">
+          <div class="subsection-heading">
+            <h3 id="timeline-title" data-i18n="timelineTitle">Research history</h3>
+            <label class="timeline-filter"><span data-i18n="timelineFilter">Campaign</span><select id="timeline-campaign"><option value="" data-i18n="allCampaigns">All campaigns</option></select></label>
+          </div>
+          <p class="timeline-caption" data-i18n="timelineCaption">Recorded changes in chronological order. A timeline is not scientific validation.</p>
+          <div id="research-timeline" class="research-timeline" aria-live="polite"></div>
+        </section>
         <section class="opportunity-panel" aria-labelledby="opportunity-title">
           <div class="subsection-heading"><h3 id="opportunity-title" data-i18n="opportunityTitle">Research opportunities</h3><span data-i18n="opportunityCaption">Human review required · no automatic scientific conclusions</span></div>
           <div id="opportunity-list" class="opportunity-list" aria-live="polite"></div>
