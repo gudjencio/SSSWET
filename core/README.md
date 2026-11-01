@@ -501,10 +501,10 @@ SQLiteResearchStore().save_campaign(campaign)
 ```
 
 Campaigns persist in SQLite and the local read-only API exposes their
-summaries at `/api/campaigns`. This first version tracks milestones and
-links; it does not yet schedule agents, allocate compute budgets, or launch
-experiments. Those capabilities will be added behind explicit operator
-approval and resource limits.
+summaries at `/api/campaigns`. The campaign coordinator connects milestones
+to role-based local scheduling, bounded resource quotas and retry tracking.
+Scheduling does not launch physical experiments or imply scientific validity;
+operator review remains required for milestone completion and high-impact work.
 
 
 ### Campaign resource scheduling and pipeline integration
