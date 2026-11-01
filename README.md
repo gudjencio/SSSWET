@@ -195,3 +195,14 @@ Research campaigns can request a structured review of a knowledge-graph item by 
 The local read-only endpoint /api/collaboration/peer-reviews reports requests and submissions. The dashboard summarizes open and completed reviews. Review submissions are append-only; one submission is accepted per assigned reviewer campaign and request. Peer-review activity also appears in the research timeline.
 
 An independence declaration is self-reported and is not independently authenticated. Different campaign identifiers do not prove independent personnel, data, methods, or funding. Review outcomes are recorded perspectives, not votes that establish truth. No review automatically changes a knowledge node's verification state or resolves a scientific dispute.
+
+
+## Shared digital laboratory
+
+The local research core includes a shared digital-laboratory registry for reviewed protocol versions and recorded executions. A protocol is published only with a named reviewer, review note, explicit procedure, required parameters, expected outputs, controls, and limitations. Published protocol versions and execution records are immutable and carry SHA-256 content fingerprints.
+
+A separate research campaign can record a reproduction attempt against a published protocol version. Each run retains its execution kind (simulation or real-world observation), exact parameters, outputs, method, environment, model/code reference, provenance group, limitations, and an explicit independence declaration. SSSWET does not execute uploaded protocols or physical experiments.
+
+The read-only endpoint /api/digital-lab exposes protocol and run records. The research timeline includes publication and run-recording events. Run comparisons require the same protocol version, execution kind, and exact parameters; numeric outputs can be compared using an explicitly supplied tolerance. Differences are reported field by field. Independent reproduction candidacy requires distinct campaigns and self-declared independence from both teams; independence is not independently authenticated.
+
+Agreement is not scientific validation. The comparison does not select a winning model, certify the methods, or change any knowledge verification state. Simulations and real observations are never mixed as equivalent evidence.
