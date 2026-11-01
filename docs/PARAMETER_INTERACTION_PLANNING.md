@@ -10,7 +10,7 @@ Inside a protocol's `parameter_sensitivity` metadata, define `interaction_candid
 - `replicates`: an integer from 2 to 100 for each factor-level combination;
 - `rationale`: a concise, documented reason to investigate this pair.
 
-Both factors must also have complete, valid sensitivity metadata: matching units, explicit numeric ranges, baseline values, 3–9 unique levels including the baseline, measurement uncertainty, replicate metadata, safety constraints and rationale. No interaction pair or range is inferred from recorded runs.
+Both factors must also have complete, valid sensitivity metadata, and every other required parameter must have a declared baseline so it can be held constant: matching units, explicit numeric ranges, baseline values, 3–9 unique levels including the baseline, measurement uncertainty, replicate metadata, safety constraints and rationale. No interaction pair or range is inferred from recorded runs.
 
 ## Design construction
 
