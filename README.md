@@ -275,3 +275,8 @@ The local research engine includes an append-only, hash-chained journal for date
 ## Technology Feasibility Observatory
 
 The local research engine includes a read-only observatory for all seven technology programmes. It summarizes explicitly recorded literature, simulations, prototypes, tests and independent reviews, then identifies missing review areas without inventing a feasibility score or authorizing delivery. See [the observatory documentation](docs/TECHNOLOGY_FEASIBILITY_OBSERVATORY.md).
+
+
+## Private Gmail delivery workflow
+
+The owner-restricted [Google Apps Script source and setup guide](integrations/gmail-delivery-control/README.md) supports manual payment-and-delivery verification and creates institutional email drafts without sending them automatically.
