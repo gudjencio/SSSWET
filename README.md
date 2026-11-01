@@ -19,7 +19,7 @@ The project explores a disciplined workflow for turning research questions into 
 - Coordinate research campaigns, resources and knowledge transfers.
 - Provide a multilingual web interface and a local research environment.
 
-## Current capabilities
+## Laboratory verification planning\n\nThe local review API can generate evidence-linked checklists for recorded laboratory discrepancies. These checklists highlight missing records and comparison checks for human assessment; they do not create tasks, execute experiments or establish scientific validity. See [Laboratory verification planning](docs/LAB_VERIFICATION_PLANNING.md).\n\n## Current capabilities
 
 | Area | Available functionality |
 |---|---|
