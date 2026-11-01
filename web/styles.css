@@ -449,3 +449,74 @@ button:hover { border-color: #5a5274; background: linear-gradient(115deg, rgba(4
 .priority-score-grid small { color: #777; font-size: 10px; }
 .priority-assessment-form button { justify-self: start; }
 @media (max-width: 560px) { .priority-assessment-panel { padding: 14px; } .priority-score-grid { grid-template-columns: 1fr; } .priority-assessment-panel .subsection-heading { align-items: flex-start; } }
+
+
+/* Research team is the first interactive destination on the landing page. */
+.panel { order: 2; }
+.technology-showcase { order: 3; }
+.footer { order: 4; }
+.engine-connection { order: 1; }
+.feed {
+  border: 1px solid rgba(173, 151, 225, .2);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(129, 104, 194, .12), transparent 38%),
+    linear-gradient(145deg, rgba(15, 15, 23, .98), rgba(5, 6, 10, .98));
+  box-shadow: inset 0 1px rgba(255,255,255,.025), 0 14px 40px rgba(0,0,0,.22);
+  padding: clamp(14px, 2.5vw, 22px);
+}
+.agent-team-title { margin-top: 18px; }
+.agent-role-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.agent-role {
+  min-height: 118px;
+  align-items: center;
+  padding: 14px 12px;
+  border-color: rgba(169,154,220,.22);
+  background: linear-gradient(145deg, rgba(31,28,45,.62), rgba(8,10,15,.9));
+  box-shadow: inset 0 1px rgba(255,255,255,.025);
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.agent-role:hover {
+  transform: translateY(-2px);
+  border-color: rgba(190,174,255,.48);
+  box-shadow: 0 10px 28px rgba(91,73,145,.12);
+}
+.agent-avatar { flex-basis: 54px; width: 54px; height: 54px; border-radius: 17px; }
+.agent-robot-head { transform-origin: 50% 80%; animation: agent-head-turn 5.5s ease-in-out infinite; }
+.agent-robot-body { animation: agent-breathe 3.2s ease-in-out infinite; }
+.agent-avatar-2 .agent-robot-head { animation-delay: -1.7s; }
+.agent-avatar-3 .agent-robot-head { animation-delay: -3.4s; }
+.agent-questions-panel {
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid rgba(169,154,220,.18);
+  border-radius: 14px;
+  background: rgba(10,10,16,.62);
+}
+.agent-questions-panel .agent-section-title { margin-top: 0; }
+.agent-questions { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.agent-question {
+  min-height: 58px;
+  border-color: rgba(169,154,220,.2);
+  background: linear-gradient(145deg, rgba(30,27,43,.8), rgba(12,13,19,.9));
+  color: #e6def8;
+}
+.agent-question:hover { border-color: rgba(194,178,255,.55); background: rgba(44,38,65,.85); }
+.agent-details { margin-top: 12px; }
+@keyframes agent-head-turn {
+  0%, 72%, 100% { transform: rotate(0deg) translateY(0); }
+  78% { transform: rotate(-5deg) translateY(-1px); }
+  86% { transform: rotate(5deg) translateY(0); }
+}
+@keyframes agent-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@media (max-width: 700px) {
+  .agent-role-list { grid-template-columns: 1fr; }
+  .agent-role { min-height: 88px; }
+  .agent-questions { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-avatar, .agent-robot-head, .agent-robot-body { animation: none !important; }
+  .agent-role, .agent-question { transition: none; }
+}
