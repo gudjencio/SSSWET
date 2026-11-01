@@ -659,13 +659,59 @@
     const t = currentTranslations();
     try {
       const items = await apiGet("/api/discoveries");
-      const lines = items.map((item) => `[UNVERIFIED · ${item.role || "research"}] ${item.summary || ""}`).filter(Boolean);
-      showMessage(lines.length ? lines.join(" • ") : t.noDiscoveries, 0, false);
-      if (voiceEnabled && lines.length) items.slice(0, 5).forEach(item => {
-        const role = String(item.role || "").toLowerCase();
+      const groups = new Map();
+      items.forEach((item) => {
+        const summary = String(item.summary || item.statement || "").trim();
+        if (!summary) return;
+        const key = summary.replace(/\\s+/g, " ").toLocaleLowerCase();
+        if (!groups.has(key)) groups.set(key, { summary, roles: new Map(), count: 0 });
+        const group = groups.get(key);
+        const role = String(item.role || "research").replace(/_/g, " ");
+        group.roles.set(role, (group.roles.get(role) || 0) + 1);
+        group.count += 1;
+      });
+
+      dashboard.hidden = true;
+      feed.hidden = false;
+      feed.replaceChildren();
+      if (!groups.size) {
+        const empty = document.createElement("p");
+        empty.className = "feed-line";
+        empty.textContent = t.noDiscoveries;
+        feed.append(empty);
+        return;
+      }
+
+      const heading = document.createElement("p");
+      heading.className = "feed-line";
+      heading.textContent = document.documentElement.lang.toLowerCase().startsWith("fr")
+        ? `${items.length} étapes examinées · ${groups.size} message(s) distinct(s)`
+        : `${items.length} steps reviewed · ${groups.size} distinct message(s)`;
+      feed.append(heading);
+
+      groups.forEach((group) => {
+        const paragraph = document.createElement("p");
+        paragraph.className = "feed-line";
+        const marker = document.createElement("span");
+        marker.textContent = "●";
+        const roles = Array.from(group.roles.entries())
+          .map(([role, count]) => count > 1 ? `${role} ×${count}` : role)
+          .join(", ");
+        const countLabel = group.count > 1
+          ? (document.documentElement.lang.toLowerCase().startsWith("fr")
+            ? ` · ${group.count} agents` : ` · ${group.count} agents`)
+          : "";
+        paragraph.append(marker, document.createTextNode(
+          ` [UNVERIFIED · ${roles}]${countLabel} ${group.summary}`
+        ));
+        feed.append(paragraph);
+      });
+
+      if (voiceEnabled) Array.from(groups.values()).slice(0, 5).forEach(group => {
+        const role = Array.from(group.roles.keys()).join(" ").toLowerCase();
         const agentIndex = /evidence|method|data|protocol|source/.test(role) ? 1
           : /integrity|review|ethic|safety|risk/.test(role) ? 2 : 0;
-        speakAsAgent(item.summary || item.statement || "", agentIndex);
+        speakAsAgent(group.summary, agentIndex);
       });
     } catch { showMessage(t.offline); }
   }
