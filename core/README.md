@@ -632,3 +632,44 @@ memory, update campaign milestones, infer contradictions from abstracts, or
 promote findings. Metadata-only discovery cannot establish a publication's
 quality, methods, reproducibility or truth. Repeat the command when you want a
 new snapshot; periodic unattended scheduling is not enabled by this command.
+
+
+### Per-campaign recurring literature monitoring
+
+A local operator can create a monitoring subscription for an active campaign
+through the Python API:
+
+```python
+from ssswet_core.campaign_literature_watch import CampaignLiteratureWatch
+from ssswet_core.persistence import SQLiteResearchStore
+from ssswet_core.providers import MultiSourceLiteratureProvider
+
+store = SQLiteResearchStore()
+provider = MultiSourceLiteratureProvider(max_results=5)
+monitor = CampaignLiteratureWatch(store, provider)
+subscription = monitor.subscribe(
+    campaign_id="your-active-campaign-id",
+    query="orbital dynamics",
+    interval_minutes=1440,
+)
+```
+
+The subscription is due immediately, then at the selected interval (between
+one hour and 30 days). A scheduler pass executes only subscriptions that are
+due and whose campaigns remain active:
+
+```bash
+ssswet-watch-campaigns
+```
+
+Run that command periodically with the operating system's scheduler to enable
+recurring checks. Paused campaigns are not monitored. Each run records new
+candidate identifiers separately from previously seen identifiers. The
+identifier comparison is bibliographic deduplication only; it does not assess
+scientific importance or truth.
+
+Subscriptions and run history are available through the read-only
+`/api/literature-watch/campaigns` endpoint. The command is a one-shot pass,
+not a background daemon. Provider failures are recorded by exception type and
+do not create findings. Monitoring never registers sources, changes collective
+memory, changes campaign milestones or marks claims verified.
