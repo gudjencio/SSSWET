@@ -870,7 +870,7 @@ def test_official_web_origins_can_read_local_api_and_preflight_private_network(t
 
 def test_local_server_can_start_without_private_dashboard_token(monkeypatch, tmp_path):
     import sys
-    import sssswet_core.server as server_module
+    import ssswet_core.server as server_module
 
     class StubServer:
         def __init__(self, address, handler):
