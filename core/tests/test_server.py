@@ -301,3 +301,60 @@ def test_digital_lab_api_lists_published_protocols_and_recorded_runs(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_digital_lab_reproduction_matrix_endpoint_is_read_only(tmp_path):
+    import json
+    import threading
+    from urllib.error import HTTPError
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.digital_lab import DigitalLabService, LabProtocol, LabRun
+    from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "reproduction-matrix-api.sqlite3")
+    for campaign_id in ("source", "team-a", "team-b"):
+        campaign = create_campaign(
+            campaign_id, campaign_id, "Reproduction study", "computational science",
+            [CampaignMilestone("m1", "Review", "Review protocol")],
+        )
+        store.save_campaign(set_campaign_state(campaign, "active"))
+    service = DigitalLabService(store)
+    service.publish_protocol(LabProtocol(
+        "protocol", 1, "Numerical protocol", "Compare an illustrative output",
+        "source", ("Apply declared equation",), ("input",), ("output",),
+        {}, ("Same input",), ("Illustrative only",), ("No physical experiment",),
+        "published", "reviewer", "Reviewed for clarity",
+    ))
+    for run_id, campaign_id in (("run-a", "team-a"), ("run-b", "team-b")):
+        service.record_run(LabRun(
+            run_id, "protocol", 1, campaign_id, "simulation",
+            {"input": 2}, {"output": 4}, "y=2x", {"runtime": "Python"},
+            "model-v1", campaign_id + "-lab", True,
+        ))
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        with urlopen(base + "/api/digital-lab/reproduction-matrix") as response:
+            payload = json.loads(response.read())
+        group = payload["protocol_groups"][0]
+        assert group["distinct_campaign_count"] == 2
+        assert group["pending_comparison_count"] == 1
+        assert payload["scientific_validity_established"] is False
+        try:
+            urlopen(base + "/api/digital-lab/reproduction-matrix?limit=invalid")
+        except HTTPError as error:
+            assert error.code == 400
+        else:
+            raise AssertionError("Invalid limit must be rejected")
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
