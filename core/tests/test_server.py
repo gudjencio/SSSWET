@@ -453,3 +453,67 @@ def test_research_opportunities_endpoint_combines_review_leads(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_lab_verification_plans_endpoint_is_read_only(tmp_path):
+    import json
+    import threading
+    from urllib.error import HTTPError
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.digital_lab import DigitalLabService, LabProtocol, LabRun
+    from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "lab-verification-api.sqlite3")
+    for campaign_id in ("owner", "team-a", "team-b"):
+        campaign = create_campaign(
+            campaign_id, campaign_id, "Verification planning", "computational science",
+            [CampaignMilestone("m1", "Review", "Review the recorded model")],
+        )
+        store.save_campaign(set_campaign_state(campaign, "active"))
+    service = DigitalLabService(store)
+    service.publish_protocol(LabProtocol(
+        "verification-protocol", 1, "Numerical model", "Compare declared outputs",
+        "owner", ("Record input", "Run model"), ("input",), ("output",),
+        {}, ("same initial condition",), ("Illustrative only",),
+        ("No physical execution is performed",), "published", "reviewer", "Reviewed",
+    ))
+    def run(run_id, campaign_id, output, environment):
+        return LabRun(
+            run_id, "verification-protocol", 1, campaign_id, "simulation",
+            {"input": 1}, {"output": output}, "Declared numerical model",
+            environment, "model-v1", campaign_id + "-provenance", True,
+        )
+    service.record_run(run("run-a", "team-a", 1, {"runtime": "A"}))
+    service.record_run(run("run-b", "team-b", 2, {"runtime": "B"}))
+    service.compare_runs("run-a", "run-b", tolerance=0.0)
+
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        with urlopen(base + "/api/lab-verification-plans") as response:
+            payload = json.loads(response.read())
+        assert payload["count"] == 1
+        codes = {item["code"] for item in payload["plans"][0]["checks"]}
+        assert "environment" in codes
+        assert "measurement_and_tolerance" in codes
+        assert payload["automatic_execution"] is False
+        assert payload["automatic_task_creation"] is False
+        assert payload["scientific_validity_established"] is False
+        try:
+            urlopen(base + "/api/lab-verification-plans?limit=invalid")
+        except HTTPError as error:
+            assert error.code == 400
+        else:
+            raise AssertionError("Invalid limit must be rejected")
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
