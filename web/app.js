@@ -9,41 +9,76 @@
   const sameOriginBase = window.location.origin;
   let activeApiBase = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(sameOriginBase)
     ? sameOriginBase : null;
+  let apiDiscoveryPromise = null;
   let lastApiFailure = "The local engine has not responded yet.";
 
-  window.ssswetApiFetch = async function(path, options = {}) {
-    const candidates = [...new Set([activeApiBase, ...localApiBases, sameOriginBase].filter(Boolean))];
-    const failures = [];
-    for (const base of candidates) {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 2200);
-      try {
-        const response = await fetch(new URL(path, base).toString(), {
-          ...options,
-          signal: options.signal || controller.signal,
-          cache: "no-store",
-          headers: { Accept: "application/json", ...(options.headers || {}) }
-        });
-        window.clearTimeout(timeout);
-        if (!response.ok) {
-          failures.push(base + " · HTTP " + response.status);
-          if ([404, 405].includes(response.status) || response.status >= 500) continue;
-          throw new Error("HTTP " + response.status);
+  async function discoverLocalApi(force = false) {
+    if (activeApiBase && !force) return activeApiBase;
+    if (apiDiscoveryPromise) return apiDiscoveryPromise;
+    apiDiscoveryPromise = (async () => {
+      const candidates = [...new Set([
+        activeApiBase,
+        ...localApiBases,
+        sameOriginBase
+      ].filter(Boolean))];
+      const failures = [];
+      for (const base of candidates) {
+        try {
+          const response = await fetch(new URL("/api/status", base).toString(), {
+            method: "GET",
+            mode: "cors",
+            headers: { Accept: "application/json" },
+            cache: "no-store",
+            signal: AbortSignal.timeout(12000)
+          });
+          if (!response.ok) {
+            failures.push(base + " · HTTP " + response.status);
+            continue;
+          }
+          const status = await response.json();
+          if (status.service !== "SSSWET") {
+            failures.push(base + " · unexpected service response");
+            continue;
+          }
+          activeApiBase = base;
+          window.SSSWET_API_BASE = base;
+          lastApiFailure = "";
+          window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:true,base}}));
+          return base;
+        } catch (error) {
+          failures.push(base + " · " + (error.name === "AbortError" ? "timeout" : error.message));
         }
-        activeApiBase = base;
-        window.SSSWET_API_BASE = base;
-        window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:true,base}}));
-        return response;
-      } catch (error) {
-        window.clearTimeout(timeout);
-        failures.push(base + " · " + (error.name === "AbortError" ? "timeout" : error.message));
       }
+      activeApiBase = null;
+      window.SSSWET_API_BASE = null;
+      lastApiFailure = failures.join(" | ") || "No local research engine responded.";
+      window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:false,error:lastApiFailure}}));
+      throw new Error(lastApiFailure);
+    })();
+    try { return await apiDiscoveryPromise; }
+    finally { apiDiscoveryPromise = null; }
+  }
+
+  window.ssswetApiFetch = async function(path, options = {}) {
+    const base = await discoverLocalApi();
+    try {
+      const response = await fetch(new URL(path, base).toString(), {
+        ...options,
+        mode: "cors",
+        cache: "no-store",
+        headers: { Accept: "application/json", ...(options.headers || {}) }
+      });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return response;
+    } catch (error) {
+      activeApiBase = null;
+      window.SSSWET_API_BASE = null;
+      window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:false,error:error.message}}));
+      throw error;
     }
-    lastApiFailure = failures.join(" | ") || "No API endpoint responded.";
-    window.SSSWET_API_BASE = null;
-    window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:false,error:lastApiFailure}}));
-    throw new Error(lastApiFailure);
   };
+
+
 
 
   const agentCount = document.getElementById("agent-count");
