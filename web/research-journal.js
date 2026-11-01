@@ -6,6 +6,16 @@
   const filter=document.getElementById("research-journal-filter");
   const form=document.getElementById("research-journal-form");
   const refresh=document.getElementById("research-journal-refresh");
+  const technologyCatalogue=window.SSSWET_TECHNOLOGIES||{};
+  [filter,form?.elements?.technology].filter(Boolean).forEach(select=>{
+    Object.entries(technologyCatalogue).forEach(([key,item])=>{
+      if(select.querySelector('option[value="'+key+'"]'))return;
+      const option=document.createElement("option");
+      option.value=key;
+      option.textContent=(document.documentElement.lang||"en").toLowerCase().startsWith("fr")?item.fr[0]:item.en[0];
+      select.append(option);
+    });
+  });
   const labels={
     en:{empty:"No journal entries have been recorded.",unavailable:"The local research journal is unavailable. Start the SSSWET local engine to view or add entries.",chain:"Hash-chain integrity",intact:"Intact",broken:"Integrity issue detected",entries:"entries",validity:"Scientific validity established: no",refs:"References",author:"Recorded by",created:"Recorded",classification:"Classification",state:"State",write:"Entries can only be added from the local machine.",saved:"Entry recorded permanently.",error:"Could not record entry: "},
     fr:{empty:"Aucune entrée n’a encore été enregistrée.",unavailable:"Le journal local est indisponible. Démarrez le moteur local SSSWET pour consulter ou ajouter des entrées.",chain:"Intégrité de la chaîne de hachage",intact:"Intacte",broken:"Problème d’intégrité détecté",entries:"entrées",validity:"Validité scientifique établie : non",refs:"Références",author:"Enregistré par",created:"Enregistré le",classification:"Classification",state:"État",write:"Les entrées ne peuvent être ajoutées que depuis la machine locale.",saved:"Entrée ajoutée définitivement.",error:"Impossible d’enregistrer : "}
