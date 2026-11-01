@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import hmac
+import os
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
