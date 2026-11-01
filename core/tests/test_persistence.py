@@ -104,3 +104,37 @@ def test_source_dependency_report_handles_unknown_source(tmp_path):
     assert store.source_dependency_report("unknown") == {
         "source_id": "unknown", "found": False, "dependencies": [],
     }
+
+
+def test_experiment_plan_and_records_persist_separately(tmp_path):
+    from ssswet_core.experimentation import (
+        draft_experiment_plan, make_experiment_record,
+    )
+    store = SQLiteResearchStore(tmp_path / "experiments.sqlite3")
+    plan = draft_experiment_plan("exp-a", "hyp-a", "A measurable hypothesis")
+    store.save_experiment_plan(plan)
+    simulated = make_experiment_record(
+        "sim-a", "exp-a", "simulation", {"result": 1.2}, "toy model"
+    )
+    observed = make_experiment_record(
+        "obs-a", "exp-a", "real_observation", {"result": 1.1}, "instrument log"
+    )
+    store.save_experiment_record(simulated)
+    store.save_experiment_record(observed)
+    saved = store.get_experiment_plan("exp-a")
+    records = store.experiment_records("exp-a")
+    assert saved["state"] == "draft"
+    assert {record["kind"] for record in records} == {"simulation", "real_observation"}
+    assert len(store.experiment_overview()) == 1
+
+
+def test_experiment_record_requires_existing_plan(tmp_path):
+    from ssswet_core.experimentation import make_experiment_record
+    store = SQLiteResearchStore(tmp_path / "orphan-record.sqlite3")
+    record = make_experiment_record("record-a", "missing-plan", "simulation", {}, "model")
+    try:
+        store.save_experiment_record(record)
+    except ValueError as exc:
+        assert "plan must be saved" in str(exc)
+    else:
+        raise AssertionError("An orphan experiment record must be rejected")
