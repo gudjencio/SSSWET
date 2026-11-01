@@ -254,6 +254,16 @@
         }
       },
       {
+        key: "disputes", path: "/api/disputes", list: null,
+        title: t.dashDisputes,
+        count: (a, p) => (p.detected_contradictions || []).length,
+        detail: (a, p) => dashboardMetrics([
+          [t.dashDetectedContradictions, (p.detected_contradictions || []).length],
+          [t.dashOpenReviews, (p.review_cases || []).filter(x => x.state === "open" || x.state === "reviewing").length],
+          [t.dashClosedReviews, (p.review_cases || []).filter(x => ["resolved", "unresolved", "insufficient_evidence"].includes(x.state)).length]
+        ])
+      },
+      {
         key: "collaboration", path: "/api/collaboration/recommendations", list: "recommendations",
         title: t.dashCollaboration,
         count: (a) => a.length,
