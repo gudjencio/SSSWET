@@ -27,7 +27,7 @@ The project explores a disciplined workflow for turning research questions into 
 | Literature discovery | Crossref, OpenAlex and arXiv metadata discovery; review-oriented duplicate and topic-overlap watch |
 | Local documents | JSON corpus and page-based PDF text extraction |
 | Model integration | Configurable OpenAI-compatible chat-completions provider |
-| Research memory | Persistent collective notes with campaign links, source provenance, review states and lexical retrieval |
+| Research memory | Persistent collective notes and immutable, versioned scientific-memory snapshots linked to campaigns, graph nodes, experiments and sources |
 | Evidence provenance | DOI, dataset and provenance-group records |
 | Knowledge graph | Typed nodes and explicit relationships |
 | Research review | Gap analysis and contradiction reporting |
@@ -161,3 +161,12 @@ A scientific dispute review workflow is also available through the local
 `/api/disputes` endpoint. It records human assessments of explicit graph
 contradictions without automatically choosing a winning claim or changing
 scientific verification states.
+
+
+## Versioned scientific memory
+
+The local research core includes an append-only scientific-memory ledger. Each entry is a versioned snapshot linked, where applicable, to campaign identifiers, knowledge-graph nodes, experiment plans and source identifiers. Revisions require an explicit superseded version and a review note; earlier snapshots remain in the archive.
+
+The read-only local endpoint `/api/scientific-memory` provides the version history and current-entry overview. Add `?q=...` for transparent lexical retrieval. The companion `/api/scientific-memory/suggestions` endpoint surfaces linked graph contradictions and recorded research gaps as review leads. A contradiction marks linked entries for attention but does not select a correct claim. Older versions are retained and labelled as potentially outdated rather than deleted.
+
+Workflow states (`candidate`, `reviewed`, `contested`, `archived`) are not scientific verification states. Retrieval scores, review decisions and graph relationships do not establish scientific validity. Suggestions do not create tasks or launch experiments automatically. See the [core developer guide](core/README.md) for the Python API.
