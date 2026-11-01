@@ -89,6 +89,14 @@ Capabilities are implemented incrementally. The public web interface is static a
 
 The global dashboard visualizes recorded knowledge-graph nodes and declared edges, and lists research-gap and interdisciplinary-link opportunities for human review. The hosted dashboard connects to the separately deployed API configured in `web/api-config.js`; local loopback discovery remains available for development. The cloud service and persistent disk must be provisioned before live public data is available. See [research opportunity synthesis](docs/RESEARCH_OPPORTUNITIES.md) and [hosted deployment](docs/HOSTED_DEPLOYMENT.md).
 
+## Hosted deployment
+
+The public dashboard can connect to a continuously running research API hosted independently of visitor devices. The repository includes a Render Blueprint with a persistent data disk.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/gudjencio/SSSWET)
+
+Review the proposed paid web-service instance and persistent-disk charges in Render before approving deployment. The hosted API is not active until the Blueprint has been deployed successfully. See [the deployment guide](docs/HOSTED_DEPLOYMENT.md).
+
 ## Architecture
 
 The repository is organized into two main parts:
