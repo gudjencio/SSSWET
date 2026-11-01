@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const MIN_CONTRIBUTION = 10;
+  const MIN_CONTRIBUTION = 1;
   const links = window.SSSWET_DONATION_LINKS || {};
 
   const install = () => {
@@ -21,8 +21,8 @@
       return note;
     })();
     minimumNote.textContent = document.documentElement.lang?.startsWith("fr")
-      ? "Minimum de contribution : 10 USD ou l’équivalent affiché. Pour un montant supérieur, le montant choisi est transmis à PayPal.Me."
-      : "Minimum contribution: USD 10 or the displayed equivalent. For a higher amount, the selected amount is passed to PayPal.Me.";
+      ? "Minimum de contribution : 1 USD ou l’équivalent affiché."
+      : "Minimum contribution: USD 1 or the displayed equivalent.";
 
     if (checkout.dataset.dynamicPaymentInstalled === "true") return;
     checkout.dataset.dynamicPaymentInstalled = "true";
@@ -33,8 +33,8 @@
       const value = Number(amount.value);
       if (!Number.isFinite(value) || value < MIN_CONTRIBUTION) {
         status.textContent = document.documentElement.lang?.startsWith("fr")
-          ? "Le montant minimum est de 10 USD ou son équivalent affiché."
-          : "The minimum contribution is USD 10 or the displayed equivalent.";
+          ? "Le montant minimum est de 1 USD ou son équivalent affiché."
+          : "The minimum contribution is USD 1 or the displayed equivalent.";
         return;
       }
 
