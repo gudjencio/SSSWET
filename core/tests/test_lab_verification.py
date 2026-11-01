@@ -55,3 +55,60 @@ def test_empty_registry_returns_no_plans():
     result = LabVerificationPlanner(FakeStore([], [])).build()
     assert result["plans"] == []
     assert result["automatic_task_creation"] is False
+
+
+class ReviewStore(FakeStore):
+    def __init__(self, comparisons, runs):
+        super().__init__(comparisons, runs)
+        self.events = []
+
+    def lab_verification_event_history(self, plan_id=None, limit=500):
+        items = [event for event in self.events if not plan_id or event["plan_id"] == plan_id]
+        return items[:limit]
+
+    def append_lab_verification_event(self, event):
+        if any(item["event_id"] == event["event_id"] for item in self.events):
+            raise ValueError("duplicate event")
+        self.events.append(dict(event))
+
+
+def test_review_lifecycle_appends_history_and_closes_completed_check():
+    comparison = {
+        "comparison_id": "cmp-life", "left_run_id": "a", "right_run_id": "b",
+        "comparable": True, "outputs_match_within_tolerance": False,
+    }
+    store = ReviewStore([comparison], [_run("a", "team-a"), _run("b", "team-b")])
+    planner = LabVerificationPlanner(store)
+    plan = planner.build()["plans"][0]
+    code = next(item["code"] for item in plan["checks"] if item["code"] == "measurement_and_tolerance")
+    first = planner.record_check_review(plan["plan_id"], code, "in_progress", "Reviewing units and tolerance.", "reviewer-1")
+    second = planner.record_check_review(plan["plan_id"], code, "completed", "Units and tolerance reviewed.", "reviewer-2")
+    assert first["event_id"] != second["event_id"]
+    assert len(store.events) == 2
+    refreshed = planner.build()["plans"][0]
+    check = next(item for item in refreshed["checks"] if item["code"] == code)
+    assert check["review_state"] == "completed"
+    assert len(check["review_history"]) == 2
+    try:
+        planner.record_check_review(plan["plan_id"], code, "blocked", "Reopen", "reviewer-3")
+    except ValueError as error:
+        assert "closed" in str(error)
+    else:
+        raise AssertionError("Completed checks must be closed")
+
+
+def test_review_lifecycle_rejects_unknown_check_and_empty_note():
+    store = ReviewStore([{
+        "comparison_id": "cmp-invalid", "left_run_id": "a", "right_run_id": "b",
+        "comparable": False,
+    }], [])
+    planner = LabVerificationPlanner(store)
+    plan_id = planner.build()["plans"][0]["plan_id"]
+    for code, note in (("not-a-check", "Note"), ("align_conditions", "  ")):
+        try:
+            planner.record_check_review(plan_id, code, "completed", note, "reviewer")
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Invalid review event must be rejected")
+    assert store.events == []
