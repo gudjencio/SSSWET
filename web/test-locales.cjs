@@ -147,3 +147,9 @@ const feasibilitySource=fs.readFileSync(new URL('./technology-feasibility.js', `
 new Function(feasibilitySource);
 if(!pageSource.includes('id="technology-feasibility-list"')||!feasibilitySource.includes('/api/technology-feasibility'))throw new Error('Technology feasibility observatory UI is missing.');
 console.log('Validated the technology feasibility observatory interface.');
+
+const purchaseConfig=fs.readFileSync(new URL('./product-purchase-config.js', `file://${__filename}`),'utf8');
+new Function(purchaseConfig);
+for(const key of ['cellular','longevity','armor','jetpack','translator','spacetime','timetravel']) if(!purchaseConfig.includes(key+':')) throw new Error('Product purchase config missing '+key);
+if(!purchaseConfig.includes('delivery_address_collection')||!purchaseConfig.includes('legal_review_required')) throw new Error('Product purchase safeguards missing.');
+console.log('Validated future product purchase gates and delivery safeguards.');
