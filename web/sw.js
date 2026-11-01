@@ -1,5 +1,5 @@
-const CACHE = "ssswet-web-v14";
-const ASSETS = ["./", "./index.html", "./styles.css", "./locales.js", "./app.js", "./manifest.json"];
+const CACHE = "ssswet-web-v15";
+const ASSETS = ["./", "./index.html", "./styles.css", "./locales.js", "./app.js", "./evidence-center.js", "./evidence-center.css", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));
