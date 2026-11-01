@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from .pipeline import ResearchPipeline
+from .persistence import SQLiteResearchStore
 from .providers import CorpusDocument, DeterministicDemoProvider, LocalCorpusProvider
 
 
@@ -31,6 +32,7 @@ def main() -> None:
     parser.add_argument("--objective", required=True)
     parser.add_argument("--domain", default="general")
     parser.add_argument("--corpus", help="Optional JSON file containing local source documents")
+    parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
     args = parser.parse_args()
 
     provider = (
@@ -38,10 +40,12 @@ def main() -> None:
         if args.corpus
         else DeterministicDemoProvider()
     )
-    pipeline = ResearchPipeline(provider=provider)
+    store = SQLiteResearchStore(args.database)
+    pipeline = ResearchPipeline(provider=provider, store=store)
     task_id, steps = pipeline.start(args.objective, args.domain)
 
     print(f"Task: {task_id}")
+    print(f"History database: {store.path}")
     print("Classification: research output only; NOT VERIFIED")
     for step in steps:
         print(f"\n[{step.subtask.role}] {step.agent_id} — {step.provider}")
