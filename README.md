@@ -24,7 +24,7 @@ The project explores a disciplined workflow for turning research questions into 
 | Area | Available functionality |
 |---|---|
 | Research workflow | Task decomposition, role-based allocation, strategy changes and bounded orchestration |
-| Literature discovery | Crossref, OpenAlex and arXiv metadata discovery |
+| Literature discovery | Crossref, OpenAlex and arXiv metadata discovery; review-oriented duplicate and topic-overlap watch |
 | Local documents | JSON corpus and page-based PDF text extraction |
 | Model integration | Configurable OpenAI-compatible chat-completions provider |
 | Research memory | Persistent collective notes with campaign links, source provenance, review states and lexical retrieval |
@@ -71,6 +71,9 @@ Open [http://127.0.0.1:8765](http://127.0.0.1:8765) in a browser.
 
 ```bash
 ssswet-run --objective "Review methods for measuring wave propagation" --domain physics
+
+# Run a one-shot scholarly metadata watch
+ssswet-watch --query "wave propagation measurement methods"
 ```
 
 A local JSON corpus can be supplied with `--corpus`. PDF extraction is available through the optional dependency:
@@ -82,7 +85,7 @@ ssswet-run --objective "Compare experimental methods" --domain physics --pdf ./p
 
 For literature metadata discovery, use `--provider crossref`, `openalex`, `arxiv` or `literature`. A compatible language-model provider can be configured with local environment variables; API credentials must never be committed to the repository.
 
-See the [core developer guide](core/README.md) for command options, provider configuration, data formats and API details.
+The literature watch compares returned metadata with registered sources and collective-memory topics. It flags possible DOI duplicates, close title matches and related memory entries for review; it does not automatically import sources, alter campaigns or validate claims. Saved reports are available through the local read-only `/api/literature-watch` endpoint.\n\nSee the [core developer guide](core/README.md) for command options, provider configuration, data formats and API details.
 
 ## Scientific integrity and responsible research
 
