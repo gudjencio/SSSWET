@@ -1,4 +1,4 @@
-"""Run one local SSSWET research pass against a supplied document corpus."""
+"""Run one local SSSWET research pass against a supplied source."""
 from __future__ import annotations
 
 import argparse
@@ -7,7 +7,12 @@ from pathlib import Path
 
 from .pipeline import ResearchPipeline
 from .persistence import SQLiteResearchStore
-from .providers import CorpusDocument, DeterministicDemoProvider, LocalCorpusProvider
+from .providers import (
+    CorpusDocument,
+    CrossrefProvider,
+    DeterministicDemoProvider,
+    LocalCorpusProvider,
+)
 
 
 def load_corpus(path: str) -> list[CorpusDocument]:
@@ -33,13 +38,17 @@ def main() -> None:
     parser.add_argument("--domain", default="general")
     parser.add_argument("--corpus", help="Optional JSON file containing local source documents")
     parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
+    parser.add_argument("--provider", choices=("demo", "crossref"), default="demo")
+    parser.add_argument("--mailto", default="", help="Optional contact email for Crossref requests")
     args = parser.parse_args()
 
-    provider = (
-        LocalCorpusProvider(load_corpus(args.corpus))
-        if args.corpus
-        else DeterministicDemoProvider()
-    )
+    if args.corpus:
+        provider = LocalCorpusProvider(load_corpus(args.corpus))
+    elif args.provider == "crossref":
+        provider = CrossrefProvider(mailto=args.mailto)
+    else:
+        provider = DeterministicDemoProvider()
+
     store = SQLiteResearchStore(args.database)
     pipeline = ResearchPipeline(provider=provider, store=store)
     task_id, steps = pipeline.start(args.objective, args.domain)
