@@ -78,6 +78,8 @@ class LabRun:
     limitations: tuple[str, ...] = ()
     recorded_at: str = ""
     record_hash: str = ""
+    source_ids: tuple[str, ...] = ()
+    dataset_ids: tuple[str, ...] = ()
 
     def __post_init__(self):
         required = (self.run_id, self.protocol_id, self.campaign_id, self.method)
@@ -91,6 +93,8 @@ class LabRun:
             raise ValueError("Run environment must be an object")
         if not isinstance(self.independence_declared, bool):
             raise ValueError("Independence must be explicitly declared")
+        if len(set(self.source_ids)) != len(self.source_ids) or len(set(self.dataset_ids)) != len(self.dataset_ids):
+            raise ValueError("Source and dataset identifiers must be unique")
         _canonical(self.parameters)
         _canonical(self.outputs)
         _canonical(self.environment)
@@ -173,7 +177,7 @@ class DigitalLabService:
         same_parameters = _canonical(left["parameters"]) == _canonical(right["parameters"])
         differences = _compare_values(left["outputs"], right["outputs"], tolerance)
         comparable = same_protocol and same_kind and same_parameters
-        return {
+        result = {
             "comparison_id": sha256(f"{left_run_id}|{right_run_id}|{tolerance}".encode()).hexdigest(),
             "left_run_id": left_run_id,
             "right_run_id": right_run_id,
@@ -196,16 +200,24 @@ class DigitalLabService:
             "requires_human_review": True,
             "scientific_validity_established": False,
             "interpretation": "Matching recorded outputs do not establish model validity or scientific truth." if comparable and not differences else "Differences or incompatible run conditions require investigation; no run is selected as correct.",
+            "compared_at": _now(),
+            "source_ids": sorted(set(left.get("source_ids", [])) | set(right.get("source_ids", []))),
+            "dataset_ids": sorted(set(left.get("dataset_ids", [])) | set(right.get("dataset_ids", []))),
         }
+        self.store.save_lab_comparison(result)
+        return result
 
     def overview(self, limit: int = 200) -> dict:
         protocols = self.store.lab_protocol_history(limit=limit)
         runs = self.store.lab_run_history(limit=limit)
+        comparisons = self.store.lab_comparison_history(limit=limit)
         return {
             "protocols": protocols,
             "runs": runs,
+            "comparisons": comparisons,
             "protocol_count": len(protocols),
             "run_count": len(runs),
+            "comparison_count": len(comparisons),
             "scientific_validity_established": False,
             "automatic_execution": False,
         }
