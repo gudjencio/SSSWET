@@ -19,7 +19,7 @@ def _now() -> str:
 
 
 def _tokens(value: str) -> set[str]:
-    return {part.casefold() for part in re.findall(r"[\w'-]{2,}", value, flags=re.UNICODE)}
+    return {part.casefold() for part in re.findall(r"[\w']{2,}", value, flags=re.UNICODE)}
 
 
 @dataclass(frozen=True)
