@@ -19,6 +19,10 @@ The project explores a disciplined workflow for turning research questions into 
 - Coordinate research campaigns, resources and knowledge transfers.
 - Provide a multilingual web interface and a local research environment.
 
+## Research Integrity & Ethics Framework
+
+The append-only risk register records concerns involving data integrity, bias, conflicts of interest, reproducibility, safety, ethics, legal/regulatory constraints and security. Unresolved high or critical risks generate a human-review campaign-hold recommendation. The software does not automatically suspend campaigns, authorize research or certify that a risk has been eliminated. See [the framework documentation](docs/RESEARCH_INTEGRITY_ETHICS.md).
+
 ## Scientific Review Board
 
 Structured dossier reviews can record support, challenge, mixed or abstaining assessments, together with a methods assessment, limitations and an explicit conflict-of-interest declaration. Each assessment remains independently visible; disagreement is reported rather than averaged into an automatic verdict. Reviewer labels and conflict declarations are self-reported, and the board does not certify identity, expertise, independence or scientific validity. See [the Scientific Review Board documentation](docs/SCIENTIFIC_REVIEW_BOARD.md).
