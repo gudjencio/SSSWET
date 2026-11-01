@@ -560,3 +560,53 @@ external actions, or treat model agreement as scientific proof. Resource
 units are configurable accounting values rather than measured hardware or
 financial costs. The read-only `/api/resources` and `/api/campaigns` endpoints
 expose the corresponding saved records.
+
+
+### Collective research memory
+
+The collective-memory registry stores reusable research notes with their
+campaign association, source identifiers, provenance group, confidence
+assessment and explicit review state. Records are persisted in SQLite and
+remain available after a restart.
+
+Create a candidate record and save it locally:
+
+```python
+from ssswet_core.collective_memory import CollectiveMemoryRecord
+from ssswet_core.persistence import SQLiteResearchStore
+
+store = SQLiteResearchStore()
+record = CollectiveMemoryRecord.create(
+    "memory-001",
+    "wave propagation",
+    "A candidate method estimates wave speed from repeated observations",
+    campaign_id="campaign-001",
+    source_ids=("paper-001", "dataset-004"),
+    provenance_group="originating-study-001",
+    confidence=0.35,
+)
+store.save_collective_memory(record)
+```
+
+Search the saved records using transparent lexical overlap:
+
+```python
+from ssswet_core.collective_memory import search_collective_memory
+
+matches = search_collective_memory(
+    store.collective_memory_items(),
+    "wave speed measurement",
+)
+```
+
+The local read-only API exposes the registry at `/api/memory` and search at
+`/api/memory/search?q=wave%20speed`. Search results include matched terms,
+a retrieval score and the retrieval method. The score is a lexical ranking
+heuristic, not semantic similarity, confidence or scientific validity.
+
+Review decisions are explicit and require a note through `review_memory`.
+The available states are `candidate`, `reviewed`, `rejected` and
+`superseded`. Rejected and superseded records remain in the archive so later
+teams can understand prior decisions; callers may exclude rejected records
+from a search when appropriate. Review does not modify the original sources,
+prove a claim, or replace the independent-evidence verification process.
