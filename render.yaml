@@ -2,11 +2,11 @@ services:
   - type: web
     name: ssswet-research-api
     runtime: docker
-    plan: starter
+    plan: 0.5c-512mb
     region: frankfurt
     healthCheckPath: /api/status
     dockerfilePath: ./Dockerfile
-    autoDeploy: true
+    autoDeployTrigger: checksPass
     disk:
       name: ssswet-research-data
       mountPath: /var/data
