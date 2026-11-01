@@ -63,6 +63,22 @@ class SQLiteResearchStore:
                     classification TEXT NOT NULL DEFAULT 'unverified',
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
+                CREATE TABLE IF NOT EXISTS sources (
+                    source_id TEXT PRIMARY KEY,
+                    doi TEXT NOT NULL DEFAULT '',
+                    title TEXT NOT NULL,
+                    url TEXT NOT NULL DEFAULT '',
+                    source_type TEXT NOT NULL,
+                    authors TEXT NOT NULL,
+                    institutions TEXT NOT NULL,
+                    dataset_ids TEXT NOT NULL,
+                    related_source_ids TEXT NOT NULL,
+                    provenance_group TEXT NOT NULL DEFAULT '',
+                    metadata TEXT NOT NULL,
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_sources_doi ON sources(doi);
+                CREATE INDEX IF NOT EXISTS idx_sources_provenance ON sources(provenance_group);
                 CREATE TABLE IF NOT EXISTS knowledge (
                     item_key TEXT PRIMARY KEY,
                     statement TEXT NOT NULL,
@@ -201,3 +217,111 @@ class SQLiteResearchStore:
             }
             for row in rows
         ]
+
+
+    def register_source(self, source: object) -> None:
+        """Insert or update a source's traceable bibliographic provenance."""
+        metadata = {
+            "peer_reviewed": bool(source.peer_reviewed),
+            "primary_source": bool(source.primary_source),
+            "methods_available": bool(source.methods_available),
+            "publication_date_known": bool(source.publication_date_known),
+            "limitations": list(source.limitations),
+            "retrieved_at": source.retrieved_at,
+        }
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO sources(
+                    source_id, doi, title, url, source_type, authors, institutions,
+                    dataset_ids, related_source_ids, provenance_group, metadata, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(source_id) DO UPDATE SET
+                    doi=excluded.doi, title=excluded.title, url=excluded.url,
+                    source_type=excluded.source_type, authors=excluded.authors,
+                    institutions=excluded.institutions, dataset_ids=excluded.dataset_ids,
+                    related_source_ids=excluded.related_source_ids,
+                    provenance_group=excluded.provenance_group,
+                    metadata=excluded.metadata, updated_at=CURRENT_TIMESTAMP
+                """,
+                (
+                    source.source_id.strip(), source.doi.strip(), source.title.strip(),
+                    source.url, source.source_type,
+                    json.dumps(list(source.authors), ensure_ascii=False),
+                    json.dumps(list(source.institutions), ensure_ascii=False),
+                    json.dumps(list(source.dataset_ids), ensure_ascii=False),
+                    json.dumps(list(source.related_source_ids), ensure_ascii=False),
+                    source.provenance_group.strip(),
+                    json.dumps(metadata, ensure_ascii=False),
+                ),
+            )
+
+    def get_source(self, source_id: str) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM sources WHERE source_id = ?", (source_id,)
+            ).fetchone()
+        if row is None:
+            return None
+        item = dict(row)
+        for field in ("authors", "institutions", "dataset_ids", "related_source_ids", "metadata"):
+            item[field] = json.loads(item[field])
+        return item
+
+    def find_sources_by_doi(self, doi: str) -> list[dict]:
+        normalized = doi.strip().lower().removeprefix("https://doi.org/").removeprefix("http://doi.org/")
+        if not normalized:
+            return []
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT source_id FROM sources WHERE lower(doi) = ? ORDER BY source_id",
+                (normalized,),
+            ).fetchall()
+        return [item for row in rows if (item := self.get_source(row["source_id"])) is not None]
+
+    def sources_sharing_provenance(self, provenance_group: str) -> list[dict]:
+        group = provenance_group.strip()
+        if not group:
+            return []
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT source_id FROM sources WHERE provenance_group = ? ORDER BY source_id",
+                (group,),
+            ).fetchall()
+        return [item for row in rows if (item := self.get_source(row["source_id"])) is not None]
+
+    def source_dependency_report(self, source_id: str) -> dict:
+        """Return explicit DOI, dataset and declared related-source overlaps."""
+        source = self.get_source(source_id)
+        if source is None:
+            return {"source_id": source_id, "found": False, "dependencies": []}
+        dependencies: dict[str, set[str]] = {}
+        for other in self._all_source_records():
+            if other["source_id"] == source_id:
+                continue
+            reasons = set()
+            if source["doi"] and source["doi"].casefold() == other["doi"].casefold():
+                reasons.add("same_doi")
+            shared_datasets = set(source["dataset_ids"]) & set(other["dataset_ids"])
+            if shared_datasets:
+                reasons.add("shared_dataset:" + ",".join(sorted(shared_datasets)))
+            if other["source_id"] in source["related_source_ids"] or source_id in other["related_source_ids"]:
+                reasons.add("declared_related_source")
+            if source["provenance_group"] and source["provenance_group"] == other["provenance_group"]:
+                reasons.add("same_provenance_group")
+            if reasons:
+                dependencies[other["source_id"]] = reasons
+        return {
+            "source_id": source_id,
+            "found": True,
+            "dependencies": [
+                {"source_id": key, "reasons": sorted(value)}
+                for key, value in sorted(dependencies.items())
+            ],
+            "warning": "Declared overlaps are review signals, not proof of dependence or independence.",
+        }
+
+    def _all_source_records(self) -> list[dict]:
+        with self._connect() as connection:
+            rows = connection.execute("SELECT source_id FROM sources ORDER BY source_id").fetchall()
+        return [item for row in rows if (item := self.get_source(row["source_id"])) is not None]
