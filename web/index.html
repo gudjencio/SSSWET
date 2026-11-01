@@ -41,10 +41,19 @@
       </div>
 
       <div class="actions">
+        <button data-action="dashboard" data-i18n="dashboard">Global science dashboard</button>
         <button data-action="discover" data-i18n="discover">What did you discover?</button>
         <button data-action="working" data-i18n="working">What are you working on?</button>
         <button data-action="verified" data-i18n="verified">Latest verified results</button>
       </div>
+      <section id="dashboard" class="dashboard" aria-label="Global science dashboard" hidden>
+        <div class="dashboard-heading">
+          <h2 data-i18n="dashboard">Global science dashboard</h2>
+          <button class="refresh-button" type="button" data-action="dashboard" data-i18n="refresh">Refresh</button>
+        </div>
+        <p class="dashboard-note" data-i18n="dashboardNote">Live overview from the local research engine. Missing connections are shown explicitly.</p>
+        <div id="dashboard-grid" class="dashboard-grid" aria-live="polite"></div>
+      </section>
 
       <div id="feed" class="feed" aria-live="polite">
         <p class="feed-line"><span>●</span> <span data-i18n="ready">The research system is ready.</span></p>
