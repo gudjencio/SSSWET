@@ -99,6 +99,20 @@ class SQLiteResearchStore:
                 );
                 CREATE INDEX IF NOT EXISTS idx_graph_edges_target ON knowledge_edges(target_id);
                 CREATE INDEX IF NOT EXISTS idx_graph_edges_relation ON knowledge_edges(relation);
+                CREATE TABLE IF NOT EXISTS experiment_plans (
+                    experiment_id TEXT PRIMARY KEY,
+                    hypothesis_id TEXT NOT NULL,
+                    plan_json TEXT NOT NULL,
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE TABLE IF NOT EXISTS experiment_records (
+                    record_id TEXT PRIMARY KEY,
+                    experiment_id TEXT NOT NULL REFERENCES experiment_plans(experiment_id) ON DELETE CASCADE,
+                    kind TEXT NOT NULL,
+                    record_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_experiment_records_plan ON experiment_records(experiment_id);
                 CREATE TABLE IF NOT EXISTS knowledge (
                     item_key TEXT PRIMARY KEY,
                     statement TEXT NOT NULL,
@@ -449,3 +463,64 @@ class SQLiteResearchStore:
         incoming = [dict(row) for row in rows if row["target_id"] == node_id]
         outgoing = [dict(row) for row in rows if row["source_id"] == node_id]
         return {"node_id": node_id, "incoming": incoming, "outgoing": outgoing}
+
+
+    def save_experiment_plan(self, plan: object) -> None:
+        from .experimentation import plan_to_dict, validate_experiment_plan
+        missing = validate_experiment_plan(plan)
+        payload = plan_to_dict(plan)
+        payload["missing_information"] = missing
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO experiment_plans(experiment_id, hypothesis_id, plan_json, updated_at)
+                VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(experiment_id) DO UPDATE SET
+                    hypothesis_id=excluded.hypothesis_id,
+                    plan_json=excluded.plan_json,
+                    updated_at=CURRENT_TIMESTAMP
+                """,
+                (plan.experiment_id, plan.hypothesis_id,
+                 json.dumps(payload, ensure_ascii=False)),
+            )
+
+    def get_experiment_plan(self, experiment_id: str) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT plan_json FROM experiment_plans WHERE experiment_id = ?",
+                (experiment_id,),
+            ).fetchone()
+        return json.loads(row["plan_json"]) if row else None
+
+    def save_experiment_record(self, record: object) -> None:
+        from .experimentation import record_to_dict, EXECUTION_KINDS
+        if record.kind not in EXECUTION_KINDS:
+            raise ValueError(f"Unsupported execution kind: {record.kind}")
+        payload = record_to_dict(record)
+        with self._connect() as connection:
+            exists = connection.execute(
+                "SELECT 1 FROM experiment_plans WHERE experiment_id = ?",
+                (record.experiment_id,),
+            ).fetchone()
+            if not exists:
+                raise ValueError("Experiment plan must be saved before its records")
+            connection.execute(
+                """
+                INSERT INTO experiment_records(record_id, experiment_id, kind, record_json)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(record_id) DO UPDATE SET
+                    experiment_id=excluded.experiment_id,
+                    kind=excluded.kind,
+                    record_json=excluded.record_json
+                """,
+                (record.record_id, record.experiment_id, record.kind,
+                 json.dumps(payload, ensure_ascii=False)),
+            )
+
+    def experiment_records(self, experiment_id: str) -> list[dict]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT record_json FROM experiment_records WHERE experiment_id = ? ORDER BY created_at, record_id",
+                (experiment_id,),
+            ).fetchall()
+        return [json.loads(row["record_json"]) for row in rows]
