@@ -561,3 +561,38 @@ def test_scientific_review_board_api_preserves_independent_reviews(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_reproducibility_intelligence_api_returns_read_only_report(tmp_path):
+    import json
+    import threading
+    from urllib.error import HTTPError
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "reproducibility-api.sqlite3")
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        with urlopen(base + "/api/reproducibility-intelligence") as response:
+            report = json.loads(response.read())
+        assert report["protocols"] == []
+        assert report["read_only"] is True
+        assert report["scientific_validity_established"] is False
+        try:
+            urlopen(base + "/api/reproducibility-intelligence?limit=0")
+        except HTTPError as error:
+            assert error.code == 400
+        else:
+            raise AssertionError("An invalid limit must be rejected")
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
