@@ -79,6 +79,26 @@ class SQLiteResearchStore:
                 );
                 CREATE INDEX IF NOT EXISTS idx_sources_doi ON sources(doi);
                 CREATE INDEX IF NOT EXISTS idx_sources_provenance ON sources(provenance_group);
+                CREATE TABLE IF NOT EXISTS knowledge_nodes (
+                    node_id TEXT PRIMARY KEY,
+                    node_type TEXT NOT NULL,
+                    label TEXT NOT NULL,
+                    description TEXT NOT NULL DEFAULT '',
+                    verification_state TEXT NOT NULL DEFAULT 'unverified',
+                    metadata TEXT NOT NULL DEFAULT '{}',
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS knowledge_edges (
+                    source_id TEXT NOT NULL REFERENCES knowledge_nodes(node_id) ON DELETE CASCADE,
+                    target_id TEXT NOT NULL REFERENCES knowledge_nodes(node_id) ON DELETE CASCADE,
+                    relation TEXT NOT NULL,
+                    note TEXT NOT NULL DEFAULT '',
+                    confidence REAL NOT NULL DEFAULT 0.0,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY(source_id, target_id, relation)
+                );
+                CREATE INDEX IF NOT EXISTS idx_graph_edges_target ON knowledge_edges(target_id);
+                CREATE INDEX IF NOT EXISTS idx_graph_edges_relation ON knowledge_edges(relation);
                 CREATE TABLE IF NOT EXISTS knowledge (
                     item_key TEXT PRIMARY KEY,
                     statement TEXT NOT NULL,
@@ -325,3 +345,107 @@ class SQLiteResearchStore:
         with self._connect() as connection:
             rows = connection.execute("SELECT source_id FROM sources ORDER BY source_id").fetchall()
         return [item for row in rows if (item := self.get_source(row["source_id"])) is not None]
+
+
+    def add_knowledge_node(self, node: object) -> None:
+        from .knowledge_graph import validate_node
+        from datetime import datetime, timezone
+
+        validate_node(node)
+        created_at = node.created_at or datetime.now(timezone.utc).isoformat()
+        metadata = node.metadata or {}
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO knowledge_nodes(
+                    node_id, node_type, label, description, verification_state, metadata, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(node_id) DO UPDATE SET
+                    node_type=excluded.node_type, label=excluded.label,
+                    description=excluded.description,
+                    verification_state=excluded.verification_state,
+                    metadata=excluded.metadata
+                """,
+                (
+                    node.node_id.strip(), node.node_type, node.label.strip(),
+                    node.description, node.verification_state,
+                    json.dumps(metadata, ensure_ascii=False), created_at,
+                ),
+            )
+
+    def add_knowledge_edge(self, edge: object) -> None:
+        from .knowledge_graph import validate_edge
+        from datetime import datetime, timezone
+
+        validate_edge(edge)
+        created_at = edge.created_at or datetime.now(timezone.utc).isoformat()
+        with self._connect() as connection:
+            endpoints = connection.execute(
+                "SELECT node_id FROM knowledge_nodes WHERE node_id IN (?, ?)",
+                (edge.source_id, edge.target_id),
+            ).fetchall()
+            if len(endpoints) != 2:
+                raise ValueError("Both edge endpoints must exist in the knowledge graph")
+            connection.execute(
+                """
+                INSERT INTO knowledge_edges(
+                    source_id, target_id, relation, note, confidence, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(source_id, target_id, relation) DO UPDATE SET
+                    note=excluded.note, confidence=excluded.confidence
+                """,
+                (
+                    edge.source_id, edge.target_id, edge.relation,
+                    edge.note, float(edge.confidence), created_at,
+                ),
+            )
+
+    def knowledge_graph(
+        self, node_type: str | None = None, limit: int = 500
+    ) -> dict:
+        bounded_limit = max(1, min(int(limit), 2000))
+        with self._connect() as connection:
+            if node_type:
+                rows = connection.execute(
+                    "SELECT * FROM knowledge_nodes WHERE node_type = ? ORDER BY created_at LIMIT ?",
+                    (node_type, bounded_limit),
+                ).fetchall()
+                ids = [row["node_id"] for row in rows]
+                if ids:
+                    placeholders = ",".join("?" for _ in ids)
+                    edges = connection.execute(
+                        f"SELECT * FROM knowledge_edges WHERE source_id IN ({placeholders}) OR target_id IN ({placeholders}) ORDER BY created_at",
+                        (*ids, *ids),
+                    ).fetchall()
+                else:
+                    edges = []
+            else:
+                rows = connection.execute(
+                    "SELECT * FROM knowledge_nodes ORDER BY created_at LIMIT ?",
+                    (bounded_limit,),
+                ).fetchall()
+                edges = connection.execute(
+                    "SELECT * FROM knowledge_edges ORDER BY created_at LIMIT ?",
+                    (bounded_limit * 4,),
+                ).fetchall()
+        nodes = []
+        for row in rows:
+            item = dict(row)
+            item["metadata"] = json.loads(item["metadata"])
+            nodes.append(item)
+        return {"nodes": nodes, "edges": [dict(edge) for edge in edges]}
+
+    def knowledge_neighbors(
+        self, node_id: str, relation: str | None = None
+    ) -> dict:
+        with self._connect() as connection:
+            params: list = [node_id, node_id]
+            sql = "SELECT * FROM knowledge_edges WHERE source_id = ? OR target_id = ?"
+            if relation:
+                sql += " AND relation = ?"
+                params.append(relation)
+            sql += " ORDER BY created_at"
+            rows = connection.execute(sql, params).fetchall()
+        incoming = [dict(row) for row in rows if row["target_id"] == node_id]
+        outgoing = [dict(row) for row in rows if row["source_id"] == node_id]
+        return {"node_id": node_id, "incoming": incoming, "outgoing": outgoing}
