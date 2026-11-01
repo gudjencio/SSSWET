@@ -13,6 +13,11 @@ from .engine import SSSWETEngine
 from .persistence import SQLiteResearchStore
 
 WEB_ROOT = Path(__file__).resolve().parents[2] / "web"
+ALLOWED_WEB_ORIGINS = {
+    "https://gudjencio.github.io",
+    "https://sites.google.com",
+    "http://sites.google.com",
+}
 
 
 def public_status(engine: SSSWETEngine, store: SQLiteResearchStore | None = None) -> dict[str, Any]:
@@ -49,6 +54,10 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
+            origin = self.headers.get("Origin")
+            if origin in ALLOWED_WEB_ORIGINS and self.path.startswith("/api/"):
+                self.send_header("Access-Control-Allow-Origin", origin)
+                self.send_header("Vary", "Origin")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.end_headers()
             self.wfile.write(body)
@@ -65,6 +74,23 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                 return False
             supplied = self.headers.get("X-SSSWET-Admin-Token", "")
             return bool(admin_token) and hmac.compare_digest(supplied, admin_token)
+
+        def do_OPTIONS(self) -> None:
+            from urllib.parse import urlsplit
+            origin = self.headers.get("Origin", "")
+            path = urlsplit(self.path).path
+            if origin not in ALLOWED_WEB_ORIGINS or not path.startswith("/api/"):
+                self.send_error(403, "Origin is not allowed")
+                return
+            self.send_response(204)
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
+            self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Accept, Content-Type")
+            self.send_header("Access-Control-Max-Age", "600")
+            if self.headers.get("Access-Control-Request-Private-Network", "").lower() == "true":
+                self.send_header("Access-Control-Allow-Private-Network", "true")
+            self.end_headers()
 
         def do_GET(self) -> None:
             from urllib.parse import parse_qs, urlsplit
@@ -514,12 +540,15 @@ def main() -> None:
     engine = SSSWETEngine(store=store)
     from .order_registry import PrivateOrderRegistry
     order_registry = PrivateOrderRegistry(args.orders_database)
-    if not args.admin_token or len(args.admin_token) < 32:
-        parser.error("Set SSSWET_ADMIN_TOKEN to a random secret of at least 32 characters.")
+    if args.admin_token and len(args.admin_token) < 32:
+        parser.error("SSSWET_ADMIN_TOKEN must contain at least 32 characters when configured.")
     server = ThreadingHTTPServer((args.host, args.port), make_handler(engine, store, order_registry, args.admin_token))
     print(f"SSSWET local interface: http://{args.host}:{args.port}")
     print(f"Persistent research history: {store.path}")
     print("Private order administration: token-protected and loopback-only.")
+    print("Public browser API access: restricted to the official GitHub Pages and Google Sites origins.")
+    if not args.admin_token:
+        print("Private order dashboard is disabled until SSSWET_ADMIN_TOKEN is configured.")
     print("Read-only mode: arbitrary public task submission is disabled.")
     try:
         server.serve_forever()
