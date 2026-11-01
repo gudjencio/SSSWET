@@ -256,7 +256,7 @@ def test_digital_lab_api_lists_published_protocols_and_recorded_runs(tmp_path):
     from ssswet_core.server import make_handler
 
     store = SQLiteResearchStore(tmp_path / "digital-lab-api.sqlite3")
-    for cid in ("owner", "replica"):
+    for cid in ("owner", "replica", "replica-2"):
         campaign = create_campaign(
             cid, cid, "Digital laboratory testing", "computational science",
             [CampaignMilestone("m1", "Review", "Review protocol")],
@@ -276,9 +276,9 @@ def test_digital_lab_api_lists_published_protocols_and_recorded_runs(tmp_path):
         "model-v1", "replica-group", True,
     ))
     service.record_run(LabRun(
-        "run-api-2", "protocol-api", 1, "owner", "simulation",
+        "run-api-2", "protocol-api", 1, "replica-2", "simulation",
         {"x": 2}, {"y": 4}, "y = 2x", {"runtime": "Python"},
-        "model-v1", "owner-group", True,
+        "model-v1", "replica-2-group", True,
     ))
     service.compare_runs("run-api", "run-api-2")
     server = ThreadingHTTPServer(
