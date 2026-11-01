@@ -75,3 +75,31 @@ def test_timeline_includes_experiment_plan_and_record_database_timestamps(tmp_pa
     recorded = next(event for event in result["events"] if event["kind"] == "experiment_recorded")
     assert recorded["references"]["execution_kind"] == "simulation"
     assert recorded["scientific_validity_established"] is False
+
+
+def test_timeline_includes_peer_review_request_and_submission(tmp_path):
+    from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+    from ssswet_core.peer_review import PeerReviewService
+
+    store = SQLiteResearchStore(tmp_path / "peer-review-timeline.sqlite3")
+    for cid in ("source", "reviewer"):
+        campaign = create_campaign(
+            cid, cid, "Review a research claim", "physics",
+            [CampaignMilestone("m1", "Review", "Assess evidence")],
+        )
+        store.save_campaign(set_campaign_state(campaign, "active"))
+    store.add_knowledge_node(KnowledgeNode(
+        "claim", "finding", "Candidate claim",
+        metadata={"campaign_id": "source"},
+    ))
+    service = PeerReviewService(store)
+    service.request("review-1", "source", "claim", ["reviewer"], "operator", "Can it be reproduced?")
+    service.submit(
+        "submission-1", "review-1", "reviewer", "inconclusive",
+        "Insufficient information.", "Independent method review",
+        independence_confirmed=False,
+    )
+    events = ResearchTimeline(store).build()["events"]
+    kinds = {event["kind"] for event in events}
+    assert "peer_review_requested" in kinds
+    assert "peer_review_submitted" in kinds
