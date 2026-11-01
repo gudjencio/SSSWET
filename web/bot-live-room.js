@@ -264,9 +264,15 @@
       ko:"연구 에이전트가 작업 중입니다",zh:"研究智能体正在工作",hi:"अनुसंधान एजेंट काम कर रहे हैं"
     }[lang()] || "Research agents are working";
     const handoffCards = handoffs.slice(0,8).map((item,index) => {
+      const isResponse = item.message_type === "peer_review_response";
       const heading = esc(roleName(item.sender_role))+' → '+esc(roleName(item.recipient_role));
-      const state = item.review_state === "awaiting_review" ? (lang()==="fr"?"transmis · en attente d’examen":"shared · awaiting review") : esc(item.review_state);
-      return '<article class="bot-conversation-message bot-handoff-message"><div class="message-avatar" aria-hidden="true">↗</div><div><strong>'+heading+'</strong><p>'+esc(item.content)+'</p><small>'+esc(item.message_type.replaceAll("_"," "))+' · '+esc(state)+' · '+esc(time(item.created_at))+'</small></div></article>';
+      const state = isResponse
+        ? (lang()==="fr"?"examen documentaire · provisoire":"literature review · provisional")
+        : (lang()==="fr"?"transmis · en attente d’examen":"shared · awaiting review");
+      const label = isResponse
+        ? (lang()==="fr"?"Retour d’examen indépendant":"Independent review response")
+        : (lang()==="fr"?"Demande d’examen":"Review request");
+      return '<article class="bot-conversation-message bot-handoff-message '+(isResponse?"bot-review-response":"bot-review-request")+'"><div class="message-avatar" aria-hidden="true">'+(isResponse?"✓":"↗")+'</div><div><strong>'+heading+'</strong><p>'+esc(item.content)+'</p><small>'+esc(label)+' · '+esc(state)+' · '+esc(time(item.created_at))+'</small></div></article>';
     });
     const messages = handoffCards.concat(valid.slice(0,10).map((item,index) => {
       const count = Number(item.evidence_count || 0);
