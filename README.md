@@ -155,3 +155,9 @@ The local read-only endpoint `/api/collaboration/recommendations` lists
 knowledge-graph items that may be relevant to other active campaigns. A
 suggestion never creates a transfer or validates a finding; an operator must
 explicitly initiate a hand-off for review. See the core developer guide.
+
+
+A scientific dispute review workflow is also available through the local
+`/api/disputes` endpoint. It records human assessments of explicit graph
+contradictions without automatically choosing a winning claim or changing
+scientific verification states.
