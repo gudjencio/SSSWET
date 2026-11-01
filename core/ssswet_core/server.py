@@ -109,6 +109,15 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 self._json({"campaigns": store.campaign_history(limit=100)})
             elif path == "/api/resources":
                 self._json({"snapshots": store.resource_snapshot_history(limit=50)})
+            elif path == "/api/disputes":
+                from .disputes import DisputeResolutionService
+                service = DisputeResolutionService(store)
+                self._json({
+                    "detected_contradictions": service.detected(),
+                    "review_cases": store.dispute_history(limit=500),
+                    "automatic_adjudication": False,
+                    "scientific_validity_changed": False,
+                })
             elif path == "/api/collaboration/recommendations":
                 from .collaboration_recommender import CollaborationRecommender, recommendation_to_dict
                 self._json({
