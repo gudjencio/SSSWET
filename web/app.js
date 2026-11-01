@@ -7,8 +7,8 @@
   const feed = document.getElementById("feed");
   const localApiBases = ["http://127.0.0.1:8765", "http://localhost:8765"];
   const sameOriginBase = window.location.origin;
-  let activeApiBase = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(sameOriginBase)
-    ? sameOriginBase : null;
+  const isLocalOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(sameOriginBase);
+  let activeApiBase = isLocalOrigin ? sameOriginBase : null;
   let apiDiscoveryPromise = null;
   let lastApiFailure = "The local engine has not responded yet.";
 
@@ -16,15 +16,19 @@
     if (activeApiBase && !force) return activeApiBase;
     if (apiDiscoveryPromise) return apiDiscoveryPromise;
     apiDiscoveryPromise = (async () => {
+      // A hosted static page has no API on its own origin. Probe only the
+      // local engine there; probing GitHub Pages/Google Sites just adds delay.
+      // When the UI is served by the local engine, keep same-origin first and
+      // avoid cross-origin browser network permissions entirely.
       const candidates = [...new Set([
         activeApiBase,
-        ...localApiBases,
-        sameOriginBase
+        ...(isLocalOrigin ? [sameOriginBase] : []),
+        ...localApiBases
       ].filter(Boolean))];
       const failures = [];
       for (const base of candidates) {
         const controller = new AbortController();
-        const timeout = window.setTimeout(() => controller.abort(), 12000);
+        const timeout = window.setTimeout(() => controller.abort(), 3000);
         try {
           const response = await fetch(new URL("/api/status", base).toString(), {
             method: "GET",
@@ -461,16 +465,24 @@
       systemStatus.dataset.connected = "true";
       const connectionPanel = document.getElementById("engine-connection");
       if (connectionPanel) connectionPanel.hidden = true;
-    } catch {
+    } catch (error) {
       agentCount.textContent = "—";
       systemStatus.textContent = t.statusOffline;
       systemStatus.dataset.connected = "false";
       const connectionPanel = document.getElementById("engine-connection");
       const connectionMessage = document.getElementById("engine-connection-message");
+      const connectionDiagnostic = document.getElementById("engine-connection-diagnostic");
       if (connectionPanel) connectionPanel.hidden = false;
       if (connectionMessage) connectionMessage.textContent = document.documentElement.lang.toLowerCase().startsWith("fr")
-        ? "Le moteur local n'est pas joignable. L'interface reste disponible en mode de consultation ; les données de recherche en direct apparaîtront automatiquement dès que le moteur sera lancé et accessible."
-        : "The local engine is not reachable. The interface remains available in fallback mode; live research data will appear automatically when the engine is running and accessible.";
+        ? "Le moteur local n'est pas joignable. L'interface reste disponible en mode de consultation ; les données de recherche en direct apparaîtront dès que le moteur sera lancé et accessible."
+        : "The local engine is not reachable. The interface remains available in fallback mode; live research data will appear when the engine is running and accessible.";
+      if (connectionDiagnostic) {
+        const detail = String(error && error.message || lastApiFailure || "").slice(0, 420);
+        connectionDiagnostic.textContent = detail
+          ? (document.documentElement.lang.toLowerCase().startsWith("fr") ? "Diagnostic de connexion : " : "Connection diagnostic: ") + detail
+          : "";
+        connectionDiagnostic.hidden = !detail;
+      }
     }
   }
 
