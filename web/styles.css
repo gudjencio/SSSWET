@@ -402,3 +402,14 @@ button:hover { border-color: #5a5274; background: linear-gradient(115deg, rgba(4
   .voice-status { text-align: center; }
   .dashboard-foldout > section { padding: 10px; }
 }
+
+/* Transparent, manually maintained research portfolio indicators. */
+.technology-progress { display:grid; gap:5px; margin:2px 0 13px; padding:10px; border:1px solid rgba(147,133,191,.17); border-radius:9px; background:rgba(0,0,0,.2); }
+.technology-progress-line { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; font-size:9px; line-height:1.45; }
+.technology-progress-line span { color:#827d8e; }
+.technology-progress-line strong { color:#c9c0dc; text-align:right; font-weight:550; }
+.technology-progress-track { height:4px; margin-top:4px; overflow:hidden; border-radius:9px; background:#282432; }
+.technology-progress-track span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#7966a9,#c6b4ed); }
+.technology-progress small { color:#817a8d; font-size:8px; }
+.portfolio-manual-note { max-width:720px; margin:15px auto 0; color:#8d8799; font-size:9px; line-height:1.6; text-align:center; }
+.technology-dialog-progress { margin:14px 0; padding:12px; border:1px solid #332d40; border-radius:10px; color:#b8aecb; background:rgba(255,255,255,.025); font-size:10px; line-height:1.7; }
