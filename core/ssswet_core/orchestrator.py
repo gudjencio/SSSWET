@@ -18,10 +18,12 @@ class BotManager:
         return agent
 
     def ensure_capacity(self, required: int = 1) -> list[Agent]:
+        """Ensure enough waiting agents exist without growing unnecessarily."""
         created: list[Agent] = []
-        target = min(self.max_agents, len(self.agents) + max(1, required))
-        while len(self.agents) < target:
+        needed = max(0, required - len(self.available()))
+        while needed > 0 and len(self.agents) < self.max_agents:
             created.append(self._new_agent())
+            needed -= 1
         return created
 
     def ensure_role_capacity(self, roles: list[str]) -> list[Agent]:
