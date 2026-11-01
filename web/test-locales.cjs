@@ -142,3 +142,8 @@ new Function(journalSource);
 if (!pageSource.includes('id="research-journal-form"') || !pageSource.includes('id="research-journal-list"')) throw new Error('Research journal UI is missing.');
 if (!journalSource.includes('/api/research-journal') || !journalSource.includes('chain_intact')) throw new Error('Research journal API or integrity display is missing.');
 console.log('Validated the append-only research journal interface.');
+
+const feasibilitySource=fs.readFileSync(new URL('./technology-feasibility.js', `file://${__filename}`),'utf8');
+new Function(feasibilitySource);
+if(!pageSource.includes('id="technology-feasibility-list"')||!feasibilitySource.includes('/api/technology-feasibility'))throw new Error('Technology feasibility observatory UI is missing.');
+console.log('Validated the technology feasibility observatory interface.');
