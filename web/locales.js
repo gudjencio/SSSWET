@@ -315,6 +315,115 @@ for (const item of window.SSSWET_LANGUAGE_CATALOG) {
   if (!window.SSSWET_LOCALES[code]) window.SSSWET_LOCALES[code] = { name, dir: /^(ar|he|dv|ckb|fa|ps|ur|ug|sd|nqo|prs|bal|pnb)$/.test(code) ? "rtl" : "ltr" };
 }
 
+
+/* Additional interface translations. Specialized research terminology falls back to English until reviewed. */
+const SSSWET_EN = window.SSSWET_LOCALES.en;
+window.SSSWET_LOCALES.id = {
+  ...SSSWET_EN, name: "Bahasa Indonesia", dir: "ltr",
+  tagline: "Teknologi Perang Antariksa Pelengkungan Ruang Prajurit Super",
+  status: "ANTARMUKA PENELITIAN", statusOnline: "MESIN PENELITIAN LOKAL TERHUBUNG",
+  statusOffline: "MESIN PENELITIAN LOKAL TIDAK TERHUBUNG",
+  mission: "Teliti gagasan. Uji. Verifikasi. Jangan pernah menyamakan hipotesis dengan kenyataan.",
+  agents: "Agen penelitian", verification: "utamakan verifikasi",
+  discover: "Apa yang ditemukan?", working: "Apa yang sedang dikerjakan?",
+  verified: "Hasil terverifikasi terbaru", ready: "Antarmuka siap. Hubungkan mesin lokal untuk menampilkan data penelitian langsung.",
+  footer: "ETDESS adalah terjemahan bahasa Prancis dari SSSWET. Hasil publik tetap harus diverifikasi.",
+  offline: "Mesin penelitian lokal belum terhubung. GitHub Pages adalah pratinjau statis; jalankan aplikasi lokal untuk data langsung.",
+  noDiscoveries: "Belum ada hasil penelitian yang tersimpan.", noActivity: "Belum ada aktivitas penelitian yang tercatat.",
+  noVerified: "Belum ada pengetahuan yang diverifikasi secara independen.",
+  language: "Bahasa", social: "Media sosial SSSWET", contact: "Kontak",
+  dashboard: "Dasbor sains global", dashboardNote: "Ringkasan langsung dari mesin penelitian lokal. Koneksi yang tidak tersedia ditampilkan secara jelas.", refresh: "Muat ulang",
+  timelineTitle: "Riwayat penelitian", timelineFilter: "Kampanye", allCampaigns: "Semua kampanye",
+  timelineSearchLabel: "Cari riwayat", timelineSearchPlaceholder: "Cari judul, deskripsi, atau referensi",
+  timelineTypeFilter: "Jenis peristiwa", allEventTypes: "Semua jenis peristiwa", timelineNoMatches: "Tidak ada peristiwa yang cocok dengan filter ini.",
+  timelineCaption: "Perubahan yang tercatat secara kronologis. Linimasa bukan validasi ilmiah.",
+  timelineEmpty: "Belum ada peristiwa penelitian bertanggal."
+};
+window.SSSWET_LOCALES.tr = {
+  ...SSSWET_EN, name: "Türkçe", dir: "ltr",
+  tagline: "Süper Asker Uzay Bükme Savaş Teknolojisi",
+  status: "ARAŞTIRMA ARAYÜZÜ", statusOnline: "YEREL ARAŞTIRMA MOTORU BAĞLI",
+  statusOffline: "YEREL ARAŞTIRMA MOTORU BAĞLI DEĞİL",
+  mission: "Fikirleri araştır. Test et. Doğrula. Bir hipotezi asla gerçekle karıştırma.",
+  agents: "Araştırma ajanları", verification: "önce doğrulama",
+  discover: "Ne keşfettiniz?", working: "Ne üzerinde çalışıyorsunuz?",
+  verified: "En son doğrulanmış sonuçlar", ready: "Arayüz hazır. Canlı araştırma verilerini görüntülemek için yerel motoru bağlayın.",
+  footer: "ETDESS, SSSWET'in Fransızca çevirisidir. Herkese açık sonuçlar doğrulamaya tabidir.",
+  offline: "Yerel araştırma motoru bağlı değil. GitHub Pages statik bir önizlemedir; canlı araştırma verileri için uygulamayı yerel olarak çalıştırın.",
+  noDiscoveries: "Henüz araştırma çıktısı kaydedilmedi.", noActivity: "Henüz araştırma etkinliği kaydedilmedi.",
+  noVerified: "Henüz bağımsız olarak doğrulanmış bilgi bulunmuyor.",
+  language: "Dil", social: "SSSWET sosyal medya", contact: "İletişim",
+  dashboard: "Küresel bilim panosu", dashboardNote: "Yerel araştırma motorundan canlı genel bakış. Eksik bağlantılar açıkça gösterilir.", refresh: "Yenile",
+  timelineTitle: "Araştırma geçmişi", timelineFilter: "Kampanya", allCampaigns: "Tüm kampanyalar",
+  timelineSearchLabel: "Geçmişte ara", timelineSearchPlaceholder: "Başlık, açıklama veya referans ara",
+  timelineTypeFilter: "Olay türü", allEventTypes: "Tüm olay türleri", timelineNoMatches: "Bu filtrelerle eşleşen olay yok.",
+  timelineCaption: "Kronolojik sırayla kaydedilen değişiklikler. Zaman çizelgesi bilimsel doğrulama değildir.",
+  timelineEmpty: "Tarihli araştırma olayı bulunmuyor."
+};
+window.SSSWET_LOCALES.pl = {
+  ...SSSWET_EN, name: "Polski", dir: "ltr",
+  tagline: "Technologia Wojny Kosmicznej z Zakrzywianiem Przestrzeni Superżołnierzy",
+  status: "INTERFEJS BADAWCZY", statusOnline: "LOKALNY SILNIK BADAWCZY POŁĄCZONY",
+  statusOffline: "LOKALNY SILNIK BADAWCZY NIE JEST POŁĄCZONY",
+  mission: "Badaj pomysły. Testuj je. Weryfikuj. Nigdy nie myl hipotezy z rzeczywistością.",
+  agents: "Agenci badawczy", verification: "najpierw weryfikacja",
+  discover: "Co udało się odkryć?", working: "Nad czym obecnie pracujesz?",
+  verified: "Najnowsze zweryfikowane wyniki", ready: "Interfejs jest gotowy. Połącz lokalny silnik, aby wyświetlać bieżące dane badawcze.",
+  footer: "ETDESS to francuskie tłumaczenie nazwy SSSWET. Wyniki publiczne nadal wymagają weryfikacji.",
+  offline: "Lokalny silnik badawczy nie jest połączony. GitHub Pages to statyczny podgląd; uruchom aplikację lokalnie, aby korzystać z bieżących danych.",
+  noDiscoveries: "Nie zapisano jeszcze żadnych wyników badań.", noActivity: "Nie odnotowano jeszcze aktywności badawczej.",
+  noVerified: "Brak wiedzy zweryfikowanej niezależnie.",
+  language: "Język", social: "Media społecznościowe SSSWET", contact: "Kontakt",
+  dashboard: "Globalny panel naukowy", dashboardNote: "Bieżący przegląd z lokalnego silnika badawczego. Brakujące połączenia są wyraźnie oznaczone.", refresh: "Odśwież",
+  timelineTitle: "Historia badań", timelineFilter: "Kampania", allCampaigns: "Wszystkie kampanie",
+  timelineSearchLabel: "Przeszukaj historię", timelineSearchPlaceholder: "Szukaj tytułów, opisów lub odnośników",
+  timelineTypeFilter: "Rodzaj zdarzenia", allEventTypes: "Wszystkie rodzaje zdarzeń", timelineNoMatches: "Żadne zdarzenia nie pasują do tych filtrów.",
+  timelineCaption: "Zarejestrowane zmiany w porządku chronologicznym. Oś czasu nie stanowi walidacji naukowej.",
+  timelineEmpty: "Brak dostępnych datowanych zdarzeń badawczych."
+};
+window.SSSWET_LOCALES.bn = {
+  ...SSSWET_EN, name: "বাংলা", dir: "ltr",
+  tagline: "সুপার সোলজার স্পেস ওয়ার্পিং ইঞ্জিনিয়ারিং টেক",
+  status: "গবেষণা ইন্টারফেস", statusOnline: "স্থানীয় গবেষণা ইঞ্জিন সংযুক্ত",
+  statusOffline: "স্থানীয় গবেষণা ইঞ্জিন সংযুক্ত নয়",
+  mission: "ধারণা নিয়ে গবেষণা করুন। পরীক্ষা করুন। যাচাই করুন। অনুমানকে কখনো বাস্তবতার সঙ্গে গুলিয়ে ফেলবেন না।",
+  agents: "গবেষণা এজেন্ট", verification: "যাচাই অগ্রাধিকার",
+  discover: "কী আবিষ্কার হয়েছে?", working: "আপনি কী নিয়ে কাজ করছেন?",
+  verified: "সর্বশেষ যাচাইকৃত ফলাফল", ready: "ইন্টারফেস প্রস্তুত। সরাসরি গবেষণার তথ্য দেখতে স্থানীয় ইঞ্জিন সংযুক্ত করুন।",
+  footer: "ETDESS হলো SSSWET-এর ফরাসি অনুবাদ। প্রকাশ্য ফলাফল যাচাইসাপেক্ষ।",
+  offline: "স্থানীয় গবেষণা ইঞ্জিন সংযুক্ত নয়। GitHub Pages একটি স্থির প্রিভিউ; সরাসরি গবেষণার তথ্যের জন্য স্থানীয় অ্যাপ চালু করুন।",
+  noDiscoveries: "এখনও কোনো গবেষণার ফল সংরক্ষিত হয়নি।", noActivity: "এখনও কোনো গবেষণা কার্যক্রম নথিভুক্ত হয়নি।",
+  noVerified: "এখনও স্বাধীনভাবে যাচাইকৃত কোনো জ্ঞান উপলব্ধ নেই।",
+  language: "ভাষা", social: "SSSWET সামাজিক মাধ্যম", contact: "যোগাযোগ",
+  dashboard: "বৈশ্বিক বিজ্ঞান ড্যাশবোর্ড", dashboardNote: "স্থানীয় গবেষণা ইঞ্জিনের সরাসরি সারসংক্ষেপ। অনুপস্থিত সংযোগ স্পষ্টভাবে দেখানো হয়।", refresh: "রিফ্রেশ",
+  timelineTitle: "গবেষণার ইতিহাস", timelineFilter: "ক্যাম্পেইন", allCampaigns: "সব ক্যাম্পেইন",
+  timelineSearchLabel: "ইতিহাস খুঁজুন", timelineSearchPlaceholder: "শিরোনাম, বিবরণ বা রেফারেন্স খুঁজুন",
+  timelineTypeFilter: "ঘটনার ধরন", allEventTypes: "সব ধরনের ঘটনা", timelineNoMatches: "এই ফিল্টারের সঙ্গে মেলে এমন কোনো ঘটনা নেই।",
+  timelineCaption: "কালানুক্রমিকভাবে নথিভুক্ত পরিবর্তন। টাইমলাইন বৈজ্ঞানিক যাচাই নয়।",
+  timelineEmpty: "তারিখসহ কোনো গবেষণা ঘটনা উপলব্ধ নেই।"
+};
+window.SSSWET_LOCALES.sw = {
+  ...SSSWET_EN, name: "Kiswahili", dir: "ltr",
+  tagline: "Teknolojia ya Vita vya Anga na Kupinda Nafasi ya Askari Bingwa",
+  status: "KIUNGANISHI CHA UTAFITI", statusOnline: "MFUMO WA UTAFITI WA NDANI UMEUNGANISHWA",
+  statusOffline: "MFUMO WA UTAFITI WA NDANI HAUJAUNGANISHWA",
+  mission: "Chunguza mawazo. Yajaribu. Yathibitishe. Usichanganye kamwe dhana na ukweli.",
+  agents: "Wakala wa utafiti", verification: "uthibitishaji kwanza",
+  discover: "Umegundua nini?", working: "Unafanyia kazi nini?",
+  verified: "Matokeo ya hivi karibuni yaliyothibitishwa", ready: "Kiolesura kiko tayari. Unganisha mfumo wa ndani ili kuonyesha data hai ya utafiti.",
+  footer: "ETDESS ni tafsiri ya Kifaransa ya SSSWET. Matokeo ya umma bado yanahitaji uthibitishaji.",
+  offline: "Mfumo wa utafiti wa ndani haujaunganishwa. GitHub Pages ni onyesho tuli; endesha programu ya ndani ili kupata data hai ya utafiti.",
+  noDiscoveries: "Bado hakuna matokeo ya utafiti yaliyohifadhiwa.", noActivity: "Bado hakuna shughuli za utafiti zilizorekodiwa.",
+  noVerified: "Bado hakuna maarifa yaliyothibitishwa kwa kujitegemea.",
+  language: "Lugha", social: "Mitandao ya kijamii ya SSSWET", contact: "Mawasiliano",
+  dashboard: "Dashibodi ya sayansi ya kimataifa", dashboardNote: "Muhtasari wa moja kwa moja kutoka kwenye mfumo wa utafiti wa ndani. Miunganisho inayokosekana huonyeshwa wazi.", refresh: "Onyesha upya",
+  timelineTitle: "Historia ya utafiti", timelineFilter: "Kampeni", allCampaigns: "Kampeni zote",
+  timelineSearchLabel: "Tafuta historia", timelineSearchPlaceholder: "Tafuta vichwa, maelezo au marejeo",
+  timelineTypeFilter: "Aina ya tukio", allEventTypes: "Aina zote za matukio", timelineNoMatches: "Hakuna matukio yanayolingana na vichujio hivi.",
+  timelineCaption: "Mabadiliko yaliyorekodiwa kwa mpangilio wa muda. Ratiba si uthibitisho wa kisayansi.",
+  timelineEmpty: "Hakuna matukio ya utafiti yenye tarehe yanayopatikana."
+};
+
 /* Localized first-load introduction for the research roles. */
 window.SSSWET_AGENT_COPY = {
   "en": {
