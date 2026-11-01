@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const get = (path) => fetch(path, { headers: { Accept: "application/json" }, cache: "no-store" }).then((r) => {
+  const get = (path) => window.ssswetApiFetch(path, { headers: { Accept: "application/json" } }).then((r) => {
     if (!r.ok) throw new Error("HTTP " + r.status);
     return r.json();
   });
