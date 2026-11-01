@@ -109,7 +109,7 @@ class DatasetRegistry:
         source = self.store.get_lab_dataset(transformation.dataset_id, transformation.input_version)
         target = self.store.get_lab_dataset(transformation.dataset_id, transformation.output_version)
         if source is None or target is None:
-            raise ValueError("Unknown dataset version: transformation input and output must both be registered")
+            raise ValueError("unknown dataset version: transformation input and output must both be registered")
         if target.get("parent_version") != transformation.input_version:
             raise ValueError("Output dataset version must declare the transformation input as its parent")
         record = asdict(transformation)
