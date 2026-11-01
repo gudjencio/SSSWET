@@ -6,7 +6,7 @@ reproduction. Simulation and real-observation records remain distinct.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from hashlib import sha256
 from math import isfinite
@@ -46,6 +46,7 @@ class LabProtocol:
     review_note: str = ""
     created_at: str = ""
     content_hash: str = ""
+    parameter_sensitivity: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         required = (self.protocol_id, self.title, self.objective, self.owner_campaign_id)
