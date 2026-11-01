@@ -199,6 +199,9 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             elif path == "/api/research-gaps":
                 from .research_gaps import ResearchGapAnalyzer
                 self._json(ResearchGapAnalyzer().report(store.knowledge_graph(limit=500)))
+            elif path == "/api/research-priority-framework":
+                from .priority_framework import framework_definition
+                self._json(framework_definition())
             elif path == "/api/research-opportunities":
                 from .research_opportunities import ResearchOpportunitySynthesizer
                 params = parse_qs(parsed.query)
