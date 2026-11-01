@@ -517,3 +517,47 @@ def test_lab_verification_plans_endpoint_is_read_only(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_scientific_review_board_api_preserves_independent_reviews(tmp_path):
+    import json
+    import threading
+    from urllib.request import Request, urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.evidence_dossiers import EvidenceDossierService
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "scientific-review-api.sqlite3")
+    EvidenceDossierService(store).assemble("dossier-api", "Evidence dossier", "A recorded result.")
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        for reviewer, verdict in (("reviewer-a", "supports"), ("reviewer-b", "challenges")):
+            body = json.dumps({
+                "dossier_id": "dossier-api", "reviewer_id": reviewer,
+                "verdict": verdict, "conflict_status": "none_declared",
+                "rationale": "Assessment based on the dossier records.",
+                "methods_assessment": "The method is described but needs independent scrutiny.",
+                "limitations": "The assessment is limited to the supplied dossier.",
+                "evidence_refs": ["source-1"],
+            }).encode()
+            request = Request(base + "/api/scientific-review-board/reviews", data=body,
+                              headers={"Content-Type": "application/json"}, method="POST")
+            with urlopen(request) as response:
+                assert response.status == 201
+        with urlopen(base + "/api/scientific-review-board?dossier_id=dossier-api") as response:
+            report = json.loads(response.read())
+        assert report["count"] == 2
+        assert report["summaries"][0]["disagreement_recorded"] is True
+        assert report["automatic_adjudication"] is False
+        assert report["scientific_validity_established"] is False
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
