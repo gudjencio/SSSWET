@@ -25,7 +25,7 @@ window.SSSWET_PRODUCT_PURCHASES = Object.freeze({
     calculation: "product_specific_percentage_of_base_price",
     rate_must_be_published_before_checkout: true,
     rate_requires_legal_and_consumer_review: true,
-    must_not_make_installments_more_expensive_than_one_time_payment: false,
+    must_not_make_installments_more_expensive_than_one_time_payment: true,
     technology_rates: Object.freeze({
       cellular: null,
       longevity: null,
