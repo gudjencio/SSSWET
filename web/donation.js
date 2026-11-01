@@ -117,6 +117,18 @@
     pollinators: {
       en: ["Pollinator protection", "Habitat mapping, pesticide exposure reduction and monitoring of pollinator populations."],
       fr: ["Protection des pollinisateurs", "Cartographie des habitats, réduction de l’exposition aux pesticides et suivi des populations de pollinisateurs."]
+    },
+    artificialGravity: {
+      en: ["Artificial gravity research", "Theoretical research into gravity-like environments, rotational habitats, inertial effects, human adaptation and measurable safety limits. No controllable artificial-gravity technology is currently claimed."],
+      fr: ["Recherche sur la gravité artificielle", "Recherche théorique sur les environnements assimilables à la gravité, les habitats rotatifs, les effets inertiels, l’adaptation humaine et les limites de sécurité mesurables. Aucune technologie de gravité artificielle contrôlable n’est présentée comme acquise."]
+    },
+    medicalNanotechnology: {
+      en: ["Medical nanotechnology", "Research into nanoscale diagnostics, targeted sensing, biocompatible materials, delivery constraints, toxicology and independently reviewed medical safety. No clinical capability is implied."],
+      fr: ["Nanotechnologies médicales", "Recherche sur le diagnostic à l’échelle nanométrique, la détection ciblée, les matériaux biocompatibles, les contraintes d’administration, la toxicologie et la sécurité médicale évaluée indépendamment. Aucune capacité clinique n’est présumée."]
+    },
+    atmosphericRestoration: {
+      en: ["Atmospheric restoration", "Research into atmospheric pollution monitoring, source reduction, carbon-cycle measurement, ecosystem recovery and validated interventions with transparent environmental safeguards."],
+      fr: ["Restauration atmosphérique", "Recherche sur la surveillance de la pollution atmosphérique, la réduction des émissions à la source, la mesure du cycle du carbone, la restauration des écosystèmes et les interventions validées avec des garanties environnementales transparentes."]
     }
   };
 
@@ -176,7 +188,7 @@
     const labels = {
       mode: fr ? "Modalité de paiement" : "Payment plan",
       single: fr ? "Paiement unique" : "One-time payment",
-      installments: fr ? "Fractionner en échéances volontaires d’au moins 10 USD" : "Split into voluntary instalments of at least USD 10",
+      installments: fr ? "Fractionner en échéances volontaires d’au moins 1 USD" : "Split into voluntary instalments of at least USD 1",
       reminderTitle: fr ? "Rappels de paiement" : "Payment reminders",
       reminderDescription: fr ? "Après le premier paiement, vous pouvez demander des rappels volontaires par e-mail pour la prochaine échéance. Aucun prélèvement automatique ne sera effectué." : "After completing the first payment, you may request voluntary email reminders for the next instalment. No automatic charge will be made.",
       email: fr ? "Adresse e-mail" : "Email address",
@@ -196,7 +208,7 @@
   }
   let selectedTechnology = null;
   let currency = "EUR";
-  let minimumLocal = 10;
+  let minimumLocal = 1;
   let usdToLocalRate = 1;
   let rateReady = false;
   const portfolioLabels = {
