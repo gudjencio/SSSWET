@@ -9,6 +9,14 @@ The project explores a disciplined workflow for turning research questions into 
 
 See [research contributions and future technology availability](docs/CONTRIBUTIONS.md) for the contribution process and the conditions governing any future product offer or delivery.
 
+## Contributions and voluntary instalments
+
+Research contributions have a minimum value of **USD 10 per payment**. The interface converts this threshold into the visitor's display currency using an indicative live USD exchange rate; if the rate service is unavailable, it falls back to displaying USD rather than inventing a conversion.
+
+For a split contribution, the interface calculates equal, separate payments while keeping each payment at or above USD 10. For example, a USD 1,000 plan can be divided into 100 voluntary payments of USD 10. Each payment is opened and confirmed separately through PayPal. The website does not initiate recurring charges, store payment credentials or verify PayPal transactions automatically.
+
+Optional weekly, monthly or yearly email reminders require the user to confirm the first payment, submit their own email address and complete an email-confirmation step. The Google Apps Script integration is provided in [the payment reminder deployment guide](integrations/google-apps-script/README.md). It must be deployed and configured before reminders become active. Users can unsubscribe from reminder emails. The service does not independently verify payments or automatically stop a reminder plan when its balance is complete.
+
 ## Project goals
 
 - Organize research objectives into manageable tasks and specialist roles.
