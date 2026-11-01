@@ -148,3 +148,10 @@ processes due subscriptions once; use an operating-system scheduler for
 periodic invocation. Monitoring reports newly seen and previously seen
 bibliographic identifiers without automatically modifying research memory
 or campaign state. See the core developer guide for configuration details.
+
+
+SSSWET also provides explainable cross-campaign collaboration suggestions.
+The local read-only endpoint `/api/collaboration/recommendations` lists
+knowledge-graph items that may be relevant to other active campaigns. A
+suggestion never creates a transfer or validates a finding; an operator must
+explicitly initiate a hand-off for review. See the core developer guide.
