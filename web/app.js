@@ -129,9 +129,9 @@
       const identity = document.createElement("div");
       identity.className = "agent-role-copy";
       const heading = document.createElement("strong");
-      heading.textContent = role.name;
+      heading.textContent = Array.isArray(role) ? role[0] : role.name;
       const description = document.createElement("p");
-      description.textContent = role.description;
+      description.textContent = Array.isArray(role) ? role[1] : role.description;
       identity.append(heading, description);
       article.append(avatar, identity);
       roles.append(article);
@@ -140,7 +140,7 @@
 
     const stepsTitle = document.createElement("p");
     stepsTitle.className = "agent-section-title";
-    stepsTitle.textContent = copy.stepsTitle;
+    stepsTitle.textContent = copy.stepsTitle || (currentLanguage() === "fr" ? "Étapes de recherche" : "Research workflow");
     fragment.append(stepsTitle);
     const steps = document.createElement("ol");
     steps.className = "agent-steps";
@@ -153,7 +153,7 @@
 
     const questionsTitle = document.createElement("p");
     questionsTitle.className = "agent-section-title";
-    questionsTitle.textContent = copy.questionsTitle;
+    questionsTitle.textContent = copy.questionsTitle || (currentLanguage() === "fr" ? "Questions proposées" : "Suggested questions");
     fragment.append(questionsTitle);
     const questions = document.createElement("div");
     questions.className = "agent-questions";
@@ -162,11 +162,11 @@
       ["evidence", showDiscoveries],
       ["review", showVerified]
     ];
-    actions.forEach(([key, action]) => {
+    actions.forEach(([key, action], index) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "agent-question";
-      button.textContent = copy.questions[key];
+      button.textContent = Array.isArray(copy.questions) ? copy.questions[index] : copy.questions[key];
       button.addEventListener("click", action);
       questions.append(button);
     });
