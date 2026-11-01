@@ -162,6 +162,15 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                     self._json({"error": "The limit parameter must be an integer"}, 400)
                     return
                 self._json(DigitalLabService(store).overview(limit=limit))
+            elif path == "/api/digital-lab/proposals":
+                from .protocol_proposals import ProtocolProposalService
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["200"])[0])
+                except ValueError:
+                    self._json({"error": "The limit parameter must be an integer"}, 400)
+                    return
+                self._json(ProtocolProposalService(store).overview(limit=limit))
             elif path == "/api/digital-lab/reproduction-matrix":
                 from .digital_lab import DigitalLabService
                 params = parse_qs(parsed.query)
