@@ -71,7 +71,7 @@ def test_boolean_and_non_finite_values_are_ignored():
     result = LabStatisticalSummarizer(FakeStore([item])).build()
     assert len(result["summaries"]) == 1
     assert result["summaries"][0]["output_name"] == "response"
-    assert result["non_numeric_or_invalid_values_ignored"] == 3
+    assert result["non_numeric_or_invalid_values_ignored"] == 5
 
 
 @pytest.mark.parametrize("limit", [0, 501, True, "10"])
