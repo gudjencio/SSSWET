@@ -316,3 +316,32 @@ comparison rule. It does not prove a hypothesis. Assessments require human
 review; real-world execution requires domain-specific safety, ethical,
 regulatory and professional approval. SSSWET does not automatically execute
 physical experiments or promote simulated output to verified evidence.
+
+
+### Multi-model comparison
+
+`ssswet_core.model_comparison.MultiModelComparator` runs two or more
+explicitly configured model callables against the same prompt and records each
+output separately. It reports identical text, divergent text, or insufficient
+outputs when a model fails. Each output has a SHA-256 digest for traceability.
+
+The comparator does not use majority voting, rank model quality, or treat
+agreement as independent evidence. Different model IDs and provider labels do
+not establish statistical independence. Model outputs remain drafts and
+must be checked against traceable sources and appropriate expert review.
+
+Example:
+
+```python
+from ssswet_core.model_comparison import MultiModelComparator
+
+comparison = MultiModelComparator().compare(
+    "comparison-001",
+    "Identify testable explanations for the observed phenomenon",
+    {
+        "model-a": ("provider-a", lambda prompt: "First model response"),
+        "model-b": ("provider-b", lambda prompt: "Second model response"),
+    },
+)
+print(MultiModelComparator.to_dict(comparison))
+```
