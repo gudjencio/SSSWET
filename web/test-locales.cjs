@@ -153,3 +153,17 @@ new Function(purchaseConfig);
 for(const key of ['cellular','longevity','armor','jetpack','translator','spacetime','timetravel']) if(!purchaseConfig.includes(key+':')) throw new Error('Product purchase config missing '+key);
 if(!purchaseConfig.includes('delivery_address_collection')||!purchaseConfig.includes('legal_review_required')) throw new Error('Product purchase safeguards missing.');
 console.log('Validated future product purchase gates and delivery safeguards.');
+
+const engineConnectionSource = appSource;
+for (const feature of ["ssswetApiFetch", "http://127.0.0.1:8765", "ssswet-engine-connection", "refreshStatus"]) {
+  if (!engineConnectionSource.includes(feature)) throw new Error("Local engine discovery feature missing: " + feature);
+}
+if (!pageSource.includes('id="engine-connection"') || !pageSource.includes('id="engine-connection-retry"')) throw new Error("Automatic engine fallback notice is missing.");
+if (!pageSource.includes("ssswetindustries@gmail.com")) throw new Error("Project contact address is missing.");
+for (const feature of ["cleanenergy", "biodiversity", "wildlife", "oceans", "animalHealth", "pollinators", "water", "accessibility", "disasterResilience"]) {
+  if (!donationSourceLatest.includes(feature)) throw new Error("Expanded social-benefit technology missing: " + feature);
+}
+if (!donationSourceLatest.includes("grid.append(card)")) throw new Error("Dynamic technology cards are not generated.");
+const stylesLatest = fs.readFileSync(new URL("./styles.css", "file://" + __filename), "utf8");
+if (!stylesLatest.includes("scroll-snap-type:x mandatory")) throw new Error("Mobile horizontal technology rail is missing.");
+console.log("Validated local engine discovery, offline alternatives, project email and expanded horizontal technology catalogue.");
