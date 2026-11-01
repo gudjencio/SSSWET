@@ -187,3 +187,48 @@ def test_autonomous_worker_heartbeat_round_trip(tmp_path):
     assert loaded["completed_programmes"] == 7
     assert loaded["active_agents"][0]["id"] == "bot-001"
     assert loaded["updated_at"]
+
+
+
+def test_agent_messages_are_persisted_as_immutable_review_handoffs(tmp_path):
+    import sqlite3
+    store = SQLiteResearchStore(tmp_path / "agent-messages.sqlite3")
+    message_id = store.publish_agent_message(
+        task_id="task-peer",
+        sender_agent_id="bot-researcher",
+        sender_role="general_researcher",
+        recipient_agent_id="bot-verifier",
+        recipient_role="independent_verifier",
+        message_type="peer_review_request",
+        content="Please examine this unverified research summary.",
+    )
+    messages = store.recent_agent_messages(task_id="task-peer")
+    assert len(messages) == 1
+    assert messages[0]["id"] == message_id
+    assert messages[0]["sender_agent_id"] == "bot-researcher"
+    assert messages[0]["recipient_agent_id"] == "bot-verifier"
+    assert messages[0]["review_state"] == "awaiting_review"
+    with sqlite3.connect(store.path) as connection:
+        try:
+            connection.execute("UPDATE agent_messages SET content='approved' WHERE id=?", (message_id,))
+        except sqlite3.IntegrityError:
+            pass
+        else:
+            raise AssertionError("Agent handoff history must be immutable")
+
+
+def test_agent_message_rejects_self_delivery_and_empty_content(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "agent-message-validation.sqlite3")
+    import pytest
+    with pytest.raises(ValueError):
+        store.publish_agent_message(
+            task_id="t", sender_agent_id="same", sender_role="researcher",
+            recipient_agent_id="same", recipient_role="researcher",
+            message_type="peer_review_request", content="Review",
+        )
+    with pytest.raises(ValueError):
+        store.publish_agent_message(
+            task_id="t", sender_agent_id="a", sender_role="researcher",
+            recipient_agent_id="b", recipient_role="verifier",
+            message_type="peer_review_request", content=" ",
+        )
