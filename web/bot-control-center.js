@@ -18,8 +18,9 @@
   function renderStaticLabels(){
     const t=labels();
     const title=$("bot-control-title"), caption=$("bot-control-caption"), note=$("bot-control-note");
-    const sideTitle=$("bot-control-side-title"), sideCaption=$("bot-control-side-caption");
+    const sideTitle=$("bot-control-side-title"), sideCaption=$("bot-control-side-caption"), mainLabel=$("bot-control-main");
     if(title) title.textContent=t.title;
+    if(mainLabel) mainLabel.setAttribute("aria-label",t.caption);
     if(caption) caption.textContent=t.caption;
     if(note) note.textContent=t.note;
     const networkLabel=$("bot-control-network-label"), coreNetworkLabel=$("bot-core-network-label");
