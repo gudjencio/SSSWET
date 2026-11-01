@@ -167,6 +167,14 @@ class SQLiteResearchStore:
                 CREATE INDEX IF NOT EXISTS idx_collective_memory_topic ON collective_memory(topic);
                 CREATE INDEX IF NOT EXISTS idx_collective_memory_status ON collective_memory(status);
                 CREATE INDEX IF NOT EXISTS idx_collective_memory_campaign ON collective_memory(campaign_id);
+                CREATE TABLE IF NOT EXISTS literature_watch_reports (
+                    watch_id TEXT PRIMARY KEY,
+                    query TEXT NOT NULL,
+                    report_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_literature_watch_created
+                    ON literature_watch_reports(created_at DESC);
                 CREATE INDEX IF NOT EXISTS idx_events_created ON events(id DESC);
                 CREATE INDEX IF NOT EXISTS idx_steps_task ON research_steps(task_id);
                 """
@@ -350,6 +358,30 @@ class SQLiteResearchStore:
             {**dict(row), "source_ids": json.loads(row["source_ids"])}
             for row in rows
         ]
+
+
+    def save_literature_watch(self, report: object) -> None:
+        """Persist a metadata-watch report without changing research memory."""
+        from .literature_watch import report_to_dict
+        payload = report_to_dict(report)
+        with self._connect() as connection:
+            connection.execute(
+                """INSERT INTO literature_watch_reports(watch_id, query, report_json, created_at)
+                   VALUES (?, ?, ?, ?)
+                   ON CONFLICT(watch_id) DO UPDATE SET
+                     query=excluded.query, report_json=excluded.report_json,
+                     created_at=excluded.created_at""",
+                (report.watch_id, report.query,
+                 json.dumps(payload, ensure_ascii=False), report.created_at),
+            )
+
+    def literature_watch_history(self, limit: int = 50) -> list[dict]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT report_json FROM literature_watch_reports ORDER BY created_at DESC LIMIT ?",
+                (max(1, min(int(limit), 200)),),
+            ).fetchall()
+        return [json.loads(row["report_json"]) for row in rows]
 
     def register_source(self, source: object) -> None:
         """Insert or update a source's traceable bibliographic provenance."""
