@@ -331,10 +331,10 @@
     const count = split ? Math.max(1, Math.floor(usdTotal / 10)) : 1;
     status.textContent = fr ? "Enregistrement de votre demande…" : "Registering your request…";
     try {
-      const response = await fetch(endpoint, {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"payment_reminder_register",email,frequency,technology:selectedTechnology,total_usd:Number(usdTotal.toFixed(2)),installments:count,installment_usd:Number((usdTotal/count).toFixed(2)),language:document.documentElement.lang || "en",first_payment_confirmed:true})});
-      const result = await response.json();
-      if (!response.ok || result.ok !== true) throw new Error(result.message || "Reminder registration failed");
-      status.textContent = fr ? "Votre demande de rappel a été enregistrée. Vérifiez votre boîte e-mail pour confirmer l’inscription." : "Your reminder request was recorded. Check your inbox to confirm the subscription.";
+      const reminderPayload = {type:"payment_reminder_register",email,frequency,technology:selectedTechnology,total_usd:Number(usdTotal.toFixed(2)),installments:count,installment_usd:Number((usdTotal/count).toFixed(2)),language:document.documentElement.lang || "en",first_payment_confirmed:true};
+      const formBody = new URLSearchParams({payload:JSON.stringify(reminderPayload)});
+      await fetch(endpoint, {method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:formBody});
+      status.textContent = fr ? "Demande envoyée. Vérifiez votre boîte e-mail pour confirmer l’inscription. Si aucun message n’arrive, vérifiez la configuration du service." : "Request sent. Check your inbox to confirm the subscription. If no message arrives, check the service configuration.";
     } catch (_) { status.textContent = fr ? "Impossible d’enregistrer le rappel. Réessayez plus tard ; aucun paiement automatique ne sera effectué." : "The reminder could not be registered. Please try again later; no automatic payment will be made."; }
   });
   copyButton.addEventListener("click", async () => {
