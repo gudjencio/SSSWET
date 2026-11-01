@@ -126,3 +126,12 @@ independent evidence and reproducibility.
 Shared knowledge entries and their validation states are also retained in the
 local SQLite database and reloaded when the engine restarts. Unverified
 candidates remain separate from verified knowledge.
+
+### Optional AI model connection
+
+An OpenAI-compatible language-model endpoint can be configured locally using
+`SSSWET_LLM_API_KEY`, `SSSWET_LLM_MODEL` and optionally
+`SSSWET_LLM_ENDPOINT`. Then run `ssswet-run --provider llm --objective "..."`.
+Credentials are never committed. Model responses remain unverified drafts;
+they are not scientific sources or validated discoveries. See
+[the core setup guide](core/README.md).
