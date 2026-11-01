@@ -762,8 +762,35 @@
         await new Promise(resolve => window.setTimeout(resolve, 650));
         events = await apiGet("/api/events");
       }
-      const lines = events.slice(0, 8).map((event) => localizeResearchLog(event.message)).filter(Boolean);
-      showMessage(lines.length ? lines.join(" • ") : t.noActivity);
+      const recent = events.slice(0, 50).map((event) => localizeResearchLog(event.message)).filter(Boolean);
+      const unique = new Map();
+      recent.forEach((message) => {
+        const key = message.replace(/\s+/g, " ").trim().toLocaleLowerCase();
+        if (!unique.has(key)) unique.set(key, { message: message.trim(), count: 0 });
+        unique.get(key).count += 1;
+      });
+      dashboard.hidden = true;
+      feed.hidden = false;
+      feed.replaceChildren();
+      if (!unique.size) {
+        const empty = document.createElement("p");
+        empty.className = "feed-line";
+        empty.textContent = t.noActivity;
+        feed.append(empty);
+      } else {
+        unique.forEach((entry) => {
+          const paragraph = document.createElement("p");
+          paragraph.className = "feed-line";
+          const marker = document.createElement("span");
+          marker.textContent = "●";
+          const suffix = entry.count > 1
+            ? (document.documentElement.lang.toLowerCase().startsWith("fr")
+              ? ` · répété ${entry.count} fois` : ` · repeated ${entry.count} times`)
+            : "";
+          paragraph.append(marker, document.createTextNode(` ${entry.message}${suffix}`));
+          feed.append(paragraph);
+        });
+      }
     } catch { showMessage(t.offline); }
   }
   async function showVerified() {
