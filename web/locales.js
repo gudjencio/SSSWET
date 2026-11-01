@@ -905,5 +905,45 @@ window.SSSWET_AGENT_COPY = {
       "किस चीज़ को सत्यापन या मानवीय समीक्षा की आवश्यकता है?"
     ],
     "disclaimer": "ये परियोजना में निर्धारित भूमिकाएँ हैं; इसका अर्थ यह नहीं कि स्वायत्त AI एजेंट अभी चल रहे हैं। लाइव गतिविधि के लिए स्थानीय शोध इंजन आवश्यक है। GitHub Pages स्थिर पूर्वावलोकन है।"
+  },
+  "id": {
+    "welcome":"Selamat datang di SSSWET.",
+    "summary":"Lingkungan koordinasi penelitian untuk mengeksplorasi gagasan, merencanakan studi, membandingkan bukti, dan mendokumentasikan ketidakpastian.",
+    "roles":[["Koordinasi penelitian","Mengatur pertanyaan, kampanye, tahapan, dan langkah berikutnya."],["Bukti dan metode","Melacak sumber, protokol, perbandingan, keterbatasan, dan reproduktibilitas."],["Integritas dan peninjauan","Menandai informasi yang hilang, perbedaan, dan risiko yang memerlukan tinjauan manusia yang kompeten."]],
+    "steps":["Tentukan pertanyaan dan ruang lingkupnya.","Tinjau sumber, asumsi, dan bukti yang tersedia.","Siapkan protokol terdokumentasi dan rencana yang dapat direproduksi.","Catat pengamatan atau keluaran simulasi beserta asal-usulnya.","Bandingkan hasil serta nilai ketidakpastian dan keterbatasan.","Ajukan interpretasi serta isu keselamatan atau etika untuk ditinjau manusia."],
+    "questions":{"working":"Apa yang sedang dikerjakan saat ini?","evidence":"Bukti dan sumber apa yang telah dicatat?","review":"Apa yang perlu diverifikasi atau ditinjau manusia?"},
+    "stepsTitle":"Alur kerja penelitian","questionsTitle":"Pertanyaan yang dapat diajukan","disclaimer":"Ini adalah peran proyek yang telah ditentukan, bukan bukti bahwa agen AI otonom sedang berjalan. Aktivitas langsung memerlukan mesin penelitian lokal."
+  },
+  "tr": {
+    "welcome":"SSSWET'e hoş geldiniz.",
+    "summary":"Fikirleri keşfetmek, çalışmalar planlamak, kanıtları karşılaştırmak ve belirsizliği belgelemek için bir araştırma koordinasyon ortamı.",
+    "roles":[["Araştırma koordinasyonu","Soruları, kampanyaları, kilometre taşlarını ve sonraki adımları düzenler."],["Kanıt ve yöntemler","Kaynakları, protokolleri, karşılaştırmaları, sınırlamaları ve tekrarlanabilirliği izler."],["Dürüstlük ve inceleme","Eksik bilgileri, tutarsızlıkları ve uzman insan incelemesi gerektiren riskleri işaretler."]],
+    "steps":["Bir soru ve kapsamını tanımlayın.","Kaynakları, varsayımları ve mevcut kanıtları inceleyin.","Belgelenmiş bir protokol ve tekrarlanabilir bir plan hazırlayın.","Gözlemleri veya simülasyon çıktılarını kaynak bilgileriyle kaydedin.","Sonuçları karşılaştırın; belirsizlikleri ve sınırlamaları değerlendirin.","Yorumları ve güvenlik ya da etik konularını insan incelemesine sunun."],
+    "questions":{"working":"Şu anda üzerinde ne çalışılıyor?","evidence":"Hangi kanıtlar ve kaynaklar kaydedildi?","review":"Nelerin doğrulanması veya insan incelemesinden geçmesi gerekiyor?"},
+    "stepsTitle":"Araştırma iş akışı","questionsTitle":"Sorabileceğiniz sorular","disclaimer":"Bunlar tanımlanmış proje rolleridir; otonom yapay zekâ ajanlarının çalıştığını kanıtlamaz. Canlı etkinlik için yerel araştırma motoru gerekir."
+  },
+  "pl": {
+    "welcome":"Witamy w SSSWET.",
+    "summary":"Środowisko koordynacji badań służące do rozwijania pomysłów, planowania badań, porównywania dowodów i dokumentowania niepewności.",
+    "roles":[["Koordynacja badań","Porządkuje pytania, kampanie, etapy i kolejne działania."],["Dowody i metody","Śledzi źródła, protokoły, porównania, ograniczenia i odtwarzalność."],["Rzetelność i przegląd","Wskazuje brakujące informacje, rozbieżności i ryzyka wymagające oceny wykwalifikowanego człowieka."]],
+    "steps":["Określ pytanie i zakres badania.","Przeanalizuj źródła, założenia i istniejące dowody.","Przygotuj udokumentowany protokół i plan możliwy do odtworzenia.","Zapisz obserwacje lub wyniki symulacji wraz z ich pochodzeniem.","Porównaj wyniki oraz oceń niepewność i ograniczenia.","Przekaż interpretacje oraz kwestie bezpieczeństwa i etyki do oceny człowieka."],
+    "questions":{"working":"Nad czym obecnie trwają prace?","evidence":"Jakie dowody i źródła zostały zapisane?","review":"Co wymaga weryfikacji lub oceny człowieka?"},
+    "stepsTitle":"Przebieg pracy badawczej","questionsTitle":"Pytania, które możesz zadać","disclaimer":"Są to określone role projektu, a nie dowód działania autonomicznych agentów AI. Bieżąca aktywność wymaga lokalnego silnika badawczego."
+  },
+  "bn": {
+    "welcome":"SSSWET-এ স্বাগতম।",
+    "summary":"ধারণা অনুসন্ধান, গবেষণা পরিকল্পনা, প্রমাণ তুলনা এবং অনিশ্চয়তা নথিভুক্ত করার একটি গবেষণা সমন্বয় পরিবেশ।",
+    "roles":[["গবেষণা সমন্বয়","প্রশ্ন, প্রচারাভিযান, মাইলফলক এবং পরবর্তী পদক্ষেপ সাজায়।"],["প্রমাণ ও পদ্ধতি","উৎস, প্রোটোকল, তুলনা, সীমাবদ্ধতা এবং পুনরুৎপাদনযোগ্যতা অনুসরণ করে।"],["সততা ও পর্যালোচনা","অনুপস্থিত তথ্য, অমিল এবং যোগ্য মানুষের পর্যালোচনা প্রয়োজন এমন ঝুঁকি চিহ্নিত করে।"]],
+    "steps":["একটি প্রশ্ন ও তার পরিধি নির্ধারণ করুন।","উৎস, অনুমান এবং বিদ্যমান প্রমাণ পর্যালোচনা করুন।","নথিভুক্ত প্রোটোকল ও পুনরুৎপাদনযোগ্য পরিকল্পনা তৈরি করুন।","উৎস-তথ্যসহ পর্যবেক্ষণ বা সিমুলেশনের ফল নথিভুক্ত করুন।","ফলাফল তুলনা করুন এবং অনিশ্চয়তা ও সীমাবদ্ধতা মূল্যায়ন করুন।","ব্যাখ্যা এবং নিরাপত্তা বা নৈতিকতার বিষয় মানুষের পর্যালোচনার জন্য জমা দিন।"],
+    "questions":{"working":"এখন কী নিয়ে কাজ চলছে?","evidence":"কোন প্রমাণ ও উৎস নথিভুক্ত হয়েছে?","review":"কী যাচাই বা মানুষের পর্যালোচনা প্রয়োজন?"},
+    "stepsTitle":"গবেষণার কর্মধারা","questionsTitle":"আপনি যে প্রশ্নগুলো করতে পারেন","disclaimer":"এগুলো প্রকল্পের নির্ধারিত ভূমিকা; স্বয়ংক্রিয় AI এজেন্ট চালু থাকার প্রমাণ নয়। সরাসরি কার্যক্রমের জন্য স্থানীয় গবেষণা ইঞ্জিন প্রয়োজন।"
+  },
+  "sw": {
+    "welcome":"Karibu SSSWET.",
+    "summary":"Mazingira ya kuratibu utafiti kwa kuchunguza mawazo, kupanga tafiti, kulinganisha ushahidi na kuweka kumbukumbu za kutokuwa na uhakika.",
+    "roles":[["Uratibu wa utafiti","Hupanga maswali, kampeni, hatua muhimu na kazi zinazofuata."],["Ushahidi na mbinu","Hufuatilia vyanzo, itifaki, ulinganisho, mipaka na uwezekano wa kurudia matokeo."],["Uadilifu na mapitio","Huonyesha taarifa zinazokosekana, tofauti na hatari zinazohitaji mapitio ya mtaalamu." ]],
+    "steps":["Bainisha swali na upeo wake.","Kagua vyanzo, dhana na ushahidi uliopo.","Andaa itifaki iliyoandikwa na mpango unaoweza kurudiwa.","Rekodi uchunguzi au matokeo ya uigaji pamoja na asili yake.","Linganisha matokeo na tathmini kutokuwa na uhakika pamoja na mipaka.","Wasilisha tafsiri na masuala ya usalama au maadili kwa mapitio ya binadamu."],
+    "questions":{"working":"Ni kazi gani inayoendelea sasa?","evidence":"Ni ushahidi na vyanzo gani vimerekodiwa?","review":"Ni nini kinahitaji kuthibitishwa au kupitiwa na binadamu?"},
+    "stepsTitle":"Mtiririko wa kazi ya utafiti","questionsTitle":"Maswali unayoweza kuuliza","disclaimer":"Haya ni majukumu yaliyofafanuliwa ya mradi, si uthibitisho kwamba mawakala huru wa AI wanafanya kazi. Shughuli za moja kwa moja zinahitaji mfumo wa utafiti wa ndani."
   }
 };
