@@ -85,7 +85,7 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             self.send_response(204)
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Vary", "Origin")
-            self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
             self.send_header("Access-Control-Allow-Headers", "Accept, Content-Type")
             self.send_header("Access-Control-Max-Age", "600")
             if self.headers.get("Access-Control-Request-Private-Network", "").lower() == "true":
