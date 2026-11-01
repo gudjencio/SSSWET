@@ -135,3 +135,10 @@ for (const field of ["funding_goal_eur: null", "confirmed_contributions_eur: nul
 if (!donationSourceLatest.includes("renderPortfolio") || !donationSourceLatest.includes("PayPal.Me does not synchronize")) throw new Error("Research progress display or manual-ledger disclosure is missing.");
 if (!pageSource.includes('id="portfolio-manual-note"') || !pageSource.includes('id="technology-dialog-progress"')) throw new Error("Research portfolio interface is missing.");
 console.log("Validated the seven-theme research portfolio, unpublished unknowns, manual PayPal ledger disclosure and progress interface.");
+
+
+const journalSource = fs.readFileSync(new URL('./research-journal.js', `file://${__filename}`), 'utf8');
+new Function(journalSource);
+if (!pageSource.includes('id="research-journal-form"') || !pageSource.includes('id="research-journal-list"')) throw new Error('Research journal UI is missing.');
+if (!journalSource.includes('/api/research-journal') || !journalSource.includes('chain_intact')) throw new Error('Research journal API or integrity display is missing.');
+console.log('Validated the append-only research journal interface.');
