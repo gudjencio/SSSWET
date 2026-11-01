@@ -252,3 +252,28 @@ The read-only local API exposes a bounded graph snapshot at
 relationships; it does not infer missing links, establish causality, or upgrade
 verification states. A relationship such as `supports` records an attributed
 claim about evidence, not proof that the connected finding is true.
+
+
+### Research-gap analysis
+
+The deterministic `ResearchGapAnalyzer` inspects the explicit knowledge graph
+and reports missing recorded support, untested hypotheses, pending verification,
+unresolved support/contradiction links, unanswered questions, unlinked experiments
+and findings without provenance links. It prioritizes review work (high/medium/low)
+and proposes a next action for each gap.
+
+Run it locally with:
+
+```python
+from ssswet_core.persistence import SQLiteResearchStore
+from ssswet_core.research_gaps import ResearchGapAnalyzer
+
+store = SQLiteResearchStore()
+report = ResearchGapAnalyzer().report(store.knowledge_graph())
+print(report)
+```
+
+The read-only local API also exposes this report at `/api/research-gaps`.
+The analyzer is deliberately conservative: missing graph relationships are
+not proof that evidence or experiments do not exist elsewhere. It never creates
+evidence, changes verification states, or declares a hypothesis true or false.
