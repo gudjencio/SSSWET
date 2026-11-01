@@ -148,13 +148,13 @@ Arabic and Hebrew use right-to-left layout. Translation coverage and quality are
 
 - **Web application:** [gudjencio.github.io/SSSWET](https://gudjencio.github.io/SSSWET/)
 - **Source code:** [github.com/gudjencio/SSSWET](https://github.com/gudjencio/SSSWET)
-- **Google Sites mirror:** [ssswet.google.com](https://sites.google.com/view/ssswet)
+- **Google Sites mirror:** [sites.google.com/view/ssswet](http://sites.google.com/view/ssswet)
 - **X:** [@ssswetech](https://x.com/ssswetech)
 - **Instagram:** [@ssswetech](https://www.instagram.com/ssswetech)
 - **YouTube:** [@ssswetech](https://www.youtube.com/@ssswetech)
 - **Contact:** [ssswetindustries@gmail.com](mailto:ssswetindustries@gmail.com)
 
-The Google Sites page is intended to embed the canonical web application, avoiding a separate copy that could become outdated.
+The Google Sites mirror is already published and embeds the canonical web application. Visitors can open it directly; no setup is required.
 
 ## License
 
