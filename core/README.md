@@ -345,3 +345,46 @@ comparison = MultiModelComparator().compare(
 )
 print(MultiModelComparator.to_dict(comparison))
 ```
+
+
+### Reproducible multi-model simulation studies
+
+`ssswet_core.simulation_study.MultiModelSimulationRunner` runs at
+least two explicitly configured computational models against the same set of
+caller-supplied scenarios. Each scenario's parameter values are serialized in
+a stable order, and every model output is retained with a SHA-256 digest,
+provider/model labels and an individual success/failure status. Scenario
+comparisons are classified as identical, divergent or insufficient.
+
+The runner is deliberately bounded to 100 scenarios and 20 models per study.
+It does not generate physical experiments, invent scientific equations, search
+unbounded parameter spaces, or decide which model is correct. It calls only
+the Python functions supplied by the local operator.
+
+Example:
+
+```python
+from ssswet_core.simulation_study import (
+    MultiModelSimulationRunner,
+    SimulationScenario,
+)
+
+study = MultiModelSimulationRunner().run(
+    "study-001",
+    "Compare two illustrative mathematical models",
+    [
+        SimulationScenario("baseline", {"input": 2}),
+        SimulationScenario("variant", {"input": 5}),
+    ],
+    {
+        "model-a": ("local", lambda p: {"output": p["input"] ** 2}),
+        "model-b": ("local", lambda p: {"output": p["input"] * 3}),
+    },
+)
+print(MultiModelSimulationRunner.to_dict(study))
+```
+
+A completed simulation is not a real observation. Identical outputs do not
+establish model validity or independence. Divergent outputs are preserved for
+investigation rather than resolved by majority vote. Model assumptions,
+equations, units, calibration and domain of validity require expert review.
