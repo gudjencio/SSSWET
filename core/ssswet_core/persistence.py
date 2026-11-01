@@ -50,6 +50,11 @@ class SQLiteResearchStore:
                     agent_id TEXT,
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
+                CREATE TABLE IF NOT EXISTS research_worker_state (
+                    worker_id TEXT PRIMARY KEY,
+                    state_json TEXT NOT NULL,
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
                 CREATE TABLE IF NOT EXISTS research_steps (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     task_id TEXT NOT NULL,
@@ -414,6 +419,32 @@ class SQLiteResearchStore:
                         float(step.result.uncertainty),
                     ),
                 )
+
+    def save_research_worker_state(self, state: dict) -> None:
+        """Persist the latest autonomous worker heartbeat for live supervision."""
+        if not isinstance(state, dict):
+            raise ValueError("Worker state must be an object")
+        encoded = json.dumps(state, ensure_ascii=False, sort_keys=True, allow_nan=False)
+        with self._connect() as connection:
+            connection.execute(
+                """INSERT INTO research_worker_state(worker_id, state_json, updated_at)
+                   VALUES ('main', ?, CURRENT_TIMESTAMP)
+                   ON CONFLICT(worker_id) DO UPDATE SET
+                     state_json=excluded.state_json,
+                     updated_at=CURRENT_TIMESTAMP""",
+                (encoded,),
+            )
+
+    def research_worker_state(self) -> dict:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT state_json, updated_at FROM research_worker_state WHERE worker_id = 'main'"
+            ).fetchone()
+        if row is None:
+            return {"status": "not_started", "active_agents": [], "updated_at": None}
+        state = json.loads(row["state_json"])
+        state["updated_at"] = row["updated_at"]
+        return state
 
     def recent_tasks(self, limit: int = 20) -> list[dict]:
         with self._connect() as connection:
