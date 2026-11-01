@@ -113,13 +113,15 @@ are met. See [core documentation](core/README.md) for details.
 
 ### External literature discovery
 
-The local research runner can now query Crossref for bibliographic metadata:
+The local research runner can query Crossref or OpenAlex individually, or search both services together with `--provider literature`:
 
 ```bash
-ssswet-run --objective "wave propagation measurement methods" --domain physics --provider crossref
+ssswet-run --objective "wave propagation measurement methods" --domain physics --provider literature
 ```
 
-The returned publications are source leads, not verified conclusions. All
+The combined provider merges results from both catalogues and deduplicates matching DOI records while retaining provider provenance. Use `--provider crossref` or `--provider openalex` to query one catalogue only.
+
+The returned publications are source leads, not verified conclusions. Bibliographic metadata, citation counts and cross-catalogue agreement do not establish scientific validity. All
 provider outputs remain explicitly unverified pending full source review,
 independent evidence and reproducibility.
 
