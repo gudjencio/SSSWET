@@ -50,7 +50,7 @@
     const data=new FormData(form);const payload=Object.fromEntries(data.entries());
     payload.evidence_refs=String(payload.evidence_refs||"").split("\n").map(value=>value.trim()).filter(Boolean);
     try{
-      const response=await fetch("/api/research-journal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      const response=await window.ssswetApiFetch("/api/research-journal",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
       const result=await response.json();if(!response.ok)throw new Error(result.error||"HTTP "+response.status);
       form.reset();await load();status.textContent=t().saved+" · "+result.entry.entry_id;
     }catch(error){status.textContent=t().error+error.message;}
