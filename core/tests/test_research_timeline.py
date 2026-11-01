@@ -103,3 +103,35 @@ def test_timeline_includes_peer_review_request_and_submission(tmp_path):
     kinds = {event["kind"] for event in events}
     assert "peer_review_requested" in kinds
     assert "peer_review_submitted" in kinds
+
+
+def test_timeline_includes_shared_lab_protocols_and_runs(tmp_path):
+    from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+    from ssswet_core.digital_lab import DigitalLabService, LabProtocol, LabRun
+
+    store = SQLiteResearchStore(tmp_path / "lab-timeline.sqlite3")
+    for cid in ("owner", "replica"):
+        campaign = create_campaign(
+            cid, cid, "Digital laboratory research", "computational science",
+            [CampaignMilestone("m1", "Review", "Review shared protocol")],
+        )
+        store.save_campaign(set_campaign_state(campaign, "active"))
+    service = DigitalLabService(store)
+    service.publish_protocol(LabProtocol(
+        "protocol-1", 1, "Shared protocol", "Compare a simple calculation", "owner",
+        ("Record input", "Calculate output"), ("x",), ("y",), {"x": "unitless"},
+        ("Same initial condition",), ("Illustrative only",), ("No physical execution",),
+        "published", "reviewer", "Reviewed for clarity.",
+    ))
+    service.record_run(LabRun(
+        "run-1", "protocol-1", 1, "replica", "simulation",
+        {"x": 2}, {"y": 4}, "y=2x", {"runtime": "Python"},
+        "model-v1", "replica-lab", True,
+    ))
+    events = ResearchTimeline(store).build()["events"]
+    kinds = {event["kind"] for event in events}
+    assert "lab_protocol_published" in kinds
+    assert "lab_run_recorded" in kinds
+    run_event = next(event for event in events if event["kind"] == "lab_run_recorded")
+    assert run_event["references"]["execution_kind"] == "simulation"
+    assert run_event["scientific_validity_established"] is False
