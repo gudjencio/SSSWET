@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#050505">
+  <meta name="description" content="SSSWET — Super Soldier Space Warping Engeriening Tech">
+  <title>SSSWET</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">SSSWET</div>
+        <div class="brand-subtitle" data-i18n="tagline">Super Soldier Space Warping Engeriening Tech</div>
+      </div>
+      <select id="language" aria-label="Language">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+      </select>
+    </header>
+
+    <section class="hero" aria-labelledby="title">
+      <div class="status-dot"></div>
+      <p class="eyebrow" data-i18n="status">RESEARCH SYSTEM ONLINE</p>
+      <h1 id="title">SSSWET</h1>
+      <p class="mission" data-i18n="mission">Research ideas. Test them. Verify them. Never confuse a hypothesis with reality.</p>
+    </section>
+
+    <section class="panel" aria-label="Research interface">
+      <div class="bot-status">
+        <span data-i18n="agents">Research agents</span>
+        <strong id="agent-count">01</strong>
+        <span class="separator">·</span>
+        <span data-i18n="verification">verification-first</span>
+      </div>
+
+      <div class="actions">
+        <button data-action="discover" data-i18n="discover">What did you discover?</button>
+        <button data-action="working" data-i18n="working">What are you working on?</button>
+        <button data-action="verified" data-i18n="verified">Latest verified results</button>
+      </div>
+
+      <div id="feed" class="feed" aria-live="polite">
+        <p class="feed-line"><span>●</span> <span data-i18n="ready">The research system is ready.</span></p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="socials" aria-label="Social networks">
+        <a href="https://x.com/ssswetech" target="_blank" rel="noopener noreferrer">X</a>
+        <a href="https://www.instagram.com/ssswetech" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="https://www.youtube.com/@ssswetech" target="_blank" rel="noopener noreferrer">YouTube</a>
+      </div>
+      <div class="contact">ssswetindustries@gmail.com</div>
+      <div class="footer-note" data-i18n="footer">ETDESS is the French translation of SSSWET. Public results remain subject to verification.</div>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
