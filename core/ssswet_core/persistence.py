@@ -439,12 +439,12 @@ class SQLiteResearchStore:
         with self._connect() as connection:
             rows = connection.execute(
                 """SELECT version_number, record_json FROM scientific_memory_versions
-                   ORDER BY created_at ASC, memory_key ASC, version_number ASC LIMIT ?""",
+                   ORDER BY created_at DESC, memory_key DESC, version_number DESC LIMIT ?""",
                 (bounded,),
             ).fetchall()
         return [
             {"version_number": row["version_number"], **json.loads(row["record_json"])}
-            for row in rows
+            for row in reversed(rows)
         ]
 
 
