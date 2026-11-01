@@ -115,3 +115,22 @@ html[dir="rtl"] .contact { direction: ltr; unicode-bidi: isolate; }
   .mission { font-size: 14px; }
   button { padding: 14px 12px; font-size: 13px; }
 }
+
+
+.dashboard { margin-top: 20px; border-top: 1px solid #252525; padding-top: 18px; }
+.dashboard[hidden] { display: none; }
+.dashboard-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.dashboard-heading h2 { margin: 0; font-size: 16px; letter-spacing: .04em; }
+.refresh-button { padding: 9px 12px; border-radius: 12px; font-size: 12px; }
+.dashboard-note, .dashboard-offline { color: #888; font-size: 12px; line-height: 1.5; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.dashboard-card { min-width: 0; border: 1px solid #252525; background: linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.008)); border-radius: 16px; padding: 13px; }
+.dashboard-card h3 { margin: 0; color: #bbb; font-size: 11px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; }
+.dashboard-metric { display: block; margin-top: 10px; font-size: 27px; font-weight: 750; color: #fff; }
+.dashboard-card p { min-height: 38px; margin: 7px 0 10px; color: #888; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.dashboard-state { display: inline-block; color: #aaa; border: 1px solid #333; border-radius: 999px; padding: 4px 7px; font-size: 8px; letter-spacing: .1em; }
+.dashboard-state.is-error { color: #d4a0a0; border-color: #604040; }
+.dashboard-offline { grid-column: 1 / -1; padding: 10px; border: 1px dashed #383838; border-radius: 12px; }
+html[dir="rtl"] .dashboard { direction: rtl; text-align: right; }
+html[dir="rtl"] .dashboard-heading { flex-direction: row-reverse; }
+@media (max-width: 480px) { .dashboard-grid { grid-template-columns: 1fr; } }
