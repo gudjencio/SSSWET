@@ -712,7 +712,7 @@
       let events;
       try { events = await apiGet("/api/events"); }
       catch (firstError) {
-        if (!/timeout|HTTP 5\\d{2}|temporar|connection reset/i.test(String(firstError && firstError.message || firstError))) throw firstError;
+        if (!/timeout|HTTP 5\d{2}|temporar|connection reset/i.test(String(firstError && firstError.message || firstError))) throw firstError;
         await new Promise(resolve => window.setTimeout(resolve, 650));
         events = await apiGet("/api/events");
       }
