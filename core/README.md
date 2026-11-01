@@ -610,3 +610,25 @@ The available states are `candidate`, `reviewed`, `rejected` and
 teams can understand prior decisions; callers may exclude rejected records
 from a search when appropriate. Review does not modify the original sources,
 prove a claim, or replace the independent-evidence verification process.
+
+
+### Scholarly literature watch
+
+Run a one-shot metadata watch across Crossref and OpenAlex:
+
+```bash
+ssswet-watch --query "wave propagation measurement methods"
+```
+
+The watch stores a dated report and compares returned bibliographic metadata
+with sources already registered in the local provenance registry. It identifies
+exact DOI overlaps, possible title matches and lexical overlap with collective
+memory entries. Each match is a review lead, not a definitive duplicate or
+scientific relationship. The report is available through the read-only
+`/api/literature-watch` endpoint.
+
+The watch does not automatically register publications, modify collective
+memory, update campaign milestones, infer contradictions from abstracts, or
+promote findings. Metadata-only discovery cannot establish a publication's
+quality, methods, reproducibility or truth. Repeat the command when you want a
+new snapshot; periodic unattended scheduling is not enabled by this command.
