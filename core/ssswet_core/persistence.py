@@ -1028,13 +1028,13 @@ class SQLiteResearchStore:
             if json.loads(source["campaign_json"]).get("state") != "active":
                 raise ValueError("Source campaign must be active")
             node_row = connection.execute(
-                "SELECT record_json FROM knowledge_nodes WHERE node_id = ?",
+                "SELECT metadata FROM knowledge_nodes WHERE node_id = ?",
                 (request.node_id,),
             ).fetchone()
             if node_row is None:
                 raise ValueError("Unknown knowledge node")
-            node = json.loads(node_row["record_json"])
-            node_campaign = (node.get("metadata") or {}).get("campaign_id")
+            node_metadata = json.loads(node_row["metadata"] or "{}")
+            node_campaign = node_metadata.get("campaign_id")
             if node_campaign != request.source_campaign_id:
                 raise ValueError("Knowledge node is not assigned to the source campaign")
             for reviewer_id in request.reviewer_campaign_ids:
