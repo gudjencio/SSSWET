@@ -241,6 +241,16 @@
         ])
       },
       {
+        key: "scientificMemory", path: "/api/scientific-memory", list: "versions",
+        title: t.dashScientificMemory,
+        count: (a, p) => safeCount(p.current_versions),
+        detail: (a, p) => dashboardMetrics([
+          [t.dashMemoryVersions, safeCount(p.total_versions)],
+          [t.dashCurrentMemory, safeCount(p.current_versions)],
+          [t.dashContestedMemory, safeCount(p.contested_versions)]
+        ])
+      },
+      {
         key: "literature", path: "/api/literature-watch", list: "reports",
         title: t.dashLiteratureWatch,
         count: (a) => a.reduce((sum, report) => sum + safeCount(report.candidates), 0),
