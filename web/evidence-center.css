@@ -48,3 +48,5 @@ html[dir="rtl"] .evidence-center, html[dir="rtl"] .evidence-dossier { direction:
 .evidence-review-form button { padding: 7px 9px; border-radius: 7px; font-size: 9px; }
 .evidence-review-feedback { color: #9eaf98; align-self: center; }
 .evidence-review-state { color: #c6a978 !important; }
+
+.evidence-review-history { margin: 4px 0 0; padding: 6px 8px; border-inline-start: 2px solid #39332a; color: #777; font-size: 9px; overflow-wrap: anywhere; }
