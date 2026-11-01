@@ -28,13 +28,13 @@
       </div>
       <div class="bot-command-layout">
         <section class="bot-command-main" id="bot-control-main" aria-label="Research activity">
-          <div class="bot-command-visual">
+          <div class="bot-command-visual" id="bot-command-visual" data-active="false">
             <div class="bot-orbit bot-orbit-one"></div><div class="bot-orbit bot-orbit-two"></div>
             <div class="bot-command-core"><span class="bot-core-ring"></span><span class="bot-core-label">SSSWET<br><small id="bot-core-network-label">RESEARCH NETWORK</small></span></div>
             <div class="bot-command-robot bot-robot-one"><span class="agent-avatar agent-avatar-1"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small id="bot-visual-research">RESEARCH</small></div>
             <div class="bot-command-robot bot-robot-two"><span class="agent-avatar agent-avatar-2"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small id="bot-visual-analysis">ANALYSIS</small></div>
             <div class="bot-command-robot bot-robot-three"><span class="agent-avatar agent-avatar-3"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small id="bot-visual-verify">REVIEW</small></div>
-            <div class="bot-visual-grid"></div>
+            <div class="bot-visual-grid"></div><div class="bot-stage-agents" id="bot-visual-agents" aria-label="Research agents"></div><div class="bot-stage-caption" id="bot-stage-caption">Agents · live research</div>
           </div>
           <div class="bot-command-current" id="bot-control-current" aria-live="polite"><strong>Programme en cours :</strong> en attente des données du moteur local</div>
           <div id="bot-control-metrics" class="bot-control-metrics" aria-live="polite"></div>
@@ -45,7 +45,7 @@
           <div class="bot-command-task-section"><strong id="bot-control-task-title">Dernières tâches de recherche</strong><div id="bot-control-tasks" class="bot-control-tasks" aria-live="polite"></div></div>
         </aside>
       </div>
-      <p id="bot-control-note" class="bot-control-note">The animated visual represents the research team. Activity and figures are displayed only when reported by the local engine; research activity does not constitute scientific validation.</p>
+      <section class="bot-conversation" aria-labelledby="bot-conversation-title"><div class="bot-conversation-heading"><div><p class="eyebrow" id="bot-conversation-kicker">BOT-ONLY CHANNEL</p><h3 id="bot-conversation-title">Research exchange</h3><p id="bot-conversation-caption">Recorded findings and hand-offs from the local research engine</p></div><button id="bot-voice-toggle" type="button" aria-pressed="false">Voice · Off</button></div><div class="bot-conversation-feed" id="bot-conversation-feed" role="log" aria-live="polite"><p class="bot-conversation-empty" id="bot-conversation-empty">Waiting for the first recorded research exchange…</p></div><div class="bot-visitor-questions" aria-label="Ask the research team"><span id="bot-questions-label">Ask the research team</span><button type="button" data-bot-question="working">What are you working on?</button><button type="button" data-bot-question="discoveries">What did you discover?</button><button type="button" data-bot-question="verification">How are results checked?</button></div><div class="bot-visitor-answer" id="bot-visitor-answer" role="status" aria-live="polite" hidden></div></section>\n      <p id="bot-control-note" class="bot-control-note">The animated visual represents the research team. Activity and figures are displayed only when reported by the local engine; research activity does not constitute scientific validation.</p>
     </section>
     <section class="hero" aria-labelledby="title"><div class="status-dot"></div><p class="eyebrow" id="system-status" data-i18n="status">RESEARCH INTERFACE</p><h1 id="title">SSSWET</h1><p class="mission" data-i18n="mission">Research ideas. Test them. Verify them. Never confuse a hypothesis with reality.</p></section>
     <section id="engine-connection" class="engine-connection" hidden aria-live="polite">
@@ -168,6 +168,6 @@
     </section>
     <footer class="footer"><div class="contact"><span data-i18n="contact">Contact</span> · <a href="mailto:ssswetindustries@gmail.com">ssswetindustries@gmail.com</a></div><div class="footer-note" data-i18n="footer">ETDESS is the French translation of SSSWET. Public results remain subject to verification.</div></footer>
   </main>
-  <script src="locales.js"></script><script src="app.js"></script><script src="bot-control-center.js"></script><script src="product-purchase-config.js"></script><script src="donation-config.js"></script><script src="donation.js"></script><script src="evidence-center.js"></script><script src="research-journal.js"></script><script src="technology-feasibility.js"></script><script src="lab-statistics.js"></script><script src="parameter-sensitivity.js"></script><script src="evidence-graph.js"></script><script src="lab-discrepancies.js"></script>
+  <script src="locales.js"></script><script src="app.js"></script><script src="bot-control-center.js"></script><script src="bot-live-room.js"></script><script src="product-purchase-config.js"></script><script src="donation-config.js"></script><script src="donation.js"></script><script src="evidence-center.js"></script><script src="research-journal.js"></script><script src="technology-feasibility.js"></script><script src="lab-statistics.js"></script><script src="parameter-sensitivity.js"></script><script src="evidence-graph.js"></script><script src="lab-discrepancies.js"></script>
 </body>
 </html>
