@@ -58,6 +58,109 @@
   }
   function currentTranslations() { return { ...fallback, ...(locales[translationSource(currentLanguage())] || {}) }; }
 
+  const voiceToggle = document.getElementById("voice-toggle");
+  let voiceEnabled = false;
+  let availableVoices = [];
+  const speechSynthesisApi = window.speechSynthesis || null;
+  function refreshVoices() {
+    if (speechSynthesisApi) availableVoices = speechSynthesisApi.getVoices();
+  }
+  if (speechSynthesisApi) {
+    refreshVoices();
+    speechSynthesisApi.addEventListener?.("voiceschanged", refreshVoices);
+  }
+  function voiceLanguageMatches(voice, language) {
+    const wanted = String(language || "en").toLowerCase();
+    const actual = String(voice.lang || "").toLowerCase();
+    return actual === wanted || actual.split("-")[0] === wanted.split("-")[0];
+  }
+  function chooseVoice(language, gender) {
+    refreshVoices();
+    if (!availableVoices.length) return null;
+    const sameLanguage = availableVoices.filter(voice => voiceLanguageMatches(voice, language));
+    const candidates = sameLanguage.length ? sameLanguage : availableVoices;
+    const feminine = /female|woman|zira|aria|jenny|samantha|susan|sara|ava|emma|olivia| victoria|natasha|google français|google français|amélie|audrey|marie|elsa/i;
+    const masculine = /male|man|david|mark|guy|james|thomas|henri|paul|daniel|alex|george|fred|google uk english male/i;
+    const genderPattern = gender === "female" ? feminine : masculine;
+    const genderMatches = candidates.filter(voice =>
+      (voice.gender && String(voice.gender).toLowerCase() === gender) || genderPattern.test(voice.name || "")
+    );
+    const pool = genderMatches.length ? genderMatches : candidates;
+    const natural = /natural|neural|online|premium|enhanced|google|microsoft|siri/i;
+    return pool.slice().sort((a, b) =>
+      Number(natural.test(b.name || "")) - Number(natural.test(a.name || "")) ||
+      Number(b.lang?.toLowerCase() === language.toLowerCase()) - Number(a.lang?.toLowerCase() === language.toLowerCase())
+    )[0] || null;
+  }
+  function speakAsAgent(text, agentIndex = 0) {
+    if (!voiceEnabled || !speechSynthesisApi || typeof SpeechSynthesisUtterance === "undefined") return;
+    const spoken = String(text || "").replace(/\\s+/g, " ").trim().slice(0, 1800);
+    if (!spoken) return;
+    const utterance = new SpeechSynthesisUtterance(spoken);
+    const language = currentLanguage();
+    const gender = agentIndex === 1 ? "male" : "female";
+    utterance.lang = language;
+    utterance.rate = 0.96;
+    utterance.pitch = gender === "female" ? 1.04 : 0.94;
+    utterance.volume = 1;
+    const voice = chooseVoice(language, gender);
+    if (voice) utterance.voice = voice;
+    speechSynthesisApi.speak(utterance);
+  }
+  function speakWelcome(copy) {
+    if (!voiceEnabled || !copy) return;
+    speechSynthesisApi?.cancel();
+    speakAsAgent(copy.welcome + " " + copy.summary, 0);
+    copy.roles.forEach((role, index) => {
+      const parts = Array.isArray(role) ? role : [role.name, role.description];
+      speakAsAgent(parts.filter(Boolean).join(". "), index);
+    });
+  }
+  function capitalizeInitial(value, language = currentLanguage()) {
+    const characters = Array.from(String(value));
+    const index = characters.findIndex(character => /\\p{L}/u.test(character));
+    if (index < 0) return String(value);
+    characters[index] = characters[index].toLocaleUpperCase(language);
+    return characters.join("");
+  }
+  function capitalizeInterfaceText(root = document.body) {
+    if (!root || !document.createTreeWalker) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      const parent = node.parentElement;
+      if (!parent || parent.closest("script,style,textarea,pre,code,svg")) continue;
+      const updated = capitalizeInitial(node.nodeValue);
+      if (updated !== node.nodeValue) node.nodeValue = updated;
+    }
+    if (root.querySelectorAll) {
+      root.querySelectorAll("[placeholder],[aria-label]").forEach(element => {
+        for (const attribute of ["placeholder", "aria-label"]) {
+          if (element.hasAttribute(attribute)) {
+            const value = element.getAttribute(attribute);
+            const updated = capitalizeInitial(value);
+            if (updated !== value) element.setAttribute(attribute, updated);
+          }
+        }
+      });
+    }
+  }
+  const capitalizationObserver = new MutationObserver(records => {
+    records.forEach(record => {
+      if (record.type === "characterData") capitalizeInterfaceText(record.target.parentElement);
+      else record.addedNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const parent = node.parentElement;
+          if (parent && !parent.closest("script,style,textarea,pre,code,svg")) {
+            const updated = capitalizeInitial(node.nodeValue);
+            if (updated !== node.nodeValue) node.nodeValue = updated;
+          }
+        } else if (node.nodeType === Node.ELEMENT_NODE) capitalizeInterfaceText(node);
+      });
+    });
+  });
+  capitalizationObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+
   function setLanguage(requested) {
     const selected = locales[requested] ? requested : "en";
     const t = { ...fallback, ...(locales[translationSource(selected)] || {}) };
@@ -80,6 +183,7 @@
       const value = t[element.dataset.i18nPlaceholder];
       if (typeof value === "string") element.setAttribute("placeholder", value);
     });
+    capitalizeInterfaceText(document.body);
     safeSaveLanguage(selected);
     refreshStatus();
     if (lastView === "ready") showAgentWelcome();
@@ -89,7 +193,7 @@
     else if (lastView === "dashboard") showDashboard();
   }
 
-  function showMessage(message) {
+  function showMessage(message, agentIndex = 0, shouldSpeak = true) {
     dashboard.hidden = true;
     feed.hidden = false;
     const paragraph = document.createElement("p");
@@ -98,6 +202,7 @@
     marker.textContent = "●";
     paragraph.append(marker, document.createTextNode(" " + message));
     feed.replaceChildren(paragraph);
+    if (shouldSpeak) speakAsAgent(message, agentIndex);
   }
 
   function showAgentWelcome() {
@@ -133,7 +238,13 @@
       const description = document.createElement("p");
       description.textContent = Array.isArray(role) ? role[1] : role.description;
       identity.append(heading, description);
-      article.append(avatar, identity);
+      const speakButton = document.createElement("button");
+      speakButton.type = "button";
+      speakButton.className = "agent-speak";
+      speakButton.textContent = currentTranslations().voiceListen || "Listen";
+      speakButton.setAttribute("aria-label", (currentTranslations().voiceListen || "Listen") + " — " + heading.textContent);
+      speakButton.addEventListener("click", () => speakAsAgent(heading.textContent + ". " + description.textContent, index));
+      article.append(avatar, identity, speakButton);
       roles.append(article);
     });
     fragment.append(roles);
@@ -177,6 +288,7 @@
     note.textContent = copy.disclaimer;
     fragment.append(note);
     feed.replaceChildren(fragment);
+    if (voiceEnabled) speakWelcome(copy);
   }
 
   async function apiGet(path) {
@@ -207,7 +319,13 @@
     try {
       const items = await apiGet("/api/discoveries");
       const lines = items.map((item) => `[UNVERIFIED · ${item.role || "research"}] ${item.summary || ""}`).filter(Boolean);
-      showMessage(lines.length ? lines.join(" • ") : t.noDiscoveries);
+      showMessage(lines.length ? lines.join(" • ") : t.noDiscoveries, 0, false);
+      if (voiceEnabled && lines.length) items.slice(0, 5).forEach(item => {
+        const role = String(item.role || "").toLowerCase();
+        const agentIndex = /evidence|method|data|protocol|source/.test(role) ? 1
+          : /integrity|review|ethic|safety|risk/.test(role) ? 2 : 0;
+        speakAsAgent(item.summary || item.statement || "", agentIndex);
+      });
     } catch { showMessage(t.offline); }
   }
   async function showActivity() {
@@ -225,7 +343,7 @@
     try {
       const items = await apiGet("/api/verified");
       const lines = items.map((item) => item.statement).filter(Boolean);
-      showMessage(lines.length ? lines.join(" • ") : t.noVerified);
+      showMessage(lines.length ? lines.join(" • ") : t.noVerified, 2);
     } catch { showMessage(t.offline); }
   }
 
@@ -924,7 +1042,26 @@
   document.getElementById("timeline-search").addEventListener("input", () => renderResearchTimeline(currentTimelinePayload));
   document.getElementById("timeline-kind").addEventListener("change", () => renderResearchTimeline(currentTimelinePayload));
   languageSelect.addEventListener("change", () => setLanguage(languageSelect.value));
+  voiceToggle?.addEventListener("click", () => {
+    voiceEnabled = !voiceEnabled;
+    voiceToggle.setAttribute("aria-pressed", voiceEnabled ? "true" : "false");
+    voiceToggle.textContent = voiceEnabled
+      ? currentTranslations().voiceDisable || "Disable voice"
+      : currentTranslations().voiceEnable || "Enable voice";
+    if (voiceEnabled) {
+      const copy = (window.SSSWET_AGENT_COPY || {})[translationSource(currentLanguage())]
+        || (window.SSSWET_AGENT_COPY || {}).en;
+      speakWelcome(copy);
+    } else {
+      speechSynthesisApi?.cancel();
+    }
+  });
+  if (speechSynthesisApi) {
+    speechSynthesisApi.addEventListener?.("voiceschanged", refreshVoices);
+    window.addEventListener("pagehide", () => speechSynthesisApi.cancel());
+  }
   setLanguage(safeReadLanguage() || preferredLanguage());
+  capitalizeInterfaceText(document.body);
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
   }
