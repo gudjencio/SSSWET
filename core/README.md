@@ -113,21 +113,19 @@ The API exposes recent tasks at `/api/work`, provider outputs at
 validated memory at `/api/verified`. The interface never treats a stored
 provider output as a verified discovery.
 
-## External scholarly discovery with Crossref
+## External scholarly discovery with Crossref and OpenAlex
 
-A public Crossref metadata provider can retrieve bibliographic records for
-multidisciplinary literature searches. It records DOI/URL, title, author
-metadata, publisher and publication year when available. It does not fetch
-paywalled full text, interpret a paper, or validate scientific claims.
+Public Crossref and OpenAlex metadata providers retrieve bibliographic records for multidisciplinary literature searches. Crossref records DOI/URL, title, author metadata, publisher and publication year. OpenAlex adds work identifiers, venue metadata and citation counts when available. Neither provider fetches paywalled full text, interprets a paper, or validates scientific claims. The combined provider deduplicates DOI matches and labels the catalogue supplying each record.
 
 Example:
 
 ```bash
-ssswet-run --objective "wave propagation measurement methods" --domain physics --provider crossref
+ssswet-run --objective "wave propagation measurement methods" --domain physics --provider literature
 ```
 
-An optional contact email can be supplied with `--mailto`. Crossref results
-are discovery leads only and remain marked unverified. Network failures or
+Use `--provider crossref` or `--provider openalex` to query a single catalogue. An optional contact email can be supplied with `--mailto`.
+
+Crossref and OpenAlex results are discovery leads only and remain marked unverified. Network failures or
 empty results are reported without fabricating substitute evidence.
 
 ### Shared knowledge across restarts
