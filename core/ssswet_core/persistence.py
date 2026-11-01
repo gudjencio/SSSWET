@@ -149,6 +149,21 @@ class SQLiteResearchStore:
                 CREATE TRIGGER IF NOT EXISTS lab_runs_no_delete
                     BEFORE DELETE ON lab_runs
                     BEGIN SELECT RAISE(ABORT, 'lab run records are immutable'); END;
+                CREATE TABLE IF NOT EXISTS lab_comparisons (
+                    comparison_id TEXT PRIMARY KEY,
+                    left_run_id TEXT NOT NULL REFERENCES lab_runs(run_id),
+                    right_run_id TEXT NOT NULL REFERENCES lab_runs(run_id),
+                    comparison_json TEXT NOT NULL,
+                    compared_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_lab_comparisons_time
+                    ON lab_comparisons(compared_at DESC);
+                CREATE TRIGGER IF NOT EXISTS lab_comparisons_no_update
+                    BEFORE UPDATE ON lab_comparisons
+                    BEGIN SELECT RAISE(ABORT, 'lab comparisons are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS lab_comparisons_no_delete
+                    BEFORE DELETE ON lab_comparisons
+                    BEGIN SELECT RAISE(ABORT, 'lab comparisons are immutable'); END;
                 CREATE TABLE IF NOT EXISTS adaptive_cycles (
                     cycle_id TEXT PRIMARY KEY,
                     study_id TEXT NOT NULL,
@@ -1035,6 +1050,41 @@ class SQLiteResearchStore:
                 (bounded,),
             ).fetchall()
         return [json.loads(row["run_json"]) for row in rows]
+
+
+    def save_lab_comparison(self, comparison: dict) -> dict:
+        required = ("comparison_id", "left_run_id", "right_run_id", "compared_at")
+        if any(not isinstance(comparison.get(key), str) or not comparison[key].strip() for key in required):
+            raise ValueError("Comparison identifiers and timestamp are required")
+        if comparison["left_run_id"] == comparison["right_run_id"]:
+            raise ValueError("A comparison requires two distinct runs")
+        with self._connect() as connection:
+            existing = connection.execute(
+                "SELECT comparison_json FROM lab_comparisons WHERE comparison_id = ?",
+                (comparison["comparison_id"],),
+            ).fetchone()
+            if existing:
+                return json.loads(existing["comparison_json"])
+            connection.execute(
+                """INSERT INTO lab_comparisons(
+                    comparison_id, left_run_id, right_run_id,
+                    comparison_json, compared_at
+                ) VALUES (?, ?, ?, ?, ?)""",
+                (comparison["comparison_id"], comparison["left_run_id"],
+                 comparison["right_run_id"],
+                 json.dumps(comparison, ensure_ascii=False, sort_keys=True),
+                 comparison["compared_at"]),
+            )
+        return comparison
+
+    def lab_comparison_history(self, limit: int = 200) -> list[dict]:
+        bounded = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT comparison_json FROM lab_comparisons ORDER BY compared_at DESC, comparison_id LIMIT ?",
+                (bounded,),
+            ).fetchall()
+        return [json.loads(row["comparison_json"]) for row in rows]
 
 
     def save_adaptive_cycle(self, cycle_id: str, cycle: object) -> None:
