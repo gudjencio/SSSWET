@@ -476,6 +476,14 @@ class SQLiteResearchStore:
             rows = connection.execute(query, values).fetchall()
         return [dict(row) for row in rows]
 
+    def agent_message(self, message_id: int) -> dict | None:
+        """Return one immutable handoff for a reviewer to inspect."""
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT * FROM agent_messages WHERE id = ?", (int(message_id),)
+            ).fetchone()
+        return dict(row) if row is not None else None
+
     def save_research_worker_state(self, state: dict) -> None:
         """Persist the latest autonomous worker heartbeat for live supervision."""
         if not isinstance(state, dict):
