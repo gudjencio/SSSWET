@@ -5,6 +5,8 @@ import argparse
 import json
 import hmac
 import os
+import threading
+import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -548,13 +550,30 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
     return SSSWETHandler
 
 
+def _background_research_worker(database: str, interval_minutes: float) -> None:
+    """Run the complete research catalogue automatically while the local engine is online."""
+    from .apps_script_relay import AppsScriptSuccessRelay
+    from .research_daemon import run_pass
+
+    relay = AppsScriptSuccessRelay(endpoint=os.environ.get("SSSWET_RELAY_URL", ""))
+    mailto = os.environ.get("SSSWET_MAILTO", "")
+    while True:
+        try:
+            run_pass(database, mailto, relay if relay.configured else None)
+        except Exception as exc:
+            print(f"[SSSWET] Background research cycle interrupted ({type(exc).__name__}: {exc})")
+        time.sleep(interval_minutes * 60)
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run the local SSSWET interface")
+    parser = argparse.ArgumentParser(description="Run the local SSSWET interface and autonomous research workers")
     parser.add_argument("--host", default="127.0.0.1", help="Bind address (default: loopback only)")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
     parser.add_argument("--orders-database", default=".ssswet/orders.sqlite3", help="Private order register path")
     parser.add_argument("--admin-token", default=os.environ.get("SSSWET_ADMIN_TOKEN"), help="Private order dashboard token (or SSSWET_ADMIN_TOKEN environment variable)")
+    parser.add_argument("--research-interval-minutes", type=float, default=float(os.environ.get("SSSWET_RESEARCH_INTERVAL_MINUTES", "60")), help="Minutes between autonomous full-catalogue research cycles (default: 60)")
+    parser.add_argument("--disable-background-research", action="store_true", help="Start the local interface without autonomous research workers")
     args = parser.parse_args()
 
     store = SQLiteResearchStore(args.database)
@@ -563,6 +582,8 @@ def main() -> None:
     order_registry = PrivateOrderRegistry(args.orders_database)
     if args.admin_token and len(args.admin_token) < 32:
         parser.error("SSSWET_ADMIN_TOKEN must contain at least 32 characters when configured.")
+    if args.research_interval_minutes <= 0:
+        parser.error("--research-interval-minutes must be greater than zero.")
     server = ThreadingHTTPServer((args.host, args.port), make_handler(engine, store, order_registry, args.admin_token))
     print(f"SSSWET local interface: http://{args.host}:{args.port}")
     print(f"Persistent research history: {store.path}")
@@ -571,6 +592,17 @@ def main() -> None:
     if not args.admin_token:
         print("Private order dashboard is disabled until SSSWET_ADMIN_TOKEN is configured.")
     print("Read-only mode: arbitrary public task submission is disabled.")
+    if not args.disable_background_research:
+        worker = threading.Thread(
+            target=_background_research_worker,
+            args=(args.database, args.research_interval_minutes),
+            name="ssswet-autonomous-research",
+            daemon=True,
+        )
+        worker.start()
+        print(f"Autonomous research: active across all 32 programmes; cycle interval {args.research_interval_minutes:g} minutes.")
+    else:
+        print("Autonomous research: disabled by command-line option.")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
