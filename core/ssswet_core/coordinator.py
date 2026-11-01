@@ -7,7 +7,6 @@ from uuid import uuid4
 from .campaigns import (
     CampaignMilestone,
     ResearchCampaign,
-    campaign_to_dict,
     update_milestone,
 )
 from .persistence import SQLiteResearchStore
@@ -96,7 +95,27 @@ class CampaignCoordinator:
         return request
 
     def dispatch(self) -> list[WorkAssignment]:
+        # A campaign may be paused after work was queued. Keep such requests
+        # queued, but never allocate them until the campaign is active again.
+        eligible = []
+        deferred = []
+        for request in self.resources.queue:
+            campaign = self._campaign(request.campaign_id)
+            milestone = next(
+                (item for item in campaign.milestones
+                 if item.milestone_id == request.milestone_id),
+                None,
+            )
+            if campaign.state == "active" and milestone is not None and milestone.state in {
+                "pending", "in_progress"
+            }:
+                eligible.append(request)
+            else:
+                deferred.append(request)
+        self.resources.queue = eligible
         assignments = self.resources.dispatch()
+        self.resources.queue.extend(deferred)
+        self.resources.queue.sort(key=lambda item: (item.priority, item.task_id))
         changed: dict[str, ResearchCampaign] = {}
         for assignment in assignments:
             request = assignment.request
