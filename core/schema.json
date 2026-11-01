@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SSSWET Core Entities",
+  "type": "object",
+  "required": ["agent", "task", "verification"],
+  "properties": {
+    "agent": {
+      "type": "object",
+      "required": ["id", "role", "status"],
+      "properties": {
+        "id": {"type": "string"},
+        "role": {"type": "string"},
+        "status": {"enum": ["working", "verifying", "waiting", "blocked", "paused", "retired"]},
+        "load": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": ["id", "objective", "priority"],
+      "properties": {
+        "id": {"type": "string"},
+        "objective": {"type": "string"},
+        "priority": {"type": "integer", "minimum": 0},
+        "domain": {"type": "string"},
+        "status": {"enum": ["queued", "active", "verification", "blocked", "complete", "rejected"]}
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["state", "independentChecks"],
+      "properties": {
+        "state": {"enum": ["hypothesis", "candidate", "simulated", "independently_verified", "reproduced", "requires_real_world_validation", "rejected"]},
+        "independentChecks": {"type": "integer", "minimum": 0},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}
