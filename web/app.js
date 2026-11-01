@@ -135,6 +135,7 @@
     return Array.isArray(value) ? value.length : Number.isFinite(value) ? value : 0;
   }
   function makeDashboardCard(title, value, detail, state) {
+    const t = currentTranslations();
     const article = document.createElement("article");
     article.className = "dashboard-card";
     const heading = document.createElement("h3");
@@ -146,13 +147,19 @@
     description.textContent = detail;
     const status = document.createElement("span");
     status.className = "dashboard-state" + (state === "error" ? " is-error" : "");
-    status.textContent = state === "error" ? "UNAVAILABLE" : state === "empty" ? "NO RECORDS" : "LIVE DATA";
+    status.textContent = state === "error" ? t.dashUnavailable : state === "empty" ? t.dashNoRecords : t.dashLive;
     article.append(heading, metric, description, status);
     return article;
   }
+
   function pickArray(payload, key) {
     if (Array.isArray(payload)) return payload;
     return payload && Array.isArray(payload[key]) ? payload[key] : [];
+  }
+
+  function dashboardMetrics(entries) {
+    return entries.filter(([, count]) => Number(count) > 0)
+      .map(([label, count]) => String(count) + " " + label).join(" · ") || currentTranslations().dashNoData;
   }
 
   async function showDashboard() {
@@ -163,29 +170,98 @@
     const requestId = ++dashboardRequest;
     const t = currentTranslations();
     const definitions = [
-      { key: "campaigns", path: "/api/campaigns", list: "campaigns", title: "Research campaigns", detail: (a) => a.length ? a.slice(0, 3).map(x => x.title || x.campaign_id).join(" · ") : "No campaign has been recorded." },
-      { key: "resources", path: "/api/resources", list: "snapshots", title: "Resource management", detail: (a) => a.length ? "Latest resource snapshots are available." : "No resource snapshot has been recorded." },
-      { key: "transfers", path: "/api/collaboration/transfers", list: "transfers", title: "Shared knowledge", detail: (a) => a.length ? a.filter(x => x.state === "pending").length + " transfer(s) awaiting a decision." : "No knowledge transfer has been recorded." },
-      { key: "experiments", path: "/api/experiments", list: "experiments", title: "Experiments", detail: (a) => a.length ? "Plans and records are tracked separately from verified findings." : "No experiment plan or record has been stored." },
-      { key: "optimization", path: "/api/optimization", list: "cycles", title: "Adaptive optimization", detail: (a) => a.length ? "Proposals require human approval before execution." : "No adaptive cycle has been recorded." },
-      { key: "gaps", path: "/api/research-gaps", list: "gaps", title: "Research gaps", detail: (a) => a.length ? "High priority: " + a.filter(x => x.priority === "high").length + " · Medium: " + a.filter(x => x.priority === "medium").length : "No graph-level gap is currently reported." },
-      { key: "graph", path: "/api/knowledge-graph", list: "nodes", title: "Knowledge graph", detail: (a, p) => "Explicit relationships: " + safeCount(p.edges) + ". Links are not proof of truth." },
-      { key: "events", path: "/api/events", list: null, title: "Recent activity", detail: (a) => a.length ? a.slice(0, 3).map(x => x.message || x.kind).filter(Boolean).join(" · ") : "No activity has been recorded." }
+      {
+        key: "campaigns", path: "/api/campaigns", list: "campaigns",
+        title: t.dashCampaigns,
+        count: (a) => a.length,
+        detail: (a) => dashboardMetrics([
+          [t.dashActive, a.filter(x => x.state === "active").length],
+          [t.dashBlocked, a.filter(x => x.state === "blocked").length],
+          [t.dashCompleted, a.filter(x => x.state === "completed").length]
+        ])
+      },
+      {
+        key: "resources", path: "/api/resources", list: "snapshots",
+        title: t.dashResources,
+        count: (a) => {
+          const s = a[0] && a[0].snapshot || {};
+          return safeCount(s.active) + safeCount(s.queued) + safeCount(s.completed_task_ids) + safeCount(s.failed_task_ids);
+        },
+        detail: (a) => {
+          const s = a[0] && a[0].snapshot || {};
+          return dashboardMetrics([
+            [t.dashActive, safeCount(s.active)],
+            [t.dashQueued, safeCount(s.queued)],
+            [t.dashCompleted, safeCount(s.completed_task_ids)]
+          ]);
+        }
+      },
+      {
+        key: "transfers", path: "/api/collaboration/transfers", list: "transfers",
+        title: t.dashTransfers,
+        count: (a) => a.length,
+        detail: (a) => dashboardMetrics([
+          [t.dashPending, a.filter(x => x.state === "pending").length],
+          [t.dashAccepted, a.filter(x => x.state === "accepted").length],
+          [t.dashRejected, a.filter(x => x.state === "rejected").length]
+        ])
+      },
+      {
+        key: "experiments", path: "/api/experiments", list: "experiments",
+        title: t.dashExperiments,
+        count: (a) => a.length,
+        detail: (a) => dashboardMetrics([
+          [t.dashPlans, a.length],
+          [t.dashRecords, a.reduce((sum, item) => sum + safeCount(item.records), 0)]
+        ])
+      },
+      {
+        key: "optimization", path: "/api/optimization", list: "cycles",
+        title: t.dashOptimization,
+        count: (a) => a.length,
+        detail: (a) => dashboardMetrics([[t.dashCycles, a.length]])
+      },
+      {
+        key: "gaps", path: "/api/research-gaps", list: "gaps",
+        title: t.dashGaps,
+        count: (a, p) => safeCount(p.total),
+        detail: (a, p) => dashboardMetrics([
+          [t.dashHigh, p.priority_counts && p.priority_counts.high || 0],
+          [t.dashMedium, p.priority_counts && p.priority_counts.medium || 0],
+          [t.dashLow, p.priority_counts && p.priority_counts.low || 0]
+        ])
+      },
+      {
+        key: "graph", path: "/api/knowledge-graph", list: "nodes",
+        title: t.dashGraph,
+        count: (a) => a.length,
+        detail: (a, p) => dashboardMetrics([
+          [t.dashNodes, a.length],
+          [t.dashRelations, safeCount(p.edges)]
+        ])
+      },
+      {
+        key: "events", path: "/api/events", list: null,
+        title: t.dashActivity,
+        count: (a) => a.length,
+        detail: (a) => dashboardMetrics([[t.dashRecent, a.length]])
+      }
     ];
     const results = await Promise.all(definitions.map(async (item) => {
       try {
         const payload = await apiGet(item.path);
-        const array = item.list ? pickArray(payload, item.list) : pickArray(payload, "");
+        const array = pickArray(payload, item.list || "");
         return { item, payload, array, error: false };
       } catch { return { item, payload: null, array: [], error: true }; }
     }));
     if (requestId !== dashboardRequest) return;
     results.forEach(({ item, payload, array, error }) => {
-      const count = item.key === "gaps" ? safeCount(payload && payload.total) : array.length;
-      const detail = error
-        ? "The local research engine is not connected to this endpoint."
-        : item.detail(array, payload || {});
-      dashboardGrid.append(makeDashboardCard(item.title, error ? "—" : count, detail, error ? "error" : count ? "live" : "empty"));
+      const count = error ? 0 : item.count(array, payload || {});
+      const detail = error ? t.dashEndpointUnavailable : item.detail(array, payload || {});
+      dashboardGrid.append(makeDashboardCard(
+        item.title, error ? "—" : count, detail,
+        error ? "error" : count ? "live" : "empty"
+      ));
     });
 
     const campaignResult = results.find(result => result.item.key === "campaigns");
@@ -202,8 +278,8 @@
       if (requestId !== dashboardRequest) return;
       const totalConflicts = conflictReports.reduce((sum, value) => sum + value, 0);
       dashboardGrid.append(makeDashboardCard(
-        "Contradictions to review", totalConflicts,
-        totalConflicts ? "Recorded contradictions require human review; they are not automatically adjudicated." : "No campaign-linked contradiction is currently recorded.",
+        t.dashConflicts, totalConflicts,
+        totalConflicts ? t.dashEndpointUnavailable.replace(t.dashEndpointUnavailable, t.dashPending + ": " + totalConflicts) : t.dashNoData,
         totalConflicts ? "live" : "empty"
       ));
     }
