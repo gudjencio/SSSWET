@@ -170,3 +170,19 @@ The local research core includes an append-only scientific-memory ledger. Each e
 The read-only local endpoint `/api/scientific-memory` provides the version history and current-entry overview. Add `?q=...` for transparent lexical retrieval. The companion `/api/scientific-memory/suggestions` endpoint surfaces linked graph contradictions and recorded research gaps as review leads. A contradiction marks linked entries for attention but does not select a correct claim. Older versions are retained and labelled as potentially outdated rather than deleted.
 
 Workflow states (`candidate`, `reviewed`, `contested`, `archived`) are not scientific verification states. Retrieval scores, review decisions and graph relationships do not establish scientific validity. Suggestions do not create tasks or launch experiments automatically. See the [core developer guide](core/README.md) for the Python API.
+
+
+## Research timeline
+
+The local research engine exposes a derived chronology at `/api/research-timeline`.
+It combines dated knowledge-graph records and relationships, scientific-memory
+versions, experiment-plan updates and records, literature-watch reports,
+dispute-review activity, and campaign updates. Use
+`/api/research-timeline?campaign_id=...` to focus on one campaign and
+`?limit=...` to bound the response.
+
+Only records with an explicit, parseable timestamp are included. The timeline
+preserves event types and references so that a simulation, observation,
+literature lead, memory revision, or contradiction review is not flattened
+into the same kind of result. Chronological order is not scientific validation;
+the endpoint is read-only and never starts work automatically.
