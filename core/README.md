@@ -881,6 +881,6 @@ lab.record_run(LabRun(
 comparison = lab.compare_runs("run-owner", "run-001", tolerance=0.001)
 ~~~
 
-The local read-only endpoint GET /api/digital-lab exposes the registry. Protocol and run records are immutable and include SHA-256 content fingerprints. Comparisons require the same protocol version, execution kind and exact input parameters. A tolerance applies only to numeric outputs. Field-level differences are retained for review.
+The local read-only endpoint GET /api/digital-lab exposes the registry. Protocol and run records are immutable and include SHA-256 content fingerprints. Comparisons require the same protocol version, execution kind and exact input parameters. A tolerance applies only to numeric outputs. Field-level differences, source IDs, dataset IDs, and immutable comparison reports are retained for review. The dashboard summarizes saved comparisons.
 
 The independent_reproduction_candidate flag is a screening signal only: it requires distinct campaign IDs and self-declared independence by both teams, but does not authenticate independence. Agreement does not establish scientific truth, and no comparison changes a finding's verification state. SSSWET records supplied results; it does not execute submitted protocols or physical experiments.
