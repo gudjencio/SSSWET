@@ -961,3 +961,9 @@ a { color: #9fdcf0; }
 @media(prefers-reduced-motion:reduce) {
   .bot-stage-agent { animation:none; }
 }
+
+.bot-stage-agents { animation:bot-stage-orbit 64s linear infinite; transform-origin:50% 50%; }
+.bot-stage-agent-content { display:flex; flex-direction:column; align-items:center; gap:7px; animation:bot-stage-counter-orbit 64s linear infinite; }
+@keyframes bot-stage-orbit { to { transform:rotate(360deg); } }
+@keyframes bot-stage-counter-orbit { to { transform:rotate(-360deg); } }
+@media(prefers-reduced-motion:reduce) { .bot-stage-agents,.bot-stage-agent-content { animation:none; } }
