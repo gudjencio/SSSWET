@@ -1,6 +1,8 @@
-/* Public payment-link configuration.
- * Add official provider-hosted links that accept a donor-entered amount.
- * Use only verified HTTPS payment URLs. Never put API keys or secrets here.
- * Example: window.SSSWET_DONATION_LINKS = { EUR: "https://buy.stripe.com/your_verified_link" };
+/* Official project contribution destination.
+ * Visitors select a suggested amount in the interface and confirm the final
+ * amount and available currency directly on PayPal.
+ * No API keys, passwords, private tokens or webhook secrets belong here.
  */
-window.SSSWET_DONATION_LINKS = {};
+window.SSSWET_DONATION_LINKS = {
+  PAYPAL: "https://www.paypal.com/paypalme/gudjencio"
+};
