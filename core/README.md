@@ -138,3 +138,34 @@ same store. Unvalidated candidates remain unvalidated; only an explicit
 validated record appears in the verified-memory endpoint. Use
 `engine.remember_knowledge(MemoryItem(...))` to write a record through the
 persistent engine facade.
+
+## Optional language-model research provider
+
+SSSWET now includes an adapter for APIs that implement the OpenAI-compatible
+chat-completions format. It can connect to a hosted provider or a compatible
+local model server. No API key is stored in the repository or SQLite history.
+
+Set credentials in the local shell (never commit them):
+
+```bash
+# Linux / macOS
+export SSSWET_LLM_API_KEY="your-secret-key"
+export SSSWET_LLM_MODEL="your-model-id"
+# Optional: override the API endpoint
+export SSSWET_LLM_ENDPOINT="https://api.openai.com/v1/chat/completions"
+```
+
+Then run:
+
+```bash
+ssswet-run --objective "Compare published methods for measuring wave propagation" --domain physics --provider llm
+```
+
+The default endpoint is an OpenAI-compatible chat-completions URL; a different
+compatible endpoint can be selected with `--endpoint`. Non-local endpoints
+must use HTTPS. Plain HTTP is accepted only for localhost model servers.
+
+Model responses are labelled as generated drafts. They are not evidence,
+citations, measurements, or verified discoveries. The provider deliberately
+does not promote model-written references into source records. Human review,
+real source retrieval, independent checks and reproducibility remain required.
