@@ -30,6 +30,11 @@ def test_engine_can_reach_independent_verification():
     engine = SSSWETEngine()
     task = engine.submit("Verify a harmless arithmetic identity", domain="mathematics")
     finding = engine.prepare_finding(task, "candidate identity")
-    finding = engine.verify_with_independent_evidence(finding, "calculation A", "calculation B")
+    finding = engine.verify_with_independent_evidence(
+        finding,
+        "calculation A",
+        "calculation B",
+        source_ids=("calculation-a", "calculation-b"),
+    )
     assert finding.verification == VerificationState.INDEPENDENTLY_VERIFIED
     assert engine.publishable(finding)[0]
