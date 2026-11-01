@@ -6,6 +6,8 @@ change records, or establish scientific validity.
 from __future__ import annotations
 
 from typing import Any
+from datetime import datetime, timezone
+import hashlib
 
 from .lab_discrepancies import LabDiscrepancyAnalyzer
 
@@ -70,8 +72,15 @@ class LabVerificationPlanner:
                 add("complete_record", "Complete the missing comparison fields and preserve the original comparison record.",
                     "The existing comparison does not contain enough explicit information for classification.")
 
+            plan_id = "verification:" + finding["finding_id"].split(":", 1)[-1]
+            history = self.store.lab_verification_event_history(plan_id=plan_id) if hasattr(self.store, "lab_verification_event_history") else []
+            latest = {event["check_code"]: event for event in history}
+            for check in checks:
+                check["check_id"] = plan_id + ":" + check["code"]
+                check["review_state"] = latest.get(check["code"], {}).get("state", "pending")
+                check["review_history"] = [event for event in history if event["check_code"] == check["code"]]
             plans.append({
-                "plan_id": "verification:" + finding["finding_id"].split(":", 1)[-1],
+                "plan_id": plan_id,
                 "finding_id": finding["finding_id"],
                 "comparison_id": finding["comparison_id"],
                 "classification": finding["classification"],
@@ -92,3 +101,29 @@ class LabVerificationPlanner:
             "scientific_validity_established": False,
             "interpretation": "Checklists are review suggestions derived from recorded metadata, not experimental instructions or scientific conclusions.",
         }
+
+
+    def record_check_review(self, plan_id: str, check_code: str, state: str, note: str, reviewer: str) -> dict:
+        if state not in {"in_progress", "completed", "blocked"}:
+            raise ValueError("Unsupported verification check state")
+        if not isinstance(note, str) or not note.strip() or len(note.strip()) > 4000:
+            raise ValueError("A review note between 1 and 4000 characters is required")
+        if not isinstance(reviewer, str) or not reviewer.strip() or len(reviewer.strip()) > 200:
+            raise ValueError("A reviewer label between 1 and 200 characters is required")
+        plan = next((item for item in self.build()["plans"] if item["plan_id"] == plan_id), None)
+        if plan is None:
+            raise ValueError("Unknown or no longer active verification plan")
+        if not any(item["code"] == check_code for item in plan["checks"]):
+            raise ValueError("Unknown check code for this verification plan")
+        previous = self.store.lab_verification_event_history(plan_id=plan_id)
+        latest = next((event for event in reversed(previous) if event["check_code"] == check_code), None)
+        if latest and latest["state"] == "completed":
+            raise ValueError("A completed check is closed; create a new plan to reassess it")
+        now = datetime.now(timezone.utc).isoformat()
+        event = {
+            "event_id": hashlib.sha256((plan_id + "|" + check_code + "|" + now + "|" + reviewer.strip() + "|" + note.strip()).encode("utf-8")).hexdigest(),
+            "plan_id": plan_id, "check_code": check_code, "state": state,
+            "note": note.strip(), "reviewer": reviewer.strip(), "created_at": now,
+        }
+        self.store.append_lab_verification_event(event)
+        return event
