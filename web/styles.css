@@ -175,3 +175,20 @@ html[dir="rtl"] .subsection-heading, html[dir="rtl"] .opportunity-item summary {
 .inspector-connections li { padding-inline-start: 2px; }
 .text-link { border: 0; padding: 0; background: none; color: #c4b4ff; text-decoration: underline; cursor: pointer; font: inherit; }
 .text-link:hover, .text-link:focus-visible { color: #fff; }
+
+.timeline-panel { margin-top: 18px; padding: 16px; border: 1px solid #252525; border-radius: 16px; background: rgba(255,255,255,.018); }
+.timeline-filter { display: flex; align-items: center; gap: 8px; color: #929292; font-size: 10px; }
+.timeline-filter select { max-width: 220px; padding: 7px 9px; border: 1px solid #343434; border-radius: 8px; background: #101010; color: #ddd; font: inherit; }
+.timeline-caption, .timeline-summary { color: #777; font-size: 10px; line-height: 1.5; }
+.research-timeline { max-height: 560px; overflow: auto; padding-inline-end: 5px; }
+.timeline-list { list-style: none; margin: 12px 0 0; padding: 0 0 0 15px; border-inline-start: 1px solid #383044; display: grid; gap: 0; }
+.timeline-event { position: relative; padding: 0 0 18px 14px; border-bottom: 1px solid rgba(255,255,255,.045); }
+.timeline-event::before { content: ""; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: #b6a4ed; inset-inline-start: -19px; top: 5px; box-shadow: 0 0 12px rgba(182,164,237,.45); }
+.timeline-date { color: #b6a4ed; font-size: 9px; letter-spacing: .04em; }
+.timeline-event h4 { margin: 4px 0; color: #e5e5e5; font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
+.timeline-kind { display: inline-block; color: #9b9b9b; font-size: 9px; text-transform: uppercase; letter-spacing: .07em; }
+.timeline-event p { margin: 6px 0; color: #aaa; font-size: 10px; line-height: 1.55; overflow-wrap: anywhere; }
+.timeline-event .timeline-reference { color: #777; font-size: 9px; }
+.timeline-status { display: inline-block; padding: 3px 7px; border: 1px solid #4a3e29; border-radius: 20px; color: #c6a978; font-size: 9px; }
+html[dir="rtl"] .timeline-list { padding: 0 15px 0 0; }
+@media (max-width: 520px) { .timeline-panel { padding: 12px; } .timeline-filter { width: 100%; justify-content: space-between; } .timeline-filter select { max-width: 65%; } }
