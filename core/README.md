@@ -1,6 +1,6 @@
-# SSSWET Core
+# SSSWET Core — Developer Guide
 
-The core will coordinate research agents without exposing the agent-generation mechanism to the agents themselves.
+This package provides the local research engine, command-line tools, persistence layer and read-only API used by the SSSWET application. The guide documents the current interfaces and their verification boundaries for developers and research operators.
 
 ## Agent lifecycle
 
