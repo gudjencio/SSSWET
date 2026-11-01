@@ -24,10 +24,12 @@ async function repairIndexResponse(response) {
   const withScript = withButton.includes('src="repair-project.js"')
     ? withButton
     : withButton.replace('</body>', `${script}\n</body>`);
+  const headers = new Headers(response.headers);
+  headers.delete("content-length");
   return new Response(withScript, {
     status: response.status,
     statusText: response.statusText,
-    headers: new Headers(response.headers)
+    headers
   });
 }
 
