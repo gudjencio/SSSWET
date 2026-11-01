@@ -164,7 +164,15 @@ class AdaptiveScenarioOptimizer:
                 (distance(candidate.parameters, candidate_by_id[item.scenario_id].parameters), item)
                 for item in observations if item.scenario_id in candidate_by_id
             ]
-            nearest_distance, nearest = min(neighbours, key=lambda pair: (pair[0], pair[1].scenario_id))
+            nearest_distance, nearest = min(
+                neighbours,
+                key=lambda pair: (
+                    pair[0],
+                    scores[pair[1].scenario_id] if direction == "minimize"
+                    else -scores[pair[1].scenario_id],
+                    pair[1].scenario_id,
+                ),
+            )
             predicted = scores[nearest.scenario_id]
             exploitation = (
                 0.5 if score_span == 0 else
