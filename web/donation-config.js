@@ -4,6 +4,15 @@ window.SSSWET_DONATION_LINKS = {
   PAYPAL_NCP_10_USD: "https://www.paypal.com/ncp/payment/6LP3JL8UD8JL4"
 };
 
+/* Load small public UI modules without requiring another HTML edit. */
+["research-equations.js", "payment-enhancement.js"].forEach(src => {
+  if (document.querySelector('script[src="' + src + '"]')) return;
+  const script = document.createElement("script");
+  script.src = src;
+  script.defer = true;
+  document.head.appendChild(script);
+});
+
 /* Public portfolio state. Unknown financial figures intentionally remain null. */
 const ssswetTechnologyKeys = [
   "cellular","longevity","armor","jetpack","translator","spacetime","timetravel",
@@ -126,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const minimumNote = document.getElementById("donation-minimum-note");
     if (minimumNote) minimumNote.textContent = language() === "fr"
-      ? "Minimum de contribution : 10 USD. Pour un montant supérieur, le lien PayPal.Me peut demander directement le montant choisi."
+      ? "Minimum de contribution : 10 USD. Pour un montant supérieur, PayPal.Me peut demander directement le montant choisi."
       : "Minimum contribution: USD 10. For a higher amount, PayPal.Me can request the exact amount you choose.";
   };
 
