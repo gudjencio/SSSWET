@@ -7,21 +7,26 @@
     event: "#777", center: "#e5e5e5"
   };
   const labels = () => {
-    const fr = document.documentElement.lang === "fr";
-    return {
-      source: fr ? "Source" : "Source", protocol: fr ? "Protocole" : "Protocol",
-      dataset: fr ? "Donnée" : "Dataset", run: fr ? "Exécution" : "Run",
-      comparison: fr ? "Reproduction" : "Reproduction", objection: fr ? "Objection" : "Objection",
-      review: fr ? "Revue" : "Review", dispute: fr ? "Litige" : "Dispute",
-      event: fr ? "Événement" : "Event", center: fr ? "Dossier" : "Dossier",
-      legend: fr ? "Légende" : "Legend",
-      trace: fr ? "Relations enregistrées uniquement" : "Recorded relationships only",
-      note: fr ? "Le graphe ne déduit pas de relations absentes des enregistrements." : "The graph does not infer relationships missing from the records.",
-      choose: fr ? "Sélectionnez un nœud pour examiner ses informations et ses liens directs." : "Select a node to inspect its details and direct links.",
-      connected: fr ? "Liens directs" : "Direct connections",
-      reset: fr ? "Réinitialiser la sélection" : "Clear selection",
-      empty: fr ? "Aucun élément à représenter dans ce dossier." : "There are no records to display for this dossier."
+    const code = (document.documentElement.lang || "en").toLowerCase().split("-")[0];
+    const dictionaries = {
+      en: ["Source","Protocol","Dataset","Run","Comparison","Objection","Review","Dispute","Event","Dossier","Legend","Recorded relationships only","The graph does not infer relationships missing from the records.","Select a node to inspect its details and direct links.","Direct connections","Clear selection","There are no records to display for this dossier."],
+      fr: ["Source","Protocole","Jeu de données","Exécution","Comparaison","Objection","Revue","Litige","Événement","Dossier","Légende","Relations enregistrées uniquement","Le graphe ne déduit pas de relations absentes des enregistrements.","Sélectionnez un nœud pour examiner ses informations et ses liens directs.","Liens directs","Réinitialiser la sélection","Aucun élément à représenter dans ce dossier."],
+      es: ["Fuente","Protocolo","Conjunto de datos","Ejecución","Comparación","Objeción","Revisión","Disputa","Evento","Expediente","Leyenda","Solo relaciones registradas","El grafo no infiere relaciones que no estén registradas.","Seleccione un nodo para consultar sus datos y conexiones directas.","Conexiones directas","Borrar selección","No hay registros que mostrar en este expediente."],
+      de: ["Quelle","Protokoll","Datensatz","Durchlauf","Vergleich","Einwand","Prüfung","Streitfall","Ereignis","Dossier","Legende","Nur dokumentierte Beziehungen","Der Graph leitet keine nicht dokumentierten Beziehungen ab.","Wählen Sie einen Knoten, um Details und direkte Verbindungen anzuzeigen.","Direkte Verbindungen","Auswahl zurücksetzen","Für dieses Dossier liegen keine darstellbaren Einträge vor."],
+      it: ["Fonte","Protocollo","Dataset","Esecuzione","Confronto","Obiezione","Revisione","Controversia","Evento","Dossier","Legenda","Solo relazioni registrate","Il grafo non deduce relazioni non presenti nei registri.","Seleziona un nodo per esaminarne i dettagli e i collegamenti diretti.","Collegamenti diretti","Reimposta selezione","Nessun elemento da visualizzare in questo dossier."],
+      pt: ["Fonte","Protocolo","Conjunto de dados","Execução","Comparação","Objeção","Revisão","Disputa","Evento","Dossiê","Legenda","Apenas relações registadas","O grafo não infere relações ausentes dos registos.","Selecione um nó para consultar os detalhes e as ligações diretas.","Ligações diretas","Limpar seleção","Não há registos para apresentar neste dossiê."],
+      nl: ["Bron","Protocol","Dataset","Uitvoering","Vergelijking","Bezwaar","Beoordeling","Geschil","Gebeurtenis","Dossier","Legenda","Alleen vastgelegde relaties","De grafiek leidt geen relaties af die niet zijn vastgelegd.","Selecteer een knooppunt om details en directe verbindingen te bekijken.","Directe verbindingen","Selectie wissen","Er zijn geen gegevens om in dit dossier weer te geven."],
+      ru: ["Источник","Протокол","Набор данных","Запуск","Сравнение","Возражение","Проверка","Спор","Событие","Досье","Обозначения","Только зарегистрированные связи","Граф не выводит связи, отсутствующие в записях.","Выберите узел, чтобы просмотреть сведения и прямые связи.","Прямые связи","Сбросить выбор","В этом досье нет записей для отображения."],
+      uk: ["Джерело","Протокол","Набір даних","Запуск","Порівняння","Заперечення","Перевірка","Суперечка","Подія","Досьє","Позначення","Лише зафіксовані зв’язки","Граф не виводить зв’язки, відсутні в записах.","Виберіть вузол, щоб переглянути його дані та прямі зв’язки.","Прямі зв’язки","Скинути вибір","У цьому досьє немає записів для відображення."],
+      ar: ["المصدر","البروتوكول","مجموعة البيانات","التشغيل","المقارنة","اعتراض","مراجعة","نزاع","حدث","ملف الأدلة","المفتاح","العلاقات المسجلة فقط","لا يستنتج الرسم علاقات غير موجودة في السجلات.","اختر عقدة لفحص تفاصيلها وروابطها المباشرة.","الروابط المباشرة","مسح التحديد","لا توجد سجلات لعرضها في هذا الملف."],
+      he: ["מקור","פרוטוקול","מערך נתונים","הרצה","השוואה","השגה","סקירה","מחלוקת","אירוע","תיק ראיות","מקרא","קשרים מתועדים בלבד","התרשים אינו מסיק קשרים שאינם מופיעים ברשומות.","בחרו צומת כדי לעיין בפרטים ובקישורים הישירים שלו.","קישורים ישירים","איפוס הבחירה","אין רשומות להצגה בתיק זה."],
+      ja: ["情報源","プロトコル","データセット","実行","比較","異議","レビュー","紛争","イベント","証拠資料","凡例","記録された関係のみ","記録にない関係をグラフが推測することはありません。","ノードを選択して詳細と直接リンクを確認してください。","直接リンク","選択を解除","この資料に表示できる記録はありません。"],
+      ko: ["출처","프로토콜","데이터 세트","실행","비교","이의","검토","분쟁","이벤트","증거 자료","범례","기록된 관계만 표시","그래프는 기록에 없는 관계를 추론하지 않습니다.","노드를 선택해 세부 정보와 직접 연결을 확인하세요.","직접 연결","선택 초기화","이 자료에 표시할 기록이 없습니다."],
+      zh: ["来源","协议","数据集","运行","比较","异议","审查","争议","事件","证据档案","图例","仅显示已记录的关系","图表不会推断记录中不存在的关系。","选择一个节点以查看详细信息和直接关联。","直接关联","清除选择","此档案没有可显示的记录。"],
+      hi: ["स्रोत","प्रोटोकॉल","डेटासेट","रन","तुलना","आपत्ति","समीक्षा","विवाद","घटना","साक्ष्य dossier","संकेत सूची","केवल दर्ज संबंध","ग्राफ़ उन संबंधों का अनुमान नहीं लगाता जो रिकॉर्ड में मौजूद नहीं हैं।","विवरण और सीधे संबंध देखने के लिए कोई नोड चुनें।","सीधे संबंध","चयन रीसेट करें","इस dossier में दिखाने के लिए कोई रिकॉर्ड नहीं है।"]
     };
+    const v = dictionaries[code] || dictionaries.en;
+    return { source:v[0], protocol:v[1], dataset:v[2], run:v[3], comparison:v[4], objection:v[5], review:v[6], dispute:v[7], event:v[8], center:v[9], legend:v[10], trace:v[11], note:v[12], choose:v[13], connected:v[14], reset:v[15], empty:v[16] };
   };
   const value = (v) => v === undefined || v === null || v === "" ? "—" : String(v);
   function makeNodes(dossier) {
