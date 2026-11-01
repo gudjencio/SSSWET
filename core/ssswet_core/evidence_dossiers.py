@@ -131,7 +131,14 @@ class EvidenceDossierService:
                 raise ValueError(f"unknown dataset reference: {dataset_id} v{version}")
             datasets.append(dict(row))
 
-        comparisons = self._rows("lab_comparisons", "comparison_id", self._unique(comparison_ids))
+        comparison_rows = self._rows("lab_comparisons", "comparison_id", self._unique(comparison_ids))
+        comparisons = []
+        for row in comparison_rows:
+            try:
+                comparison_payload = json.loads(row["comparison_json"])
+            except (KeyError, TypeError, json.JSONDecodeError) as exc:
+                raise ValueError("stored comparison record is unreadable") from exc
+            comparisons.append({**comparison_payload, "comparison_id": row["comparison_id"]})
         requested_comparisons = self._unique(comparison_ids)
         if len(comparisons) != len(requested_comparisons):
             missing = sorted(set(requested_comparisons) - {row["comparison_id"] for row in comparisons})
