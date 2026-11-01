@@ -325,3 +325,7 @@ button:hover { border-color: #5a5274; background: linear-gradient(115deg, rgba(4
 .voice-note { color: #777582; font-size: 9px; text-align: center; }
 .agent-speak { flex: 0 0 auto; padding: 7px 10px; border-radius: 999px; font-size: 9px; white-space: nowrap; }
 @media (max-width: 620px) { .voice-controls { flex-direction: column; } .agent-speak { margin-inline-start: auto; } }
+
+.voice-utility { padding: 8px 11px; border: 1px solid rgba(150,140,180,.2); border-radius: 999px; color: #c4bfd4; background: rgba(20,20,28,.75); font-size: 9px; }
+.voice-utility:disabled { opacity: .35; cursor: not-allowed; }
+.voice-status { width: 100%; color: #9d91c1; font-size: 9px; text-align: center; }
