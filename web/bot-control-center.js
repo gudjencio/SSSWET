@@ -22,8 +22,11 @@
     if(title) title.textContent=t.title;
     if(caption) caption.textContent=t.caption;
     if(note) note.textContent=t.note;
+    const networkLabel=$("bot-control-network-label"), coreNetworkLabel=$("bot-core-network-label");
+    if(networkLabel) networkLabel.textContent="SSSWET · "+t.network;
+    if(coreNetworkLabel) coreNetworkLabel.textContent=t.network;
     if(sideTitle) sideTitle.textContent=t.agent;
-    if(sideCaption) sideCaption.textContent=t.activityRecorded;
+    if(sideCaption) sideCaption.textContent=t.activityRecorded || t.recent;
     const visualLabels=[["bot-visual-research",t.research],["bot-visual-analysis",t.analysis],["bot-visual-verify",t.verify]];
     visualLabels.forEach(([id,value])=>{const node=$(id);if(node)node.textContent=value;});
     const refresh=$("bot-control-refresh");
@@ -59,7 +62,7 @@
       const activeCards=active.map((agent,index)=>'<article class="bot-control-agent bot-control-agent-live">'+robot(index)+'<div class="bot-agent-copy"><strong>'+escape(agent.id)+' · '+escape(role(agent.role))+'</strong><span>'+escape(t.thinking)+' · '+escape(pretty(worker.current_technology))+'</span><small>'+escape(t.task)+': '+escape(agent.task_id||worker.current_task_id||"—")+'</small></div><i class="bot-agent-pulse" aria-hidden="true"></i></article>');
       const recentCards=recent.slice(0,5).map((agent,index)=>'<article class="bot-control-agent bot-control-agent-recent">'+robot(index)+'<div class="bot-agent-copy"><strong>'+escape(agent.id)+' · '+escape(role(agent.role))+'</strong><span>'+escape(t.recentLabel)+' · '+escape(pretty(agent.technology))+'</span><small>'+escape(t.last)+': '+escape(time(agent.last_seen))+'</small></div></article>');
       const taskCards=(Array.isArray(data.recent_tasks)?data.recent_tasks:[]).slice(0,4).map(task=>{
-        const state=task.status==="complete"?(task.review_required?t.taskComplete:t.completed):task.status==="blocked"?t.taskBlocked:task.status==="queued"?t.taskQueued:task.status==="active"?t.taskActive:t.taskRejected;
+        const state=task.status==="complete"?(task.review_required?t.taskComplete:t.done):task.status==="blocked"?t.taskBlocked:task.status==="queued"?t.taskQueued:task.status==="active"?t.taskActive:t.taskRejected;
         return '<article class="bot-control-task"><strong>'+escape(pretty(task.domain))+'</strong><span>'+escape(task.objective)+'</span><small>'+escape(state)+'</small></article>';
       });
       agents.innerHTML='<div class="bot-agent-group"><strong>'+escape(t.agent)+'</strong>'+(activeCards.length?activeCards.join(""):'<p class="bot-command-empty">'+escape(t.none)+'</p>')+'</div><div class="bot-agent-group"><strong>'+escape(t.recent)+'</strong>'+(recentCards.length?recentCards.join(""):'<p class="bot-command-empty">'+escape(t.none)+'</p>')+'</div>';
