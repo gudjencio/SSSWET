@@ -947,3 +947,38 @@ window.SSSWET_AGENT_COPY = {
     "stepsTitle":"Mtiririko wa kazi ya utafiti","questionsTitle":"Maswali unayoweza kuuliza","disclaimer":"Haya ni majukumu yaliyofafanuliwa ya mradi, si uthibitisho kwamba mawakala huru wa AI wanafanya kazi. Shughuli za moja kwa moja zinahitaji mfumo wa utafiti wa ndani."
   }
 };
+
+
+/* Voice controls are localized independently so every language has a clear audio setting. */
+const SSSWET_VOICE_LABELS = {
+  en: ["Enable voice", "Disable voice", "Listen"],
+  fr: ["Activer la voix", "Désactiver la voix", "Écouter"],
+  es: ["Activar voz", "Desactivar voz", "Escuchar"],
+  de: ["Stimme aktivieren", "Stimme deaktivieren", "Anhören"],
+  it: ["Attiva la voce", "Disattiva la voce", "Ascolta"],
+  pt: ["Ativar voz", "Desativar voz", "Ouvir"],
+  nl: ["Stem inschakelen", "Stem uitschakelen", "Luisteren"],
+  ru: ["Включить голос", "Выключить голос", "Прослушать"],
+  uk: ["Увімкнути голос", "Вимкнути голос", "Прослухати"],
+  ar: ["تفعيل الصوت", "إيقاف الصوت", "استمع"],
+  he: ["הפעלת קול", "כיבוי קול", "האזנה"],
+  ja: ["音声を有効にする", "音声を無効にする", "聞く"],
+  ko: ["음성 켜기", "음성 끄기", "듣기"],
+  zh: ["开启语音", "关闭语音", "收听"],
+  hi: ["आवाज़ चालू करें", "आवाज़ बंद करें", "सुनें"],
+  id: ["Aktifkan suara", "Nonaktifkan suara", "Dengarkan"],
+  tr: ["Sesi etkinleştir", "Sesi devre dışı bırak", "Dinle"],
+  pl: ["Włącz głos", "Wyłącz głos", "Odsłuchaj"],
+  bn: ["কণ্ঠস্বর চালু করুন", "কণ্ঠস্বর বন্ধ করুন", "শুনুন"],
+  sw: ["Washa sauti", "Zima sauti", "Sikiliza"]
+};
+Object.entries(SSSWET_VOICE_LABELS).forEach(([code, labels]) => {
+  if (window.SSSWET_LOCALES[code]) {
+    window.SSSWET_LOCALES[code].voiceEnable = labels[0];
+    window.SSSWET_LOCALES[code].voiceDisable = labels[1];
+    window.SSSWET_LOCALES[code].voiceListen = labels[2];
+  }
+});
+Object.values(window.SSSWET_LOCALES).forEach(locale => {
+  if (!locale.voiceHint) locale.voiceHint = "Spoken updates use the best matching voice available in your browser.";
+});
