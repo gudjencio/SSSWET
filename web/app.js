@@ -118,7 +118,7 @@
   }
   function capitalizeInitial(value, language = currentLanguage()) {
     const characters = Array.from(String(value));
-    const index = characters.findIndex(character => /\\p{L}/u.test(character));
+    const index = characters.findIndex(character => /\p{L}/u.test(character));
     if (index < 0) return String(value);
     characters[index] = characters[index].toLocaleUpperCase(language);
     return characters.join("");
@@ -183,6 +183,10 @@
       const value = t[element.dataset.i18nPlaceholder];
       if (typeof value === "string") element.setAttribute("placeholder", value);
     });
+    if (voiceToggle) {
+      voiceToggle.textContent = voiceEnabled ? (t.voiceDisable || "Disable voice") : (t.voiceEnable || "Enable voice");
+      voiceToggle.setAttribute("aria-pressed", voiceEnabled ? "true" : "false");
+    }
     capitalizeInterfaceText(document.body);
     safeSaveLanguage(selected);
     refreshStatus();
