@@ -1674,7 +1674,7 @@ function classifyDiscovery(group) {
     foldout.append(summary, section);
   });
   document.getElementById("engine-connection-retry")?.addEventListener("click", refreshStatus);
-  window.setInterval(refreshStatus, 10000);
+  window.setInterval(refreshStatus, 3000);
   refreshStatus();
   capitalizeInterfaceText(document.body);
   if ("serviceWorker" in navigator) {
