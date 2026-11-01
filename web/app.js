@@ -16,52 +16,32 @@
     if (activeApiBase && !force) return activeApiBase;
     if (apiDiscoveryPromise) return apiDiscoveryPromise;
     apiDiscoveryPromise = (async () => {
-      // A hosted static page has no API on its own origin. Probe only the
-      // local engine there; probing GitHub Pages/Google Sites just adds delay.
-      // When the UI is served by the local engine, keep same-origin first and
-      // avoid cross-origin browser network permissions entirely.
-      const candidates = [...new Set([
-        activeApiBase,
-        ...(isLocalOrigin ? [sameOriginBase] : []),
-        ...localApiBases
-      ].filter(Boolean))];
-      const failures = [];
-      for (const base of candidates) {
-        const controller = new AbortController();
-        const timeout = window.setTimeout(() => controller.abort(), 3000);
-        try {
-          const response = await fetch(new URL("/api/status", base).toString(), {
-            method: "GET",
-            mode: "cors",
-            headers: { Accept: "application/json" },
-            cache: "no-store",
-            signal: controller.signal
-          });
-          window.clearTimeout(timeout);
-          if (!response.ok) {
-            failures.push(base + " · HTTP " + response.status);
-            continue;
-          }
+      // Probe loopback addresses in parallel and stop waiting quickly when
+      // the local engine is unavailable. A hosted page has no remote API.
+      const candidates = [...new Set([activeApiBase, ...(isLocalOrigin ? [sameOriginBase] : []), ...localApiBases].filter(Boolean))];
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 1200);
+      try {
+        const results = await Promise.all(candidates.map(async (base) => {
+          const response = await fetch(new URL('/api/status', base).toString(), {method:'GET',mode:'cors',headers:{Accept:'application/json'},cache:'no-store',signal:controller.signal});
+          if (!response.ok) throw new Error('HTTP ' + response.status);
           const status = await response.json();
-          if (status.service !== "SSSWET") {
-            failures.push(base + " · unexpected service response");
-            continue;
-          }
-          activeApiBase = base;
-          window.SSSWET_API_BASE = base;
-          lastApiFailure = "";
-          window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:true,base}}));
+          if (status.service !== 'SSSWET') throw new Error('Unexpected service response');
           return base;
-        } catch (error) {
-          window.clearTimeout(timeout);
-          failures.push(base + " · " + (error.name === "AbortError" ? "timeout" : error.message));
-        }
-      }
-      activeApiBase = null;
-      window.SSSWET_API_BASE = null;
-      lastApiFailure = failures.join(" | ") || "No local research engine responded.";
-      window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:false,error:lastApiFailure}}));
-      throw new Error(lastApiFailure);
+        }));
+        activeApiBase = results[0] || null;
+        if (!activeApiBase) throw new Error('No local research engine responded.');
+        window.SSSWET_API_BASE = activeApiBase;
+        lastApiFailure = '';
+        window.dispatchEvent(new CustomEvent('ssswet-engine-connection',{detail:{connected:true,base:activeApiBase}}));
+        return activeApiBase;
+      } catch (error) {
+        activeApiBase = null;
+        window.SSSWET_API_BASE = null;
+        lastApiFailure = error.name === 'AbortError' ? 'Local engine did not respond within 1.2 seconds.' : (error.message || 'No local research engine responded.');
+        window.dispatchEvent(new CustomEvent('ssswet-engine-connection',{detail:{connected:false,error:lastApiFailure}}));
+        throw new Error(lastApiFailure);
+      } finally { window.clearTimeout(timeout); }
     })();
     try { return await apiDiscoveryPromise; }
     finally { apiDiscoveryPromise = null; }
