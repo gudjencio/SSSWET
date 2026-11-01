@@ -63,6 +63,13 @@ class SQLiteResearchStore:
                     classification TEXT NOT NULL DEFAULT 'unverified',
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
+                CREATE TABLE IF NOT EXISTS knowledge (
+                    item_key TEXT PRIMARY KEY,
+                    statement TEXT NOT NULL,
+                    source TEXT NOT NULL,
+                    validated INTEGER NOT NULL,
+                    created_at TEXT NOT NULL
+                );
                 CREATE INDEX IF NOT EXISTS idx_events_created ON events(id DESC);
                 CREATE INDEX IF NOT EXISTS idx_steps_task ON research_steps(task_id);
                 """
@@ -153,3 +160,44 @@ class SQLiteResearchStore:
             item["source_ids"] = json.loads(item["source_ids"])
             results.append(item)
         return results
+
+
+    def save_knowledge(self, item: object) -> None:
+        """Persist a MemoryItem without changing its validation flag."""
+        with self._connect() as connection:
+            connection.execute(
+                """
+                INSERT INTO knowledge(item_key, statement, source, validated, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(item_key) DO UPDATE SET
+                    statement=excluded.statement,
+                    source=excluded.source,
+                    validated=excluded.validated,
+                    created_at=excluded.created_at
+                """,
+                (
+                    item.key,
+                    item.statement,
+                    item.source,
+                    1 if item.validated else 0,
+                    item.created_at,
+                ),
+            )
+
+    def knowledge_items(self, validated_only: bool = False) -> list[dict]:
+        query = "SELECT item_key, statement, source, validated, created_at FROM knowledge"
+        if validated_only:
+            query += " WHERE validated = 1"
+        query += " ORDER BY created_at"
+        with self._connect() as connection:
+            rows = connection.execute(query).fetchall()
+        return [
+            {
+                "key": row["item_key"],
+                "statement": row["statement"],
+                "source": row["source"],
+                "validated": bool(row["validated"]),
+                "created_at": row["created_at"],
+            }
+            for row in rows
+        ]
