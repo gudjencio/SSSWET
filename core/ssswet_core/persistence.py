@@ -1067,11 +1067,17 @@ class SQLiteResearchStore:
             ).fetchone()
             if row is None:
                 raise ValueError("Unknown peer-review request")
-            if row["status"] != "open":
-                raise ValueError("Peer-review request is not open")
             request = json.loads(row["request_json"])
             if submission.reviewer_campaign_id not in request["reviewer_campaign_ids"]:
                 raise ValueError("Reviewer campaign is not assigned to this request")
+            prior_submission = connection.execute(
+                "SELECT 1 FROM peer_review_submissions WHERE review_id = ? AND reviewer_campaign_id = ?",
+                (submission.review_id, submission.reviewer_campaign_id),
+            ).fetchone()
+            if prior_submission:
+                raise ValueError("This reviewer campaign has already submitted")
+            if row["status"] != "open":
+                raise ValueError("Peer-review request is not open")
             campaign = connection.execute(
                 "SELECT campaign_json FROM research_campaigns WHERE campaign_id = ?",
                 (submission.reviewer_campaign_id,),
