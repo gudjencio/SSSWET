@@ -1200,3 +1200,16 @@ a { color: #9fdcf0; }
 @media(prefers-reduced-motion:reduce) {
   .bot-stage-agent .agent-avatar { animation: none !important; }
 }
+
+
+/* Distinguish a returned peer-review note from a pending handoff. */
+.bot-review-response {
+  border-color: rgba(165, 184, 151, .22);
+  background: linear-gradient(145deg, rgba(75, 94, 67, .12), rgba(12, 15, 12, .72));
+}
+.bot-review-response .message-avatar {
+  color: #c7d5b7;
+  border-color: rgba(165, 184, 151, .25);
+  background: rgba(75, 94, 67, .18);
+}
+.bot-review-response > div > strong { color: #d4dec9; }
