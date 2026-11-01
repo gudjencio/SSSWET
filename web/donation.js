@@ -35,6 +35,7 @@
   window.SSSWET_TECHNOLOGIES = technologies;
   // Configure only official, verified payment links here. No payment credentials belong in this public file.
   const paymentLinks = window.SSSWET_DONATION_LINKS || {};
+  const portfolio = window.SSSWET_RESEARCH_PORTFOLIO || {};
   const currencyByRegion = {
     US:"USD", CA:"CAD", GB:"GBP", CH:"CHF", JP:"JPY", CN:"CNY", IN:"INR", AU:"AUD", NZ:"NZD",
     BR:"BRL", MX:"MXN", SG:"SGD", HK:"HKD", KR:"KRW", ZA:"ZAR", NG:"NGN", KE:"KES",
@@ -67,6 +68,10 @@
   let currency = "EUR";
   let minimumLocal = 0.50;
   let rateReady = false;
+  const portfolioLabels = {
+    en: { stage:"Research stage", goal:"Funding goal", confirmed:"Confirmed contributions", unknown:"Not published", notSet:"Not set", planning:"Research planning", literature:"Literature review", feasibility:"Feasibility study", prototype:"Prototype development", validation:"Testing and validation", available:"Available for separate purchase", prototypeYes:"Prototype recorded", prototypeNo:"No prototype recorded", unavailable:"Not available", updated:"Last updated", progress:"Funding progress", manual:"Public figures are updated manually after payment confirmation. PayPal.Me does not synchronize payments with this website." },
+    fr: { stage:"Étape de recherche", goal:"Objectif de financement", confirmed:"Contributions confirmées", unknown:"Non publié", notSet:"Non défini", planning:"Planification de la recherche", literature:"Revue de la littérature", feasibility:"Étude de faisabilité", prototype:"Développement d’un prototype", validation:"Essais et validation", available:"Disponible à l’achat séparément", prototypeYes:"Prototype déclaré", prototypeNo:"Aucun prototype déclaré", unavailable:"Non disponible", updated:"Dernière mise à jour", progress:"Progression du financement", manual:"Les chiffres publics sont actualisés manuellement après confirmation des paiements. PayPal.Me ne synchronise pas les paiements avec ce site." }
+  };
 
   function localeRegion() {
     try { return new Intl.Locale(navigator.language || "en").region || ""; } catch (_) { return ""; }
@@ -113,6 +118,31 @@
     }
     updateAmounts();
   }
+  function renderPortfolio() {
+    const language = copy() === translations.fr ? "fr" : "en";
+    const labels = portfolioLabels[language];
+    document.querySelectorAll(".technology-card").forEach(card => {
+      const button = card.querySelector("button[data-tech]");
+      if (!button) return;
+      const record = portfolio[button.dataset.tech] || {};
+      let panel = card.querySelector(".technology-progress");
+      if (!panel) { panel = document.createElement("div"); panel.className = "technology-progress"; card.insertBefore(panel, button); }
+      const goalKnown = Number.isFinite(record.funding_goal_eur) && record.funding_goal_eur > 0;
+      const totalKnown = Number.isFinite(record.confirmed_contributions_eur) && record.confirmed_contributions_eur >= 0;
+      const money = value => new Intl.NumberFormat(language, { style:"currency", currency:"EUR" }).format(value);
+      const amount = totalKnown ? money(record.confirmed_contributions_eur) : labels.unknown;
+      const goal = goalKnown ? money(record.funding_goal_eur) : labels.notSet;
+      const stages = { planning:labels.planning, literature_review:labels.literature, feasibility:labels.feasibility, prototype:labels.prototype, validation:labels.validation, available:labels.available };
+      const stage = stages[record.stage] || labels.unknown;
+      const percent = goalKnown && totalKnown ? Math.min(100, Math.round(record.confirmed_contributions_eur / record.funding_goal_eur * 100)) : null;
+      panel.replaceChildren();
+      const lines = [[labels.stage,stage],[labels.confirmed,amount],[labels.goal,goal],[labels.prototype,record.prototype === true ? labels.prototypeYes : labels.prototypeNo],[labels.availability,record.availability === "available" ? labels.available : labels.unavailable]];
+      for (const pair of lines) { const line=document.createElement("div"); line.className="technology-progress-line"; const left=document.createElement("span"); left.textContent=pair[0]; const right=document.createElement("strong"); right.textContent=pair[1]; line.append(left,right); panel.append(line); }
+      if (percent !== null) { const track=document.createElement("div"); track.className="technology-progress-track"; const fill=document.createElement("span"); fill.style.width=percent+"%"; track.append(fill); const caption=document.createElement("small"); caption.textContent=labels.progress+" · "+percent+"%"; panel.append(track,caption); }
+      if (record.last_updated) { const updated=document.createElement("small"); updated.textContent=labels.updated+" · "+record.last_updated; panel.append(updated); }
+    });
+    const note=document.getElementById("portfolio-manual-note"); if(note) note.textContent=labels.manual;
+  }
   function openTechnology(key) {
     const item = technologies[key];
     if (!item) return;
@@ -120,6 +150,9 @@
     const language = copy() === translations.fr ? "fr" : "en";
     title.textContent = item[language][0];
     description.textContent = item[language][1];
+    const record = portfolio[key] || {};
+    const detail = document.getElementById("technology-dialog-progress");
+    if (detail) { const labels=portfolioLabels[language]; const stages={planning:labels.planning,literature_review:labels.literature,feasibility:labels.feasibility,prototype:labels.prototype,validation:labels.validation,available:labels.available}; const money=value=>new Intl.NumberFormat(language,{style:"currency",currency:"EUR"}).format(value); const goal=Number.isFinite(record.funding_goal_eur)&&record.funding_goal_eur>0?money(record.funding_goal_eur):labels.notSet; const total=Number.isFinite(record.confirmed_contributions_eur)&&record.confirmed_contributions_eur>=0?money(record.confirmed_contributions_eur):labels.unknown; detail.textContent=labels.stage+": "+(stages[record.stage]||labels.unknown)+" · "+labels.confirmed+": "+total+" · "+labels.goal+": "+goal; }
     amountInput.value = String(minimumLocal);
     updateAmounts();
     if (typeof modal.showModal === "function") modal.showModal();
@@ -169,6 +202,7 @@
     }
   });
   currencyNote.textContent = copy().currencyNote;
+  renderPortfolio();
   chooseCurrency();
   window.addEventListener("languagechange", () => window.location.reload());
   document.getElementById("language")?.addEventListener("change", () => {
@@ -188,6 +222,7 @@
       title.textContent = item[language][0]; description.textContent = item[language][1];
     }
     currencyNote.textContent = copy().currencyNote;
+    renderPortfolio();
     updateAmounts();
   });
 })();
