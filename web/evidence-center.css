@@ -41,3 +41,10 @@ html[dir="rtl"] .evidence-center, html[dir="rtl"] .evidence-dossier { direction:
 .evidence-check-list strong { display: block; color: #ddd; font-weight: 500; }
 .evidence-check-list p { margin: 3px 0 0; color: #777; }
 .evidence-verification-plan { border-color: #3a3327; }
+
+.evidence-review-form { display: grid; grid-template-columns: 1fr auto; gap: 6px; margin-top: 7px; }
+.evidence-review-form input, .evidence-review-form select, .evidence-review-form textarea { min-width: 0; width: 100%; padding: 7px 8px; border: 1px solid #333; border-radius: 7px; background: #101010; color: #ddd; font: inherit; }
+.evidence-review-form textarea { grid-column: 1 / -1; resize: vertical; }
+.evidence-review-form button { padding: 7px 9px; border-radius: 7px; font-size: 9px; }
+.evidence-review-feedback { color: #9eaf98; align-self: center; }
+.evidence-review-state { color: #c6a978 !important; }
