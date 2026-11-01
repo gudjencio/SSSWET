@@ -34,3 +34,10 @@
 .evidence-error { color: #d4a0a0; }
 @media (max-width: 520px) { .evidence-center-heading { align-items: flex-start; flex-direction: column; } .evidence-dossier > summary { align-items: flex-start; flex-direction: column; } .evidence-field { grid-template-columns: 1fr; gap: 1px; } }
 html[dir="rtl"] .evidence-center, html[dir="rtl"] .evidence-dossier { direction: rtl; text-align: right; }
+
+.evidence-verification { padding-top: 9px; border-top: 1px solid #252525; }
+.evidence-check-list { display: grid; gap: 8px; margin: 5px 0 0; padding-inline-start: 20px; }
+.evidence-check-list li { color: #aaa; padding-inline-start: 3px; }
+.evidence-check-list strong { display: block; color: #ddd; font-weight: 500; }
+.evidence-check-list p { margin: 3px 0 0; color: #777; }
+.evidence-verification-plan { border-color: #3a3327; }
