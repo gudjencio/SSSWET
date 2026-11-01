@@ -1,7 +1,7 @@
 # SSSWET
 
 **Super Soldier's Space Warping Engineering & Tech**  
-*ETDESS — its French Name*
+*French interface name: Équipements et technologies de distorsions spatiales pour super-soldats (ETDESS).*
 
 SSSWET is an experimental, open research-software project for organizing scientific inquiry, computational studies, evidence review and collaboration between specialized research agents.
 
