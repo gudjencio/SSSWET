@@ -277,3 +277,42 @@ The read-only local API also exposes this report at `/api/research-gaps`.
 The analyzer is deliberately conservative: missing graph relationships are
 not proof that evidence or experiments do not exist elsewhere. It never creates
 evidence, changes verification states, or declares a hypothesis true or false.
+
+
+### Experimental planning and records
+
+`ssswet_core.experimentation` provides structured experiment plans,
+separate simulation/real-observation records, and explicit comparison against
+a supplied prediction. `draft_experiment_plan` creates a deliberately
+incomplete scaffold from a hypothesis: it does not invent variables, methods,
+controls, measurements or safety procedures. `validate_experiment_plan`
+lists missing design information before review.
+
+Example:
+
+```python
+from ssswet_core.experimentation import draft_experiment_plan
+from ssswet_core.persistence import SQLiteResearchStore
+
+store = SQLiteResearchStore()
+plan = draft_experiment_plan(
+    "experiment-001",
+    "hypothesis-001",
+    "The measured response changes with the input parameter",
+)
+store.save_experiment_plan(plan)
+print(store.get_experiment_plan("experiment-001"))
+```
+
+Save a record with `make_experiment_record(..., kind="simulation" | "real_observation", ...)`
+and `store.save_experiment_record(record)`. Records are persisted separately
+from the plan, and simulation records cannot be mistaken for real observations.
+The read-only API endpoint `/api/experiments` returns up to 100 saved plans and
+their records.
+
+A comparison such as `consistent_with_prediction` only means the explicitly
+provided value matches the explicitly supplied prediction under the chosen
+comparison rule. It does not prove a hypothesis. Assessments require human
+review; real-world execution requires domain-specific safety, ethical,
+regulatory and professional approval. SSSWET does not automatically execute
+physical experiments or promote simulated output to verified evidence.
