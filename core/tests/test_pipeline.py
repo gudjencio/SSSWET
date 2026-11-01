@@ -54,3 +54,65 @@ def test_provider_failure_preserves_task_and_releases_team():
     assert len(queued) == 1
     assert queued[0].status == TaskStatus.BLOCKED
     assert all(agent.load == 0 for agent in pipeline.engine.orchestrator.bot_manager.agents.values())
+
+
+def test_pipeline_executes_decomposed_work_through_campaign_coordinator(tmp_path):
+    from ssswet_core.campaign_coordinator import CampaignCoordinator
+    from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.resource_manager import ResourceManager
+
+    store = SQLiteResearchStore(tmp_path / "campaign-pipeline.sqlite3")
+    campaign = create_campaign(
+        "pipeline-campaign", "Wave study", "Study a harmless wave model", "physics",
+        [CampaignMilestone("review", "Research review", "Review the model and challenge it")],
+    )
+    store.save_campaign(set_campaign_state(campaign, "active"))
+    coordinator = CampaignCoordinator(store, ResourceManager(max_active_assignments=2))
+    pipeline = ResearchPipeline(store=store, campaign_coordinator=coordinator)
+
+    task_id, steps = pipeline.start_in_campaign(
+        "Study a harmless mathematical wave model",
+        "pipeline-campaign", "review", "physics",
+    )
+
+    assert len(steps) == 2
+    assert len({step.agent_id for step in steps}) == 2
+    assert all(step.agent_id.startswith("bot-") for step in steps)
+    assert all(step.result.summary for step in steps)
+    assert task_id
+    assert coordinator.snapshot()["completed_task_ids"] == [
+        f"{task_id}:001", f"{task_id}:002"
+    ]
+    assert pipeline.groups.for_task(task_id)
+    assert all(step.result.uncertainty >= 0 for step in steps)
+
+
+def test_campaign_pipeline_preserves_work_after_provider_failure(tmp_path):
+    from ssswet_core.campaign_coordinator import CampaignCoordinator
+    from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.resource_manager import ResourceManager
+
+    store = SQLiteResearchStore(tmp_path / "campaign-failure.sqlite3")
+    campaign = create_campaign(
+        "failure-campaign", "Research", "Study a harmless question", "general",
+        [CampaignMilestone("review", "Review", "Review evidence")],
+    )
+    store.save_campaign(set_campaign_state(campaign, "active"))
+    coordinator = CampaignCoordinator(
+        store, ResourceManager(max_active_assignments=2, max_attempts=2)
+    )
+    pipeline = ResearchPipeline(
+        provider=BrokenProvider(), store=store, campaign_coordinator=coordinator
+    )
+
+    task_id, steps = pipeline.start_in_campaign(
+        "Study a harmless question", "failure-campaign", "review"
+    )
+
+    assert steps == []
+    assert coordinator.snapshot()["failed_task_ids"] == [
+        f"{task_id}:001", f"{task_id}:002"
+    ]
+    assert any(task.id == task_id for task in pipeline.engine.orchestrator.tasks)
