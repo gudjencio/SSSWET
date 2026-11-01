@@ -53,6 +53,14 @@
         </div>
         <p class="dashboard-note" data-i18n="dashboardNote">Live overview from the local research engine. Missing connections are shown explicitly.</p>
         <div id="dashboard-grid" class="dashboard-grid" aria-live="polite"></div>
+        <section class="research-map" aria-labelledby="research-map-title">
+          <div class="subsection-heading"><h3 id="research-map-title" data-i18n="mapTitle">Knowledge network</h3><span data-i18n="mapCaption">Recorded nodes and declared relationships</span></div>
+          <div id="knowledge-map" class="knowledge-map" role="img" aria-label="Knowledge graph visualization"></div>
+        </section>
+        <section class="opportunity-panel" aria-labelledby="opportunity-title">
+          <div class="subsection-heading"><h3 id="opportunity-title" data-i18n="opportunityTitle">Research opportunities</h3><span data-i18n="opportunityCaption">Human review required · no automatic scientific conclusions</span></div>
+          <div id="opportunity-list" class="opportunity-list" aria-live="polite"></div>
+        </section>
       </section>
 
       <div id="feed" class="feed" aria-live="polite">
