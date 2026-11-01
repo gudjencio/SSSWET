@@ -34,7 +34,7 @@ window.SSSWET_RESEARCH_PORTFOLIO = Object.fromEntries(
 
 document.addEventListener("DOMContentLoaded", () => {
   const projectUrl = "https://gudjencio.github.io/SSSWET/";
-  const MIN_CONTRIBUTION_USD = 10;
+  const MIN_CONTRIBUTION_USD = 1;
   const language = () => String(document.documentElement.lang || "en").toLowerCase().split("-")[0];
   const copy = {
     en: {
@@ -135,8 +135,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const minimumNote = document.getElementById("donation-minimum-note");
     if (minimumNote) minimumNote.textContent = language() === "fr"
-      ? "Minimum de contribution : 10 USD. Pour un montant supérieur, PayPal.Me peut demander directement le montant choisi."
-      : "Minimum contribution: USD 10. For a higher amount, PayPal.Me can request the exact amount you choose.";
+      ? "Minimum de contribution : 1 USD. Le montant choisi est transmis à PayPal avant validation."
+      : "Minimum contribution: USD 1. The selected amount is sent to PayPal for approval.";
   };
 
   apply();
