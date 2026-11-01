@@ -53,6 +53,7 @@ def test_minimize_direction_changes_objective_preference():
         direction="minimize",
     )
     assert report.proposals[0].predicted_score == 1
+    assert report.proposals[0].selection_score == pytest.approx(0.75)
 
 
 def test_candidate_parameters_are_recorded_and_stable():
