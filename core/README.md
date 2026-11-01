@@ -921,3 +921,21 @@ accepted and must be resubmitted against the latest version.
 The read-only review queue is available at
 `GET /api/digital-lab/proposals`. Proposal acceptance is a workflow decision,
 not scientific validation or proof that the changes are correct.
+
+
+### Unified research opportunity synthesis
+
+The read-only endpoint `GET /api/research-opportunities` combines two existing
+signals: knowledge-graph gap analysis and possible interdisciplinary links
+between records from different campaigns. Each result includes a stable
+identifier, review priority, related graph nodes and campaigns, source signal
+references, and a suggested next action. Gap reviews are cross-linked to
+interdisciplinary leads that share a graph node.
+
+The synthesis is deterministic and intended to organize human review, not
+automatically generate scientific conclusions. Missing graph links do not
+prove that evidence is absent, and lexical overlap can be coincidental.
+Scores are ranking heuristics, not probabilities or confidence estimates.
+The endpoint does not create tasks, mutate the graph, execute experiments or
+change verification states. See
+`docs/RESEARCH_OPPORTUNITIES.md`.
