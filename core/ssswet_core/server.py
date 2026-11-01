@@ -36,7 +36,7 @@ def public_events(engine: SSSWETEngine, store: SQLiteResearchStore | None = None
     ]
 
 
-def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
+def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registry=None):
     class SSSWETHandler(SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(WEB_ROOT), **kwargs)
@@ -55,7 +55,26 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
             from urllib.parse import parse_qs, urlsplit
             parsed = urlsplit(self.path)
             path = parsed.path
-            if path == "/api/status":
+            if path.startswith("/api/private/orders"):
+                if self.client_address[0] not in {"127.0.0.1", "::1"}:
+                    self._json({"error": "Private order register is restricted to the local machine"}, 403)
+                    return
+                if order_registry is None:
+                    self._json({"error": "Private order register is not configured"}, 503)
+                    return
+                if path == "/api/private/orders":
+                    try:
+                        limit = int(parse_qs(parsed.query).get("limit", ["100"])[0])
+                        self._json(order_registry.list_orders(limit=limit))
+                    except ValueError as exc:
+                        self._json({"error": str(exc)}, 400)
+                else:
+                    order_id = path[len("/api/private/orders/"):].strip("/")
+                    try:
+                        self._json(order_registry.get_order(order_id))
+                    except ValueError as exc:
+                        self._json({"error": str(exc)}, 404)
+            elif path == "/api/status":
                 self._json(public_status(engine, store))
             elif path == "/api/events":
                 self._json(public_events(engine, store))
@@ -361,7 +380,12 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 self.send_error(403, "Verification reviews are restricted to the local machine")
                 return
             request_path = urlsplit(self.path).path
-            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks", "/api/research-journal"}:
+            private_order_write = (
+                request_path == "/api/private/orders"
+                or request_path.endswith("/payments")
+                or request_path.endswith("/fulfilment")
+            ) and request_path.startswith("/api/private/orders")
+            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks", "/api/research-journal"} and not private_order_write:
                 self.send_error(405, "Unsupported write operation")
                 return
             try:
@@ -372,7 +396,37 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 payload = json.loads(self.rfile.read(length))
                 if not isinstance(payload, dict):
                     raise ValueError("A JSON object is required")
-                if request_path == "/api/research-journal":
+                if private_order_write:
+                    if order_registry is None:
+                        self._json({"error": "Private order register is not configured"}, 503)
+                        return
+                    if request_path == "/api/private/orders":
+                        order = order_registry.create_order(
+                            technology=payload.get("technology", ""),
+                            currency=payload.get("currency", ""),
+                            base_price=payload.get("base_price", ""),
+                            access_contribution=payload.get("access_contribution", "0"),
+                        )
+                        self._json({"order": order, "personal_data_stored": False}, 201)
+                    elif request_path.endswith("/payments"):
+                        order_id = request_path[len("/api/private/orders/"):-len("/payments")].strip("/")
+                        order = order_registry.record_verified_payment(
+                            order_id=order_id, amount=payload.get("amount", ""),
+                            currency=payload.get("currency", ""),
+                            provider=payload.get("provider", ""),
+                            provider_reference=payload.get("provider_reference", ""),
+                            verified_by=payload.get("verified_by", ""),
+                        )
+                        self._json({"order": order, "manual_verification_required": True}, 201)
+                    else:
+                        order_id = request_path[len("/api/private/orders/"):-len("/fulfilment")].strip("/")
+                        order = order_registry.update_fulfilment(
+                            order_id=order_id, state=payload.get("state", ""),
+                            operator=payload.get("operator", ""),
+                            evidence_reference=payload.get("evidence_reference", ""),
+                        )
+                        self._json({"order": order}, 201)
+                elif request_path == "/api/research-journal":
                     from .research_journal import ResearchJournal
                     entry = ResearchJournal(store).append(
                         technology=payload.get("technology", ""), event_type=payload.get("event_type", ""),
@@ -434,11 +488,14 @@ def main() -> None:
     parser.add_argument("--host", default="127.0.0.1", help="Bind address (default: loopback only)")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
+    parser.add_argument("--orders-database", default=".ssswet/orders.sqlite3", help="Private order register path")
     args = parser.parse_args()
 
     store = SQLiteResearchStore(args.database)
     engine = SSSWETEngine(store=store)
-    server = ThreadingHTTPServer((args.host, args.port), make_handler(engine, store))
+    from .order_registry import PrivateOrderRegistry
+    order_registry = PrivateOrderRegistry(args.orders_database)
+    server = ThreadingHTTPServer((args.host, args.port), make_handler(engine, store, order_registry))
     print(f"SSSWET local interface: http://{args.host}:{args.port}")
     print(f"Persistent research history: {store.path}")
     print("Read-only mode: arbitrary public task submission is disabled.")
