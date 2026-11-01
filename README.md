@@ -64,16 +64,14 @@ Verification checks can receive append-only human review events with `pending`, 
 | Campaign coordination | Pipeline-integrated milestone scheduling, specialist allocation, resource quotas, retry tracking and explicit completion review |
 | Web interface | Responsive multilingual interface, global dashboard, knowledge-network visualization and expandable research-opportunity reviews |
 
-Capabilities are implemented incrementally. The public web interface is a static application; the Python research engine runs locally and is not hosted by GitHub Pages.
+Capabilities are implemented incrementally. The public web interface is static, while the Python research engine runs locally on the operator's computer. The browser can discover that loopback engine from the official GitHub Pages and Google Sites origins when it is running and the browser permits local-network access; GitHub Pages does not host the engine or its SQLite data.
 
 
 The global dashboard visualizes a bounded view of recorded knowledge-graph
 nodes and declared edges, and lists research-gap and interdisciplinary-link
 opportunities with their graph and campaign references. These are review
 leads only: the dashboard does not infer missing scientific relationships,
-create tasks or validate claims. The live dashboard requires the local Python
-service; a static Pages deployment cannot expose the local SQLite research
-state. See [research opportunity synthesis](docs/RESEARCH_OPPORTUNITIES.md).
+create tasks or validate claims. The live dashboard requires the local Python service. When the public page is opened in a browser on the same computer as that service, the interface attempts a restricted cross-origin connection to `127.0.0.1:8765`; Chrome and other browsers may ask for local-network access. If the engine is unavailable or permission is denied, the interface switches to offline guidance and retries automatically. A static Pages deployment does not host or expose the local SQLite research state. See [research opportunity synthesis](docs/RESEARCH_OPPORTUNITIES.md).
 \n## Architecture
 
 The repository is organized into two main parts:
@@ -274,7 +272,7 @@ The local research engine includes an append-only, hash-chained journal for date
 
 ## Technology Feasibility Observatory
 
-The local research engine includes a read-only observatory for all seven technology programmes. It summarizes explicitly recorded literature, simulations, prototypes, tests and independent reviews, then identifies missing review areas without inventing a feasibility score or authorizing delivery. See [the observatory documentation](docs/TECHNOLOGY_FEASIBILITY_OBSERVATORY.md).
+The local research engine includes a read-only observatory for all 29 technology programmes. It summarizes explicitly recorded literature, simulations, prototypes, tests and independent reviews, then identifies missing review areas without inventing a feasibility score or authorizing delivery. See [the observatory documentation](docs/TECHNOLOGY_FEASIBILITY_OBSERVATORY.md).
 
 
 ## Private Gmail delivery workflow
