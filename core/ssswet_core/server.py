@@ -194,6 +194,14 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                     self._json({"error": "The limit parameter must be an integer"}, 400)
                     return
                 self._json(DatasetRegistry(store).overview(limit=limit))
+            elif path == "/api/technology-feasibility":
+                from .technology_feasibility import TechnologyFeasibilityObservatory
+                params = parse_qs(parsed.query)
+                technology = params.get("technology", [""])[0] or None
+                try:
+                    self._json(TechnologyFeasibilityObservatory(store).build(technology=technology))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/research-journal":
                 from .research_journal import ResearchJournal
                 params = parse_qs(parsed.query)
