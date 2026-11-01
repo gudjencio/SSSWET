@@ -8,7 +8,7 @@
  * Integration instructions: integrations/google-apps-script/README.md
  */
 
-const SSSWET_REMINDER_PROPERTY = "SSSWET_PAYMENT_REMINDERS";
+const SSSWET_REMINDER_PREFIX = "SSSWET_PAYMENT_REMINDER_";
 const SSSWET_REMINDER_PAYPAL = "https://www.paypal.com/paypalme/gudjencio";
 
 function registerPaymentReminder_(payload) {
@@ -29,7 +29,6 @@ function registerPaymentReminder_(payload) {
   lock.waitLock(10000);
   try {
     const properties = PropertiesService.getScriptProperties();
-    const records = JSON.parse(properties.getProperty(SSSWET_REMINDER_PROPERTY) || "[]");
     const token = Utilities.getUuid().replace(/-/g, "") + Utilities.getUuid().replace(/-/g, "");
     const record = {
       token: token,
@@ -44,8 +43,7 @@ function registerPaymentReminder_(payload) {
       createdAt: new Date().toISOString(),
       nextReminderAt: null
     };
-    records.push(record);
-    properties.setProperty(SSSWET_REMINDER_PROPERTY, JSON.stringify(records));
+    properties.setProperty(SSSWET_REMINDER_PREFIX + token, JSON.stringify(record));
     const confirmationUrl = ScriptApp.getService().getUrl() + "?reminder_token=" + encodeURIComponent(token);
     const subject = language === "fr" ? "Confirmez vos rappels de paiement SSSWET" : "Confirm your SSSWET payment reminders";
     const body = language === "fr"
@@ -93,17 +91,13 @@ function updatePaymentReminder_(token, update) {
   lock.waitLock(10000);
   try {
     const properties = PropertiesService.getScriptProperties();
-    const records = JSON.parse(properties.getProperty(SSSWET_REMINDER_PROPERTY) || "[]");
-    let matched = null;
-    records.forEach(function(record) {
-      if (record.token === token) {
-        update(record);
-        matched = record;
-      }
-    });
-    if (!matched) throw new Error("Reminder subscription not found.");
-    properties.setProperty(SSSWET_REMINDER_PROPERTY, JSON.stringify(records));
-    return {fr: matched.language === "fr"};
+    const key = SSSWET_REMINDER_PREFIX + token;
+    const stored = properties.getProperty(key);
+    if (!stored) throw new Error("Reminder subscription not found.");
+    const record = JSON.parse(stored);
+    update(record);
+    properties.setProperty(key, JSON.stringify(record));
+    return {fr: record.language === "fr"};
   } finally {
     lock.releaseLock();
   }
@@ -122,10 +116,12 @@ function sendDuePaymentReminders_() {
   lock.waitLock(10000);
   try {
     const properties = PropertiesService.getScriptProperties();
-    const records = JSON.parse(properties.getProperty(SSSWET_REMINDER_PROPERTY) || "[]");
+    const stored = properties.getProperties();
     const now = new Date();
-    let changed = false;
-    records.forEach(function(record) {
+    Object.keys(stored).filter(function(key) {
+      return key.indexOf(SSSWET_REMINDER_PREFIX) === 0;
+    }).forEach(function(key) {
+      const record = JSON.parse(stored[key]);
       if (record.status !== "active" || !record.nextReminderAt || new Date(record.nextReminderAt) > now) return;
       const fr = record.language === "fr";
       const amount = Number(record.installmentUsd || 10).toFixed(2);
@@ -133,13 +129,12 @@ function sendDuePaymentReminders_() {
       const unsubscribeUrl = ScriptApp.getService().getUrl() + "?unsubscribe_token=" + encodeURIComponent(record.token);
       const subject = fr ? "Rappel volontaire de paiement SSSWET" : "SSSWET voluntary payment reminder";
       const body = fr
-        ? "Ceci est le rappel que vous avez demandé pour votre prochaine contribution à " + record.technology + ".\n\nMontant indicatif de la prochaine échéance : " + amount + " USD.\nEffectuer le paiement volontaire : " + payUrl + "\n\nAucun prélèvement automatique n'est effectué. Après votre paiement, vous pouvez conserver ce calendrier ou vous désinscrire : " + unsubscribeUrl
-        : "This is the reminder you requested for your next contribution to " + record.technology + ".\n\nIndicative next instalment: USD " + amount + ".\nMake the voluntary payment: " + payUrl + "\n\nNo automatic charge is made. After payment, you may keep this schedule or unsubscribe: " + unsubscribeUrl;
+        ? "Ceci est le rappel que vous avez demandé pour votre prochaine contribution à " + record.technology + ".\\n\\nMontant indicatif de la prochaine échéance : " + amount + " USD.\\nEffectuer le paiement volontaire : " + payUrl + "\\n\\nAucun prélèvement automatique n'est effectué. Après votre paiement, vous pouvez conserver ce calendrier ou vous désinscrire : " + unsubscribeUrl
+        : "This is the reminder you requested for your next contribution to " + record.technology + ".\\n\\nIndicative next instalment: USD " + amount + ".\\nMake the voluntary payment: " + payUrl + "\\n\\nNo automatic charge is made. After payment, you may keep this schedule or unsubscribe: " + unsubscribeUrl;
       GmailApp.sendEmail(record.email, subject, body, {name: "SSSWET"});
       record.nextReminderAt = nextPaymentReminderDate_(now, record.frequency).toISOString();
-      changed = true;
+      properties.setProperty(key, JSON.stringify(record));
     });
-    if (changed) properties.setProperty(SSSWET_REMINDER_PROPERTY, JSON.stringify(records));
   } finally {
     lock.releaseLock();
   }
