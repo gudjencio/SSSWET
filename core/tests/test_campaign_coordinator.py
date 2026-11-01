@@ -74,3 +74,23 @@ def test_coordinator_persists_each_resource_transition(tmp_path):
         item["snapshot"]["completed_task_ids"] == ["parent-2:001"]
         for item in history
     )
+
+
+def test_blocked_milestone_requires_review_note_to_resume(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "resume.sqlite3")
+    _active_campaign(store)
+    coordinator = CampaignCoordinator(store)
+    coordinator.block_milestone(
+        "campaign-coordinator", "milestone-1", "Retry limit reached"
+    )
+
+    with pytest.raises(ValueError, match="review note"):
+        coordinator.resume_milestone(
+            "campaign-coordinator", "milestone-1", ""
+        )
+    coordinator.resume_milestone(
+        "campaign-coordinator", "milestone-1", "Operator reviewed a revised approach"
+    )
+    saved = store.get_campaign("campaign-coordinator")
+    assert saved["milestones"][0]["state"] == "in_progress"
+    assert saved["milestones"][0]["notes"] == "Operator reviewed a revised approach"
