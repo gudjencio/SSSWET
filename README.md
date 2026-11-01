@@ -9,7 +9,24 @@ SSSWET is the project's official name. ETDESS is its French translation.
 
 SSSWET is an experimental research platform intended to organize computational research, simulations, verification, scientific literature review, and collaborative AI-agent workflows toward humanitarian technologies.
 
-The project is designed to move from **idea → research → test → verification → reproducible evidence → real-world validation**, without pretending that an ambitious objective is already solved.
+The project is designed to move from **idea → decomposition → research → testing → verification → reproducible evidence → real-world validation**, without pretending that an ambitious objective is already solved.
+
+## Current architecture
+
+The first executable research pipeline is now being assembled from independent layers:
+
+- **Task Orchestrator** — queues objectives, schedules agents, preserves blocked work, and changes strategy.
+- **Task Decomposer** — converts a broad objective into smaller, independently checkable work units.
+- **Specialist Groups** — allows several research roles to collaborate on one task without requiring every agent to perform every job.
+- **Knowledge Exchange** — stores statements together with their evidence, confidence, and verification state.
+- **Strategy Selector** — rotates approaches when an attempt is blocked or inconclusive.
+- **Verification Engine** — performs independent checks and keeps uncertainty explicit.
+- **Safety Gate** — prevents insufficiently verified or high-risk conclusions from being treated as ready for real-world use.
+- **Provider Interface** — separates the orchestration system from future AI, computation, and research providers.
+- **Deterministic Demo Provider** — provides a local, credential-free implementation for development and testing.
+- **Simulation layer** — keeps simulated evidence distinct from physical evidence.
+
+The provider boundary is intentional: real model/search providers can be connected later through adapters and environment-based credentials without placing secrets in the public repository.
 
 ## Core principles
 
@@ -21,6 +38,7 @@ The project is designed to move from **idea → research → test → verificati
 - Dangerous or unverified approaches are not published as actionable instructions.
 - Failed approaches are recorded at an appropriate level so the system can change strategy rather than silently repeating the same failure.
 - Research agents can be created, paused, replaced, or retired according to workload and verification needs.
+- Runtime self-modification of executable safety/orchestration code is not permitted; improvements are versioned, reviewed, tested, and released deliberately.
 
 ## Planned platform
 
