@@ -259,6 +259,15 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                     "automatic_adjudication": False,
                     "scientific_validity_changed": False,
                 })
+            elif path == "/api/scientific-review-board":
+                from .scientific_review_board import ScientificReviewBoard
+                params = parse_qs(parsed.query)
+                dossier_id = params.get("dossier_id", [""])[0] or None
+                try:
+                    limit = int(params.get("limit", ["500"])[0])
+                    self._json(ScientificReviewBoard(store).report(dossier_id=dossier_id, limit=limit))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/collaboration/peer-reviews":
                 from .peer_review import PeerReviewService
                 params = parse_qs(parsed.query)
@@ -293,7 +302,8 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
             if self.client_address[0] not in {"127.0.0.1", "::1"}:
                 self.send_error(403, "Verification reviews are restricted to the local machine")
                 return
-            if urlsplit(self.path).path != "/api/lab-verification-events":
+            request_path = urlsplit(self.path).path
+            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews"}:
                 self.send_error(405, "Unsupported write operation")
                 return
             try:
@@ -304,13 +314,28 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 payload = json.loads(self.rfile.read(length))
                 if not isinstance(payload, dict):
                     raise ValueError("A JSON object is required")
-                from .lab_verification import LabVerificationPlanner
-                event = LabVerificationPlanner(store).record_check_review(
-                    str(payload.get("plan_id", "")), str(payload.get("check_code", "")),
-                    str(payload.get("state", "")), str(payload.get("note", "")),
-                    str(payload.get("reviewer", "")),
-                )
-                self._json({"event": event, "append_only": True}, 201)
+                if request_path == "/api/lab-verification-events":
+                    from .lab_verification import LabVerificationPlanner
+                    event = LabVerificationPlanner(store).record_check_review(
+                        str(payload.get("plan_id", "")), str(payload.get("check_code", "")),
+                        str(payload.get("state", "")), str(payload.get("note", "")),
+                        str(payload.get("reviewer", "")),
+                    )
+                    self._json({"event": event, "append_only": True}, 201)
+                else:
+                    from .scientific_review_board import ScientificReviewBoard
+                    review = ScientificReviewBoard(store).submit(
+                        dossier_id=payload.get("dossier_id", ""),
+                        reviewer_id=payload.get("reviewer_id", ""),
+                        reviewer_campaign_id=payload.get("reviewer_campaign_id", ""),
+                        verdict=payload.get("verdict", ""),
+                        conflict_status=payload.get("conflict_status", ""),
+                        rationale=payload.get("rationale", ""),
+                        methods_assessment=payload.get("methods_assessment", ""),
+                        limitations=payload.get("limitations", ""),
+                        evidence_refs=payload.get("evidence_refs", []),
+                    )
+                    self._json({"review": review, "append_only": True}, 201)
             except (ValueError, TypeError, json.JSONDecodeError) as exc:
                 self._json({"error": str(exc)}, 400)
 
