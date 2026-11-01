@@ -294,6 +294,16 @@
         ])
       },
       {
+        key: "timeline", path: "/api/research-timeline", list: "events",
+        title: t.dashTimeline,
+        count: (a, p) => safeCount(p.total_events),
+        detail: (a) => dashboardMetrics([
+          [t.dashTimelineEvents, a.length],
+          [t.dashTimelineCampaigns, new Set(a.map(x => x.campaign_id).filter(Boolean)).size],
+          [t.dashTimelineKinds, new Set(a.map(x => x.kind)).size]
+        ])
+      },
+      {
         key: "events", path: "/api/events", list: null,
         title: t.dashActivity,
         count: (a) => a.length,
