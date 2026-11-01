@@ -13,6 +13,17 @@
     amount.min = String(MIN_CONTRIBUTION);
     amount.value = String(Math.max(MIN_CONTRIBUTION, Number(amount.value) || 0));
 
+    const minimumNote = document.getElementById("donation-minimum-note") || (() => {
+      const note = document.createElement("p");
+      note.id = "donation-minimum-note";
+      note.className = "donation-note";
+      amount.closest(".donation-fields")?.append(note);
+      return note;
+    })();
+    minimumNote.textContent = document.documentElement.lang?.startsWith("fr")
+      ? "Minimum de contribution : 10 USD ou l’équivalent affiché. Pour un montant supérieur, le montant choisi est transmis à PayPal.Me."
+      : "Minimum contribution: USD 10 or the displayed equivalent. For a higher amount, the selected amount is passed to PayPal.Me.";
+
     if (checkout.dataset.dynamicPaymentInstalled === "true") return;
     checkout.dataset.dynamicPaymentInstalled = "true";
 
