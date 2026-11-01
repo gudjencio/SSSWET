@@ -78,7 +78,8 @@
     refreshVoices();
     if (!availableVoices.length) return null;
     const sameLanguage = availableVoices.filter(voice => voiceLanguageMatches(voice, language));
-    const candidates = sameLanguage.length ? sameLanguage : availableVoices;
+    if (!sameLanguage.length) return null;
+    const candidates = sameLanguage;
     const feminine = /female|woman|zira|aria|jenny|samantha|susan|sara|ava|emma|olivia| victoria|natasha|google français|google français|amélie|audrey|marie|elsa/i;
     const masculine = /male|man|david|mark|guy|james|thomas|henri|paul|daniel|alex|george|fred|google uk english male/i;
     const genderPattern = gender === "female" ? feminine : masculine;
