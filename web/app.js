@@ -274,6 +274,16 @@
         ])
       },
       {
+        key: "peerReviews", path: "/api/collaboration/peer-reviews", list: "reviews",
+        title: t.dashPeerReviews,
+        count: (a) => a.length,
+        detail: (a) => dashboardMetrics([
+          [t.dashReviewOpen, a.filter(x => x.status === "open").length],
+          [t.dashReviewCompleted, a.filter(x => x.status === "completed").length],
+          [t.dashReviewSubmissions, a.reduce((sum, x) => sum + safeCount(x.submission_count), 0)]
+        ])
+      },
+      {
         key: "collaboration", path: "/api/collaboration/recommendations", list: "recommendations",
         title: t.dashCollaboration,
         count: (a) => a.length,
