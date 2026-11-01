@@ -187,7 +187,17 @@ ssswet-run --objective "Review this topic" --corpus documents.json --pdf ./paper
 
 Each non-empty page becomes a separate local corpus document with a page-level
 identifier. Extraction is bounded to 50 MiB per file, 500 pages per file and
-12,000 characters per page. Encrypted PDFs are rejected. Image-only scanned
+12,000 characters per page. Encrypted PDFs are rejected.
+
+When `--provider llm` is combined with local PDFs or a JSON corpus, SSSWET
+retrieves up to 12 relevant page-level passages and asks the configured model
+for a structured review: hypotheses, methods, reported results, explicitly
+present equations/parameters, limitations, cross-source agreements and
+contradictions, missing information, and safe verification steps. The model
+must identify source IDs for its statements. This remains a model-generated
+analysis, not independent scientific verification; lexical retrieval can miss
+relevant passages, and the selected excerpts are sent to the configured model
+provider. Image-only scanned
 pages require OCR, which is not yet included. Files are read locally and are
 not uploaded by this feature. Extracted text can contain parsing errors and
 must be checked against the original PDF; it is not automatically evidence
