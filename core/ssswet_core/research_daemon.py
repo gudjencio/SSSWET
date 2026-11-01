@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import os
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .persistence import SQLiteResearchStore
@@ -47,14 +48,47 @@ TECHNOLOGY_OBJECTIVES = [
 ]
 
 
-def run_pass(database: str, mailto: str = "", relay: AppsScriptSuccessRelay | None = None) -> list[dict]:
+def run_pass(
+    database: str,
+    mailto: str = "",
+    relay: AppsScriptSuccessRelay | None = None,
+    progress_callback=None,
+) -> list[dict]:
     store = SQLiteResearchStore(database)
     provider = MultiSourceLiteratureProvider(mailto=mailto)
     pipeline = ResearchPipeline(provider=provider, store=store)
     completed: list[dict] = []
+    cycle_started_at = datetime.now(timezone.utc).isoformat()
+    def report(state: dict) -> None:
+        if progress_callback:
+            progress_callback({
+                "worker": "autonomous_research",
+                "cycle_started_at": cycle_started_at,
+                "total_programmes": len(TECHNOLOGY_OBJECTIVES),
+                "completed_programmes": len(completed),
+                **state,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            })
+    report({"status": "running", "current_technology": None, "active_agents": []})
     for technology, objective in TECHNOLOGY_OBJECTIVES:
+        report({
+            "status": "running",
+            "current_technology": technology,
+            "current_objective": objective,
+            "active_agents": [],
+            "current_task_id": None,
+        })
         try:
-            task_id, steps = pipeline.start(objective, domain=technology)
+            task_id, steps = pipeline.start(
+                objective,
+                domain=technology,
+                progress_callback=lambda state, tech=technology: report({
+                    "status": "running",
+                    "current_technology": tech,
+                    "current_objective": objective,
+                    **state,
+                }),
+            )
             evidence_count = sum(len(step.result.evidence) for step in steps)
             summary = " ".join(
                 step.result.summary.strip() for step in steps if step.result.summary.strip()
@@ -67,10 +101,31 @@ def run_pass(database: str, mailto: str = "", relay: AppsScriptSuccessRelay | No
                 "summary": summary or "Research workflow completed; outputs remain subject to independent review.",
             })
             print(f"[SSSWET] {technology}: {task_id} · {len(steps)} research-agent passes")
+            report({
+                "status": "running",
+                "current_technology": technology,
+                "current_task_id": task_id,
+                "active_agents": [],
+                "last_completed_technology": technology,
+                "completed_programmes": len(completed),
+            })
         except Exception as exc:
             # Failures are logged locally only and are never sent to the email relay.
             print(f"[SSSWET] {technology}: research pass blocked ({type(exc).__name__}: {exc})")
+            report({
+                "status": "running",
+                "current_technology": technology,
+                "active_agents": [],
+                "last_error": f"{technology}: {type(exc).__name__}",
+            })
 
+    report({
+        "status": "cycle_completed",
+        "current_technology": None,
+        "active_agents": [],
+        "completed_programmes": len(completed),
+        "last_cycle_completed_at": datetime.now(timezone.utc).isoformat(),
+    })
     if relay and completed:
         try:
             relay.send_cycle_success(completed)
