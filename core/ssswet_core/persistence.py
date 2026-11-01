@@ -1131,6 +1131,12 @@ class SQLiteResearchStore:
         if any(key not in record for key in required):
             raise ValueError("Dataset version record is incomplete")
         with self._connect() as connection:
+            campaign = connection.execute(
+                "SELECT campaign_json FROM research_campaigns WHERE campaign_id=?",
+                (record.get("campaign_id", ""),),
+            ).fetchone()
+            if campaign is None or json.loads(campaign["campaign_json"]).get("state") != "active":
+                raise ValueError("Dataset registration campaign must exist and be active")
             if connection.execute(
                 "SELECT 1 FROM lab_datasets WHERE dataset_id=? AND version=?",
                 (record["dataset_id"], record["version"]),
