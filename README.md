@@ -1,6 +1,6 @@
 # SSSWET
 
-**Super Soldier's Space Warping Engineering & Tech**  
+**Super Soldier Space Warping Engineering Tech**  
 *French interface name: Équipements et technologies de distorsions spatiales pour super-soldats (ETDESS).*
 
 SSSWET is an experimental, open research-software project for organizing scientific inquiry, computational studies, evidence review and collaboration between specialized research agents.
@@ -20,6 +20,10 @@ See [research contributions and future technology availability](docs/CONTRIBUTIO
 - Compare computational models and propose bounded follow-up scenarios.
 - Coordinate research campaigns, resources and knowledge transfers.
 - Provide a multilingual web interface and a local research environment.
+
+## Research programme prioritisation
+
+The local dashboard includes a transparent, human-entered assessment workflow for all 29 research programmes. Six weighted criteria cover societal benefit, ecological and animal benefit, evidence maturity, technical feasibility, resource accessibility, and safety and legal readiness. Incomplete assessments remain visible but are excluded from ranking; previous submissions are preserved in append-only local SQLite history. Each entry requires a reviewer label and written rationale, with optional evidence references. Rankings are advisory decision-support indicators only: they do not establish scientific validity, authorize experiments, allocate funding or certify product readiness. See [research programme prioritisation](docs/RESEARCH_PRIORITISATION.md).
 
 ## Reproducibility intelligence
 
@@ -45,7 +49,11 @@ Structured dossier reviews can record support, challenge, mixed or abstaining as
 
 Verification checks can receive append-only human review events with `pending`, `in_progress`, `completed` and `blocked` tracking. Notes and reviewer labels are retained in an immutable event history. The local review-write endpoint is restricted to loopback requests; reviewer labels are self-declared and are not an authentication mechanism. See [the lifecycle documentation](docs/LAB_VERIFICATION_PLANNING.md).
 
-## Laboratory verification planning\n\nThe local review API can generate evidence-linked checklists for recorded laboratory discrepancies. These checklists highlight missing records and comparison checks for human assessment; they do not create tasks, execute experiments or establish scientific validity. See [Laboratory verification planning](docs/LAB_VERIFICATION_PLANNING.md).\n\n## Current capabilities
+## Laboratory verification planning
+
+The local review API can generate evidence-linked checklists for recorded laboratory discrepancies. These checklists highlight missing records and comparison checks for human assessment; they do not create tasks, execute experiments or establish scientific validity. See [Laboratory verification planning](docs/LAB_VERIFICATION_PLANNING.md).
+
+## Current capabilities
 
 | Area | Available functionality |
 |---|---|
@@ -72,14 +80,15 @@ nodes and declared edges, and lists research-gap and interdisciplinary-link
 opportunities with their graph and campaign references. These are review
 leads only: the dashboard does not infer missing scientific relationships,
 create tasks or validate claims. The live dashboard requires the local Python service. When the public page is opened in a browser on the same computer as that service, the interface attempts a restricted cross-origin connection to `127.0.0.1:8765`; Chrome and other browsers may ask for local-network access. If the engine is unavailable or permission is denied, the interface switches to offline guidance and retries automatically. A static Pages deployment does not host or expose the local SQLite research state. See [research opportunity synthesis](docs/RESEARCH_OPPORTUNITIES.md).
-\n## Architecture
+
+## Architecture
 
 The repository is organized into two main parts:
 
 - **`core/`** — Python research engine, command-line tools, local API, persistence, verification and simulation utilities.
 - **`web/`** — static multilingual web application and progressive web app assets.
 
-The local service binds to `127.0.0.1` by default and exposes read-only API endpoints for the web interface. Research state is stored locally in SQLite unless another database path is configured.
+The local service binds to `127.0.0.1` by default and exposes read-oriented API endpoints plus narrowly scoped, loopback-restricted append-only review and assessment submissions. Research state is stored locally in SQLite unless another database path is configured.
 
 ## Getting started
 
@@ -118,7 +127,9 @@ ssswet-run --objective "Compare experimental methods" --domain physics --pdf ./p
 
 For literature metadata discovery, use `--provider crossref`, `openalex`, `arxiv` or `literature`. A compatible language-model provider can be configured with local environment variables; API credentials must never be committed to the repository.
 
-The literature watch compares returned metadata with registered sources and collective-memory topics. It flags possible DOI duplicates, close title matches and related memory entries for review; it does not automatically import sources, alter campaigns or validate claims. Saved reports are available through the local read-only `/api/literature-watch` endpoint.\n\nSee the [core developer guide](core/README.md) for command options, provider configuration, data formats and API details.
+The literature watch compares returned metadata with registered sources and collective-memory topics. It flags possible DOI duplicates, close title matches and related memory entries for review; it does not automatically import sources, alter campaigns or validate claims. Saved reports are available through the local read-only `/api/literature-watch` endpoint.
+
+See the [core developer guide](core/README.md) for command options, provider configuration, data formats and API details.
 
 ## Scientific integrity and responsible research
 
