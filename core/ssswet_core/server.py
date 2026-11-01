@@ -248,6 +248,14 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                     self._json(LabVerificationPlanner(store).build(limit=limit))
                 except ValueError as exc:
                     self._json({"error": str(exc)}, 400)
+            elif path == "/api/parameter-sensitivity-plans":
+                from .parameter_sensitivity import ParameterSensitivityPlanner
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["200"])[0])
+                    self._json(ParameterSensitivityPlanner(store).build(limit=limit))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/reproducibility-intelligence":
                 from .reproducibility_intelligence import ReproducibilityIntelligence
                 params = parse_qs(parsed.query)
