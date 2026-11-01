@@ -1,13 +1,13 @@
 # SSSWET
 
 **Super Soldier Space Warping Engeriening Tech**  
-**ETDESS — traduction française : Équipe de Technologie pour le Développement de l'Exploration Spatiale et du Soldiering?**
+**ETDESS — traduction française de SSSWET**
 
-> SSSWET is the project's official name and expansion. The project explores ambitious scientific and technological questions with a strict humanitarian, verification-first approach.
+SSSWET is the project's official name. ETDESS is its French translation.
 
 ## Mission
 
-SSSWET is an experimental research platform intended to help organize computational research, simulations, verification, scientific literature review, and collaborative AI-agent workflows toward humanitarian technologies.
+SSSWET is an experimental research platform intended to organize computational research, simulations, verification, scientific literature review, and collaborative AI-agent workflows toward humanitarian technologies.
 
 The project is designed to move from **idea → research → test → verification → reproducible evidence → real-world validation**, without pretending that an ambitious objective is already solved.
 
@@ -15,12 +15,12 @@ The project is designed to move from **idea → research → test → verificati
 
 - No weapons development.
 - No intentional design of systems whose known purpose is to injure or kill people.
-- Agents may investigate difficult scientific questions, but agreement between agents is never treated as proof.
+- Agent agreement is never treated as proof.
 - Results are independently checked, reproduced where possible, and labelled with uncertainty and limitations.
 - High-risk medical, biological, aerospace, or physical applications require qualified human and regulatory review before real-world use.
 - Dangerous or unverified approaches are not published as actionable instructions.
-- Failed approaches are not silently forgotten: the system records them at an appropriate level and changes strategy.
-- The system can create, pause, replace, or retire research agents according to workload and verification needs.
+- Failed approaches are recorded at an appropriate level so the system can change strategy rather than silently repeating the same failure.
+- Research agents can be created, paused, replaced, or retired according to workload and verification needs.
 
 ## Planned platform
 
