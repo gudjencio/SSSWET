@@ -152,7 +152,7 @@ class AdaptiveScenarioOptimizer:
         scores = {item.scenario_id: float(item.score) for item in observations}
         best = (max if direction == "maximize" else min)(scores.values())
         worst = (min if direction == "maximize" else max)(scores.values())
-        score_span = best - worst
+        score_span = abs(best - worst)
 
         ranked = []
         excluded = []
