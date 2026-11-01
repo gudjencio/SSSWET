@@ -868,6 +868,40 @@ def test_official_web_origins_can_read_local_api_and_preflight_private_network(t
         thread.join(timeout=2)
 
 
+def test_local_interface_serves_ui_and_api_on_same_origin(tmp_path):
+    import json
+    import threading
+    from http.server import ThreadingHTTPServer
+    from urllib.request import urlopen
+
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "same-origin.sqlite3")
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0),
+        make_handler(SSSWETEngine(store=store), store),
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        with urlopen(base + "/") as response:
+            page = response.read().decode("utf-8")
+            assert response.status == 200
+            assert "engine-connection" in page
+            assert "127.0.0.1:8765" in page
+
+        with urlopen(base + "/api/status") as response:
+            payload = json.loads(response.read())
+            assert response.status == 200
+            assert payload["service"] == "SSSWET"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
 def test_local_server_can_start_without_private_dashboard_token(monkeypatch, tmp_path):
     import sys
     import ssswet_core.server as server_module
