@@ -122,3 +122,7 @@ ssswet-run --objective "wave propagation measurement methods" --domain physics -
 The returned publications are source leads, not verified conclusions. All
 provider outputs remain explicitly unverified pending full source review,
 independent evidence and reproducibility.
+
+Shared knowledge entries and their validation states are also retained in the
+local SQLite database and reloaded when the engine restarts. Unverified
+candidates remain separate from verified knowledge.
