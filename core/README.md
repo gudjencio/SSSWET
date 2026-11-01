@@ -214,3 +214,20 @@ A reproduction state also requires explicit confirmation that a separate
 reproduction run was completed; supplying a run label alone is insufficient.
 These flags record an assessment, not an automatic audit of the underlying
 research. High-risk findings still require qualified real-world validation.
+
+
+### Scientific source provenance registry
+
+The local SQLite store can register bibliographic provenance using
+`SQLiteResearchStore.register_source(SourceRecord(...))`. Records can retain
+DOIs, authors, institutions, dataset identifiers, declared related publications,
+and an explicitly supplied provenance group. Use `get_source`,
+`find_sources_by_doi`, `sources_sharing_provenance`, and
+`source_dependency_report` to inspect the registry.
+
+Dependency reports flag declared relationships, shared dataset identifiers,
+matching DOIs, and matching provenance groups. These are review signals only:
+shared datasets may be legitimate, metadata may be incomplete, and the registry
+does not infer scientific independence automatically. A human reviewer must
+assess provenance before recording an independent source group. The registry
+does not crawl publisher sites or verify authorship/institution claims by itself.
