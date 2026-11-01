@@ -35,3 +35,25 @@ changes but are not digital signatures.
 
 The registry stores metadata and declared digests, not uploaded data files.
 Compute the digest locally from the exact file bytes when available.
+
+
+## Cross-campaign reproduction matrix
+
+The local API endpoint `GET /api/digital-lab/reproduction-matrix` groups
+recorded runs by exact protocol ID and version. It lists the campaigns that
+have recorded runs and identifies cross-campaign run pairs for which no
+comparison has yet been saved. The matrix is a review queue only: it does not
+execute comparisons, schedule physical experiments, or establish independent
+reproduction.
+
+The standard digital-lab overview also includes this matrix and a count of
+pending cross-campaign comparisons. Individual run comparisons now report
+whether the recorded environments and code/model references match, with
+environment differences listed explicitly. Environment differences are
+informational and do not automatically invalidate a comparison; researchers
+must assess whether they affect the result.
+
+A candidate reproduction remains distinct from an authenticated independent
+reproduction. Provenance, shared datasets, source overlap, calibration,
+measurement uncertainty and domain-specific safety review still require
+human assessment.
