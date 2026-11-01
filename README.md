@@ -154,3 +154,22 @@ PDFs stay on the local computer. Text extraction is bounded by file size,
 page count and per-page character limits. Scanned image-only PDFs need OCR
 and may produce no extracted text. Extracted passages are research material,
 not validated evidence.
+
+
+### Multilingual web interface
+
+The static web interface now has a centralized locale catalogue in
+[`web/locales.js`](web/locales.js), automatic browser-language detection,
+manual language selection and a remembered preference when browser storage
+is available. The first locale set includes English, French, Spanish, German,
+Italian, Portuguese, Dutch, Russian, Ukrainian, Arabic, Hebrew, Japanese,
+Korean, Chinese and Hindi.
+
+Arabic and Hebrew activate right-to-left document direction and dedicated
+layout rules. Missing locale keys fall back to English. GitHub Actions checks
+JavaScript syntax, required translation keys and RTL declarations.
+
+These initial translations are a foundation, not a claim of complete
+internationalization: native-speaker review, translated live backend events,
+date/number formatting, accessibility review and additional languages remain
+planned. The language catalogue can be expanded without rewriting the UI.
