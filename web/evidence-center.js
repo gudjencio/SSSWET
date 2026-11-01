@@ -24,6 +24,7 @@
       hash: fr ? "Empreinte" : "Fingerprint",
       validity: fr ? "Validité scientifique établie" : "Scientific validity established",
       no: fr ? "Non" : "No",
+      yes: fr ? "Oui" : "Yes",
       question: fr ? "Question / résultat" : "Question / result",
       sourcesTitle: fr ? "Sources et provenance" : "Sources and provenance",
       protocols: fr ? "Protocoles et versions" : "Protocols and versions",
@@ -45,7 +46,9 @@
       assembledFrom: fr ? "Assemblé à partir des enregistrements existants" : "Assembled from existing records",
       separation: fr ? "Une revue du dossier ne constitue pas une validation scientifique. Les simulations, métadonnées et comparaisons restent des éléments à examiner, pas des preuves automatiquement établies." : "Reviewing a dossier does not establish scientific validity. Simulations, metadata and comparisons remain items for examination, not automatically established evidence.",
       trace: fr ? "Chaîne de traçabilité" : "Traceability chain",
-      traceText: fr ? "Question → sources → protocole → données → exécutions → reproductions → objections → revues → état des preuves" : "Question → sources → protocol → data → runs → reproductions → objections → reviews → evidence state"
+      traceText: fr ? "Question → sources → protocole → données → exécutions → reproductions → objections → revues → état des preuves" : "Question → sources → protocol → data → runs → reproductions → objections → reviews → evidence state",
+      noData: fr ? "Aucune donnée enregistrée" : "No recorded data",
+      notProvided: fr ? "Non renseigné" : "Not provided"
     };
   };
 
@@ -172,7 +175,13 @@
     overview.className = "evidence-section evidence-overview";
     const overviewHeading = document.createElement("h5");
     overviewHeading.textContent = labels.question;
-    overview.append(overviewHeading, field(labels.id, dossier.dossier_id), field(labels.state, dossier.verification_state), field(labels.assembledFrom, dossier.assembled_from_existing_records ? "Yes" : "No"), field(labels.validity, dossier.scientific_validity_established ? "Yes" : labels.no));
+    overview.append(overviewHeading);
+    overview.append(
+      field(labels.id, dossier.dossier_id),
+      field(labels.state, dossier.verification_state),
+      field(labels.assembledFrom, dossier.assembled_from_existing_records ? labels.yes : labels.no),
+      field(labels.validity, dossier.scientific_validity_established ? labels.yes : labels.no)
+    );
     const summary = document.createElement("p");
     summary.className = "evidence-result";
     summary.textContent = text(dossier.result_summary);
@@ -202,7 +211,7 @@
     panel.append(collection(labels.objections, dossier.objections, (item) => recordCard([[labels.note, item]])));
     panel.append(collection(labels.disputes, dossier.disputes, (item) => recordCard([
       [labels.id, item.case_id], [labels.state, item.status], [labels.note, item.summary || item.description]
-    ])));
+    ]));
 
     const reviews = (dossier.events || []).filter((event) => event.kind === "review");
     panel.append(collection(labels.review, reviews, (item) => recordCard([
