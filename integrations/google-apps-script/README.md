@@ -6,7 +6,7 @@ This optional service sends recurring reminders only to people who explicitly re
 
 1. Open the Google Apps Script project already used by SSSWET.
 2. Add the contents of `PaymentReminders.gs` as a new script file.
-3. In the existing `doPost(e)`, read the form payload using the project's existing `parsePostBody(e)` helper. The website sends a simple URL-encoded form request to avoid browser preflight restrictions. Resolve the nested JSON payload, then add the branch before the research-success relay's secret check:
+3. In the existing `doPost(e)`, read the form payload using the project's existing `parsePostBody(e)` helper. The website sends a simple URL-encoded form request to avoid browser preflight restrictions. Resolve the nested JSON payload, then add the branch before the research-success relay's secret check. If your existing function already declares a variable named `payload`, replace that declaration with this normalized form instead of declaring it twice:
 
    ```javascript
    const incoming = parsePostBody(e);
