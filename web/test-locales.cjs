@@ -96,3 +96,13 @@ for (const [code, copy] of Object.entries(agentCopy)) {
     throw new Error(`Agent introduction ${code} must define three guided questions`);
   }
 }
+
+const donationSource = fs.readFileSync(new URL("./donation.js", `file://${__filename}`), "utf8");
+for (const feature of ["SSSWET_TECHNOLOGIES", "minimumLocal", "Intl.NumberFormat", "donation-checkout", "SSSWET_DONATION_LINKS"]) {
+  if (!donationSource.includes(feature)) throw new Error(`Donation feature missing: ${feature}`);
+}
+for (const technology of ["cellular", "longevity", "armor", "jetpack", "translator", "spacetime"]) {
+  if (!donationSource.includes(technology)) throw new Error(`Technology catalogue entry missing: ${technology}`);
+}
+if (!pageSource.includes('id="technology-dialog"') || !pageSource.includes('id="technology-grid"')) throw new Error("Technology showcase or contribution dialog is missing");
+console.log("Validated the technology catalogue and contribution-window integration.");
