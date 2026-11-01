@@ -138,3 +138,31 @@ def test_experiment_record_requires_existing_plan(tmp_path):
         assert "plan must be saved" in str(exc)
     else:
         raise AssertionError("An orphan experiment record must be rejected")
+
+
+def test_adaptive_cycle_history_persists_proposal_only_state(tmp_path):
+    from ssswet_core.adaptive_cycle import propose_from_study
+    from ssswet_core.simulation_study import MultiModelSimulationRunner, SimulationScenario
+
+    study = MultiModelSimulationRunner().run(
+        "persisted-study", "Toy study",
+        [SimulationScenario("a", {"x": 0}), SimulationScenario("b", {"x": 1})],
+        {
+            "one": ("local", lambda p: {"score": p["x"]}),
+            "two": ("local", lambda p: {"score": p["x"] + 1}),
+        },
+    )
+    cycle = propose_from_study(
+        study,
+        [SimulationScenario("a", {"x": 0}), SimulationScenario("b", {"x": 1})],
+        {"a": 0.0},
+    )
+    store = SQLiteResearchStore(tmp_path / "adaptive.sqlite3")
+    store.save_adaptive_cycle("cycle-001", cycle)
+
+    saved = store.get_adaptive_cycle("cycle-001")
+    history = store.adaptive_cycle_history("persisted-study")
+    assert saved["study_id"] == "persisted-study"
+    assert saved["execution_state"] == "proposal_only"
+    assert saved["requires_human_approval_before_execution"] is True
+    assert history[0]["cycle_id"] == "cycle-001"
