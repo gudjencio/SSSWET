@@ -167,6 +167,23 @@ class SQLiteResearchStore:
                 CREATE INDEX IF NOT EXISTS idx_collective_memory_topic ON collective_memory(topic);
                 CREATE INDEX IF NOT EXISTS idx_collective_memory_status ON collective_memory(status);
                 CREATE INDEX IF NOT EXISTS idx_collective_memory_campaign ON collective_memory(campaign_id);
+                CREATE TABLE IF NOT EXISTS scientific_memory_versions (
+                    version_id TEXT PRIMARY KEY,
+                    memory_key TEXT NOT NULL,
+                    version_number INTEGER NOT NULL,
+                    supersedes_version_id TEXT NOT NULL DEFAULT '',
+                    record_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    UNIQUE(memory_key, version_number)
+                );
+                CREATE INDEX IF NOT EXISTS idx_scientific_memory_key
+                    ON scientific_memory_versions(memory_key, version_number DESC);
+                CREATE TRIGGER IF NOT EXISTS scientific_memory_no_update
+                    BEFORE UPDATE ON scientific_memory_versions
+                    BEGIN SELECT RAISE(ABORT, 'scientific memory versions are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS scientific_memory_no_delete
+                    BEFORE DELETE ON scientific_memory_versions
+                    BEGIN SELECT RAISE(ABORT, 'scientific memory versions are immutable'); END;
                 CREATE TABLE IF NOT EXISTS literature_watch_reports (
                     watch_id TEXT PRIMARY KEY,
                     query TEXT NOT NULL,
@@ -373,6 +390,60 @@ class SQLiteResearchStore:
             rows = connection.execute(query, values).fetchall()
         return [
             {**dict(row), "source_ids": json.loads(row["source_ids"])}
+            for row in rows
+        ]
+
+
+    def add_scientific_memory_version(self, version: object) -> dict:
+        """Append an immutable version; revisions must explicitly supersede the current one."""
+        from .scientific_memory import version_to_dict
+        payload = version_to_dict(version)
+        encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, allow_nan=False)
+        with self._connect() as connection:
+            current = connection.execute(
+                """SELECT version_id, version_number FROM scientific_memory_versions
+                   WHERE memory_key = ? ORDER BY version_number DESC LIMIT 1""",
+                (version.memory_key,),
+            ).fetchone()
+            if current is None:
+                if version.supersedes_version_id:
+                    raise ValueError("The superseded version does not exist")
+                number = 1
+            else:
+                if version.supersedes_version_id != current["version_id"]:
+                    raise ValueError("A revision must supersede the current version")
+                number = int(current["version_number"]) + 1
+            connection.execute(
+                """INSERT INTO scientific_memory_versions(
+                       version_id, memory_key, version_number,
+                       supersedes_version_id, record_json, created_at
+                   ) VALUES (?, ?, ?, ?, ?, ?)""",
+                (version.version_id, version.memory_key, number,
+                 version.supersedes_version_id, encoded, version.created_at),
+            )
+        return {"version_id": version.version_id, "memory_key": version.memory_key,
+                "version_number": number, **payload}
+
+    def get_scientific_memory_version(self, version_id: str) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT version_number, record_json FROM scientific_memory_versions WHERE version_id = ?",
+                (version_id,),
+            ).fetchone()
+        if row is None:
+            return None
+        return {"version_number": row["version_number"], **json.loads(row["record_json"])}
+
+    def scientific_memory_history(self, limit: int = 200) -> list[dict]:
+        bounded = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            rows = connection.execute(
+                """SELECT version_number, record_json FROM scientific_memory_versions
+                   ORDER BY created_at ASC, memory_key ASC, version_number ASC LIMIT ?""",
+                (bounded,),
+            ).fetchall()
+        return [
+            {"version_number": row["version_number"], **json.loads(row["record_json"])}
             for row in rows
         ]
 
