@@ -802,3 +802,51 @@ def test_private_order_api_is_loopback_only_and_tracks_verified_payments(tmp_pat
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_official_web_origins_can_read_local_api_and_preflight_private_network(tmp_path):
+    import json
+    import threading
+    from http.server import ThreadingHTTPServer
+    from urllib.request import Request, urlopen
+
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "cors.sqlite3")
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0),
+        make_handler(SSSWETEngine(store=store), store),
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    origin = "https://gudjencio.github.io"
+    try:
+        request = Request(base + "/api/status", headers={"Origin": origin, "Accept": "application/json"})
+        with urlopen(request) as response:
+            payload = json.loads(response.read())
+            assert response.headers["Access-Control-Allow-Origin"] == origin
+            assert payload["service"] == "SSSWET"
+
+        preflight = Request(
+            base + "/api/status",
+            headers={
+                "Origin": origin,
+                "Access-Control-Request-Method": "GET",
+                "Access-Control-Request-Private-Network": "true",
+            },
+            method="OPTIONS",
+        )
+        with urlopen(preflight) as response:
+            assert response.status == 204
+            assert response.headers["Access-Control-Allow-Origin"] == origin
+            assert response.headers["Access-Control-Allow-Private-Network"] == "true"
+
+        rejected = Request(base + "/api/status", headers={"Origin": "https://example.com"}, method="OPTIONS")
+        with pytest.raises(Exception):
+            urlopen(rejected)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
