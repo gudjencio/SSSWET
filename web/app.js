@@ -254,6 +254,16 @@
         }
       },
       {
+        key: "campaignWatch", path: "/api/literature-watch/campaigns", list: null,
+        title: t.dashCampaignWatch,
+        count: (a, p) => (p.subscriptions || []).filter(x => x.enabled).length,
+        detail: (a, p) => dashboardMetrics([
+          [t.dashSubscriptions, (p.subscriptions || []).filter(x => x.enabled).length],
+          [t.dashNewLeads, (p.runs || []).reduce((sum, x) => sum + safeCount(x.new_candidate_ids), 0)],
+          [t.dashWatchRuns, (p.runs || []).length]
+        ])
+      },
+      {
         key: "events", path: "/api/events", list: null,
         title: t.dashActivity,
         count: (a) => a.length,
