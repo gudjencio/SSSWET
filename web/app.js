@@ -10,7 +10,7 @@ const translations = {
     ready: "The interface is ready. Connect the local engine to display live research data.",
     footer: "ETDESS is the French translation of SSSWET. Public results remain subject to verification.",
     offline: "The local research engine is not connected. On GitHub Pages, this is a static preview; run the local application to access live status.",
-    noDiscoveries: "No validated public discoveries are stored yet.",
+    noDiscoveries: "No research outputs are stored yet.",
     noActivity: "No research activity has been recorded yet.",
     noVerified: "No independently verified knowledge is available yet."
   },
@@ -25,7 +25,7 @@ const translations = {
     ready: "L'interface est prête. Connectez le moteur local pour afficher les données de recherche en direct.",
     footer: "ETDESS est la traduction française de SSSWET. Les résultats publics restent soumis à vérification.",
     offline: "Le moteur de recherche local n'est pas connecté. Sur GitHub Pages, il s'agit d'un aperçu statique ; lancez l'application locale pour accéder aux données en direct.",
-    noDiscoveries: "Aucune découverte publique validée n'est encore enregistrée.",
+    noDiscoveries: "Aucun résultat de recherche n'est encore enregistré.",
     noActivity: "Aucune activité de recherche n'a encore été enregistrée.",
     noVerified: "Aucune connaissance vérifiée indépendamment n'est encore disponible."
   }
@@ -86,8 +86,8 @@ async function refreshStatus() {
 async function showDiscoveries() {
   const t = currentTranslations();
   try {
-    const items = await apiGet("/api/verified");
-    const lines = items.map((item) => item.statement).filter(Boolean);
+    const items = await apiGet("/api/discoveries");
+    const lines = items.map((item) => `[UNVERIFIED · ${item.role}] ${item.summary}`).filter(Boolean);
     showMessage(lines.length ? lines.join(" • ") : t.noDiscoveries);
   } catch { showMessage(t.offline); }
 }
@@ -95,7 +95,7 @@ async function showActivity() {
   const t = currentTranslations();
   try {
     const events = await apiGet("/api/events");
-    const lines = events.slice(-5).map((event) => event.message).filter(Boolean);
+    const lines = events.slice(0, 5).map((event) => event.message).filter(Boolean);
     showMessage(lines.length ? lines.join(" • ") : t.noActivity);
   } catch { showMessage(t.offline); }
 }
