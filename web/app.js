@@ -455,6 +455,160 @@
     if (!response.ok) throw new Error("HTTP " + response.status);
     return response.json();
   }
+  async function apiPost(path, payload) {
+    const response = await window.ssswetApiFetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || ("HTTP " + response.status));
+    return result;
+  }
+
+  const priorityCriteria = [
+    ["societal_benefit", "Societal benefit", 20],
+    ["ecological_benefit", "Ecological and animal benefit", 20],
+    ["evidence_maturity", "Evidence maturity", 15],
+    ["technical_feasibility", "Technical feasibility", 15],
+    ["resource_accessibility", "Resource accessibility", 10],
+    ["safety_legal_readiness", "Safety and legal readiness", 20]
+  ];
+  let priorityAssessmentReport = null;
+
+  function renderPriorityAssessments(report) {
+    priorityAssessmentReport = report || null;
+    const container = document.getElementById("priority-assessment-ranking");
+    if (!container) return;
+    container.replaceChildren();
+    const ranked = Array.isArray(report && report.ranked) ? report.ranked : [];
+    const incomplete = Array.isArray(report && report.incomplete) ? report.incomplete : [];
+    const summary = document.createElement("p");
+    summary.className = "priority-assessment-summary";
+    summary.textContent = (report?.assessed_programmes ?? 0) + " programmes assessed · "
+      + ranked.length + " complete rankings · " + incomplete.length + " incomplete";
+    container.append(summary);
+    if (!ranked.length && !incomplete.length) {
+      const empty = document.createElement("p");
+      empty.className = "visual-empty";
+      empty.textContent = "No programme assessments have been recorded yet. Scores are never generated from catalogue descriptions.";
+      container.append(empty);
+    }
+    ranked.forEach(item => {
+      const article = document.createElement("article");
+      article.className = "priority-ranking-item";
+      const heading = document.createElement("div");
+      heading.className = "priority-ranking-heading";
+      const name = document.createElement("strong");
+      name.textContent = "#" + item.rank + " · " + item.programme_id;
+      const score = document.createElement("span");
+      score.textContent = Number(item.score).toFixed(1) + " / 100";
+      heading.append(name, score);
+      const track = document.createElement("div");
+      track.className = "priority-score-track";
+      const fill = document.createElement("span");
+      fill.style.width = Math.max(0, Math.min(100, Number(item.score))) + "%";
+      track.append(fill);
+      const meta = document.createElement("small");
+      meta.textContent = "Latest assessment · " + (item.reviewer_label || "Reviewer not named")
+        + " · " + new Date(item.created_at).toLocaleDateString();
+      article.append(heading, track, meta);
+      container.append(article);
+    });
+    if (incomplete.length) {
+      const heading = document.createElement("h4");
+      heading.className = "priority-incomplete-heading";
+      heading.textContent = "Incomplete assessments — not ranked";
+      container.append(heading);
+      incomplete.forEach(item => {
+        const line = document.createElement("p");
+        line.className = "priority-incomplete-item";
+        line.textContent = item.programme_id + " · " + item.coverage_percent
+          + "% assessed · missing: " + (item.missing_criteria || Object.keys(item.scores || {}).filter(key => item.scores[key] == null)).join(", ");
+        container.append(line);
+      });
+    }
+    const history = document.createElement("details");
+    history.className = "priority-history";
+    const summaryLine = document.createElement("summary");
+    summaryLine.textContent = "Assessment history (" + (report?.history_count ?? 0) + " entries)";
+    history.append(summaryLine);
+    (report?.history || []).slice(0, 40).forEach(item => {
+      const row = document.createElement("p");
+      row.textContent = item.programme_id + " · " + (item.score == null ? "Incomplete" : Number(item.score).toFixed(1) + " / 100")
+        + " · " + (item.reviewer_label || "Reviewer not named") + " · " + new Date(item.created_at).toLocaleString();
+      history.append(row);
+    });
+    container.append(history);
+    syncPriorityForm();
+  }
+
+  function syncPriorityForm() {
+    const form = document.getElementById("priority-assessment-form");
+    if (!form || !priorityAssessmentReport) return;
+    const programme = form.elements.programme_id.value;
+    const latest = [...(priorityAssessmentReport.ranked || []), ...(priorityAssessmentReport.incomplete || [])]
+      .find(item => item.programme_id === programme);
+    if (!latest) return;
+    priorityCriteria.forEach(([key]) => {
+      const field = form.elements[key];
+      if (field) field.value = latest.scores[key] == null ? "" : String(latest.scores[key]);
+    });
+  }
+
+  async function loadPriorityAssessments() {
+    const status = document.getElementById("priority-assessment-status");
+    const container = document.getElementById("priority-assessment-ranking");
+    if (!status || !container) return;
+    status.textContent = "Loading the local assessment register…";
+    try {
+      const [report, framework] = await Promise.all([
+        apiGet("/api/research-priority-assessments"),
+        apiGet("/api/research-priority-framework")
+      ]);
+      renderPriorityAssessments(report);
+      status.textContent = "Local assessment register connected · " + framework.criteria.length
+        + " weighted criteria · " + framework.weight_total + "% total weight · append-only history";
+    } catch (error) {
+      status.textContent = "The local assessment register is unavailable: " + String(error.message || error);
+    }
+  }
+
+  const priorityForm = document.getElementById("priority-assessment-form");
+  priorityForm?.elements.programme_id.addEventListener("change", syncPriorityForm);
+  priorityForm?.addEventListener("submit", async event => {
+    event.preventDefault();
+    const button = priorityForm.querySelector('button[type="submit"]');
+    const status = document.getElementById("priority-assessment-status");
+    const formData = new FormData(priorityForm);
+    const scores = {};
+    priorityCriteria.forEach(([key]) => {
+      const raw = formData.get(key);
+      scores[key] = raw === "" ? null : Number(raw);
+    });
+    const evidenceRefs = String(formData.get("evidence_refs") || "").split("\\n")
+      .map(value => value.trim()).filter(Boolean);
+    button.disabled = true;
+    status.textContent = "Saving a new append-only assessment…";
+    try {
+      await apiPost("/api/research-priority-assessments", {
+        programme_id: formData.get("programme_id"),
+        scores,
+        reviewer_label: formData.get("reviewer_label"),
+        rationale: formData.get("rationale"),
+        evidence_refs: evidenceRefs
+      });
+      priorityForm.elements.rationale.value = "";
+      priorityForm.elements.evidence_refs.value = "";
+      await loadPriorityAssessments();
+      status.textContent = "Assessment saved. The previous assessment remains in the history.";
+    } catch (error) {
+      status.textContent = "Assessment not saved: " + String(error.message || error);
+    } finally {
+      button.disabled = false;
+    }
+  });
+  document.getElementById("priority-assessment-refresh")?.addEventListener("click", loadPriorityAssessments);
 
   async function refreshStatus() {
     const t = currentTranslations();
@@ -1194,6 +1348,7 @@
     renderKnowledgeMap(graphResult && !graphResult.error ? graphResult.payload : {nodes: [], edges: []});
     const opportunityResult = results.find(result => result.item.key === "opportunities");
     renderOpportunityList(opportunityResult && !opportunityResult.error ? opportunityResult.payload : {opportunities: []});
+    await loadPriorityAssessments();
     const campaignData = campaignResult && !campaignResult.error ? campaignResult.array : [];
     populateTimelineCampaigns(campaignData);
     await loadResearchTimeline(document.getElementById("timeline-campaign").value);
