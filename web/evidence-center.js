@@ -24,7 +24,7 @@
       reviewer: fr ? "Campagne de revue" : "Review campaign", note: fr ? "Note" : "Note", created: fr ? "Créé" : "Created",
       assembledFrom: fr ? "Assemblé à partir des enregistrements existants" : "Assembled from existing records",
       separation: fr ? "Une revue du dossier ne constitue pas une validation scientifique. Les simulations, métadonnées et comparaisons restent des éléments à examiner, pas des preuves automatiquement établies." : "Reviewing a dossier does not establish scientific validity. Simulations, metadata and comparisons remain items for examination, not automatically established evidence.",
-      trace: fr ? "Chaîne de traçabilité" : "Traceability chain", traceText: fr ? "Question → sources → protocole → données → exécutions → reproductions → objections → revues → état des preuves" : "Question → sources → protocol → data → runs → reproductions → objections → reviews → evidence state"
+      verification: fr ? "Plan de vérification ciblée" : "Targeted verification plan", checks: fr ? "Contrôles à examiner" : "Checks to review", reason: fr ? "Motif" : "Reason", noPlan: fr ? "Aucun plan associé aux comparaisons de ce dossier." : "No plan is associated with this dossier’s comparisons.", planUnavailable: fr ? "Les plans de vérification sont momentanément indisponibles." : "Verification plans are temporarily unavailable.", humanReview: fr ? "Revue humaine requise" : "Human review required", trace: fr ? "Chaîne de traçabilité" : "Traceability chain", traceText: fr ? "Question → sources → protocole → données → exécutions → reproductions → objections → revues → état des preuves" : "Question → sources → protocol → data → runs → reproductions → objections → reviews → evidence state"
     };
   };
 
@@ -77,6 +77,24 @@
     panel.append(collection(labels.disputes, dossier.disputes, (item) => recordCard([[labels.id, item.case_id], [labels.state, item.status], [labels.note, item.summary || item.description]])));
     const reviews = (dossier.events || []).filter((event) => event.kind === "review"); panel.append(collection(labels.review, reviews, (item) => recordCard([[labels.reviewer, item.reviewer_campaign_id], [labels.decision, item.decision], [labels.note, item.note], [labels.created, item.created_at]])));
     panel.append(collection(labels.eventsTitle, dossier.events, (item) => recordCard([[labels.id, item.event_id], ["Kind", item.kind], [labels.created, item.created_at], ["Dossier", item.dossier_id]])));
+    const verificationSection = document.createElement("section"); verificationSection.className = "evidence-section evidence-verification";
+    const verificationHeading = document.createElement("h5"); verificationHeading.textContent = labels.verification; verificationSection.append(verificationHeading);
+    const verificationStatus = document.createElement("p"); verificationStatus.className = "evidence-muted"; verificationStatus.textContent = "…"; verificationSection.append(verificationStatus); panel.append(verificationSection);
+    const dossierComparisonIds = new Set((dossier.comparisons || []).map((item) => item.comparison_id));
+    if (dossierComparisonIds.size) {
+      get("/api/lab-verification-plans").then((payload) => {
+        verificationSection.querySelectorAll(".evidence-verification-plan").forEach((item) => item.remove());
+        const plans = (Array.isArray(payload.plans) ? payload.plans : []).filter((plan) => dossierComparisonIds.has(plan.comparison_id));
+        verificationStatus.textContent = plans.length ? labels.humanReview : labels.noPlan;
+        plans.forEach((plan) => {
+          const card = document.createElement("article"); card.className = "evidence-record evidence-verification-plan";
+          card.append(field(labels.id, plan.plan_id), field(labels.state, plan.classification), field(labels.humanReview, plan.requires_human_review ? "Yes" : "No"));
+          const list = document.createElement("ol"); list.className = "evidence-check-list";
+          (plan.checks || []).forEach((check) => { const item = document.createElement("li"); const title = document.createElement("strong"); title.textContent = check.instruction; const reason = document.createElement("p"); reason.textContent = labels.reason + ": " + text(check.reason); item.append(title, reason); list.append(item); });
+          card.append(list); card.append(field(labels.validity, plan.scientific_validity_established ? "Yes" : labels.no)); verificationSection.append(card);
+        });
+      }).catch(() => { verificationStatus.textContent = labels.planUnavailable; });
+    } else { verificationStatus.textContent = labels.noPlan; }
     const validity = document.createElement("p"); validity.className = "evidence-validity"; validity.textContent = labels.validity + ": " + labels.no; panel.append(validity); const note = document.createElement("p"); note.className = "evidence-note"; note.textContent = labels.separation; panel.append(note); body.append(panel);
   }
 
