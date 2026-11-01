@@ -704,3 +704,37 @@ def test_lab_statistical_summaries_api_is_read_only(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_research_journal_api_lists_entries_and_accepts_local_append(tmp_path):
+    import json
+    import threading
+    from urllib.request import Request, urlopen
+    from http.server import ThreadingHTTPServer
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "journal-api.sqlite3")
+    server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store))
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        payload = {
+            "technology": "timetravel", "event_type": "research_question",
+            "title": "Causality review", "summary": "Document known constraints first.",
+            "classification": "hypothesis", "evidence_refs": ["doi:10.example/1"],
+        }
+        request = Request(base + "/api/research-journal", data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"}, method="POST")
+        with urlopen(request) as response:
+            created = json.loads(response.read())
+            assert response.status == 201
+        assert created["scientific_validity_established"] is False
+        with urlopen(base + "/api/research-journal?technology=timetravel") as response:
+            report = json.loads(response.read())
+        assert report["count"] == 1
+        assert report["chain_integrity"]["chain_intact"] is True
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
