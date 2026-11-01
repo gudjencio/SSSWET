@@ -110,6 +110,24 @@
     if (voice) utterance.voice = voice;
     speechSynthesisApi.speak(utterance);
   }
+  function speakLongText(text, agentIndex = 0) {
+    const normalized = String(text || "").replace(/\s+/g, " ").trim();
+    if (!normalized) return;
+    const sentences = normalized.match(/[^.!?。！？]+[.!?。！？]*/gu) || [normalized];
+    let chunk = "";
+    sentences.forEach(sentence => {
+      if ((chunk + sentence).length > 1100 && chunk) { speakAsAgent(chunk, agentIndex); chunk = ""; }
+      chunk += sentence;
+    });
+    if (chunk) speakAsAgent(chunk, agentIndex);
+  }
+  function readCurrentFeed() {
+    const feed = document.getElementById("feed");
+    if (!feed || !voiceEnabled) return;
+    const clone = feed.cloneNode(true);
+    clone.querySelectorAll("button").forEach(button => button.remove());
+    speakLongText(clone.textContent || "", 0);
+  }
   function speakWelcome(copy) {
     if (!voiceEnabled || !copy) return;
     speechSynthesisApi?.cancel();
@@ -1049,6 +1067,25 @@
   document.getElementById("timeline-search").addEventListener("input", () => renderResearchTimeline(currentTimelinePayload));
   document.getElementById("timeline-kind").addEventListener("change", () => renderResearchTimeline(currentTimelinePayload));
   languageSelect.addEventListener("change", () => setLanguage(languageSelect.value));
+  const voiceReadButton = document.getElementById("voice-read");
+  const voicePauseButton = document.getElementById("voice-pause");
+  const voiceResumeButton = document.getElementById("voice-resume");
+  const voiceStopButton = document.getElementById("voice-stop");
+  const voiceStatus = document.getElementById("voice-status");
+  function updateVoiceControls() {
+    const speaking = Boolean(speechSynthesisApi?.speaking);
+    const paused = Boolean(speechSynthesisApi?.paused);
+    if (voiceReadButton) voiceReadButton.disabled = !voiceEnabled;
+    if (voicePauseButton) voicePauseButton.disabled = !voiceEnabled || !speaking || paused;
+    if (voiceResumeButton) voiceResumeButton.disabled = !voiceEnabled || !paused;
+    if (voiceStopButton) voiceStopButton.disabled = !voiceEnabled || (!speaking && !paused);
+    if (voiceStatus) voiceStatus.textContent = !voiceEnabled ? currentTranslations().voiceReady || "Voice is off" : paused ? currentTranslations().voicePaused || "Voice paused" : speaking ? currentTranslations().voiceSpeaking || "Speaking" : currentTranslations().voiceReady || "Voice ready";
+  }
+  voiceReadButton?.addEventListener("click", readCurrentFeed);
+  voicePauseButton?.addEventListener("click", () => { speechSynthesisApi?.pause(); updateVoiceControls(); });
+  voiceResumeButton?.addEventListener("click", () => { speechSynthesisApi?.resume(); updateVoiceControls(); });
+  voiceStopButton?.addEventListener("click", () => { speechSynthesisApi?.cancel(); updateVoiceControls(); });
+  window.setInterval(updateVoiceControls, 500);
   voiceToggle?.addEventListener("click", () => {
     voiceEnabled = !voiceEnabled;
     voiceToggle.setAttribute("aria-pressed", voiceEnabled ? "true" : "false");
@@ -1062,10 +1099,15 @@
     } else {
       speechSynthesisApi?.cancel();
     }
+    updateVoiceControls();
   });
   if (speechSynthesisApi) {
     speechSynthesisApi.addEventListener?.("voiceschanged", refreshVoices);
     window.addEventListener("pagehide", () => speechSynthesisApi.cancel());
+    speechSynthesisApi.addEventListener?.("start", updateVoiceControls);
+    speechSynthesisApi.addEventListener?.("end", updateVoiceControls);
+    speechSynthesisApi.addEventListener?.("pause", updateVoiceControls);
+    speechSynthesisApi.addEventListener?.("resume", updateVoiceControls);
   }
   setLanguage(safeReadLanguage() || preferredLanguage());
   capitalizeInterfaceText(document.body);
