@@ -83,15 +83,25 @@ def test_coordinator_refuses_inactive_or_completed_milestones(tmp_path):
     coordinator = CampaignCoordinator(store)
     campaign = store.get_campaign("campaign-coordination")
     assert campaign["state"] == "active"
+    coordinator.enqueue_milestone(
+        "campaign-coordination", "literature", "analyst"
+    )
+    from ssswet_core.campaigns import set_campaign_state
+    saved_campaign = coordinator._campaign("campaign-coordination")
+    store.save_campaign(set_campaign_state(saved_campaign, "paused"))
+    assert coordinator.dispatch() == []
+    assert len(coordinator.resources.queue) == 1
+    store.save_campaign(set_campaign_state(
+        coordinator._campaign("campaign-coordination"), "active"
+    ))
     with pytest.raises(ValueError, match="Unknown milestone"):
         coordinator.enqueue_milestone(
             "campaign-coordination", "missing", "analyst"
         )
     with pytest.raises(ValueError, match="Only active campaigns"):
-        from ssswet_core.campaigns import set_campaign_state
-        from ssswet_core.campaigns import CampaignMilestone, ResearchCampaign
-        saved = coordinator._campaign("campaign-coordination")
-        store.save_campaign(set_campaign_state(saved, "paused"))
+        store.save_campaign(set_campaign_state(
+            coordinator._campaign("campaign-coordination"), "paused"
+        ))
         coordinator.enqueue_milestone(
             "campaign-coordination", "literature", "analyst"
         )
