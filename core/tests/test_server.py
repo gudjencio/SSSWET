@@ -866,3 +866,30 @@ def test_official_web_origins_can_read_local_api_and_preflight_private_network(t
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_local_server_can_start_without_private_dashboard_token(monkeypatch, tmp_path):
+    import sys
+    import sssswet_core.server as server_module
+
+    class StubServer:
+        def __init__(self, address, handler):
+            self.address = address
+            self.handler = handler
+            self.closed = False
+
+        def serve_forever(self):
+            return None
+
+        def server_close(self):
+            self.closed = True
+
+    monkeypatch.setattr(server_module, "ThreadingHTTPServer", StubServer)
+    monkeypatch.setattr(sys, "argv", [
+        "ssswet-local",
+        "--database", str(tmp_path / "research.sqlite3"),
+        "--orders-database", str(tmp_path / "orders.sqlite3"),
+        "--port", "0",
+    ])
+    monkeypatch.delenv("SSSWET_ADMIN_TOKEN", raising=False)
+    server_module.main()
