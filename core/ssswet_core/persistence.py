@@ -144,7 +144,7 @@ class SQLiteResearchStore:
                 );
                 CREATE INDEX IF NOT EXISTS idx_transfers_target ON knowledge_transfers(target_campaign_id, state);
                 CREATE INDEX IF NOT EXISTS idx_transfers_source ON knowledge_transfers(source_campaign_id, state);
-                CREATE TABLE IF NOT EXISTS knowledge (
+                CREATE TABLE IF NOT EXISTS dispute_cases (\n                    case_id TEXT PRIMARY KEY,\n                    case_json TEXT NOT NULL,\n                    state TEXT NOT NULL,\n                    created_at TEXT NOT NULL,\n                    reviewed_at TEXT NOT NULL DEFAULT ''\n                );\n                CREATE INDEX IF NOT EXISTS idx_dispute_cases_state ON dispute_cases(state, created_at DESC);\n                CREATE TABLE IF NOT EXISTS knowledge (
                     item_key TEXT PRIMARY KEY,
                     statement TEXT NOT NULL,
                     source TEXT NOT NULL,
@@ -1012,3 +1012,46 @@ class SQLiteResearchStore:
             "count": len(conflicts),
             "warning": "Graph contradictions are recorded claims, not adjudicated scientific disputes.",
         }
+
+
+    def save_dispute_case(self, case: dict) -> None:
+        if not isinstance(case, dict) or not case.get("case_id"):
+            raise ValueError("A dispute case with an ID is required")
+        encoded = json.dumps(case, ensure_ascii=False, sort_keys=True, allow_nan=False)
+        with self._connect() as connection:
+            connection.execute(
+                """INSERT INTO dispute_cases(case_id, case_json, state, created_at)
+                   VALUES (?, ?, ?, ?)""",
+                (case["case_id"], encoded, case.get("state", "open"),
+                 case.get("created_at", "")),
+            )
+
+    def update_dispute_case(self, case: dict) -> None:
+        if not isinstance(case, dict) or not case.get("case_id"):
+            raise ValueError("A dispute case with an ID is required")
+        encoded = json.dumps(case, ensure_ascii=False, sort_keys=True, allow_nan=False)
+        with self._connect() as connection:
+            cursor = connection.execute(
+                """UPDATE dispute_cases SET case_json = ?, state = ?, reviewed_at = ?
+                   WHERE case_id = ?""",
+                (encoded, case["state"], case.get("reviewed_at", ""), case["case_id"]),
+            )
+            if cursor.rowcount != 1:
+                raise ValueError("Unknown dispute case")
+
+    def dispute_history(self, state: str | None = None, limit: int = 200) -> list[dict]:
+        bounded_limit = max(1, min(int(limit), 1000))
+        with self._connect() as connection:
+            if state:
+                rows = connection.execute(
+                    """SELECT case_json FROM dispute_cases WHERE state = ?
+                       ORDER BY created_at DESC, case_id LIMIT ?""",
+                    (state, bounded_limit),
+                ).fetchall()
+            else:
+                rows = connection.execute(
+                    """SELECT case_json FROM dispute_cases
+                       ORDER BY created_at DESC, case_id LIMIT ?""",
+                    (bounded_limit,),
+                ).fetchall()
+        return [json.loads(row["case_json"]) for row in rows]
