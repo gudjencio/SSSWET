@@ -432,6 +432,11 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                 self.send_error(403, "Verification reviews are restricted to the local machine")
                 return
             request_path = urlsplit(self.path).path
+            if request_path == "/api/research-priority-assessments":
+                origin = self.headers.get("Origin")
+                if origin and origin not in ALLOWED_WEB_ORIGINS and urlsplit(origin).hostname not in {"localhost", "127.0.0.1", "::1"}:
+                    self._json({"error": "Origin is not allowed to submit local priority assessments"}, 403)
+                    return
             private_order_write = (
                 request_path == "/api/private/orders"
                 or request_path.endswith("/payments")
