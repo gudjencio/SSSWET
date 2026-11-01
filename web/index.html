@@ -8,6 +8,7 @@
   <link rel="manifest" href="manifest.json">
   <title>SSSWET</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="evidence-center.css">
 </head>
 <body>
   <main class="app-shell">
@@ -67,6 +68,14 @@
           </div>
           <p class="timeline-caption" data-i18n="labReproDisclaimer">A matching result or intact fingerprint does not establish scientific validity or independent reproduction.</p>
         </section>
+        <section class="evidence-center" aria-labelledby="evidence-center-title">
+          <div class="evidence-center-heading">
+            <div><h3 id="evidence-center-title">Evidence Center</h3><span>Traceable dossiers, reviews and explicit limitations</span></div>
+            <button id="evidence-center-refresh" class="evidence-center-refresh" type="button">Refresh</button>
+          </div>
+          <p id="evidence-center-status" class="evidence-center-status" aria-live="polite">…</p>
+          <div id="evidence-center-list" class="evidence-center-list" aria-live="polite"></div>
+        </section>
         <section class="timeline-panel" aria-labelledby="timeline-title">
           <div class="subsection-heading">
             <h3 id="timeline-title" data-i18n="timelineTitle">Research history</h3>
@@ -97,5 +106,6 @@
   </main>
   <script src="locales.js"></script>
   <script src="app.js"></script>
+  <script src="evidence-center.js"></script>
 </body>
 </html>
