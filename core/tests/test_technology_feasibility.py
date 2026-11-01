@@ -3,11 +3,11 @@ from ssswet_core.research_journal import ResearchJournal
 from ssswet_core.technology_feasibility import TechnologyFeasibilityObservatory
 
 
-def test_observatory_reports_seven_themes_and_never_claims_feasibility(tmp_path):
+def test_observatory_reports_all_29_themes_and_never_claims_feasibility(tmp_path):
     store = SQLiteResearchStore(tmp_path / "feasibility.sqlite3")
     report = TechnologyFeasibilityObservatory(store).build()
-    assert report["count"] == 7
-    assert {item["technology"] for item in report["technologies"]} >= {"timetravel", "spacetime"}
+    assert report["count"] == 29
+    assert {item["technology"] for item in report["technologies"]} >= {"timetravel", "spacetime", "cleanenergy", "biodiversity", "animalHealth"}
     assert all(item["technical_feasibility"] == "not_assessed" for item in report["technologies"])
     assert all(item["delivery_readiness"] == "not_assessed" for item in report["technologies"])
     assert report["technical_feasibility_established"] is False
