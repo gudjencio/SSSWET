@@ -19,6 +19,10 @@ The project explores a disciplined workflow for turning research questions into 
 - Coordinate research campaigns, resources and knowledge transfers.
 - Provide a multilingual web interface and a local research environment.
 
+## Scientific Review Board
+
+Structured dossier reviews can record support, challenge, mixed or abstaining assessments, together with a methods assessment, limitations and an explicit conflict-of-interest declaration. Each assessment remains independently visible; disagreement is reported rather than averaged into an automatic verdict. Reviewer labels and conflict declarations are self-reported, and the board does not certify identity, expertise, independence or scientific validity. See [the Scientific Review Board documentation](docs/SCIENTIFIC_REVIEW_BOARD.md).
+
 ## Verification review lifecycle
 
 Verification checks can receive append-only human review events with `pending`, `in_progress`, `completed` and `blocked` tracking. Notes and reviewer labels are retained in an immutable event history. The local review-write endpoint is restricted to loopback requests; reviewer labels are self-declared and are not an authentication mechanism. See [the lifecycle documentation](docs/LAB_VERIFICATION_PLANNING.md).
