@@ -51,13 +51,28 @@
 
   function renderDetail(body, dossier) {
     const labels = t(); const previous = body.querySelector(".evidence-detail"); if (previous) previous.remove(); const panel = document.createElement("div"); panel.className = "evidence-detail";
-    const graphSection = document.createElement("section"); graphSection.className = "evidence-section"; const graphHeading = document.createElement("h5"); graphHeading.textContent = document.documentElement.lang === "fr" ? "Graphe des preuves" : "Evidence graph"; const graphContainer = document.createElement("div"); graphContainer.className = "evidence-graph"; graphSection.append(graphHeading, graphContainer); panel.append(graphSection); if (typeof window.SSSWETRenderEvidenceGraph === "function") window.SSSWETRenderEvidenceGraph(graphContainer, dossier);\n    const trace = document.createElement("div"); trace.className = "evidence-trace"; const traceTitle = document.createElement("strong"); traceTitle.textContent = labels.trace; const traceText = document.createElement("span"); traceText.textContent = labels.traceText; trace.append(traceTitle, traceText); panel.append(trace);
+    const graphSection = document.createElement("section"); graphSection.className = "evidence-section"; const graphHeading = document.createElement("h5"); graphHeading.textContent = document.documentElement.lang === "fr" ? "Graphe des preuves" : "Evidence graph"; const graphContainer = document.createElement("div"); graphContainer.className = "evidence-graph"; graphSection.append(graphHeading, graphContainer); panel.append(graphSection); if (typeof window.SSSWETRenderEvidenceGraph === "function") window.SSSWETRenderEvidenceGraph(graphContainer, dossier);
+    const trace = document.createElement("div"); trace.className = "evidence-trace"; const traceTitle = document.createElement("strong"); traceTitle.textContent = labels.trace; const traceText = document.createElement("span"); traceText.textContent = labels.traceText; trace.append(traceTitle, traceText); panel.append(trace);
     const overview = document.createElement("section"); overview.className = "evidence-section evidence-overview"; const overviewHeading = document.createElement("h5"); overviewHeading.textContent = labels.question; overview.append(overviewHeading, field(labels.id, dossier.dossier_id), field(labels.state, dossier.verification_state), field(labels.assembledFrom, dossier.assembled_from_existing_records ? "Yes" : "No"), field(labels.validity, dossier.scientific_validity_established ? "Yes" : labels.no)); const summary = document.createElement("p"); summary.className = "evidence-result"; summary.textContent = text(dossier.result_summary); overview.append(summary); panel.append(overview);
     panel.append(collection(labels.sourcesTitle, dossier.sources, (item) => recordCard([[labels.id, item.source_id], ["Title", item.title], ["Type", item.source_type], ["Reference", item.reference]])));
     panel.append(collection(labels.protocols, dossier.protocols, (item) => recordCard([[labels.id, item.protocol_id], [labels.version, item.version], ["Fingerprint", item.fingerprint], [labels.state, item.status]])));
     panel.append(collection(labels.datasets, dossier.datasets, (item) => recordCard([[labels.id, item.dataset_id], [labels.version, item.version], ["SHA-256", item.content_sha256], ["Provenance", item.provenance]])));
     panel.append(collection(labels.runsTitle, dossier.runs, (item) => recordCard([[labels.id, item.run_id], ["Protocol", item.protocol_id], [labels.version, item.protocol_version], [labels.state, item.status], ["Started", item.started_at]])));
-    panel.append(collection(labels.comparisonsTitle, dossier.comparisons, (item) => recordCard([[labels.id, item.comparison_id], ["Reference run", item.reference_run_id], ["Candidate run", item.candidate_run_id], [labels.state, item.status]])));
+    panel.append(collection(labels.comparisonsTitle, dossier.comparisons, (item) => recordCard([
+      [labels.id, item.comparison_id],
+      ["Run A", item.left_run_id || item.reference_run_id],
+      ["Run B", item.right_run_id || item.candidate_run_id],
+      ["Comparable conditions", item.comparable],
+      ["Outputs match within tolerance", item.outputs_match_within_tolerance],
+      ["Tolerance", item.tolerance],
+      ["Independent reproduction candidate", item.independent_reproduction_candidate],
+      ["Independence independently verified", item.independence_independently_verified],
+      ["Same environment", item.same_environment],
+      ["Same code / model reference", item.same_code_or_model_reference],
+      ["Differences", Array.isArray(item.differences) ? item.differences.length : "—"],
+      ["Human review required", item.requires_human_review],
+      [labels.validity, item.scientific_validity_established]
+    ])));
     panel.append(collection(labels.objections, dossier.objections, (item) => recordCard([[labels.note, item]])));
     panel.append(collection(labels.disputes, dossier.disputes, (item) => recordCard([[labels.id, item.case_id], [labels.state, item.status], [labels.note, item.summary || item.description]])));
     const reviews = (dossier.events || []).filter((event) => event.kind === "review"); panel.append(collection(labels.review, reviews, (item) => recordCard([[labels.reviewer, item.reviewer_campaign_id], [labels.decision, item.decision], [labels.note, item.note], [labels.created, item.created_at]])));
