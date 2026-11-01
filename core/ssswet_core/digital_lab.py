@@ -56,6 +56,8 @@ class LabProtocol:
             raise ValueError("Protocol version must be a positive integer")
         if self.state not in PROTOCOL_STATES:
             raise ValueError("Unsupported protocol state")
+        if not isinstance(self.parameter_sensitivity, dict):
+            raise ValueError("Parameter sensitivity metadata must be an object")
         for values in (self.procedure, self.required_parameters, self.expected_outputs):
             if len(set(values)) != len(values) or any(not x.strip() for x in values):
                 raise ValueError("Protocol lists must contain unique, non-empty values")
