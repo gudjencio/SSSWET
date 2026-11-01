@@ -115,3 +115,13 @@ def test_invalid_limits_are_rejected(tmp_path, limit):
     store = setup(tmp_path, metadata())
     with pytest.raises(ValueError, match="limit"):
         ParameterInteractionPlanner(store).build(limit=limit)
+
+
+def test_missing_held_parameter_baseline_blocks_pairwise_grid(tmp_path):
+    data = metadata()
+    del data["gamma"]
+    store = setup(tmp_path, data)
+    pair = ParameterInteractionPlanner(store).build()["plans"][0]["pair_plans"][0]
+    assert pair["classification"] == "incomplete_factor_metadata"
+    assert pair["scenarios"] == []
+    assert "gamma" in pair["errors"]
