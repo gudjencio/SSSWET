@@ -116,3 +116,5 @@ def test_campaign_pipeline_preserves_work_after_provider_failure(tmp_path):
         f"{task_id}:001", f"{task_id}:002"
     ]
     assert any(task.id == task_id for task in pipeline.engine.orchestrator.tasks)
+    saved_campaign = store.get_campaign("failure-campaign")
+    assert saved_campaign["milestones"][0]["state"] == "blocked"
