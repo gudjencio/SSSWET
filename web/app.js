@@ -6,43 +6,57 @@
   const languageSelect = document.getElementById("language");
   const feed = document.getElementById("feed");
   const localApiBases = ["http://127.0.0.1:8765", "http://localhost:8765"];
+  const remoteApiBase = String(window.SSSWET_REMOTE_API_BASE || "").replace(/\\/+$/, "");
   const sameOriginBase = window.location.origin;
-  const isLocalOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(sameOriginBase);
+  const isLocalOrigin = /^https?:\\/\\/(localhost|127\\.0\\.0\\.1)(:\\d+)?$/i.test(sameOriginBase);
   let activeApiBase = isLocalOrigin ? sameOriginBase : null;
   let apiDiscoveryPromise = null;
-  let lastApiFailure = "The local engine has not responded yet.";
+  let lastApiFailure = "The hosted research service has not responded yet.";
+
+  async function probeApi(base, timeoutMs) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(new URL("/api/status", base).toString(), {
+        method: "GET", mode: "cors", headers: { Accept: "application/json" },
+        cache: "no-store", signal: controller.signal
+      });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const status = await response.json();
+      if (status.service !== "SSSWET") throw new Error("Unexpected service response");
+      return base;
+    } finally { window.clearTimeout(timeout); }
+  }
 
   async function discoverLocalApi(force = false) {
     if (activeApiBase && !force) return activeApiBase;
     if (apiDiscoveryPromise) return apiDiscoveryPromise;
     apiDiscoveryPromise = (async () => {
-      // Probe loopback addresses in parallel and stop waiting quickly when
-      // the local engine is unavailable. A hosted page has no remote API.
-      const candidates = [...new Set([activeApiBase, ...(isLocalOrigin ? [sameOriginBase] : []), ...localApiBases].filter(Boolean))];
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 1200);
-      try {
-        const winningBase = await Promise.any(candidates.map(async (base) => {
-          const response = await fetch(new URL('/api/status', base).toString(), {method:'GET',mode:'cors',headers:{Accept:'application/json'},cache:'no-store',signal:controller.signal});
-          if (!response.ok) throw new Error('HTTP ' + response.status);
-          const status = await response.json();
-          if (status.service !== 'SSSWET') throw new Error('Unexpected service response');
-          return base;
-        }));
-        controller.abort();
-        activeApiBase = winningBase || null;
-        if (!activeApiBase) throw new Error('No local research engine responded.');
-        window.SSSWET_API_BASE = activeApiBase;
-        lastApiFailure = '';
-        window.dispatchEvent(new CustomEvent('ssswet-engine-connection',{detail:{connected:true,base:activeApiBase}}));
-        return activeApiBase;
-      } catch (error) {
-        activeApiBase = null;
-        window.SSSWET_API_BASE = null;
-        lastApiFailure = error.name === 'AbortError' ? 'Local engine did not respond within 1.2 seconds.' : (error.message || 'No local research engine responded.');
-        window.dispatchEvent(new CustomEvent('ssswet-engine-connection',{detail:{connected:false,error:lastApiFailure}}));
-        throw new Error(lastApiFailure);
-      } finally { window.clearTimeout(timeout); }
+      const candidates = isLocalOrigin
+        ? [...new Set([sameOriginBase, ...localApiBases])]
+        : [...new Set([remoteApiBase, ...localApiBases].filter(Boolean))];
+      let lastError = null;
+      for (const base of candidates) {
+        try {
+          // Hosted services may need time to wake after an idle period.
+          const timeoutMs = base === remoteApiBase ? 70000 : 1800;
+          const winningBase = await probeApi(base, timeoutMs);
+          activeApiBase = winningBase;
+          window.SSSWET_API_BASE = winningBase;
+          lastApiFailure = "";
+          window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:true,base:winningBase,remote:winningBase===remoteApiBase}}));
+          return winningBase;
+        } catch (error) {
+          lastError = error;
+          lastApiFailure = error.name === "AbortError"
+            ? "Research service did not respond within the connection timeout."
+            : (error.message || "No research service responded.");
+        }
+      }
+      activeApiBase = null;
+      window.SSSWET_API_BASE = null;
+      window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:false,error:lastApiFailure}}));
+      throw new Error(lastError ? lastApiFailure : "No research API is configured.");
     })();
     try { return await apiDiscoveryPromise; }
     finally { apiDiscoveryPromise = null; }
