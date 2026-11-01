@@ -507,113 +507,54 @@ experiments. Those capabilities will be added behind explicit operator
 approval and resource limits.
 
 
-### Campaign resource manager
+### Campaign resource scheduling and pipeline integration
 
-`ssswet_core.resource_manager.ResourceManager` provides bounded scheduling
-for campaign work. It tracks queued and active tasks, specialist roles,
-priority, campaign-level parallelism, estimated/reserved/consumed resource
-units, duplicate-work keys and per-task attempt history.
+The campaign coordinator connects persisted research milestones to the bounded
+resource manager and the decomposed research pipeline. New work can only be
+queued for an active campaign and a milestone in the pending or in-progress
+state. Each subtask retains its specialist role, campaign ID, milestone ID,
+priority and retry history.
 
-A failed assignment releases its agent and is requeued up to the configured
-attempt limit. Exhausted failures remain visible and cannot be silently
-resubmitted under the same task ID. Actual resource usage is checked against
-the campaign quota before the assignment is closed. The manager exposes a
-serializable `snapshot()`; snapshots can be persisted with
-`SQLiteResearchStore.save_resource_snapshot` and read from the local
-read-only `/api/resources` endpoint.
-
-```python
-from ssswet_core.resource_manager import ResourceManager, WorkRequest
-from ssswet_core.persistence import SQLiteResearchStore
-
-manager = ResourceManager(max_active_assignments=8, max_attempts=3)
-manager.configure_campaign("campaign-001", max_parallel=2, max_units=50)
-manager.submit(WorkRequest(
-    task_id="task-001",
-    campaign_id="campaign-001",
-    objective="Compare published measurement methods",
-    role="literature_analyst",
-    estimated_units=2,
-    priority=2,
-    deduplication_key="campaign-001:literature-review",
-))
-assignments = manager.dispatch()
-# The caller runs only approved, bounded work and reports its outcome:
-if assignments:
-    manager.finish(assignments[0].request.task_id, success=True, actual_units=1.5)
-SQLiteResearchStore().save_resource_snapshot("snapshot-001", manager.snapshot())
-```
-
-This is a deterministic local scheduler, not a self-running cloud cluster.
-Resource units are operator-defined accounting units, not a claim about CPU,
-GPU, energy or monetary cost. Snapshot persistence is explicit; it does not
-yet restore live agent processes or automatically resume interrupted work.
-
-
-### Campaign milestone coordination
-
-`ssswet_core.coordinator.CampaignCoordinator` connects saved campaign
-milestones to the bounded resource scheduler. It checks campaign and milestone
-states before queueing work, assigns specialist roles within configured
-campaign quotas, records attempts and resource snapshots, and preserves queued
-work when a campaign is paused.
-
-A successful scheduler assignment is not equivalent to scientific completion.
-The coordinator leaves a milestone in progress after work finishes; an
-authorized operator must explicitly approve milestone completion. Exhausted
-failed attempts mark the milestone as blocked for review. Dispatch only
-allocates local agents and reserves operator-defined resource units; it does
-not invoke providers, run experiments or perform physical actions.
+The coordinator records resource snapshots after queueing, dispatch and task
+completion. Failed assignments are retried according to the resource manager's
+configured limit. When a required task exhausts its retries, the associated
+milestone is marked blocked for operator review. Successful provider passes
+leave the milestone in progress: campaign workflow completion remains a
+separate, explicit review decision.
 
 ```python
-from ssswet_core.coordinator import CampaignCoordinator
+from ssswet_core.campaign_coordinator import CampaignCoordinator
 from ssswet_core.persistence import SQLiteResearchStore
+from ssswet_core.pipeline import ResearchPipeline
+from ssswet_core.resource_manager import ResourceManager
 
 store = SQLiteResearchStore()
-coordinator = CampaignCoordinator(store)
-coordinator.configure_campaign(
-    "campaign-001",
-    max_parallel=2,
-    max_units=20,
+coordinator = CampaignCoordinator(
+    store,
+    ResourceManager(max_active_assignments=8, max_attempts=3),
 )
-coordinator.enqueue_milestone(
-    "campaign-001",
-    "literature-review",
-    "literature_analyst",
-    estimated_units=2,
-    priority=2,
+pipeline = ResearchPipeline(
+    store=store,
+    campaign_coordinator=coordinator,
 )
-assignments = coordinator.dispatch()
-# The operator or an approved worker reports the completed assignment:
-if assignments:
-    task_id = assignments[0].request.task_id
-    coordinator.finish_assignment(task_id, success=True, actual_units=1.5)
-    # Completion is a separate, explicit review decision:
-    coordinator.approve_milestone_completion(
-        "campaign-001", "literature-review"
-    )
+
+task_id, steps = pipeline.start_in_campaign(
+    objective="Compare published methods for measuring wave propagation",
+    campaign_id="campaign-001",
+    milestone_id="literature-review",
+    domain="physics",
+)
 ```
 
-The coordinator uses the campaign and resource records already stored in
-SQLite. Its snapshots are available through the existing read-only
-`/api/resources` endpoint. A paused or completed campaign cannot dispatch new
-milestone work.
+The campaign and milestone must already exist in SQLite, and the campaign
+must be active. Each decomposed work item is allocated to a role-matched local
+agent. Provider failures are recorded and retried; exhausted work remains
+visible in the resource history and the parent task is preserved as blocked.
+Provider output remains unverified and is not promoted by successful
+scheduling.
 
-
-### Cross-campaign knowledge collaboration
-
-The `ssswet_core.collaboration` module introduces explicit, auditable
-knowledge-transfer requests between two existing research campaigns. A
-request must reference an existing knowledge-graph node and both campaigns.
-The receiving campaign can accept or reject the request with a decision note.
-Only pending transfers can be decided, and the transfer history is retained.
-
-Accepting a transfer records the hand-off; it does not copy a claim into
-verified knowledge or alter the original node's verification state. The
-local read-only API exposes `/api/collaboration/transfers` and
-`/api/collaboration/campaign/{campaign_id}/conflicts`.
-
-The conflict report surfaces explicitly recorded `contradicts` graph edges
-whose endpoint metadata names the requested campaign. It is a review queue,
-not an automatic scientific verdict. A human reviewer must inspect the
-underlying evidence and provenance before resolving a disagreement.
+The coordinator does not launch physical experiments, execute unapproved
+external actions, or treat model agreement as scientific proof. Resource
+units are configurable accounting values rather than measured hardware or
+financial costs. The read-only `/api/resources` and `/api/campaigns` endpoints
+expose the corresponding saved records.
