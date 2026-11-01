@@ -76,6 +76,12 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 self._json({"campaigns": store.campaign_history(limit=100)})
             elif path == "/api/resources":
                 self._json({"snapshots": store.resource_snapshot_history(limit=50)})
+            elif path == "/api/collaboration/transfers":
+                self._json({"transfers": store.knowledge_transfer_history(limit=200)})
+            elif path.startswith("/api/collaboration/campaign/") and path.endswith("/conflicts"):
+                campaign_id = path[len("/api/collaboration/campaign/"):-len("/conflicts")].strip("/")
+                from urllib.parse import unquote
+                self._json(store.campaign_conflict_report(unquote(campaign_id)))
             elif path == "/health":
                 self._json({"status": "ok"})
             elif path.startswith("/api/"):
