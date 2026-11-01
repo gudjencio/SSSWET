@@ -136,5 +136,5 @@ def test_pipeline_reports_live_agent_activity():
     completed = [item for item in updates if item["phase"] == "agent_pass_completed"]
     assert len(working) == 2
     assert len(completed) == 2
-    assert all(item["active_agents"] for item in working)
-    assert all(item["active_agents"] == [] for item in completed)
+    assert sorted(len(item["active_agents"]) for item in working) == [1, 2]
+    assert sorted(len(item["active_agents"]) for item in completed) == [0, 1]
