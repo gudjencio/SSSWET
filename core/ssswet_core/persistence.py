@@ -955,9 +955,9 @@ class SQLiteResearchStore:
                 "SELECT campaign_json FROM research_campaigns WHERE campaign_id = ?",
                 (protocol.owner_campaign_id,),
             ).fetchone()
-            # Local research setups may not have registered campaign metadata;
-            # the protocol owner is still explicitly named and retained.
-            if owner is not None and json.loads(owner["campaign_json"]).get("state") != "active":
+            if owner is None:
+                raise ValueError("Protocol owner campaign must exist")
+            if json.loads(owner["campaign_json"]).get("state") != "active":
                 raise ValueError("Protocol owner campaign must be active")
             connection.execute(
                 """INSERT INTO lab_protocols(
@@ -1001,7 +1001,9 @@ class SQLiteResearchStore:
                 "SELECT campaign_json FROM research_campaigns WHERE campaign_id = ?",
                 (run.campaign_id,),
             ).fetchone()
-            if campaign is not None and json.loads(campaign["campaign_json"]).get("state") != "active":
+            if campaign is None:
+                raise ValueError("Reproducing campaign must exist")
+            if json.loads(campaign["campaign_json"]).get("state") != "active":
                 raise ValueError("Reproducing campaign must be active")
             connection.execute(
                 """INSERT INTO lab_runs(
