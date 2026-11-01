@@ -76,8 +76,9 @@
     const valid = Number.isFinite(amount) && amount >= minimumLocal;
     perOutput.textContent = Number.isFinite(amount) ? formatMoney(amount) : "—";
     totalOutput.textContent = valid ? formatMoney(amount) : "—";
-    checkout.disabled = !valid || !paymentLinks[currency];
-    paymentStatus.textContent = valid ? (paymentLinks[currency] ? copy().paymentReady : copy().paymentMissing) : copy().invalid;
+    const paymentConfigured = typeof paymentLinks[currency] === "string" && /^https:\/\//i.test(paymentLinks[currency]);
+    checkout.disabled = !valid || !paymentConfigured;
+    paymentStatus.textContent = valid ? (paymentConfigured ? copy().paymentReady : copy().paymentMissing) : copy().invalid;
   }
   async function chooseCurrency() {
     const region = localeRegion();
@@ -93,11 +94,15 @@
         rates[currency] = rate;
         const fractionDigits = ["JPY", "KRW"].includes(currency) ? 0 : 2;
         minimumLocal = Math.ceil((0.5 * rate) * Math.pow(10, fractionDigits)) / Math.pow(10, fractionDigits);
+        amountInput.min = String(minimumLocal);
+        amountInput.step = fractionDigits === 0 ? "1" : "0.01";
         rateReady = true;
         currencyNote.textContent = copy().currencyNote + " " + (copy() === translations.fr ? "Taux indicatif actualisé ; le montant final dépend du prestataire de paiement." : "Indicative live exchange rate; the final amount depends on the payment provider.");
       } catch (_) {
         currency = "EUR";
         minimumLocal = 0.50;
+        amountInput.min = "0.50";
+        amountInput.step = "0.01";
         currencyLabel.textContent = currency;
         currencyNote.textContent = copy().currencyNote + " " + (copy() === translations.fr ? "Conversion indisponible : affichage en euros." : "Conversion unavailable: showing euros.");
       }
