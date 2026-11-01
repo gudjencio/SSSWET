@@ -2,8 +2,9 @@
 "use strict";
 const root=document.getElementById("technology-feasibility-list");if(!root)return;
 const status=document.getElementById("technology-feasibility-status"),refresh=document.getElementById("technology-feasibility-refresh");
-const names={cellular:"Cellular improvement",longevity:"Longevity",armor:"Protective armor",jetpack:"Jetpacks",translator:"Human–alien translators",spacetime:"Spacetime physics",timetravel:"Time travel"};
-const fr=document.documentElement.lang==="fr";
+const fr=document.documentElement.lang.toLowerCase().startsWith("fr");
+const catalogue=window.SSSWET_TECHNOLOGIES||{};
+const names=Object.fromEntries(Object.entries(catalogue).map(([key,item])=>[key,fr?item.fr[0]:item.en[0]]));
 const text=fr?{empty:"Aucun dossier de recherche enregistré.",unavailable:"Observatoire indisponible : démarrez le moteur local SSSWET.",records:"entrées",refs:"références",stage:"Maturité des dossiers",feasibility:"Faisabilité technique",notAssessed:"Non évaluée",delivery:"Préparation à la livraison",missing:"Points restant à examiner",none:"Aucun point manquant dans les catégories suivies.",integrity:"Intégrité du journal",intact:"Intacte",broken:"Anomalie détectée"}:{empty:"No research records have been recorded.",unavailable:"Observatory unavailable: start the local SSSWET engine.",records:"records",refs:"references",stage:"Recorded research maturity",feasibility:"Technical feasibility",notAssessed:"Not assessed",delivery:"Delivery readiness",missing:"Areas still requiring review",none:"No missing area in the categories tracked.",integrity:"Journal integrity",intact:"Intact",broken:"Integrity issue detected"};
 function el(tag,cls,value){const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined)n.textContent=value;return n;}
 async function load(){root.replaceChildren();status.textContent="…";try{
