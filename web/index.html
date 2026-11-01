@@ -21,6 +21,32 @@
       <a href="mailto:ssswetindustries@gmail.com" aria-label="Email" title="Email" data-social="Email"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m3.5 6 8.5 7 8.5-7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </nav>
     <header class="topbar"><div class="brand"><div class="brand-mark" id="brand-mark">SSSWET</div><div class="brand-subtitle" id="brand-subtitle">Super Soldier&#39;s Space Warping Engineering &amp; Tech</div></div><label class="language-control"><span class="visually-hidden" data-i18n="language">Language</span><select id="language" aria-label="Language"></select></label></header>
+    <section class="bot-command-hero" aria-labelledby="bot-control-title">
+      <div class="bot-command-heading">
+        <div><p class="eyebrow">SSSWET · LIVE RESEARCH NETWORK</p><h2 id="bot-control-title">Centre de supervision des bots</h2><p id="bot-control-caption">Les agents qui travaillent actuellement et leurs activités de recherche</p></div>
+        <div class="bot-live-pill"><span class="bot-live-indicator"></span><span id="bot-control-status" role="status" aria-live="polite">Connexion au moteur de recherche local…</span></div>
+      </div>
+      <div class="bot-command-layout">
+        <section class="bot-command-main" aria-label="Activité des agents">
+          <div class="bot-command-visual">
+            <div class="bot-orbit bot-orbit-one"></div><div class="bot-orbit bot-orbit-two"></div>
+            <div class="bot-command-core"><span class="bot-core-ring"></span><span class="bot-core-label">SSSWET<br><small>RESEARCH NETWORK</small></span></div>
+            <div class="bot-command-robot bot-robot-one"><span class="agent-avatar agent-avatar-1"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small>RESEARCH</small></div>
+            <div class="bot-command-robot bot-robot-two"><span class="agent-avatar agent-avatar-2"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small>ANALYSIS</small></div>
+            <div class="bot-command-robot bot-robot-three"><span class="agent-avatar agent-avatar-3"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small>VERIFY</small></div>
+            <div class="bot-visual-grid"></div>
+          </div>
+          <div class="bot-command-current" id="bot-control-current" aria-live="polite"><strong>Programme en cours :</strong> en attente des données du moteur local</div>
+          <div id="bot-control-metrics" class="bot-control-metrics" aria-live="polite"></div>
+        </section>
+        <aside class="bot-command-side">
+          <div class="bot-side-heading"><span class="bot-side-icon">✳</span><div><h3>Agents en action</h3><p>Activité réellement enregistrée</p></div><button id="bot-control-refresh" class="refresh-button" type="button" aria-label="Actualiser l’activité">↻</button></div>
+          <div id="bot-control-agents" class="bot-control-agents" aria-live="polite"><p class="bot-command-empty">En attente du premier signal du moteur local…</p></div>
+          <div class="bot-command-task-section"><strong id="bot-control-task-title">Dernières tâches de recherche</strong><div id="bot-control-tasks" class="bot-control-tasks" aria-live="polite"></div></div>
+        </aside>
+      </div>
+      <p class="bot-control-note">Les robots animés représentent l’identité visuelle de l’équipe. Les états, les tâches et les compteurs proviennent du moteur local ; une activité de recherche n’est pas une validation scientifique.</p>
+    </section>
     <section class="hero" aria-labelledby="title"><div class="status-dot"></div><p class="eyebrow" id="system-status" data-i18n="status">RESEARCH INTERFACE</p><h1 id="title">SSSWET</h1><p class="mission" data-i18n="mission">Research ideas. Test them. Verify them. Never confuse a hypothesis with reality.</p></section>
     <section id="engine-connection" class="engine-connection" hidden aria-live="polite">
       <div><strong data-connection-title>Local research engine not connected</strong><p id="engine-connection-message">The public interface is available in fallback mode. Live local research data will appear automatically when the engine is running.</p><p class="engine-connection-help">To enable live data, run <code>cd SSSWET/core</code>, <code>python -m pip install -e .</code>, then <code>ssswet-local</code> on the computer hosting the engine. Allow local-network access if your browser requests it.</p><p class="engine-connection-help">If your browser blocks access from this hosted page, open the local interface directly after starting the engine: <a href="http://127.0.0.1:8765/">http://127.0.0.1:8765/</a>. This same-origin route avoids cross-origin local-network restrictions.</p><p class="engine-connection-help">On Windows, the repository also includes a <a href="https://github.com/gudjencio/SSSWET/blob/main/START_SSSWET_WINDOWS.bat">local engine launcher</a> for the initial setup and startup.</p><p id="engine-connection-diagnostic" class="engine-connection-help" role="status" aria-live="polite" hidden></p><p class="engine-connection-help">While offline, explore the <a href="https://github.com/gudjencio/SSSWET/tree/main/docs">Research documentation</a>, <a href="https://github.com/gudjencio/SSSWET/blob/main/docs/RESEARCH_INTEGRITY_ETHICS.md">Research integrity framework</a> and <a href="https://github.com/gudjencio/SSSWET/blob/main/docs/CONTRIBUTIONS.md">Technology contribution policy</a>.</p></div>
@@ -76,15 +102,7 @@
       <section id="dashboard" class="dashboard" aria-label="Global science dashboard" hidden>
         <div class="dashboard-heading"><h2 data-i18n="dashboard">Global science dashboard</h2><button class="refresh-button" type="button" data-action="dashboard" data-i18n="refresh">Refresh</button></div>
         <p class="dashboard-note" data-i18n="dashboardNote">Live overview from the local research engine. Missing connections are shown explicitly.</p>
-        <section class="bot-control-center" aria-labelledby="bot-control-title">
-          <div class="subsection-heading"><div><h3 id="bot-control-title">Bot Control Center</h3><span id="bot-control-caption">Live worker activity · recorded agent passes · verification queue</span></div><button id="bot-control-refresh" class="refresh-button" type="button">Refresh</button></div>
-          <p id="bot-control-status" class="bot-control-status" role="status" aria-live="polite">Waiting for local worker telemetry…</p>
-          <div id="bot-control-metrics" class="bot-control-metrics" aria-live="polite"></div>
-          <div id="bot-control-current" class="bot-control-current" aria-live="polite"></div>
-          <div id="bot-control-agents" class="bot-control-agents" aria-live="polite"></div>
-          <div class="bot-control-task-section"><strong id="bot-control-task-title">Recent research tasks</strong><div id="bot-control-tasks" class="bot-control-tasks" aria-live="polite"></div></div>
-          <p class="bot-control-note">Agent availability, recorded activity and scientific verification are distinct states. Completed research passes do not by themselves establish verified findings.</p>
-        </section>
+
         <div id="dashboard-grid" class="dashboard-grid" aria-live="polite"></div>
         <section class="research-map" aria-labelledby="research-map-title"><div class="subsection-heading"><h3 id="research-map-title" data-i18n="mapTitle">Knowledge network</h3><span data-i18n="mapCaption">Recorded nodes and declared relationships</span></div><div id="knowledge-map" class="knowledge-map" aria-label="Interactive knowledge graph"></div><aside id="node-inspector" class="node-inspector" aria-live="polite"><p class="visual-empty" data-i18n="inspectorEmpty">Select a node to inspect its details and recorded connections.</p></aside></section>
         <section class="lab-repro-panel" aria-labelledby="lab-repro-title"><div class="subsection-heading"><h3 id="lab-repro-title" data-i18n="labReproTitle">Reproducibility &amp; data provenance</h3><span data-i18n="labReproCaption">Recorded runs, pending comparisons and dataset integrity</span></div><div id="lab-repro-summary" class="lab-repro-summary" aria-live="polite"></div><div class="lab-repro-columns"><section aria-labelledby="lab-matrix-title"><h4 id="lab-matrix-title" data-i18n="labMatrixTitle">Cross-campaign reproduction matrix</h4><div id="lab-repro-matrix"></div></section><section aria-labelledby="lab-datasets-title"><h4 id="lab-datasets-title" data-i18n="labDatasetsTitle">Dataset provenance</h4><div id="lab-dataset-audit"></div></section></div><p class="timeline-caption" data-i18n="labReproDisclaimer">A matching result or intact fingerprint does not establish scientific validity or independent reproduction.</p></section>
