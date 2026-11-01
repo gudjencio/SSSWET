@@ -388,3 +388,48 @@ A completed simulation is not a real observation. Identical outputs do not
 establish model validity or independence. Divergent outputs are preserved for
 investigation rather than resolved by majority vote. Model assumptions,
 equations, units, calibration and domain of validity require expert review.
+
+
+### Adaptive simulation scenario optimization
+
+`ssswet_core.adaptive_optimization.AdaptiveScenarioOptimizer` ranks a finite
+set of explicitly supplied candidate scenarios using prior numeric scores.
+It combines two transparent heuristics with equal weight: a nearest-neighbour
+score estimate (exploitation) and normalized distance from previously scored
+scenarios (exploration). The operator chooses whether lower or higher scores
+are preferred.
+
+The candidate list must include the scenarios referenced by observations, so
+the optimizer can recover their parameter vectors. Already observed candidates
+are excluded from new proposals. The optimizer does not execute simulations,
+invent parameter ranges, fit a scientific model, or claim global optimality.
+It is bounded to 10,000 candidates and 10,000 observations.
+
+Example:
+
+```python
+from ssswet_core.simulation_study import SimulationScenario
+from ssswet_core.adaptive_optimization import (
+    AdaptiveScenarioOptimizer,
+    ScenarioObservation,
+)
+
+report = AdaptiveScenarioOptimizer().propose(
+    [
+        SimulationScenario("baseline", {"input": 1}),
+        SimulationScenario("candidate-a", {"input": 3}),
+        SimulationScenario("candidate-b", {"input": 8}),
+    ],
+    [ScenarioObservation("baseline", 2.5)],
+    count=2,
+    direction="maximize",
+)
+print(AdaptiveScenarioOptimizer.to_dict(report))
+```
+
+The nearest-neighbour estimate simply carries forward the score of the closest
+observed scenario. The exploration and combined selection scores are ranking
+heuristics, not probabilities, confidence intervals, causal explanations or
+proof of an optimum. Their usefulness depends on the supplied candidate range,
+parameter units/scaling and quality of the objective scores. Review proposals
+before running expensive or safety-relevant simulations.
