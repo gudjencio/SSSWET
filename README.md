@@ -143,7 +143,11 @@ The literature watch compares returned metadata with registered sources and coll
 
 ### Continuous research and success notifications
 
-Run the 32-programme research daemon locally:
+Autonomous research starts automatically when the local interface is launched with `ssswet-local`. A background worker begins a complete pass across all 32 technology programmes and repeats it every 60 minutes by default. The worker runs alongside the interface, so no separate daemon command is required for normal operation.
+
+To change the interval, set `SSSWET_RESEARCH_INTERVAL_MINUTES` before starting the local service, or pass `--research-interval-minutes`. To run the interface without background research, pass `--disable-background-research`.
+
+The standalone research daemon remains available for dedicated use:
 
 ```bash
 ssswet-research
