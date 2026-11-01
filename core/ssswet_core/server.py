@@ -194,6 +194,15 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                     self._json({"error": "The limit parameter must be an integer"}, 400)
                     return
                 self._json(DatasetRegistry(store).overview(limit=limit))
+            elif path == "/api/research-journal":
+                from .research_journal import ResearchJournal
+                params = parse_qs(parsed.query)
+                technology = params.get("technology", [""])[0] or None
+                try:
+                    limit = int(params.get("limit", ["100"])[0])
+                    self._json(ResearchJournal(store).overview(technology=technology, limit=limit))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/evidence-dossiers":
                 from .evidence_dossiers import EvidenceDossierService
                 params = parse_qs(parsed.query)
@@ -344,7 +353,7 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 self.send_error(403, "Verification reviews are restricted to the local machine")
                 return
             request_path = urlsplit(self.path).path
-            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks"}:
+            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks", "/api/research-journal"}:
                 self.send_error(405, "Unsupported write operation")
                 return
             try:
@@ -355,7 +364,16 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 payload = json.loads(self.rfile.read(length))
                 if not isinstance(payload, dict):
                     raise ValueError("A JSON object is required")
-                if request_path == "/api/lab-verification-events":
+                if request_path == "/api/research-journal":
+                    from .research_journal import ResearchJournal
+                    entry = ResearchJournal(store).append(
+                        technology=payload.get("technology", ""), event_type=payload.get("event_type", ""),
+                        title=payload.get("title", ""), summary=payload.get("summary", ""),
+                        state=payload.get("state", "planned"), classification=payload.get("classification", "project_update"),
+                        evidence_refs=payload.get("evidence_refs", []), author_label=payload.get("author_label", "Project team"),
+                    )
+                    self._json({"entry": entry, "append_only": True, "scientific_validity_established": False}, 201)
+                elif request_path == "/api/lab-verification-events":
                     from .lab_verification import LabVerificationPlanner
                     event = LabVerificationPlanner(store).record_check_review(
                         str(payload.get("plan_id", "")), str(payload.get("check_code", "")),
