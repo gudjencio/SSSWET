@@ -27,7 +27,7 @@ The project explores a disciplined workflow for turning research questions into 
 | Literature discovery | Crossref, OpenAlex and arXiv metadata discovery |
 | Local documents | JSON corpus and page-based PDF text extraction |
 | Model integration | Configurable OpenAI-compatible chat-completions provider |
-| Research memory | SQLite persistence for tasks, events, sources and shared knowledge |
+| Research memory | Persistent collective notes with campaign links, source provenance, review states and lexical retrieval |
 | Evidence provenance | DOI, dataset and provenance-group records |
 | Knowledge graph | Typed nodes and explicit relationships |
 | Research review | Gap analysis and contradiction reporting |
