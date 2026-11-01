@@ -1,3 +1,4 @@
+import pytest
 from ssswet_core.engine import SSSWETEngine
 from ssswet_core.server import public_status, public_events
 
@@ -548,7 +549,7 @@ def test_scientific_review_board_api_preserves_independent_reviews(tmp_path):
                 "evidence_refs": ["source-1"],
             }).encode()
             request = Request(base + "/api/scientific-review-board/reviews", data=body,
-                              headers={"Content-Type": "application/json"}, method="POST")
+                              headers={"Content-Type": "application/json", **auth}, method="POST")
             with urlopen(request) as response:
                 assert response.status == 201
         with urlopen(base + "/api/scientific-review-board?dossier_id=dossier-api") as response:
@@ -755,12 +756,16 @@ def test_private_order_api_is_loopback_only_and_tracks_verified_payments(tmp_pat
     orders = PrivateOrderRegistry(tmp_path / "orders-api.sqlite3")
     server = ThreadingHTTPServer(
         ("127.0.0.1", 0),
-        make_handler(SSSWETEngine(store=store), store, orders),
+        make_handler(SSSWETEngine(store=store), store, orders, "test-admin-token-that-is-at-least-32-characters"),
     )
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     base = f"http://127.0.0.1:{server.server_port}"
     try:
+        with pytest.raises(HTTPError) as unauthorized:
+            urlopen(base + "/api/private/orders")
+        assert unauthorized.value.code == 401
+        auth = {"X-SSSWET-Admin-Token": "test-admin-token-that-is-at-least-32-characters"}
         request = Request(
             base + "/api/private/orders",
             data=json.dumps({
@@ -789,7 +794,7 @@ def test_private_order_api_is_loopback_only_and_tracks_verified_payments(tmp_pat
         assert result["state"] == "paid"
         assert result["balance_minor"] == 0
 
-        with urlopen(base + f"/api/private/orders/{order_id}") as response:
+        with urlopen(Request(base + f"/api/private/orders/{order_id}", headers=auth)) as response:
             detail = json.loads(response.read())
         assert detail["delivery_address_stored"] is False
         assert detail["payments"][0]["provider_reference"] == "verified-ref-1"
