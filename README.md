@@ -212,3 +212,6 @@ Agreement is not scientific validation. The comparison does not select a winning
 
 
 See [Interdisciplinary relation discovery](docs/INTERDISCIPLINARY_RELATIONS.md) for the local API and review boundaries.
+
+
+The digital laboratory also exposes a read-only cross-campaign reproduction matrix at `/api/digital-lab/reproduction-matrix`. It groups runs by exact protocol version and identifies cross-campaign pairs awaiting comparison. Run comparisons report environment and code/model-reference differences explicitly; the matrix does not execute experiments or certify reproduction.
