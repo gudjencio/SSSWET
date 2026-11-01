@@ -66,6 +66,10 @@
       const value = t[element.dataset.i18nAria];
       if (typeof value === "string") element.setAttribute("aria-label", value);
     });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+      const value = t[element.dataset.i18nPlaceholder];
+      if (typeof value === "string") element.setAttribute("placeholder", value);
+    });
     safeSaveLanguage(selected);
     refreshStatus();
     if (lastView === "ready") showMessage(t.ready);
