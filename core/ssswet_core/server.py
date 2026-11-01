@@ -36,7 +36,7 @@ def public_events(engine: SSSWETEngine, store: SQLiteResearchStore | None = None
     ]
 
 
-def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registry=None):
+def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registry=None, admin_token: str | None = None):
     class SSSWETHandler(SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(WEB_ROOT), **kwargs)
@@ -51,13 +51,26 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             self.end_headers()
             self.wfile.write(body)
 
+        def _private_admin_allowed(self) -> bool:
+            from urllib.parse import urlsplit
+            if self.client_address[0] not in {"127.0.0.1", "::1"}:
+                return False
+            host = (self.headers.get("Host") or "").split(":")[0].strip("[]").lower()
+            if host not in {"localhost", "127.0.0.1", "::1"}:
+                return False
+            origin = self.headers.get("Origin")
+            if origin and urlsplit(origin).hostname not in {"localhost", "127.0.0.1", "::1"}:
+                return False
+            supplied = self.headers.get("X-SSSWET-Admin-Token", "")
+            return bool(admin_token) and hmac.compare_digest(supplied, admin_token)
+
         def do_GET(self) -> None:
             from urllib.parse import parse_qs, urlsplit
             parsed = urlsplit(self.path)
             path = parsed.path
             if path.startswith("/api/private/orders"):
-                if self.client_address[0] not in {"127.0.0.1", "::1"}:
-                    self._json({"error": "Private order register is restricted to the local machine"}, 403)
+                if not self._private_admin_allowed():
+                    self._json({"error": "Local administrator authentication required"}, 401)
                     return
                 if order_registry is None:
                     self._json({"error": "Private order register is not configured"}, 503)
@@ -385,6 +398,9 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                 or request_path.endswith("/payments")
                 or request_path.endswith("/fulfilment")
             ) and request_path.startswith("/api/private/orders")
+            if private_order_write and not self._private_admin_allowed():
+                self._json({"error": "Local administrator authentication required"}, 401)
+                return
             if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks", "/api/research-journal"} and not private_order_write:
                 self.send_error(405, "Unsupported write operation")
                 return
@@ -489,15 +505,19 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
     parser.add_argument("--orders-database", default=".ssswet/orders.sqlite3", help="Private order register path")
+    parser.add_argument("--admin-token", default=os.environ.get("SSSWET_ADMIN_TOKEN"), help="Private order dashboard token (or SSSWET_ADMIN_TOKEN environment variable)")
     args = parser.parse_args()
 
     store = SQLiteResearchStore(args.database)
     engine = SSSWETEngine(store=store)
     from .order_registry import PrivateOrderRegistry
     order_registry = PrivateOrderRegistry(args.orders_database)
-    server = ThreadingHTTPServer((args.host, args.port), make_handler(engine, store, order_registry))
+    if not args.admin_token or len(args.admin_token) < 32:
+        parser.error("Set SSSWET_ADMIN_TOKEN to a random secret of at least 32 characters.")
+    server = ThreadingHTTPServer((args.host, args.port), make_handler(engine, store, order_registry, args.admin_token))
     print(f"SSSWET local interface: http://{args.host}:{args.port}")
     print(f"Persistent research history: {store.path}")
+    print("Private order administration: token-protected and loopback-only.")
     print("Read-only mode: arbitrary public task submission is disabled.")
     try:
         server.serve_forever()
