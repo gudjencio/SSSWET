@@ -19,6 +19,10 @@ The project explores a disciplined workflow for turning research questions into 
 - Coordinate research campaigns, resources and knowledge transfers.
 - Provide a multilingual web interface and a local research environment.
 
+## Reproducibility intelligence
+
+The read-only reproducibility intelligence service summarizes recorded comparisons by protocol and exposes a transparent five-part evidence-completeness index. Matching outputs do not count as independent verification unless that verification is explicitly recorded. Missing comparisons produce no score, and parameter sensitivity remains unassessed until normalized sweep metadata exists. The index is not a measure of scientific truth or validity. See [the reproducibility intelligence documentation](docs/REPRODUCIBILITY_INTELLIGENCE.md).
+
 ## Research Integrity & Ethics Framework
 
 The append-only risk register records concerns involving data integrity, bias, conflicts of interest, reproducibility, safety, ethics, legal/regulatory constraints and security. Unresolved high or critical risks generate a human-review campaign-hold recommendation. The software does not automatically suspend campaigns, authorize research or certify that a risk has been eliminated. See [the framework documentation](docs/RESEARCH_INTEGRITY_ETHICS.md).
