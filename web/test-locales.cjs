@@ -50,6 +50,18 @@ if (locales.ar.dir !== "rtl" || locales.he.dir !== "rtl") {
 }
 console.log(`Validated ${Object.keys(locales).length} selectable locales, ${context.window.SSSWET_LANGUAGE_CATALOG.length} language options, and ${fullyTranslated.size} complete translations.`);
 
+for (const [code, locale] of Object.entries(locales)) {
+  if (!locale.voiceEnable || !locale.voiceDisable || !locale.voiceListen) {
+    throw new Error(`Locale ${code} is missing voice-control labels`);
+  }
+}
+const appSource = fs.readFileSync(new URL("./app.js", `file://${__filename}`), "utf8");
+const pageSource = fs.readFileSync(new URL("./index.html", `file://${__filename}`), "utf8");
+for (const feature of ["SpeechSynthesisUtterance", "speechSynthesis", "chooseVoice", "speakAsAgent", "capitalizeInterfaceText", "MutationObserver"]) {
+  if (!appSource.includes(feature)) throw new Error(`Voice or capitalization feature missing: ${feature}`);
+}
+if (!pageSource.includes('id="voice-toggle"')) throw new Error("The voice activation control is missing");
+
 const agentCopy = context.window.SSSWET_AGENT_COPY;
 if (!agentCopy || !fullyTranslated.size) {
   throw new Error("The first-load agent introduction catalogue is missing");
