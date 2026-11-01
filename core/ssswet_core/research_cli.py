@@ -15,6 +15,7 @@ from .providers import (
     LocalCorpusProvider,
     OpenAICompatibleProvider,
     OpenAlexProvider,
+    MultiSourceLiteratureProvider,
 )
 
 
@@ -41,7 +42,7 @@ def main() -> None:
     parser.add_argument("--domain", default="general")
     parser.add_argument("--corpus", help="Optional JSON file containing local source documents")
     parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
-    parser.add_argument("--provider", choices=("demo", "crossref", "openalex", "llm"), default="demo")
+    parser.add_argument("--provider", choices=("demo", "crossref", "openalex", "literature", "llm"), default="demo")
     parser.add_argument("--mailto", default="", help="Optional contact email for Crossref requests")
     parser.add_argument("--model", default=os.getenv("SSSWET_LLM_MODEL", ""))
     parser.add_argument(
@@ -56,6 +57,8 @@ def main() -> None:
         provider = CrossrefProvider(mailto=args.mailto)
     elif args.provider == "openalex":
         provider = OpenAlexProvider(mailto=args.mailto)
+    elif args.provider == "literature":
+        provider = MultiSourceLiteratureProvider(mailto=args.mailto)
     elif args.provider == "llm":
         provider = OpenAICompatibleProvider(
             api_key=os.getenv("SSSWET_LLM_API_KEY", ""),
