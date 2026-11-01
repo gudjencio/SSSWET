@@ -667,6 +667,35 @@
     return summary;
   }
 
+function localizedDiscoveryRole(role, language) {
+    const code = translationSource(language);
+    const labels = {
+      en: { independent_verifier: "independent verifier", general_researcher: "general researcher", medical_researcher: "medical researcher", materials_scientist: "materials scientist", research: "research agent", data_analyst: "data analyst", evidence_researcher: "evidence researcher", methodologist: "methodologist", safety_reviewer: "safety reviewer", ethics_reviewer: "ethics reviewer", literature_researcher: "literature researcher" },
+      fr: { independent_verifier: "vérificateur indépendant", general_researcher: "chercheur généraliste", medical_researcher: "chercheur médical", materials_scientist: "spécialiste des matériaux", research: "agent de recherche", data_analyst: "analyste de données", evidence_researcher: "chercheur en preuves", methodologist: "méthodologiste", safety_reviewer: "réviseur sécurité", ethics_reviewer: "réviseur éthique", literature_researcher: "chercheur bibliographique" },
+      es: { independent_verifier: "verificador independiente", general_researcher: "investigador general", medical_researcher: "investigador médico", materials_scientist: "científico de materiales", research: "agente de investigación", data_analyst: "analista de datos", evidence_researcher: "investigador de evidencias", methodologist: "metodólogo", safety_reviewer: "revisor de seguridad", ethics_reviewer: "revisor de ética", literature_researcher: "investigador bibliográfico" },
+      de: { independent_verifier: "unabhängiger Prüfer", general_researcher: "allgemeiner Forscher", medical_researcher: "medizinischer Forscher", materials_scientist: "Materialwissenschaftler", research: "Forschungsagent", data_analyst: "Datenanalyst", evidence_researcher: "Evidenzforscher", methodologist: "Methodologe", safety_reviewer: "Sicherheitsprüfer", ethics_reviewer: "Ethikprüfer", literature_researcher: "Literaturforscher" },
+      it: { independent_verifier: "verificatore indipendente", general_researcher: "ricercatore generale", medical_researcher: "ricercatore medico", materials_scientist: "scienziato dei materiali", research: "agente di ricerca", data_analyst: "analista dei dati", evidence_researcher: "ricercatore delle evidenze", methodologist: "metodologo", safety_reviewer: "revisore della sicurezza", ethics_reviewer: "revisore etico", literature_researcher: "ricercatore bibliografico" },
+      pt: { independent_verifier: "verificador independente", general_researcher: "pesquisador geral", medical_researcher: "pesquisador médico", materials_scientist: "cientista de materiais", research: "agente de pesquisa", data_analyst: "analista de dados", evidence_researcher: "pesquisador de evidências", methodologist: "metodologista", safety_reviewer: "revisor de segurança", ethics_reviewer: "revisor de ética", literature_researcher: "pesquisador bibliográfico" },
+      nl: { independent_verifier: "onafhankelijke verificateur", general_researcher: "algemeen onderzoeker", medical_researcher: "medisch onderzoeker", materials_scientist: "materiaalwetenschapper", research: "onderzoeksagent", data_analyst: "data-analist", evidence_researcher: "bewijsdeskundige", methodologist: "methodoloog", safety_reviewer: "veiligheidsbeoordelaar", ethics_reviewer: "ethiekbeoordelaar", literature_researcher: "literatuuronderzoeker" },
+      ru: { independent_verifier: "независимый проверяющий", general_researcher: "общий исследователь", medical_researcher: "медицинский исследователь", materials_scientist: "специалист по материалам", research: "исследовательский агент", data_analyst: "аналитик данных", evidence_researcher: "исследователь доказательств", methodologist: "методолог", safety_reviewer: "эксперт по безопасности", ethics_reviewer: "эксперт по этике", literature_researcher: "библиографический исследователь" },
+      uk: { independent_verifier: "незалежний перевіряльник", general_researcher: "загальний дослідник", medical_researcher: "медичний дослідник", materials_scientist: "фахівець із матеріалів", research: "дослідницький агент", data_analyst: "аналітик даних", evidence_researcher: "дослідник доказів", methodologist: "методолог", safety_reviewer: "експерт із безпеки", ethics_reviewer: "експерт з етики", literature_researcher: "бібліографічний дослідник" },
+      ar: { independent_verifier: "مُحقّق مستقل", general_researcher: "باحث عام", medical_researcher: "باحث طبي", materials_scientist: "عالم مواد", research: "وكيل بحث", data_analyst: "محلل بيانات", evidence_researcher: "باحث أدلة", methodologist: "خبير منهجيات", safety_reviewer: "مراجع السلامة", ethics_reviewer: "مراجع الأخلاقيات", literature_researcher: "باحث مراجع علمية" },
+      he: { independent_verifier: "מאמת עצמאי", general_researcher: "חוקר כללי", medical_researcher: "חוקר רפואי", materials_scientist: "מדען חומרים", research: "סוכן מחקר", data_analyst: "מנתח נתונים", evidence_researcher: "חוקר ראיות", methodologist: "מתודולוג", safety_reviewer: "בודק בטיחות", ethics_reviewer: "בודק אתיקה", literature_researcher: "חוקר ספרות מדעית" },
+      ja: { independent_verifier: "独立検証担当", general_researcher: "総合研究担当", medical_researcher: "医学研究担当", materials_scientist: "材料科学者", research: "研究エージェント", data_analyst: "データ分析担当", evidence_researcher: "証拠研究担当", methodologist: "方法論専門家", safety_reviewer: "安全性審査担当", ethics_reviewer: "倫理審査担当", literature_researcher: "文献調査担当" },
+      ko: { independent_verifier: "독립 검증 담당자", general_researcher: "일반 연구원", medical_researcher: "의학 연구원", materials_scientist: "재료 과학자", research: "연구 에이전트", data_analyst: "데이터 분석가", evidence_researcher: "증거 연구원", methodologist: "방법론 전문가", safety_reviewer: "안전성 검토자", ethics_reviewer: "윤리 검토자", literature_researcher: "문헌 연구원" },
+      zh: { independent_verifier: "独立核验员", general_researcher: "综合研究员", medical_researcher: "医学研究员", materials_scientist: "材料科学家", research: "研究代理", data_analyst: "数据分析师", evidence_researcher: "证据研究员", methodologist: "方法学专家", safety_reviewer: "安全审查员", ethics_reviewer: "伦理审查员", literature_researcher: "文献研究员" },
+      hi: { independent_verifier: "स्वतंत्र सत्यापक", general_researcher: "सामान्य शोधकर्ता", medical_researcher: "चिकित्सा शोधकर्ता", materials_scientist: "सामग्री वैज्ञानिक", research: "शोध एजेंट", data_analyst: "डेटा विश्लेषक", evidence_researcher: "साक्ष्य शोधकर्ता", methodologist: "कार्यप्रणाली विशेषज्ञ", safety_reviewer: "सुरक्षा समीक्षक", ethics_reviewer: "नैतिकता समीक्षक", literature_researcher: "साहित्य शोधकर्ता" }
+    };
+    const key = String(role || "research").trim().toLowerCase().replace(/[\s-]+/g, "_");
+    return (labels[code] || labels.en)[key] || key.replace(/_/g, " ");
+  }
+
+  function discoveryAgentCountLabel(language) {
+    const code = translationSource(language);
+    const labels = { fr: "agents", es: "agentes", de: "Agenten", it: "agenti", pt: "agentes", nl: "agenten", ru: "агентов", uk: "агентів", ar: "وكلاء", he: "סוכנים", ja: "エージェント", ko: "에이전트", zh: "个代理", hi: "एजेंट" };
+    return labels[code] || "agents";
+  }
+
 function classifyDiscovery(group) {
     const text = (group.summary + " " + Array.from(group.roles.keys()).join(" ")).toLowerCase();
     if (/\b(error|exception|traceback|failed|failure|unavailable|timeout|connection refused|http 5\d\d)\b/.test(text)) return "technical";
@@ -757,13 +786,17 @@ function classifyDiscovery(group) {
           category.textContent = categoryLabels[group.category];
           const status = document.createElement("span");
           status.className = "discovery-status";
-          status.textContent = isFrench ? "Non vérifié" : "Unverified";
+          const labels = currentTranslations();
+          status.textContent = labels.unverifiedState || (isFrench ? "Non vérifié" : "Unverified");
           top.append(category, status);
           const metadata = document.createElement("p");
           metadata.className = "discovery-meta";
           metadata.textContent = Array.from(group.roles.entries())
-            .map(([role, count]) => count > 1 ? role + " ×" + count : role)
-            .join(", ") + (group.count > 1 ? (isFrench ? " · " + group.count + " agents" : " · " + group.count + " agents") : "");
+            .map(([role, count]) => {
+              const localized = localizedDiscoveryRole(role, currentLanguage());
+              return count > 1 ? localized + " ×" + count : localized;
+            })
+            .join(", ") + (group.count > 1 ? " · " + group.count + " " + discoveryAgentCountLabel(currentLanguage()) : "");
           const summaryText = document.createElement("p");
           summaryText.className = "discovery-summary";
           summaryText.textContent = group.summary;
