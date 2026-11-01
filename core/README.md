@@ -903,3 +903,21 @@ differences and whether the code/model references match. Environment changes
 are surfaced for expert interpretation rather than silently ignored or
 automatically treated as disqualifying. Candidate reproduction remains a
 review status, not proof of independence or scientific validity.
+
+
+### Protocol improvement proposals
+
+Use `ProtocolProposalService` to submit a proposed change against a published
+protocol version. Proposals are submitted by a different active campaign and
+reviewed by the active campaign that owns the protocol. A review note is
+required for either decision.
+
+Accepting a proposal publishes the proposed changes as the next immutable
+protocol version; the original version and its existing run records remain
+unchanged. Rejecting a proposal records the decision and rationale without
+changing the protocol. Proposals against an outdated base version cannot be
+accepted and must be resubmitted against the latest version.
+
+The read-only review queue is available at
+`GET /api/digital-lab/proposals`. Proposal acceptance is a workflow decision,
+not scientific validation or proof that the changes are correct.
