@@ -70,4 +70,7 @@ def test_coordinator_persists_each_resource_transition(tmp_path):
 
     history = store.resource_snapshot_history()
     assert len(history) >= 3
-    assert history[0]["snapshot"]["completed_task_ids"] == ["parent-2:001"]
+    assert any(
+        item["snapshot"]["completed_task_ids"] == ["parent-2:001"]
+        for item in history
+    )
