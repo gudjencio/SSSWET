@@ -283,6 +283,49 @@ class OpenAlexProvider:
         )
 
 
+class MultiSourceLiteratureProvider:
+    """Search Crossref and OpenAlex, retaining provenance and deduplicating DOI records."""
+
+    name = "crossref-openalex-literature"
+
+    def __init__(self, max_results: int = 5, timeout: float = 12.0, mailto: str = ""):
+        self.providers = (
+            CrossrefProvider(max_results=max_results, timeout=timeout, mailto=mailto),
+            OpenAlexProvider(max_results=max_results, timeout=timeout, mailto=mailto),
+        )
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        results = [provider.investigate(objective, strategy) for provider in self.providers]
+        evidence: list[str] = []
+        source_ids: list[str] = []
+        seen: set[str] = set()
+        for provider, result in zip(self.providers, results):
+            for source_id, item in zip(result.source_ids, result.evidence):
+                normalized = source_id.casefold().replace("https://doi.org/", "").strip()
+                key = normalized or item.casefold()
+                if key in seen:
+                    continue
+                seen.add(key)
+                evidence.append(f"[{provider.name}] {item}")
+                source_ids.append(source_id)
+        if not evidence:
+            return ProviderResult(
+                "Crossref and OpenAlex returned no usable records. Check network access or broaden the query.",
+                uncertainty=1.0,
+            )
+        return ProviderResult(
+            summary=(
+                f"Combined discovery returned {len(evidence)} unique bibliographic lead(s) "
+                "from Crossref and OpenAlex. Duplicate DOI records are collapsed. "
+                "Metadata is not proof of quality or truth; review full texts, methods and "
+                "independent evidence before drawing conclusions."
+            ),
+            evidence=tuple(evidence),
+            uncertainty=1.0,
+            source_ids=tuple(source_ids),
+        )
+
+
 class OpenAICompatibleProvider:
     """Call a configurable OpenAI-compatible chat-completions endpoint.
 
