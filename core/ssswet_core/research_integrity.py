@@ -137,7 +137,7 @@ class ResearchIntegrityRegister:
                 ).fetchall()
         events = []
         latest: dict[str, dict] = {}
-        for row in rows:
+        for row in reversed(rows):
             item = dict(row)
             item["evidence_refs"] = json.loads(item.pop("evidence_refs_json"))
             item["hold_recommended"] = item["severity"] in {"high", "critical"} and item["state"] in UNRESOLVED_STATES
