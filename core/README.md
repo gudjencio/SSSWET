@@ -791,3 +791,19 @@ The workflow states `candidate`, `reviewed`, `contested` and `archived`
 are not scientific verification states. Search scores are lexical heuristics,
 not confidence or truth. No model agreement, review status or graph link
 automatically promotes a claim to verified knowledge.
+
+
+### Research timeline
+
+`ResearchTimeline(store).build(campaign_id="", limit=200)` builds a read-only
+chronology from dated persisted records: knowledge-graph nodes and edges,
+scientific-memory versions, experiment-plan updates and records, literature
+watch reports, dispute reviews, and campaign updates. It can be filtered by
+campaign identifier.
+
+Undated records are omitted rather than assigned invented timestamps.
+Timeline entries retain their event kind and references. A contradiction edge
+is represented as a recorded relationship, not a scientific conclusion.
+The HTTP endpoint is `GET /api/research-timeline`; optional query parameters
+are `campaign_id` and `limit`. The timeline does not mutate research state,
+create tasks, execute experiments, or establish scientific validity.
