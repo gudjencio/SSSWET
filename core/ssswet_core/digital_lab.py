@@ -196,7 +196,7 @@ class DigitalLabService:
         same_kind = left["kind"] == right["kind"]
         same_parameters = _canonical(left["parameters"]) == _canonical(right["parameters"])
         same_environment = _canonical(left["environment"]) == _canonical(right["environment"])
-        environment_differences = _compare_values(left["environment"], right["environment"])
+        environment_differences = _compare_values(left["environment"], right["environment"], 0.0)
         same_model_reference = left["code_or_model_reference"] == right["code_or_model_reference"]
         differences = _compare_values(left["outputs"], right["outputs"], tolerance)
         comparable = same_protocol and same_kind and same_parameters
