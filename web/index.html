@@ -14,12 +14,13 @@
 </head>
 <body>
   <main class="app-shell">
-    <nav class="social-corner" aria-label="SSSWET social networks" data-i18n-aria="social">
-      <a href="https://x.com/ssswetech" target="_blank" rel="noopener noreferrer" aria-label="SSSWET on X">X</a>
-      <a href="https://www.instagram.com/ssswetech" target="_blank" rel="noopener noreferrer" aria-label="SSSWET on Instagram">IG</a>
-      <a href="https://www.youtube.com/@ssswetech" target="_blank" rel="noopener noreferrer" aria-label="SSSWET on YouTube">YT</a>
+    <nav class="social-corner" aria-label="Project social links" data-i18n-aria="social">
+      <a href="https://x.com/ssswetech" target="_blank" rel="noopener noreferrer" aria-label="X" title="X" data-social="X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3L12 14.6 5.6 22H2.4l7.3-8.4L1.9 2h6.5l4.5 6.8L18.9 2Zm-1.1 18h1.7L7.4 3.9H5.6L17.8 20Z" fill="currentColor"/></svg></a>
+      <a href="https://www.instagram.com/ssswetech" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram" data-social="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.6" cy="6.7" r="1.1" fill="currentColor"/></svg></a>
+      <a href="https://www.youtube.com/@ssswetech" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube" data-social="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23 7.1a3 3 0 0 0-2.1-2.2C19 4.4 12 4.4 12 4.4s-7 0-8.9.5A3 3 0 0 0 1 7.1 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.9 3 3 0 0 0 2.1 2.2c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.2 31 31 0 0 0 .5-4.9 31 31 0 0 0-.5-4.9ZM9.7 15.6V8.4l6.2 3.6-6.2 3.6Z" fill="currentColor"/></svg></a>
+      <a href="mailto:ssswetindustries@gmail.com" aria-label="Email" title="Email" data-social="Email"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m3.5 6 8.5 7 8.5-7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </nav>
-    <header class="topbar"><div class="brand"><div class="brand-mark">SSSWET</div><div class="brand-subtitle" data-i18n="tagline">Super Soldier Space Warping Engeriening Tech</div></div><label class="language-control"><span class="visually-hidden" data-i18n="language">Language</span><select id="language" aria-label="Language"></select></label></header>
+    <header class="topbar"><div class="brand"><div class="brand-mark" id="brand-mark">SSSWET</div><div class="brand-subtitle" id="brand-subtitle">Super Soldier&#39;s Space Warping Engineering &amp; Tech</div></div><label class="language-control"><span class="visually-hidden" data-i18n="language">Language</span><select id="language" aria-label="Language"></select></label></header>
     <section class="hero" aria-labelledby="title"><div class="status-dot"></div><p class="eyebrow" id="system-status" data-i18n="status">RESEARCH INTERFACE</p><h1 id="title">SSSWET</h1><p class="mission" data-i18n="mission">Research ideas. Test them. Verify them. Never confuse a hypothesis with reality.</p></section>
     <section class="technology-showcase" aria-labelledby="technology-title">
       <div class="technology-heading">
@@ -55,13 +56,15 @@
     <section class="panel" aria-label="Research interface">
       <div class="bot-status"><span data-i18n="agents">Research agents</span><strong id="agent-count">00</strong><span class="separator">·</span><span data-i18n="verification">verification-first</span></div>
       <div class="voice-controls">
-<button id="voice-toggle" class="voice-toggle" type="button" aria-pressed="false" data-i18n="voiceEnable">Enable voice</button>
+<button id="voice-toggle" class="voice-toggle" type="button" aria-pressed="false" data-i18n="voiceDisable">Voice on</button>
+<details class="voice-more"><summary data-i18n="voiceOptions">Voice options</summary>
+<div class="voice-utilities">
 <button id="voice-read" class="voice-utility" type="button" data-i18n="voiceRead" disabled>Read current update</button>
 <button id="voice-pause" class="voice-utility" type="button" data-i18n="voicePause" disabled>Pause</button>
 <button id="voice-resume" class="voice-utility" type="button" data-i18n="voiceResume" disabled>Resume</button>
 <button id="voice-stop" class="voice-utility" type="button" data-i18n="voiceStop" disabled>Stop</button>
-<span class="voice-note" data-i18n="voiceHint">Choose natural voices for spoken research updates.</span>
-<span id="voice-status" class="voice-status" role="status" aria-live="polite" data-i18n="voiceReady">Voice is off</span>
+</div></details>
+<span id="voice-status" class="voice-status" role="status" aria-live="polite">Attempting automatic voice startup…</span>
 </div>
       <div class="actions"><button data-action="dashboard" data-i18n="dashboard">Global science dashboard</button><button data-action="discover" data-i18n="discover">What did you discover?</button><button data-action="working" data-i18n="working">What are you working on?</button><button data-action="verified" data-i18n="verified">Latest verified results</button></div>
       <section id="dashboard" class="dashboard" aria-label="Global science dashboard" hidden>
@@ -80,7 +83,7 @@
       </section>
       <div id="feed" class="feed" aria-live="polite"><p class="feed-line"><span>●</span> <span data-i18n="ready">The research system is ready.</span></p></div>
     </section>
-    <footer class="footer"><div class="contact"><span data-i18n="contact">Contact</span> · ssswetindustries@gmail.com</div><div class="footer-note" data-i18n="footer">ETDESS is the French translation of SSSWET. Public results remain subject to verification.</div></footer>
+    <footer class="footer"><div class="contact"><span data-i18n="contact">Contact</span> · <a href="mailto:ssswetindustries@gmail.com">ssswetindustries@gmail.com</a></div><div class="footer-note" data-i18n="footer">ETDESS is the French translation of SSSWET. Public results remain subject to verification.</div></footer>
   </main>
   <script src="locales.js"></script><script src="app.js"></script><script src="donation-config.js"></script><script src="donation.js"></script><script src="evidence-center.js"></script><script src="lab-statistics.js"></script><script src="parameter-sensitivity.js"></script><script src="evidence-graph.js"></script><script src="lab-discrepancies.js"></script>
 </body>
