@@ -24,7 +24,7 @@
     if(caption) caption.textContent=t.caption;
     if(note) note.textContent=t.note;
     const networkLabel=$("bot-control-network-label"), coreNetworkLabel=$("bot-core-network-label");
-    if(networkLabel) networkLabel.textContent="SSSWET · "+t.network;
+    if(networkLabel) networkLabel.textContent=(lang()==="fr"?"ETDESS":"SSSWET")+" · "+t.network;
     if(coreNetworkLabel) coreNetworkLabel.textContent=t.network;
     if(sideTitle) sideTitle.textContent=t.agent;
     if(sideCaption) sideCaption.textContent=t.activityRecorded || t.recent;
