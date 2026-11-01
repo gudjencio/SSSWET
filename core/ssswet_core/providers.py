@@ -194,6 +194,95 @@ class CrossrefProvider:
         )
 
 
+class OpenAlexProvider:
+    """Discover scholarly work metadata through the public OpenAlex API.
+
+    Results are bibliographic leads, not proof that a claim is correct.
+    """
+
+    name = "openalex-literature-search"
+    endpoint = "https://api.openalex.org/works"
+
+    def __init__(self, max_results: int = 5, timeout: float = 12.0, mailto: str = ""):
+        self.max_results = max(1, min(int(max_results), 20))
+        self.timeout = max(2.0, min(float(timeout), 30.0))
+        self.mailto = mailto.strip()
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        from urllib.error import HTTPError, URLError
+        from urllib.parse import urlencode
+        from urllib.request import Request, urlopen
+        import json
+
+        query = objective.strip()
+        if not query:
+            return ProviderResult("The literature search objective is empty.", uncertainty=1.0)
+        parameters = {"search": query, "per-page": self.max_results}
+        if self.mailto:
+            parameters["mailto"] = self.mailto
+        request = Request(
+            self.endpoint + "?" + urlencode(parameters),
+            headers={"Accept": "application/json", "User-Agent": "SSSWET/0.1"},
+        )
+        try:
+            with urlopen(request, timeout=self.timeout) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
+            return ProviderResult(
+                f"OpenAlex literature search unavailable: {type(exc).__name__}. No result was inferred.",
+                uncertainty=1.0,
+            )
+
+        results = payload.get("results", []) if isinstance(payload, dict) else []
+        evidence: list[str] = []
+        source_ids: list[str] = []
+        for item in results[:self.max_results]:
+            if not isinstance(item, dict):
+                continue
+            title = str(item.get("title") or "").strip()
+            if not title:
+                continue
+            doi = str(item.get("doi") or "").strip()
+            work_id = str(item.get("id") or "").strip()
+            identity = doi or work_id
+            if not identity:
+                continue
+            authorships = item.get("authorships") or []
+            authors = []
+            for authorship in authorships[:4]:
+                author = authorship.get("author", {}) if isinstance(authorship, dict) else {}
+                name = str(author.get("display_name") or "").strip() if isinstance(author, dict) else ""
+                if name:
+                    authors.append(name)
+            year = item.get("publication_year") or "date unavailable"
+            host = item.get("primary_location") or {}
+            source = host.get("source") or {} if isinstance(host, dict) else {}
+            venue = str(source.get("display_name") or "").strip() if isinstance(source, dict) else ""
+            cited = item.get("cited_by_count")
+            evidence.append(
+                f"{title} | {', '.join(authors) or 'authors unavailable'} | {year} "
+                f"| {venue or 'venue unavailable'} | DOI: {doi or 'unavailable'} "
+                f"| OpenAlex: {work_id} | cited-by count: {cited if isinstance(cited, int) else 'unavailable'}"
+            )
+            source_ids.append(identity)
+
+        if not evidence:
+            return ProviderResult(
+                "OpenAlex returned no usable bibliographic records for this query.",
+                uncertainty=1.0,
+            )
+        return ProviderResult(
+            summary=(
+                f"OpenAlex returned {len(evidence)} bibliographic record(s). "
+                "These are discovery leads only; citation counts and metadata do not establish "
+                "quality, reproducibility or truth. Review papers and methods independently."
+            ),
+            evidence=tuple(evidence),
+            uncertainty=1.0,
+            source_ids=tuple(source_ids),
+        )
+
+
 class OpenAICompatibleProvider:
     """Call a configurable OpenAI-compatible chat-completions endpoint.
 
