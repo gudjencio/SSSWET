@@ -231,3 +231,76 @@ def test_run_comparison_exposes_environment_and_model_reference_differences(tmp_
     assert report["environment_differences"][0]["field"] == "version"
     assert report["same_code_or_model_reference"] is False
     assert report["independent_reproduction_candidate"] is True
+
+
+def test_protocol_proposal_acceptance_creates_new_immutable_version(tmp_path):
+    from ssswet_core.protocol_proposals import ProtocolProposalService
+
+    store, _ = setup(tmp_path)
+    service = ProtocolProposalService(store)
+    proposal = service.submit(
+        "proposal-1", "protocol-1", 1, "campaign-a",
+        {"objective": "Compare a revised documented numerical output",
+         "limitations": ["Illustrative model only", "No physical execution"]},
+        "Clarify the objective and state the simulation boundary.",
+    )
+    assert proposal["status"] == "pending"
+    accepted = service.decide(
+        "proposal-1", "campaign-source", "accepted",
+        "Reviewed wording and limitations; accept as version 2.",
+    )
+    assert accepted["status"] == "accepted"
+    assert accepted["resulting_version"] == 2
+    assert len(accepted["events"]) == 2
+    assert store.get_lab_protocol("protocol-1", 1)["objective"] == "Compare a documented numerical output"
+    version_two = store.get_lab_protocol("protocol-1", 2)
+    assert version_two["objective"] == "Compare a revised documented numerical output"
+    assert version_two["reviewed_by"] == "campaign-source"
+    assert version_two["content_hash"]
+
+
+def test_protocol_proposal_rejection_preserves_published_protocol(tmp_path):
+    from ssswet_core.protocol_proposals import ProtocolProposalService
+
+    store, _ = setup(tmp_path)
+    service = ProtocolProposalService(store)
+    service.submit(
+        "proposal-reject", "protocol-1", 1, "campaign-b",
+        {"title": "Alternative title"},
+        "Suggest a title change.",
+    )
+    result = service.decide(
+        "proposal-reject", "campaign-source", "rejected",
+        "The current title is retained for consistency.",
+    )
+    assert result["status"] == "rejected"
+    assert result["resulting_version"] == 0
+    assert store.get_lab_protocol("protocol-1", 2) is None
+    assert store.get_lab_protocol("protocol-1", 1)["title"] == "Simple numerical model"
+
+
+def test_protocol_proposals_require_owner_review_and_latest_base(tmp_path):
+    from ssswet_core.protocol_proposals import ProtocolProposalService
+
+    store, _ = setup(tmp_path)
+    service = ProtocolProposalService(store)
+    service.submit(
+        "proposal-auth", "protocol-1", 1, "campaign-a",
+        {"title": "Revised title"}, "A rationale.",
+    )
+    with pytest.raises(ValueError, match="owner campaign"):
+        service.decide("proposal-auth", "campaign-b", "accepted", "Review note.")
+    with pytest.raises(ValueError, match="review note"):
+        service.decide("proposal-auth", "campaign-source", "rejected", " ")
+
+
+def test_protocol_proposal_rejects_unsafe_or_unknown_patch_fields(tmp_path):
+    from ssswet_core.protocol_proposals import ProtocolProposalService
+
+    _, _ = setup(tmp_path)
+    service = ProtocolProposalService(_)
+    with pytest.raises(ValueError, match="Unsupported protocol fields"):
+        service.submit(
+            "proposal-bad", "protocol-1", 1, "campaign-a",
+            {"owner_campaign_id": "campaign-a"}, "Change ownership.",
+        )
