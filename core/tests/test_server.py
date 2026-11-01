@@ -668,3 +668,39 @@ def test_parameter_interaction_plans_api_is_read_only(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_lab_statistical_summaries_api_is_read_only(tmp_path):
+    import json
+    import threading
+    from http.server import ThreadingHTTPServer
+    from urllib.error import HTTPError
+    from urllib.request import urlopen
+
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "lab-statistics-api.sqlite3")
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        with urlopen(base + "/api/lab-statistical-summaries") as response:
+            report = json.loads(response.read())
+        assert report["summaries"] == []
+        assert report["read_only"] is True
+        assert report["automatic_data_exclusion"] is False
+        assert report["inferential_tests_performed"] is False
+        try:
+            urlopen(base + "/api/lab-statistical-summaries?limit=0")
+        except HTTPError as error:
+            assert error.code == 400
+        else:
+            raise AssertionError("An invalid limit must be rejected")
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
