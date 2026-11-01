@@ -89,6 +89,8 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                         limit=limit,
                     ),
                 })
+            elif path == "/api/literature-watch":
+                self._json({"reports": store.literature_watch_history(limit=100)})
             elif path == "/api/knowledge-graph":
                 self._json(store.knowledge_graph(limit=500))
             elif path == "/api/research-gaps":
