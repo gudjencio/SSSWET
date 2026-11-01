@@ -1,11 +1,12 @@
 /* Public payment destinations. No private credentials belong in this file. */
 window.SSSWET_DONATION_LINKS = {
   PAYPAL_ME: "https://www.paypal.com/paypalme/gudjencio",
-  PAYPAL_NCP_10_USD: "https://www.paypal.com/ncp/payment/6LP3JL8UD8JL4"
+  PAYPAL_NCP_10_USD: "https://www.paypal.com/ncp/payment/6LP3JL8UD8JL4",
+  PAYMENT_REMINDER_URL: ""
 };
 
 /* Load small public UI modules without requiring another HTML edit. */
-["research-equations.js", "payment-enhancement.js"].forEach(src => {
+["research-equations.js"].forEach(src => {
   if (document.querySelector('script[src="' + src + '"]')) return;
   const script = document.createElement("script");
   script.src = src;
