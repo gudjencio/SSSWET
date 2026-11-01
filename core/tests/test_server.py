@@ -890,7 +890,8 @@ def test_local_interface_serves_ui_and_api_on_same_origin(tmp_path):
             page = response.read().decode("utf-8")
             assert response.status == 200
             assert "engine-connection" in page
-            assert "127.0.0.1:8765" in page
+            assert "HOSTED_DEPLOYMENT.md" in page
+            assert "127.0.0.1:8765" not in page
 
         with urlopen(base + "/api/status") as response:
             payload = json.loads(response.read())
