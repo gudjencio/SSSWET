@@ -1,4 +1,4 @@
-const CACHE = "ssswet-web-v6";
+const CACHE = "ssswet-web-v7";
 const ASSETS = ["./", "./index.html", "./styles.css", "./locales.js", "./app.js", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
