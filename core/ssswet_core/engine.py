@@ -62,15 +62,32 @@ class SSSWETEngine:
         finding: Finding,
         *evidence: str,
         source_ids: tuple[str, ...] = (),
+        provenance_groups: tuple[str, ...] = (),
+        independence_confirmed: bool = False,
     ) -> Finding:
         current = finding
         for index, item in enumerate(evidence):
             source_id = source_ids[index] if index < len(source_ids) else None
-            current = self.verifier.independent_check(current, item, source_id)
+            group = provenance_groups[index] if index < len(provenance_groups) else None
+            current = self.verifier.independent_check(
+                current,
+                item,
+                source_id,
+                independence_group=group,
+                independence_confirmed=independence_confirmed,
+            )
         return current
 
-    def record_reproduction(self, finding: Finding, reproduction_id: str) -> Finding:
-        return self.verifier.require_reproduction(finding, reproduction_id)
+    def record_reproduction(
+        self,
+        finding: Finding,
+        reproduction_id: str,
+        *,
+        reproduction_confirmed: bool = False,
+    ) -> Finding:
+        return self.verifier.require_reproduction(
+            finding, reproduction_id, reproduction_confirmed=reproduction_confirmed
+        )
 
     def review_claims(
         self,
