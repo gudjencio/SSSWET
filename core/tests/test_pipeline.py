@@ -138,3 +138,19 @@ def test_pipeline_reports_live_agent_activity():
     assert len(completed) == 2
     assert sorted(len(item["active_agents"]) for item in working) == [1, 2]
     assert sorted(len(item["active_agents"]) for item in completed) == [0, 1]
+
+
+
+def test_pipeline_publishes_peer_review_handoffs_between_agents(tmp_path):
+    from ssswet_core.persistence import SQLiteResearchStore
+    store = SQLiteResearchStore(tmp_path / "peer-handoffs.sqlite3")
+    pipeline = ResearchPipeline(store=store)
+    task_id, steps = pipeline.start(
+        "Study a harmless mathematical optimization problem", "math"
+    )
+    messages = store.recent_agent_messages(task_id=task_id)
+    assert len(steps) == 2
+    assert len(messages) == 2
+    assert {item["message_type"] for item in messages} == {"peer_review_request"}
+    assert {item["review_state"] for item in messages} == {"awaiting_review"}
+    assert all(item["sender_agent_id"] != item["recipient_agent_id"] for item in messages)
