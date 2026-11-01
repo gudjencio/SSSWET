@@ -1043,3 +1043,125 @@ a { color: #9fdcf0; }
   background:#0d0e0c;
 }
 .bot-command-main .bot-control-metric strong { color:#e6dfd1; }
+
+
+/* Calm, grounded agent layout: stable cards instead of orbital motion. */
+.bot-command-visual {
+  height:auto !important;
+  min-height:0;
+  padding:18px 16px 48px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  background:linear-gradient(180deg,rgba(11,14,17,.72),rgba(5,7,9,.48)) !important;
+}
+.bot-command-core { display:none !important; }
+.bot-stage-agents {
+  position:relative !important;
+  inset:auto !important;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  align-content:center;
+  gap:12px;
+  width:100%;
+  min-height:180px;
+  transform:none !important;
+  animation:none !important;
+}
+.bot-stage-agent {
+  position:relative !important;
+  inset:auto !important;
+  left:auto !important;
+  top:auto !important;
+  width:auto !important;
+  min-width:0;
+  min-height:104px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:12px 8px;
+  transform:none !important;
+  translate:none !important;
+  rotate:none !important;
+  animation:none !important;
+  filter:none !important;
+  border:1px solid rgba(194,177,145,.13);
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
+}
+.bot-stage-agent-content {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  animation:none !important;
+  transform:none !important;
+}
+.bot-stage-agent .agent-avatar {
+  width:48px;
+  height:48px;
+  flex:0 0 48px;
+  border-radius:15px;
+  animation:none !important;
+  transform:none !important;
+}
+.bot-stage-agent-label {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  width:100%;
+  min-width:0;
+  text-align:center;
+}
+.bot-stage-agent strong {
+  max-width:100%;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:none;
+  font-size:9px;
+  line-height:1.25;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.bot-stage-agent small {
+  max-width:100%;
+  font-size:7px;
+  line-height:1.2;
+  overflow-wrap:anywhere;
+}
+.bot-stage-agent.is-active {
+  border-color:rgba(142,190,160,.3);
+  background:linear-gradient(145deg,rgba(111,155,126,.09),rgba(255,255,255,.012));
+}
+.bot-stage-agent.is-active .agent-avatar {
+  box-shadow:0 0 18px rgba(142,190,160,.12);
+}
+.bot-stage-caption {
+  bottom:12px;
+}
+.bot-stage-agent .agent-robot-head i { animation:agent-blink 5.5s ease-in-out infinite; }
+.bot-stage-agent .agent-robot-head i+i { animation-delay:.12s; }
+
+/* Remove repeated agent/voice summaries; their live equivalents are above. */
+.bot-side-heading,
+#bot-control-agents,
+.bot-status,
+.voice-controls,
+.bot-visitor-questions { display:none !important; }
+.bot-command-task-section { margin-top:0; }
+@media(max-width:900px) {
+  .bot-stage-agents { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:620px) {
+  .bot-command-visual { padding:12px 8px 42px; }
+  .bot-stage-agents { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .bot-stage-agent { min-height:92px; padding:9px 6px; }
+  .bot-stage-agent .agent-avatar { width:42px; height:42px; flex-basis:42px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .bot-stage-agent, .bot-stage-agent-content, .bot-stage-agents { animation:none !important; }
+}
