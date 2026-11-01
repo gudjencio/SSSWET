@@ -111,3 +111,45 @@ def test_literature_watch_history_endpoint_is_read_only(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_scientific_memory_api_exposes_versions_and_review_suggestions(tmp_path):
+    import json
+    import threading
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.knowledge_graph import KnowledgeEdge, KnowledgeNode
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.scientific_memory import ScientificMemoryService, ScientificMemoryVersion
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "scientific-memory-api.sqlite3")
+    store.add_knowledge_node(KnowledgeNode("claim-a", "finding", "Claim A"))
+    store.add_knowledge_node(KnowledgeNode("claim-b", "finding", "Claim B"))
+    store.add_knowledge_edge(KnowledgeEdge("claim-a", "claim-b", "contradicts"))
+    ScientificMemoryService(store).add_version(ScientificMemoryVersion.create(
+        "version-a1", "claim-a-memory", "Claim A", "A candidate wave-speed claim",
+        graph_node_ids=("claim-a",),
+    ))
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        with urlopen(base + "/api/scientific-memory?q=wave%20speed") as response:
+            payload = json.loads(response.read())
+        assert payload["versions"][0]["version_id"] == "version-a1"
+        assert payload["versions"][0]["contested_by_graph"] is True
+        assert payload["scientific_validity_established"] is False
+
+        with urlopen(base + "/api/scientific-memory/suggestions") as response:
+            suggestions = json.loads(response.read())
+        assert suggestions["contested_memory"][0]["version_id"] == "version-a1"
+        assert suggestions["automatic_task_creation"] is False
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
