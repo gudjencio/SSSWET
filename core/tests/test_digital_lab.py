@@ -43,6 +43,8 @@ def test_protocol_and_run_are_persisted_with_explicit_provenance(tmp_path):
     run = make_run("run-a", "campaign-a", 4)
     saved = service.record_run(run)
     assert saved["run_id"] == "run-a"
+    assert len(saved["record_hash"]) == 64
+    assert len(store.get_lab_protocol("protocol-1", 1)["content_hash"]) == 64
     assert store.get_lab_protocol("protocol-1", 1)["review_note"]
     assert store.get_lab_run("run-a")["environment"]["runtime"] == "Python"
 
@@ -56,6 +58,7 @@ def test_reproduction_comparison_records_matching_conditions_and_outputs(tmp_pat
     assert result["outputs_match_within_tolerance"] is True
     assert result["different_campaigns"] is True
     assert result["independence_declared_by_both"] is True
+    assert result["independent_reproduction_candidate"] is True
     assert result["independence_independently_verified"] is False
     assert result["scientific_validity_established"] is False
 
