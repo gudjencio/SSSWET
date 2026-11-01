@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const MIN_USD = 10;
+  const MIN_CONTRIBUTION = 10;
   const links = window.SSSWET_DONATION_LINKS || {};
 
   const install = () => {
@@ -10,8 +10,8 @@
     const status = document.getElementById("donation-payment-status");
     if (!amount || !checkout || !status) return;
 
-    amount.min = String(MIN_USD);
-    amount.value = String(Math.max(MIN_USD, Number(amount.value) || 0));
+    amount.min = String(MIN_CONTRIBUTION);
+    amount.value = String(Math.max(MIN_CONTRIBUTION, Number(amount.value) || 0));
 
     if (checkout.dataset.dynamicPaymentInstalled === "true") return;
     checkout.dataset.dynamicPaymentInstalled = "true";
@@ -20,16 +20,16 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       const value = Number(amount.value);
-      if (!Number.isFinite(value) || value < MIN_USD) {
+      if (!Number.isFinite(value) || value < MIN_CONTRIBUTION) {
         status.textContent = document.documentElement.lang?.startsWith("fr")
-          ? "Le montant minimum est de 10 USD."
-          : "The minimum contribution is USD 10.";
+          ? "Le montant minimum est de 10 USD ou son équivalent affiché."
+          : "The minimum contribution is USD 10 or the displayed equivalent.";
         return;
       }
 
       const rounded = Math.round(value * 100) / 100;
       const custom = links.PAYPAL_ME;
-      if (typeof custom === "string" && /^https:\/\/www\\.paypal\\.com\\/paypalme\\/gudjencio\/?$/i.test(custom)) {
+      if (typeof custom === "string" && /^https:\/\/www\.paypal\.com\/paypalme\/gudjencio\/?$/i.test(custom)) {
         const currency = (document.getElementById("donation-currency")?.textContent || "USD").trim().toUpperCase();
         const suffix = currency === "USD" ? String(rounded) : String(rounded) + currency;
         const url = custom.replace(/\/$/, "") + "/" + encodeURIComponent(suffix);
