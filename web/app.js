@@ -279,7 +279,7 @@
       const totalConflicts = conflictReports.reduce((sum, value) => sum + value, 0);
       dashboardGrid.append(makeDashboardCard(
         t.dashConflicts, totalConflicts,
-        totalConflicts ? t.dashEndpointUnavailable.replace(t.dashEndpointUnavailable, t.dashPending + ": " + totalConflicts) : t.dashNoData,
+        totalConflicts ? t.dashPending + ": " + totalConflicts : t.dashNoData,
         totalConflicts ? "live" : "empty"
       ));
     }
