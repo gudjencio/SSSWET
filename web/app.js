@@ -17,17 +17,21 @@
   let currentCampaigns = [];
   let currentTimelinePayload = { events: [], total_events: 0, event_kinds: [] };
 
-  const languageNames = Object.keys(locales).sort((a, b) => {
-    if (a === "en") return -1;
-    if (b === "en") return 1;
-    if (a === "fr") return -1;
-    if (b === "fr") return 1;
-    return (locales[a].name || a).localeCompare(locales[b].name || b);
-  });
-  languageNames.forEach((code) => {
+  const languageCatalog = window.SSSWET_LANGUAGE_CATALOG || Object.keys(locales).map(code => code + "|" + (locales[code].name || code));
+  const languageCodes = languageCatalog.map(item => item.split("|")[0]);
+  function languageLabel(code, selectedCode) {
+    const native = (locales[code] && locales[code].name) || languageCatalog.find(item => item.startsWith(code + "|"))?.split("|")[1] || code;
+    try {
+      const display = new Intl.DisplayNames([selectedCode || "en"], { type: "language" }).of(code);
+      if (display && display.toLowerCase() !== code.toLowerCase()) return display;
+    } catch (_) {}
+    return native;
+  }
+  const languageOptions = new Map();
+  languageCodes.forEach(code => {
     const option = document.createElement("option");
     option.value = code;
-    option.textContent = locales[code].name || code;
+    languageOptions.set(code, option);
     languageSelect.append(option);
   });
 
@@ -58,6 +62,7 @@
     document.body.dir = direction;
     document.documentElement.dataset.language = selected;
     languageSelect.value = selected;
+    languageOptions.forEach((option, code) => { option.textContent = languageLabel(code, selected); });
     document.querySelectorAll("[data-i18n]").forEach((element) => {
       const value = t[element.dataset.i18n];
       if (typeof value === "string") element.textContent = value;
@@ -109,14 +114,21 @@
 
     const roles = document.createElement("div");
     roles.className = "agent-role-list";
-    copy.roles.forEach((role) => {
+    copy.roles.forEach((role, index) => {
       const article = document.createElement("article");
       article.className = "agent-role";
+      const avatar = document.createElement("span");
+      avatar.className = "agent-avatar agent-avatar-" + (index + 1);
+      avatar.setAttribute("aria-hidden", "true");
+      avatar.innerHTML = '<span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span>';
+      const identity = document.createElement("div");
+      identity.className = "agent-role-copy";
       const heading = document.createElement("strong");
       heading.textContent = role.name;
       const description = document.createElement("p");
       description.textContent = role.description;
-      article.append(heading, description);
+      identity.append(heading, description);
+      article.append(avatar, identity);
       roles.append(article);
     });
     fragment.append(roles);
