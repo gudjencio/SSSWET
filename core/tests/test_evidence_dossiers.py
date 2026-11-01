@@ -65,6 +65,10 @@ def test_assemble_captures_traceable_snapshot(tmp_path):
     assert dossier["verification_state"] == "unverified"
     assert dossier["scientific_validity_established"] is False
     assert len(dossier["runs"]) == 2
+    assert dossier["comparisons"][0]["comparable"] is True
+    assert dossier["comparisons"][0]["outputs_match_within_tolerance"] is True
+    assert dossier["comparisons"][0]["independent_reproduction_candidate"] is True
+    assert dossier["comparisons"][0]["scientific_validity_established"] is False
     assert len(dossier["sources"]) == 1
     assert len(dossier["events"]) == 1
     assert len(dossier["content_hash"]) == 64
