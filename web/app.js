@@ -690,6 +690,17 @@ function localizedDiscoveryRole(role, language) {
     return (labels[code] || labels.en)[key] || key.replace(/_/g, " ");
   }
 
+  function localizedUnverifiedLabel(language) {
+    const code = translationSource(language);
+    const labels = {
+      en: "Unverified", fr: "Non vérifié", es: "Sin verificar", de: "Nicht verifiziert",
+      it: "Non verificato", pt: "Não verificado", nl: "Niet geverifieerd", ru: "Не проверено",
+      uk: "Не перевірено", ar: "غير متحقق منه", he: "לא אומת", ja: "未検証",
+      ko: "검증되지 않음", zh: "未经验证", hi: "असत्यापित"
+    };
+    return labels[code] || "Unverified";
+  }
+
   function discoveryAgentCountLabel(language) {
     const code = translationSource(language);
     const labels = { fr: "agents", es: "agentes", de: "Agenten", it: "agenti", pt: "agentes", nl: "agenten", ru: "агентов", uk: "агентів", ar: "وكلاء", he: "סוכנים", ja: "エージェント", ko: "에이전트", zh: "个代理", hi: "एजेंट" };
@@ -787,7 +798,7 @@ function classifyDiscovery(group) {
           const status = document.createElement("span");
           status.className = "discovery-status";
           const labels = currentTranslations();
-          status.textContent = labels.unverifiedState || (isFrench ? "Non vérifié" : "Unverified");
+          status.textContent = localizedUnverifiedLabel(currentLanguage());
           top.append(category, status);
           const metadata = document.createElement("p");
           metadata.className = "discovery-meta";
