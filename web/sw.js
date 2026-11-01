@@ -1,5 +1,5 @@
-const CACHE = "ssswet-web-v54";
-const ASSETS = ["./", "./index.html", "./styles.css", "./locales.js", "./app.js", "./donation-config.js", "./product-purchase-config.js", "./donation.js", "./evidence-center.js", "./evidence-center.css", "./parameter-sensitivity.js", "./parameter-sensitivity.css", "./lab-statistics.js", "./evidence-graph.js", "./evidence-graph.css", "./lab-discrepancies.js", "./lab-discrepancies.css", "./research-journal.js", "./research-journal.css", "./technology-feasibility.js", "./technology-feasibility.css", "./mobile-repair.css", "./repair-project.js", "./manifest.json"];
+const CACHE = "ssswet-web-v55";
+const ASSETS = ["./", "./index.html", "./styles.css", "./locales.js", "./app.js", "./donation-config.js", "./payment-enhancement.js", "./research-equations.js", "./product-purchase-config.js", "./donation.js", "./evidence-center.js", "./evidence-center.css", "./parameter-sensitivity.js", "./parameter-sensitivity.css", "./lab-statistics.js", "./evidence-graph.js", "./evidence-graph.css", "./lab-discrepancies.js", "./lab-discrepancies.css", "./research-journal.js", "./research-journal.css", "./technology-feasibility.js", "./technology-feasibility.css", "./mobile-repair.css", "./repair-project.js", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));
