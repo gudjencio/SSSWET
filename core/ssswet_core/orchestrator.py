@@ -9,16 +9,38 @@ class BotManager:
     def __init__(self, max_agents: int = 24):
         self.max_agents = max_agents
         self.agents: dict[str, Agent] = {}
+        self._next_id = 1
+
+    def _new_agent(self, role: str = "researcher") -> Agent:
+        agent = Agent(id=f"bot-{self._next_id:03d}", role=role)
+        self._next_id += 1
+        self.agents[agent.id] = agent
+        return agent
 
     def ensure_capacity(self, required: int = 1) -> list[Agent]:
         created: list[Agent] = []
         target = min(self.max_agents, len(self.agents) + max(1, required))
         while len(self.agents) < target:
-            number = len(self.agents) + 1
-            agent = Agent(id=f"bot-{number:03d}", role="researcher")
-            self.agents[agent.id] = agent
-            created.append(agent)
+            created.append(self._new_agent())
         return created
+
+    def ensure_role_capacity(self, roles: list[str]) -> list[Agent]:
+        """Return one waiting agent per requested role, creating only as needed."""
+        selected: list[Agent] = []
+        waiting = self.available()
+        for role in roles:
+            candidate = next((a for a in waiting if a.role == role), None)
+            if candidate is None:
+                candidate = next((a for a in waiting if a.role == "researcher"), None)
+                if candidate is not None:
+                    candidate.role = role
+            if candidate is None and len(self.agents) < self.max_agents:
+                candidate = self._new_agent(role)
+            if candidate is None:
+                raise RuntimeError("Agent capacity exhausted; team was not fully allocated.")
+            waiting.remove(candidate)
+            selected.append(candidate)
+        return selected
 
     def available(self) -> list[Agent]:
         return [a for a in self.agents.values() if a.status == AgentStatus.WAITING]
@@ -51,11 +73,41 @@ class ResearchOrchestrator:
         self.bot_manager.ensure_capacity(1)
         return task
 
+    def assign_team(self, task: Task, roles: list[str]) -> list[Agent]:
+        """Allocate and activate a specialist team for one parent research task."""
+        if task in self.tasks:
+            self.tasks.remove(task)
+        agents = self.bot_manager.ensure_role_capacity(roles)
+        task.status = TaskStatus.ACTIVE
+        task.attempts += 1
+        strategy = self.strategies.next(task.strategy_history)
+        task.strategy_history.append(strategy.name)
+        for agent in agents:
+            agent.status = AgentStatus.WORKING
+            agent.load = 1.0
+            agent.current_task = task.id
+            self.events.append(ResearchEvent(
+                "agent_assigned",
+                f"Specialist role {agent.role} assigned using strategy: {strategy.name}.",
+                task.id,
+                agent.id,
+            ))
+        self.events.append(ResearchEvent(
+            "team_created",
+            f"Specialist team allocated: {len(agents)} agents.",
+            task.id,
+        ))
+        return agents
+
+    def release_team(self, agents: list[Agent], completed: bool = False) -> None:
+        for agent in agents:
+            if agent.id in self.bot_manager.agents and agent.load > 0:
+                self.bot_manager.release(agent.id, completed=completed)
+
     def schedule(self) -> list[tuple[str, str]]:
         assignments: list[tuple[str, str]] = []
         if self.tasks:
             self.bot_manager.ensure_capacity(min(len(self.tasks), self.bot_manager.max_agents))
-
         available = self.bot_manager.available()
         while available and self.tasks:
             task = self.tasks.popleft()
