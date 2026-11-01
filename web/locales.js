@@ -459,7 +459,7 @@ window.SSSWET_AGENT_COPY = {
     "disclaimer": "These are defined project roles, not proof that autonomous AI agents are currently running. Live activity requires the local research engine. GitHub Pages is a static preview."
   },
   "fr": {
-    "welcome": "Bienvenue dans SSSWET.",
+    "welcome": "Bienvenue dans ETDESS.",
     "summary": "Un environnement de coordination de la recherche pour explorer des idées, préparer des études, comparer les preuves et documenter les incertitudes. Les hypothèses, simulations et observations enregistrées restent distinctes des résultats vérifiés indépendamment.",
     "roles": [
       [
