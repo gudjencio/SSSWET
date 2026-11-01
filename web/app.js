@@ -656,13 +656,13 @@
 
   function cleanDiscoverySummary(value) {
     let summary = String(value || "").trim();
-    summary = summary.replace(/^\\[UNVERIFIED\\s*[·|]\\s*[^\\]]+\\]\\s*/i, "");
-    const bibliographic = summary.match(/^Combined discovery returned (\\d+) unique bibliographic lead\\(s\\) from Crossref and OpenAlex\\.\\s*Duplicate DOI records are collapsed\\.\\s*Metadata is not proof of quality or truth; review full texts, methods and independent evidence before drawing conclusions\\.?$/i);
+    summary = summary.replace(/^\[UNVERIFIED\s*[·|]\s*[^\]]+\]\s*/i, "");
+    const bibliographic = summary.match(/^Combined discovery returned (\d+) unique bibliographic lead\(s\) from Crossref and OpenAlex\.\s*Duplicate DOI records are collapsed\.\s*Metadata is not proof of quality or truth; review full texts, methods and independent evidence before drawing conclusions\.?$/i);
     if (bibliographic) {
       const count = bibliographic[1];
       return document.documentElement.lang.toLowerCase().startsWith("fr")
-        ? `Découverte bibliographique : ${count} références uniques trouvées dans Crossref et OpenAlex. Les DOI en double ont été regroupés ; la qualité scientifique des références reste à vérifier.`
-        : `Bibliographic discovery: ${count} unique references found in Crossref and OpenAlex. Duplicate DOIs were merged; the scientific quality of these references remains unverified.`;
+        ? \`Découverte bibliographique : \${count} références uniques trouvées dans Crossref et OpenAlex. Les DOI en double ont été regroupés ; la qualité scientifique des références reste à vérifier.\`
+        : \`Bibliographic discovery: \${count} unique references found in Crossref and OpenAlex. Duplicate DOIs were merged; the scientific quality of these references remains unverified.\`;
     }
     return summary;
   }
