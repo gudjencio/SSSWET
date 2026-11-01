@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 
 from .decomposer import SubtaskSpec, TaskDecomposer
@@ -166,28 +167,47 @@ class ResearchPipeline:
                 task.id,
             ))
 
-            for subtask, agent in zip(subtasks, agents, strict=True):
-                if progress_callback:
-                    progress_callback({
-                        "phase": "agent_working",
+            active_by_id: dict[str, dict] = {}
+            completed_steps: dict[int, PipelineStep] = {}
+            indexed_futures = {}
+            worker_count = max(1, min(4, len(subtasks)))
+            with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="ssswet-agent") as executor:
+                for index, (subtask, agent) in enumerate(zip(subtasks, agents, strict=True)):
+                    active_by_id[agent.id] = {
+                        "id": agent.id,
+                        "role": agent.role,
                         "task_id": task.id,
-                        "active_agents": [{"id": agent.id, "role": agent.role, "task_id": task.id, "objective": subtask.objective}],
-                    })
-                result = self.provider.investigate(subtask.objective, "initial")
-                results.append(PipelineStep(subtask, self.provider.name, result, agent.id))
-                self.engine.orchestrator.events.append(ResearchEvent(
-                    "research_pass",
-                    f"{agent.role} completed a research pass; evidence remains subject to verification.",
-                    task.id,
-                    agent.id,
-                ))
-                if progress_callback:
-                    progress_callback({
-                        "phase": "agent_pass_completed",
-                        "task_id": task.id,
-                        "active_agents": [],
-                        "last_agent": {"id": agent.id, "role": agent.role},
-                    })
+                        "objective": subtask.objective,
+                    }
+                    future = executor.submit(self.provider.investigate, subtask.objective, "initial")
+                    indexed_futures[future] = (index, subtask, agent)
+                    if progress_callback:
+                        progress_callback({
+                            "phase": "agent_working",
+                            "task_id": task.id,
+                            "active_agents": list(active_by_id.values()),
+                        })
+
+                for future in as_completed(indexed_futures):
+                    index, subtask, agent = indexed_futures[future]
+                    result = future.result()
+                    completed_steps[index] = PipelineStep(subtask, self.provider.name, result, agent.id)
+                    self.engine.orchestrator.events.append(ResearchEvent(
+                        "research_pass",
+                        f"{agent.role} completed a research pass; evidence remains subject to verification.",
+                        task.id,
+                        agent.id,
+                    ))
+                    active_by_id.pop(agent.id, None)
+                    if progress_callback:
+                        progress_callback({
+                            "phase": "agent_pass_completed",
+                            "task_id": task.id,
+                            "active_agents": list(active_by_id.values()),
+                            "last_agent": {"id": agent.id, "role": agent.role},
+                        })
+
+            results.extend(completed_steps[index] for index in sorted(completed_steps))
 
             # Provider output is not automatically promoted to a verified finding.
             self.engine.orchestrator.complete(task, agents[0].id, accepted=True)
