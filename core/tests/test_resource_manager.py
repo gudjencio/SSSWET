@@ -85,3 +85,16 @@ def test_actual_usage_cannot_exceed_quota():
         manager.finish("task-1", success=True, actual_units=4)
     assert "task-1" in manager.assignments
     assert manager.snapshot()["campaign_quotas"]["campaign-a"]["reserved_units"] == 2
+
+
+def test_resource_snapshot_is_persisted_and_readable(tmp_path):
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    manager = ResourceManager(BotManager(max_agents=2))
+    manager.submit(_request())
+    manager.dispatch()
+    store = SQLiteResearchStore(tmp_path / "resources.sqlite3")
+    store.save_resource_snapshot("snapshot-1", manager.snapshot())
+    saved = store.resource_snapshot_history()
+    assert saved[0]["snapshot_id"] == "snapshot-1"
+    assert saved[0]["snapshot"]["active"][0]["task_id"] == "task-1"
