@@ -21,6 +21,37 @@
     </nav>
     <header class="topbar"><div class="brand"><div class="brand-mark">SSSWET</div><div class="brand-subtitle" data-i18n="tagline">Super Soldier Space Warping Engeriening Tech</div></div><label class="language-control"><span class="visually-hidden" data-i18n="language">Language</span><select id="language" aria-label="Language"></select></label></header>
     <section class="hero" aria-labelledby="title"><div class="status-dot"></div><p class="eyebrow" id="system-status" data-i18n="status">RESEARCH INTERFACE</p><h1 id="title">SSSWET</h1><p class="mission" data-i18n="mission">Research ideas. Test them. Verify them. Never confuse a hypothesis with reality.</p></section>
+    <section class="technology-showcase" aria-labelledby="technology-title">
+      <div class="technology-heading">
+        <p class="eyebrow" data-tech-copy="eyebrow">FUTURE TECHNOLOGIES · RESEARCH PRIORITIES</p>
+        <h2 id="technology-title" data-tech-copy="title">Choose a technology to support</h2>
+        <p data-tech-copy="intro">Explore the research directions and open a contribution window for the technology you want to encourage.</p>
+      </div>
+      <div id="technology-grid" class="technology-grid">
+        <article class="technology-card"><span class="technology-number">01</span><h3>Cellular enhancement</h3><p>Cell repair, resilience and responsible regenerative research.</p><button type="button" data-tech="cellular">Explore &amp; contribute</button></article>
+        <article class="technology-card"><span class="technology-number">02</span><h3>Healthy longevity</h3><p>Healthy ageing, prevention and evidence-led longevity research.</p><button type="button" data-tech="longevity">Explore &amp; contribute</button></article>
+        <article class="technology-card"><span class="technology-number">03</span><h3>Advanced protective suits</h3><p>Lightweight protective materials, ergonomics and human safety.</p><button type="button" data-tech="armor">Explore &amp; contribute</button></article>
+        <article class="technology-card"><span class="technology-number">04</span><h3>Personal propulsion</h3><p>Jetpack concepts, energy efficiency and controlled mobility research.</p><button type="button" data-tech="jetpack">Explore &amp; contribute</button></article>
+        <article class="technology-card"><span class="technology-number">05</span><h3>Human–alien translation</h3><p>Research into bidirectional communication across unknown languages.</p><button type="button" data-tech="translator">Explore &amp; contribute</button></article>
+        <article class="technology-card"><span class="technology-number">06</span><h3>Space-warping physics</h3><p>Theoretical spacetime models and mathematical consistency studies.</p><button type="button" data-tech="spacetime">Explore &amp; contribute</button></article>
+      </div>
+      <p class="technology-disclaimer" data-tech-copy="disclaimer">These are research themes, not claims that the technologies exist or are currently achievable. Contributions support the project and do not purchase a product or guarantee an outcome.</p>
+    </section>
+    <dialog id="technology-dialog" class="technology-dialog" aria-labelledby="technology-dialog-title">
+      <form method="dialog" class="technology-dialog-close"><button class="dialog-close" aria-label="Close">×</button></form>
+      <p class="eyebrow" data-tech-copy="dialogEyebrow">SUPPORT A RESEARCH DIRECTION</p>
+      <h2 id="technology-dialog-title">Technology</h2>
+      <p id="technology-dialog-description"></p>
+      <div class="donation-fields">
+        <label><span data-tech-copy="amountLabel">Contribution amount</span><span class="donation-input-wrap"><input id="donation-amount" type="number" min="0.50" step="0.01" value="0.50" inputmode="decimal"><strong id="donation-currency">EUR</strong></span></label>
+        <label><span data-tech-copy="repeatLabel">Number of separate contributions</span><input id="donation-count" type="number" min="1" max="1000" step="1" value="1" inputmode="numeric"></label>
+      </div>
+      <div class="donation-summary"><span data-tech-copy="perContribution">Per contribution</span><strong id="donation-per">€0.50</strong><span data-tech-copy="totalLabel">Planned total</span><strong id="donation-total">€0.50</strong></div>
+      <p id="donation-currency-note" class="donation-note" role="status">Currency is based on your browser's regional settings.</p>
+      <p id="donation-payment-status" class="donation-note" role="status"></p>
+      <div class="donation-actions"><button id="donation-checkout" type="button" disabled data-tech-copy="checkout">Continue to secure contribution</button><button id="donation-copy" type="button" class="secondary-action" data-tech-copy="copySummary">Copy contribution summary</button></div>
+      <p class="technology-disclaimer" data-tech-copy="paymentDisclaimer">Online payment is activated only when an official payment link for this currency has been configured. You can close this window and contribute again as often as you wish; each contribution starts at the equivalent of €0.50.</p>
+    </dialog>
     <section class="panel" aria-label="Research interface">
       <div class="bot-status"><span data-i18n="agents">Research agents</span><strong id="agent-count">00</strong><span class="separator">·</span><span data-i18n="verification">verification-first</span></div>
       <div class="voice-controls">
@@ -51,6 +82,6 @@
     </section>
     <footer class="footer"><div class="contact"><span data-i18n="contact">Contact</span> · ssswetindustries@gmail.com</div><div class="footer-note" data-i18n="footer">ETDESS is the French translation of SSSWET. Public results remain subject to verification.</div></footer>
   </main>
-  <script src="locales.js"></script><script src="app.js"></script><script src="evidence-center.js"></script><script src="lab-statistics.js"></script><script src="parameter-sensitivity.js"></script><script src="evidence-graph.js"></script><script src="lab-discrepancies.js"></script>
+  <script src="locales.js"></script><script src="app.js"></script><script src="donation.js"></script><script src="evidence-center.js"></script><script src="lab-statistics.js"></script><script src="parameter-sensitivity.js"></script><script src="evidence-graph.js"></script><script src="lab-discrepancies.js"></script>
 </body>
 </html>
