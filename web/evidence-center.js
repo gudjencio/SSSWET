@@ -230,6 +230,40 @@
     const validity = document.createElement("p"); validity.className = "evidence-validity"; validity.textContent = labels.validity + ": " + labels.no; panel.append(validity); const note = document.createElement("p"); note.className = "evidence-note"; note.textContent = labels.separation; panel.append(note); body.append(panel);
   }
 
+  async function loadMaturity() {
+    const target = document.getElementById("evidence-maturity");
+    if (!target) return;
+    const fr = document.documentElement.lang.toLowerCase().startsWith("fr");
+    const labels = fr
+      ? { title: "Maturité documentaire", note: "Indicateurs de traçabilité uniquement — ils ne mesurent pas la validité scientifique.", dossiers: "Dossiers assemblés", sources: "Sources référencées", runs: "Exécutions enregistrées", comparisons: "Comparaisons", plans: "Plans de vérification", checks: "Contrôles documentés", pending: "À examiner", progress: "En cours", completed: "Terminés", blocked: "Bloqués", unavailable: "Indicateurs momentanément indisponibles." }
+      : { title: "Evidence lifecycle", note: "Traceability indicators only — they do not measure scientific validity.", dossiers: "Assembled dossiers", sources: "Referenced sources", runs: "Recorded runs", comparisons: "Comparisons", plans: "Verification plans", checks: "Documented checks", pending: "Pending", progress: "In progress", completed: "Completed", blocked: "Blocked", unavailable: "Indicators are temporarily unavailable." };
+    try {
+      const [dossierPayload, planPayload] = await Promise.all([get("/api/evidence-dossiers?limit=500"), get("/api/lab-verification-plans?limit=500")]);
+      const dossiers = Array.isArray(dossierPayload.dossiers) ? dossierPayload.dossiers : [];
+      const plans = Array.isArray(planPayload.plans) ? planPayload.plans : [];
+      const checks = plans.flatMap(plan => Array.isArray(plan.checks) ? plan.checks : []);
+      const count = state => checks.filter(check => (check.review_state || "pending") === state).length;
+      const values = [
+        [labels.dossiers, dossiers.length],
+        [labels.sources, dossiers.reduce((sum, item) => sum + (Number(item.source_count) || 0), 0)],
+        [labels.runs, dossiers.reduce((sum, item) => sum + (Number(item.run_count) || 0), 0)],
+        [labels.comparisons, dossiers.reduce((sum, item) => sum + (Number(item.comparison_count) || 0), 0)],
+        [labels.plans, plans.length],
+        [labels.checks, checks.length]
+      ];
+      target.replaceChildren();
+      const heading = document.createElement("div"); heading.className = "evidence-maturity-heading";
+      const title = document.createElement("strong"); title.textContent = labels.title;
+      const note = document.createElement("span"); note.textContent = labels.note; heading.append(title, note); target.append(heading);
+      const metrics = document.createElement("div"); metrics.className = "evidence-maturity-metrics";
+      values.forEach(([label, value]) => { const card = document.createElement("div"); card.className = "evidence-maturity-metric"; const number = document.createElement("strong"); number.textContent = String(value); const caption = document.createElement("span"); caption.textContent = label; card.append(number, caption); metrics.append(card); });
+      target.append(metrics);
+      const states = document.createElement("div"); states.className = "evidence-maturity-states";
+      [[labels.pending, count("pending"), "pending"], [labels.progress, count("in_progress"), "progress"], [labels.completed, count("completed"), "completed"], [labels.blocked, count("blocked"), "blocked"]].forEach(([label, value, key]) => { const item = document.createElement("span"); item.className = "evidence-maturity-state state-" + key; item.textContent = label + " · " + value; states.append(item); });
+      target.append(states);
+    } catch { target.textContent = labels.unavailable; target.classList.add("evidence-maturity-unavailable"); }
+  }
+
   async function load() { root.replaceChildren(); status.textContent = "…"; try { const payload = await get("/api/evidence-dossiers?limit=50"); const dossiers = Array.isArray(payload.dossiers) ? payload.dossiers : []; status.textContent = String(dossiers.length); if (!dossiers.length) { const empty = document.createElement("p"); empty.className = "visual-empty"; empty.textContent = t().empty; root.append(empty); return; } dossiers.forEach((dossier) => root.append(renderDossier(dossier))); } catch { status.textContent = "—"; const error = document.createElement("p"); error.className = "visual-empty"; error.textContent = t().unavailable; root.append(error); } }
-  refreshButton?.addEventListener("click", load); window.addEventListener("ssswet-language-changed", load); load();
+  refreshButton?.addEventListener("click", () => { load(); loadMaturity(); }); window.addEventListener("ssswet-language-changed", () => { load(); loadMaturity(); }); load(); loadMaturity();
 })();
