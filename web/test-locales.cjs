@@ -22,9 +22,18 @@ const required = [
   "dashEndpointUnavailable", "dashNoData"
 ];
 const fullyTranslated = new Set(["en", "fr", "es", "de", "it", "pt", "nl", "ru", "uk", "ar", "he", "ja", "ko", "zh", "hi"]);
+const additionalTranslated = new Set(["id", "tr", "pl", "bn", "sw"]);
+const additionalRequired = ["tagline", "status", "statusOnline", "statusOffline", "mission", "agents", "verification", "discover", "working", "verified", "ready", "footer", "offline", "noDiscoveries", "noActivity", "noVerified", "language", "social", "contact", "dashboard", "dashboardNote", "refresh", "timelineTitle", "timelineFilter", "allCampaigns", "timelineSearchLabel", "timelineSearchPlaceholder", "timelineTypeFilter", "allEventTypes", "timelineNoMatches", "timelineCaption", "timelineEmpty"];
 for (const [code, locale] of Object.entries(locales)) {
   if (!locale.name || !["ltr", "rtl"].includes(locale.dir)) {
     throw new Error(`Locale ${code} must define a name and text direction`);
+  }
+  if (additionalTranslated.has(code)) {
+    for (const key of additionalRequired) {
+      if (typeof locale[key] !== "string" || !locale[key].trim() || locale[key] === locales.en[key]) {
+        throw new Error(`Locale ${code} is missing a localized "${key}" translation`);
+      }
+    }
   }
   if (!fullyTranslated.has(code)) continue;
   for (const key of required) {
