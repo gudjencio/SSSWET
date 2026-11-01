@@ -36,12 +36,17 @@
   }
   function metric(value,label){return '<div class="bot-control-metric"><strong>'+escape(value)+'</strong><span>'+escape(label)+'</span></div>';}
   function robot(index){return '<span class="agent-avatar agent-avatar-'+((index%3)+1)+'"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span>';}
+  let requestInProgress = false;
+  let lastConnectionOk = false;
   async function load() {
+    if (requestInProgress) return;
+    requestInProgress = true;
     if (!metrics || !statusNode || typeof window.ssswetApiFetch !== "function") return;
     const t=labels();
     try {
       const response=await window.ssswetApiFetch("/api/bots");
       const data=await response.json();
+      lastConnectionOk = true;
       const worker=data.worker||{};
       const active=Array.isArray(data.active_agents)?data.active_agents:[];
       const recent=Array.isArray(data.recent_agents)?data.recent_agents:[];
@@ -69,13 +74,14 @@
       agents.innerHTML='<div class="bot-agent-group"><strong>'+escape(t.agent)+'</strong>'+(activeCards.length?activeCards.join(""):'<p class="bot-command-empty">'+escape(t.none)+'</p>')+'</div><div class="bot-agent-group"><strong>'+escape(t.recent)+'</strong>'+(recentCards.length?recentCards.join(""):'<p class="bot-command-empty">'+escape(t.none)+'</p>')+'</div>';
       if(tasksNode) tasksNode.innerHTML=taskCards.length?taskCards.join(""):'<p class="bot-command-empty">'+escape(t.emptyTasks)+'</p>';
     } catch(error) {
+      lastConnectionOk = false;
       statusNode.dataset.state="offline";
       statusNode.textContent=t.statusOffline;
       current.innerHTML='<strong>'+escape(t.offline)+'</strong><br><span>'+escape(t.offlineDetail)+'</span>';
       metrics.innerHTML="";
       agents.innerHTML='<p class="bot-command-empty">'+escape(t.offlineDetail)+'</p>';
       if(tasksNode) tasksNode.innerHTML='<p class="bot-command-empty">'+escape(t.emptyTasks)+'</p>';
-    }
+    } finally { requestInProgress = false; }
   }
   window.SSSWET_BOT_CONTROL={refresh:load};
   renderStaticLabels();
@@ -84,5 +90,5 @@
   window.addEventListener("ssswet-engine-connection",event=>{if(!event.detail?.connected){statusNode.dataset.state="offline";statusNode.textContent=labels().statusOffline;}});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)load();});
   load();
-  window.setInterval(()=>{if(!document.hidden)load();},5000);
+  window.setInterval(()=>{if(!document.hidden)load();},15000);
 })();
