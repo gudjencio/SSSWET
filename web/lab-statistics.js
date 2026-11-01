@@ -7,7 +7,7 @@
   if (!root || !status) return;
 
   const labels = () => document.documentElement.lang === "fr" ? {
-    title:"Statistiques descriptives du laboratoire",
+    title:"Statistiques descriptives du laboratoire", refresh:"Actualiser",
     loading:"Chargement des sorties numériques enregistrées…",
     unavailable:"Les résumés statistiques sont momentanément indisponibles.",
     empty:"Aucune sortie numérique enregistrée ne peut encore être résumée.",
@@ -16,7 +16,7 @@
     single:"Observation unique", summary:"Résumé descriptif uniquement",
     note:"Les valeurs atypiques sont des alertes à examiner et ne sont jamais supprimées automatiquement."
   } : {
-    title:"Descriptive laboratory statistics",
+    title:"Descriptive laboratory statistics", refresh:"Refresh",
     loading:"Loading recorded numeric outputs…",
     unavailable:"Statistical summaries are temporarily unavailable.",
     empty:"No recorded numeric outputs are available to summarize yet.",
@@ -41,6 +41,9 @@
   }
   async function load() {
     const t = labels();
+    const heading = document.getElementById("lab-statistics-title");
+    if (heading) heading.textContent = t.title;
+    if (refresh) refresh.textContent = t.refresh;
     root.replaceChildren();
     status.textContent = t.loading;
     if (note) note.textContent = t.note;
