@@ -614,3 +614,14 @@ body { background:#000000 !important; }
 .bot-control-agent span { display: block; margin-top: 4px; color: #888392; font-size: 9px; line-height: 1.45; overflow-wrap: anywhere; }
 .bot-control-note { margin: 12px 0 0; color: #777; font-size: 9px; line-height: 1.55; }
 @media (max-width: 560px) { .bot-control-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); } .bot-control-agents { grid-template-columns: 1fr; } }
+
+.bot-control-task-section { margin-top: 13px; padding-top: 12px; border-top: 1px solid #292631; }
+.bot-control-task-section > strong { display: block; margin-bottom: 8px; color: #c9c3d5; font-size: 10px; letter-spacing: .04em; }
+.bot-control-tasks { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+.bot-control-task { min-width: 0; padding: 10px; border: 1px solid #28262e; border-radius: 10px; background: rgba(255,255,255,.015); }
+.bot-control-task strong, .bot-control-task span, .bot-control-task small { display: block; overflow-wrap: anywhere; }
+.bot-control-task strong { color: #ddd6eb; font-size: 10px; }
+.bot-control-task span { margin-top: 5px; color: #96919f; font-size: 9px; line-height: 1.45; }
+.bot-control-task small { margin-top: 7px; color: #c4b48e; font-size: 8px; }
+.bot-control-agent-list > strong { display: block; margin: 0 0 7px; color: #c9c3d5; font-size: 10px; }
+@media (max-width: 560px) { .bot-control-tasks { grid-template-columns: 1fr; } }
