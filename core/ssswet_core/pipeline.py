@@ -209,6 +209,31 @@ class ResearchPipeline:
 
             results.extend(completed_steps[index] for index in sorted(completed_steps))
 
+            # Share each completed output with the other members of this task's team.
+            # These are review handoffs, not generated dialogue or scientific approval.
+            if self.store and len(results) > 1:
+                for sender in results:
+                    for recipient in results:
+                        if sender.agent_id == recipient.agent_id:
+                            continue
+                        summary = sender.result.summary.strip()
+                        if not summary:
+                            continue
+                        self.store.publish_agent_message(
+                            task_id=task.id,
+                            sender_agent_id=sender.agent_id,
+                            sender_role=sender.subtask.role,
+                            recipient_agent_id=recipient.agent_id,
+                            recipient_role=recipient.subtask.role,
+                            message_type="peer_review_request",
+                            content=(
+                                "A teammate's research output is available for independent review. "
+                                "This handoff is unverified and does not establish agreement: "
+                                + summary[:4000]
+                            ),
+                        )
+
+
             # Provider output is not automatically promoted to a verified finding.
             self.engine.orchestrator.complete(task, agents[0].id, accepted=True)
             self.engine.orchestrator.release_team(agents[1:], completed=True)
