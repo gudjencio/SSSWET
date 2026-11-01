@@ -1,6 +1,7 @@
-/* Public payment destination. No private credentials belong in this file. */
+/* Public payment destinations. No private credentials belong in this file. */
 window.SSSWET_DONATION_LINKS = {
-  PAYPAL: "https://www.paypal.com/paypalme/gudjencio"
+  PAYPAL_ME: "https://www.paypal.com/paypalme/gudjencio",
+  PAYPAL_NCP_10_USD: "https://www.paypal.com/ncp/payment/6LP3JL8UD8JL4"
 };
 
 /* Public portfolio state. Unknown financial figures intentionally remain null. */
@@ -24,6 +25,7 @@ window.SSSWET_RESEARCH_PORTFOLIO = Object.fromEntries(
 
 document.addEventListener("DOMContentLoaded", () => {
   const projectUrl = "https://gudjencio.github.io/SSSWET/";
+  const MIN_CONTRIBUTION_USD = 10;
   const language = () => String(document.documentElement.lang || "en").toLowerCase().split("-")[0];
   const copy = {
     en: {
@@ -51,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const current = () => copy[language()] || copy.en;
 
-  /* Recovery button: always visible, always opens the canonical public project. */
   if (!document.getElementById("repair-project-button")) {
     const slot = document.createElement("div");
     slot.className = "repair-project-slot";
@@ -115,6 +116,18 @@ document.addEventListener("DOMContentLoaded", () => {
       card.querySelector("p").textContent = item[2];
       card.querySelector("button[data-new-tech]").textContent = c.explore;
     });
+
+    const amount = document.getElementById("donation-amount");
+    if (amount) {
+      amount.min = String(MIN_CONTRIBUTION_USD);
+      amount.value = String(Math.max(MIN_CONTRIBUTION_USD, Number(amount.value) || 0));
+      amount.step = "0.01";
+    }
+
+    const minimumNote = document.getElementById("donation-minimum-note");
+    if (minimumNote) minimumNote.textContent = language() === "fr"
+      ? "Minimum de contribution : 10 USD. Pour un montant supérieur, le lien PayPal.Me peut demander directement le montant choisi."
+      : "Minimum contribution: USD 10. For a higher amount, PayPal.Me can request the exact amount you choose.";
   };
 
   apply();
