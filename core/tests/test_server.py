@@ -786,7 +786,7 @@ def test_private_order_api_is_loopback_only_and_tracks_verified_payments(tmp_pat
                 "amount": "88.00", "currency": "EUR", "provider": "PayPal",
                 "provider_reference": "verified-ref-1", "verified_by": "local operator",
             }).encode(),
-            headers={"Content-Type": "application/json"},
+            headers={"Content-Type": "application/json", **auth},
             method="POST",
         )
         with urlopen(payment) as response:
