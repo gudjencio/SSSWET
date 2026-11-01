@@ -132,6 +132,33 @@ class SQLiteResearchStore:
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
                 CREATE INDEX IF NOT EXISTS idx_resource_snapshots_created ON resource_snapshots(created_at DESC);
+                CREATE TABLE IF NOT EXISTS peer_review_requests (
+                    review_id TEXT PRIMARY KEY,
+                    source_campaign_id TEXT NOT NULL,
+                    node_id TEXT NOT NULL,
+                    request_json TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    closed_at TEXT NOT NULL DEFAULT ''
+                );
+                CREATE INDEX IF NOT EXISTS idx_peer_review_status
+                    ON peer_review_requests(status, created_at DESC);
+                CREATE TABLE IF NOT EXISTS peer_review_submissions (
+                    submission_id TEXT PRIMARY KEY,
+                    review_id TEXT NOT NULL REFERENCES peer_review_requests(review_id),
+                    reviewer_campaign_id TEXT NOT NULL,
+                    submission_json TEXT NOT NULL,
+                    submitted_at TEXT NOT NULL,
+                    UNIQUE(review_id, reviewer_campaign_id)
+                );
+                CREATE INDEX IF NOT EXISTS idx_peer_review_submissions_case
+                    ON peer_review_submissions(review_id, submitted_at);
+                CREATE TRIGGER IF NOT EXISTS peer_review_submission_no_update
+                    BEFORE UPDATE ON peer_review_submissions
+                    BEGIN SELECT RAISE(ABORT, 'peer review submissions are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS peer_review_submission_no_delete
+                    BEFORE DELETE ON peer_review_submissions
+                    BEGIN SELECT RAISE(ABORT, 'peer review submissions are immutable'); END;
                 CREATE TABLE IF NOT EXISTS knowledge_transfers (
                     transfer_id TEXT PRIMARY KEY,
                     source_campaign_id TEXT NOT NULL,
@@ -986,6 +1013,121 @@ class SQLiteResearchStore:
              "snapshot": json.loads(row["snapshot_json"])}
             for row in rows
         ]
+
+
+    def create_peer_review_request(self, request: object) -> dict:
+        from dataclasses import asdict
+        payload = asdict(request)
+        with self._connect() as connection:
+            source = connection.execute(
+                "SELECT campaign_json FROM research_campaigns WHERE campaign_id = ?",
+                (request.source_campaign_id,),
+            ).fetchone()
+            if source is None:
+                raise ValueError("Unknown source campaign")
+            if json.loads(source["campaign_json"]).get("state") != "active":
+                raise ValueError("Source campaign must be active")
+            node_row = connection.execute(
+                "SELECT record_json FROM knowledge_nodes WHERE node_id = ?",
+                (request.node_id,),
+            ).fetchone()
+            if node_row is None:
+                raise ValueError("Unknown knowledge node")
+            node = json.loads(node_row["record_json"])
+            node_campaign = (node.get("metadata") or {}).get("campaign_id")
+            if node_campaign != request.source_campaign_id:
+                raise ValueError("Knowledge node is not assigned to the source campaign")
+            for reviewer_id in request.reviewer_campaign_ids:
+                reviewer = connection.execute(
+                    "SELECT campaign_json FROM research_campaigns WHERE campaign_id = ?",
+                    (reviewer_id,),
+                ).fetchone()
+                if reviewer is None:
+                    raise ValueError(f"Unknown reviewer campaign: {reviewer_id}")
+                if json.loads(reviewer["campaign_json"]).get("state") != "active":
+                    raise ValueError("Every reviewer campaign must be active")
+            connection.execute(
+                """INSERT INTO peer_review_requests(
+                    review_id, source_campaign_id, node_id, request_json,
+                    status, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?)""",
+                (request.review_id, request.source_campaign_id, request.node_id,
+                 json.dumps(payload, ensure_ascii=False, sort_keys=True),
+                 request.status, request.created_at),
+            )
+        return payload
+
+    def add_peer_review_submission(self, submission: object) -> dict:
+        from dataclasses import asdict
+        payload = asdict(submission)
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT request_json, status FROM peer_review_requests WHERE review_id = ?",
+                (submission.review_id,),
+            ).fetchone()
+            if row is None:
+                raise ValueError("Unknown peer-review request")
+            if row["status"] != "open":
+                raise ValueError("Peer-review request is not open")
+            request = json.loads(row["request_json"])
+            if submission.reviewer_campaign_id not in request["reviewer_campaign_ids"]:
+                raise ValueError("Reviewer campaign is not assigned to this request")
+            campaign = connection.execute(
+                "SELECT campaign_json FROM research_campaigns WHERE campaign_id = ?",
+                (submission.reviewer_campaign_id,),
+            ).fetchone()
+            if campaign is None or json.loads(campaign["campaign_json"]).get("state") != "active":
+                raise ValueError("Reviewer campaign must still be active")
+            if not connection.execute(
+                "SELECT 1 FROM knowledge_nodes WHERE node_id = ?",
+                (request["node_id"],),
+            ).fetchone():
+                raise ValueError("The reviewed knowledge node no longer exists")
+            connection.execute(
+                """INSERT INTO peer_review_submissions(
+                    submission_id, review_id, reviewer_campaign_id,
+                    submission_json, submitted_at
+                ) VALUES (?, ?, ?, ?, ?)""",
+                (submission.submission_id, submission.review_id,
+                 submission.reviewer_campaign_id,
+                 json.dumps(payload, ensure_ascii=False, sort_keys=True),
+                 submission.submitted_at),
+            )
+            submitted = connection.execute(
+                "SELECT COUNT(*) AS n FROM peer_review_submissions WHERE review_id = ?",
+                (submission.review_id,),
+            ).fetchone()["n"]
+            if submitted >= len(request["reviewer_campaign_ids"]):
+                request["status"] = "completed"
+                request["closed_at"] = submission.submitted_at
+                connection.execute(
+                    "UPDATE peer_review_requests SET request_json = ?, status = ?, closed_at = ? WHERE review_id = ?",
+                    (json.dumps(request, ensure_ascii=False, sort_keys=True),
+                     "completed", submission.submitted_at, submission.review_id),
+                )
+        return payload
+
+    def peer_review_history(self, limit: int = 200) -> list[dict]:
+        bounded = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            requests = connection.execute(
+                """SELECT request_json FROM peer_review_requests
+                   ORDER BY created_at DESC, review_id LIMIT ?""",
+                (bounded,),
+            ).fetchall()
+            results = []
+            for row in requests:
+                request = json.loads(row["request_json"])
+                submissions = connection.execute(
+                    """SELECT submission_json FROM peer_review_submissions
+                       WHERE review_id = ? ORDER BY submitted_at, submission_id""",
+                    (request["review_id"],),
+                ).fetchall()
+                request["submissions"] = [
+                    json.loads(item["submission_json"]) for item in submissions
+                ]
+                results.append(request)
+        return results
 
 
     def create_knowledge_transfer(self, transfer: object) -> None:
