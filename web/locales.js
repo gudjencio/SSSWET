@@ -6,6 +6,7 @@ window.SSSWET_LOCALES = {
   en: {
     name: "English", dir: "ltr",
     dashboard: "Global science dashboard", dashboardNote: "Live overview from the local research engine. Missing connections are shown explicitly.", refresh: "Refresh",
+    dashCampaigns: "Research campaigns", dashResources: "Resource coordination", dashTransfers: "Knowledge transfers", dashExperiments: "Experiments", dashOptimization: "Adaptive proposals", dashGaps: "Research gaps", dashGraph: "Knowledge graph", dashActivity: "Recent activity", dashConflicts: "Contradictions to review", dashUnavailable: "UNAVAILABLE", dashNoRecords: "NO RECORDS", dashLive: "LIVE DATA", dashActive: "active", dashBlocked: "blocked", dashQueued: "queued", dashCompleted: "completed", dashPending: "pending", dashAccepted: "accepted", dashRejected: "rejected", dashPlans: "plans", dashRecords: "records", dashNodes: "nodes", dashRelations: "relationships", dashHigh: "high", dashMedium: "medium", dashLow: "low", dashCycles: "cycles", dashRecent: "recent entries", dashEndpointUnavailable: "This local API endpoint is unavailable.", dashNoData: "No data recorded.",
     tagline: "Super Soldier Space Warping Engeriening Tech",
     status: "RESEARCH INTERFACE", statusOnline: "LOCAL RESEARCH ENGINE CONNECTED",
     statusOffline: "LOCAL RESEARCH ENGINE NOT CONNECTED",
@@ -22,6 +23,7 @@ window.SSSWET_LOCALES = {
   fr: {
     name: "Français", dir: "ltr",
     dashboard: "Tableau de bord scientifique global", dashboardNote: "Vue d'ensemble en direct du moteur de recherche local. Les connexions indisponibles sont signalées explicitement.", refresh: "Actualiser",
+    dashCampaigns: "Campagnes de recherche", dashResources: "Coordination des ressources", dashTransfers: "Transferts de connaissances", dashExperiments: "Expériences", dashOptimization: "Propositions adaptatives", dashGaps: "Lacunes de recherche", dashGraph: "Graphe des connaissances", dashActivity: "Activité récente", dashConflicts: "Contradictions à examiner", dashUnavailable: "INDISPONIBLE", dashNoRecords: "AUCUNE DONNÉE", dashLive: "DONNÉES EN DIRECT", dashActive: "actives", dashBlocked: "bloquées", dashQueued: "en attente", dashCompleted: "terminées", dashPending: "en attente", dashAccepted: "acceptés", dashRejected: "refusés", dashPlans: "plans", dashRecords: "enregistrements", dashNodes: "nœuds", dashRelations: "relations", dashHigh: "élevée", dashMedium: "moyenne", dashLow: "faible", dashCycles: "cycles", dashRecent: "événements récents", dashEndpointUnavailable: "Point d'accès local indisponible.", dashNoData: "Aucune donnée enregistrée.",
     tagline: "Super Soldier Space Warping Engeriening Tech",
     status: "INTERFACE DE RECHERCHE", statusOnline: "MOTEUR DE RECHERCHE LOCAL CONNECTÉ",
     statusOffline: "MOTEUR DE RECHERCHE LOCAL NON CONNECTÉ",
@@ -38,6 +40,7 @@ window.SSSWET_LOCALES = {
   es: {
     name: "Español", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "Panel científico global", dashboardNote: "Resumen en directo del motor de investigación local. Las conexiones no disponibles se indican explícitamente.", refresh: "Actualizar",
+    dashCampaigns: "Campañas de investigación", dashResources: "Coordinación de recursos", dashTransfers: "Transferencias de conocimiento", dashExperiments: "Experimentos", dashOptimization: "Propuestas adaptativas", dashGaps: "Vacíos de investigación", dashGraph: "Grafo de conocimiento", dashActivity: "Actividad reciente", dashConflicts: "Contradicciones por revisar", dashUnavailable: "NO DISPONIBLE", dashNoRecords: "SIN REGISTROS", dashLive: "DATOS EN DIRECTO", dashActive: "activas", dashBlocked: "bloqueadas", dashQueued: "en cola", dashCompleted: "completadas", dashPending: "pendientes", dashAccepted: "aceptadas", dashRejected: "rechazadas", dashPlans: "planes", dashRecords: "registros", dashNodes: "nodos", dashRelations: "relaciones", dashHigh: "alta", dashMedium: "media", dashLow: "baja", dashCycles: "ciclos", dashRecent: "eventos recientes", dashEndpointUnavailable: "Este punto de la API local no está disponible.", dashNoData: "No hay datos registrados.",
     status: "INTERFAZ DE INVESTIGACIÓN", statusOnline: "MOTOR DE INVESTIGACIÓN LOCAL CONECTADO",
     statusOffline: "MOTOR DE INVESTIGACIÓN LOCAL NO CONECTADO",
     mission: "Investigar ideas. Ponerlas a prueba. Verificarlas. Nunca confundir una hipótesis con la realidad.",
@@ -53,6 +56,7 @@ window.SSSWET_LOCALES = {
   de: {
     name: "Deutsch", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "Globales Wissenschafts-Dashboard", dashboardNote: "Live-Übersicht der lokalen Forschungsumgebung. Fehlende Verbindungen werden ausdrücklich angezeigt.", refresh: "Aktualisieren",
+    dashCampaigns: "Forschungskampagnen", dashResources: "Ressourcenkoordination", dashTransfers: "Wissensübertragungen", dashExperiments: "Experimente", dashOptimization: "Adaptive Vorschläge", dashGaps: "Forschungslücken", dashGraph: "Wissensgraph", dashActivity: "Letzte Aktivitäten", dashConflicts: "Zu prüfende Widersprüche", dashUnavailable: "NICHT VERFÜGBAR", dashNoRecords: "KEINE DATEN", dashLive: "LIVE-DATEN", dashActive: "aktiv", dashBlocked: "blockiert", dashQueued: "in Warteschlange", dashCompleted: "abgeschlossen", dashPending: "ausstehend", dashAccepted: "akzeptiert", dashRejected: "abgelehnt", dashPlans: "Pläne", dashRecords: "Einträge", dashNodes: "Knoten", dashRelations: "Beziehungen", dashHigh: "hoch", dashMedium: "mittel", dashLow: "niedrig", dashCycles: "Zyklen", dashRecent: "letzte Ereignisse", dashEndpointUnavailable: "Dieser lokale API-Endpunkt ist nicht verfügbar.", dashNoData: "Keine Daten erfasst.",
     status: "FORSCHUNGSSCHNITTSTELLE", statusOnline: "LOKALE FORSCHUNGSUMGEBUNG VERBUNDEN",
     statusOffline: "LOKALE FORSCHUNGSUMGEBUNG NICHT VERBUNDEN",
     mission: "Ideen erforschen. Sie testen. Sie überprüfen. Eine Hypothese niemals mit der Realität verwechseln.",
@@ -68,6 +72,7 @@ window.SSSWET_LOCALES = {
   it: {
     name: "Italiano", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "Dashboard scientifico globale", dashboardNote: "Panoramica in tempo reale del motore di ricerca locale. Le connessioni mancanti sono indicate chiaramente.", refresh: "Aggiorna",
+    dashCampaigns: "Campagne di ricerca", dashResources: "Coordinamento delle risorse", dashTransfers: "Trasferimenti di conoscenza", dashExperiments: "Esperimenti", dashOptimization: "Proposte adattive", dashGaps: "Lacune nella ricerca", dashGraph: "Grafo della conoscenza", dashActivity: "Attività recente", dashConflicts: "Contraddizioni da esaminare", dashUnavailable: "NON DISPONIBILE", dashNoRecords: "NESSUN DATO", dashLive: "DATI IN DIRETTA", dashActive: "attive", dashBlocked: "bloccate", dashQueued: "in coda", dashCompleted: "completate", dashPending: "in attesa", dashAccepted: "accettati", dashRejected: "rifiutati", dashPlans: "piani", dashRecords: "registrazioni", dashNodes: "nodi", dashRelations: "relazioni", dashHigh: "alta", dashMedium: "media", dashLow: "bassa", dashCycles: "cicli", dashRecent: "eventi recenti", dashEndpointUnavailable: "Questo endpoint API locale non è disponibile.", dashNoData: "Nessun dato registrato.",
     status: "INTERFACCIA DI RICERCA", statusOnline: "MOTORE DI RICERCA LOCALE CONNESSO",
     statusOffline: "MOTORE DI RICERCA LOCALE NON CONNESSO",
     mission: "Studiare le idee. Metterle alla prova. Verificarle. Non confondere mai un'ipotesi con la realtà.",
@@ -83,6 +88,7 @@ window.SSSWET_LOCALES = {
   pt: {
     name: "Português", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "Painel científico global", dashboardNote: "Visão geral em tempo real do mecanismo de pesquisa local. As conexões indisponíveis são indicadas explicitamente.", refresh: "Atualizar",
+    dashCampaigns: "Campanhas de pesquisa", dashResources: "Coordenação de recursos", dashTransfers: "Transferências de conhecimento", dashExperiments: "Experimentos", dashOptimization: "Propostas adaptativas", dashGaps: "Lacunas de pesquisa", dashGraph: "Grafo de conhecimento", dashActivity: "Atividade recente", dashConflicts: "Contradições para analisar", dashUnavailable: "INDISPONÍVEL", dashNoRecords: "SEM REGISTROS", dashLive: "DADOS AO VIVO", dashActive: "ativas", dashBlocked: "bloqueadas", dashQueued: "na fila", dashCompleted: "concluídas", dashPending: "pendentes", dashAccepted: "aceitas", dashRejected: "rejeitadas", dashPlans: "planos", dashRecords: "registros", dashNodes: "nós", dashRelations: "relações", dashHigh: "alta", dashMedium: "média", dashLow: "baixa", dashCycles: "ciclos", dashRecent: "eventos recentes", dashEndpointUnavailable: "Este endpoint da API local está indisponível.", dashNoData: "Nenhum dado registrado.",
     status: "INTERFACE DE PESQUISA", statusOnline: "MOTOR DE PESQUISA LOCAL CONECTADO",
     statusOffline: "MOTOR DE PESQUISA LOCAL NÃO CONECTADO",
     mission: "Pesquisar ideias. Testá-las. Verificá-las. Nunca confundir uma hipótese com a realidade.",
@@ -98,6 +104,7 @@ window.SSSWET_LOCALES = {
   nl: {
     name: "Nederlands", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "Wereldwijd wetenschappelijk dashboard", dashboardNote: "Liveoverzicht van de lokale onderzoeksmotor. Ontbrekende verbindingen worden expliciet weergegeven.", refresh: "Vernieuwen",
+    dashCampaigns: "Onderzoekscampagnes", dashResources: "Resourcecoördinatie", dashTransfers: "Kennisoverdrachten", dashExperiments: "Experimenten", dashOptimization: "Adaptieve voorstellen", dashGaps: "Onderzoekshiaten", dashGraph: "Kenn grafiek", dashActivity: "Recente activiteit", dashConflicts: "Te beoordelen tegenstrijdigheden", dashUnavailable: "NIET BESCHIKBAAR", dashNoRecords: "GEEN GEGEVENS", dashLive: "LIVEGEGEVENS", dashActive: "actief", dashBlocked: "geblokkeerd", dashQueued: "in wachtrij", dashCompleted: "voltooid", dashPending: "in afwachting", dashAccepted: "geaccepteerd", dashRejected: "afgewezen", dashPlans: "plannen", dashRecords: "records", dashNodes: "knopen", dashRelations: "relaties", dashHigh: "hoog", dashMedium: "gemiddeld", dashLow: "laag", dashCycles: "cycli", dashRecent: "recente gebeurtenissen", dashEndpointUnavailable: "Dit lokale API-eindpunt is niet beschikbaar.", dashNoData: "Geen gegevens geregistreerd.",
     status: "ONDERZOEKSINTERFACE", statusOnline: "LOKALE ONDERZOEKSMOTOR VERBONDEN",
     statusOffline: "LOKALE ONDERZOEKSMOTOR NIET VERBONDEN",
     mission: "Ideeën onderzoeken. Ze testen. Ze verifiëren. Een hypothese nooit verwarren met de werkelijkheid.",
@@ -113,6 +120,7 @@ window.SSSWET_LOCALES = {
   ru: {
     name: "Русский", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "Глобальная научная панель", dashboardNote: "Обзор локальной исследовательской системы в реальном времени. Отсутствующие подключения отмечаются явно.", refresh: "Обновить",
+    dashCampaigns: "Исследовательские кампании", dashResources: "Координация ресурсов", dashTransfers: "Передача знаний", dashExperiments: "Эксперименты", dashOptimization: "Адаптивные предложения", dashGaps: "Пробелы в исследованиях", dashGraph: "Граф знаний", dashActivity: "Недавняя активность", dashConflicts: "Противоречия для проверки", dashUnavailable: "НЕДОСТУПНО", dashNoRecords: "НЕТ ДАННЫХ", dashLive: "АКТУАЛЬНЫЕ ДАННЫЕ", dashActive: "активно", dashBlocked: "заблокировано", dashQueued: "в очереди", dashCompleted: "завершено", dashPending: "ожидает", dashAccepted: "принято", dashRejected: "отклонено", dashPlans: "планы", dashRecords: "записи", dashNodes: "узлы", dashRelations: "связи", dashHigh: "высокий", dashMedium: "средний", dashLow: "низкий", dashCycles: "циклы", dashRecent: "последние события", dashEndpointUnavailable: "Эта локальная конечная точка API недоступна.", dashNoData: "Данные не зарегистрированы.",
     status: "ИНТЕРФЕЙС ИССЛЕДОВАНИЙ", statusOnline: "ЛОКАЛЬНАЯ ИССЛЕДОВАТЕЛЬСКАЯ СИСТЕМА ПОДКЛЮЧЕНА",
     statusOffline: "ЛОКАЛЬНАЯ ИССЛЕДОВАТЕЛЬСКАЯ СИСТЕМА НЕ ПОДКЛЮЧЕНА",
     mission: "Исследовать идеи. Проверять их. Подтверждать их. Никогда не путать гипотезу с реальностью.",
@@ -128,6 +136,7 @@ window.SSSWET_LOCALES = {
   uk: {
     name: "Українська", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "Глобальна наукова панель", dashboardNote: "Огляд локальної дослідницької системи наживо. Відсутні підключення позначаються явно.", refresh: "Оновити",
+    dashCampaigns: "Дослідницькі кампанії", dashResources: "Координація ресурсів", dashTransfers: "Передавання знань", dashExperiments: "Експерименти", dashOptimization: "Адаптивні пропозиції", dashGaps: "Прогалини досліджень", dashGraph: "Граф знань", dashActivity: "Остання активність", dashConflicts: "Суперечності для перевірки", dashUnavailable: "НЕДОСТУПНО", dashNoRecords: "НЕМАЄ ДАНИХ", dashLive: "АКТУАЛЬНІ ДАНІ", dashActive: "активні", dashBlocked: "заблоковані", dashQueued: "у черзі", dashCompleted: "завершені", dashPending: "очікують", dashAccepted: "прийняті", dashRejected: "відхилені", dashPlans: "плани", dashRecords: "записи", dashNodes: "вузли", dashRelations: "зв’язки", dashHigh: "високий", dashMedium: "середній", dashLow: "низький", dashCycles: "цикли", dashRecent: "останні події", dashEndpointUnavailable: "Ця локальна кінцева точка API недоступна.", dashNoData: "Дані не зареєстровано.",
     status: "ДОСЛІДНИЦЬКИЙ ІНТЕРФЕЙС", statusOnline: "ЛОКАЛЬНИЙ ДОСЛІДНИЦЬКИЙ РУШІЙ ПІДКЛЮЧЕНО",
     statusOffline: "ЛОКАЛЬНИЙ ДОСЛІДНИЦЬКИЙ РУШІЙ НЕ ПІДКЛЮЧЕНО",
     mission: "Досліджувати ідеї. Перевіряти їх. Підтверджувати їх. Не плутати гіпотезу з реальністю.",
@@ -143,6 +152,7 @@ window.SSSWET_LOCALES = {
   ar: {
     name: "العربية", dir: "rtl", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "لوحة العلوم العالمية", dashboardNote: "نظرة مباشرة من محرك البحث المحلي. يتم توضيح الاتصالات غير المتاحة.", refresh: "تحديث",
+    dashCampaigns: "حملات البحث", dashResources: "تنسيق الموارد", dashTransfers: "نقل المعرفة", dashExperiments: "التجارب", dashOptimization: "مقترحات تكيفية", dashGaps: "فجوات البحث", dashGraph: "الرسم المعرفي", dashActivity: "النشاط الأخير", dashConflicts: "تناقضات للمراجعة", dashUnavailable: "غير متاح", dashNoRecords: "لا توجد بيانات", dashLive: "بيانات مباشرة", dashActive: "نشطة", dashBlocked: "محظورة", dashQueued: "في قائمة الانتظار", dashCompleted: "مكتملة", dashPending: "قيد الانتظار", dashAccepted: "مقبولة", dashRejected: "مرفوضة", dashPlans: "خطط", dashRecords: "سجلات", dashNodes: "عُقد", dashRelations: "علاقات", dashHigh: "عالية", dashMedium: "متوسطة", dashLow: "منخفضة", dashCycles: "دورات", dashRecent: "أحداث حديثة", dashEndpointUnavailable: "نقطة واجهة API المحلية هذه غير متاحة.", dashNoData: "لا توجد بيانات مسجلة.",
     status: "واجهة البحث", statusOnline: "محرك البحث المحلي متصل",
     statusOffline: "محرك البحث المحلي غير متصل",
     mission: "ابحث عن الأفكار. اختبرها. تحقق منها. لا تخلط أبدًا بين الفرضية والواقع.",
@@ -158,6 +168,7 @@ window.SSSWET_LOCALES = {
   he: {
     name: "עברית", dir: "rtl", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "לוח מחקר מדעי גלובלי", dashboardNote: "תצוגה חיה ממנוע המחקר המקומי. חיבורים חסרים מסומנים במפורש.", refresh: "רענון",
+    dashCampaigns: "קמפיינים מחקריים", dashResources: "תיאום משאבים", dashTransfers: "העברות ידע", dashExperiments: "ניסויים", dashOptimization: "הצעות אדפטיביות", dashGaps: "פערי מחקר", dashGraph: "גרף ידע", dashActivity: "פעילות אחרונה", dashConflicts: "סתירות לבדיקה", dashUnavailable: "לא זמין", dashNoRecords: "אין נתונים", dashLive: "נתונים חיים", dashActive: "פעילים", dashBlocked: "חסומים", dashQueued: "בתור", dashCompleted: "הושלמו", dashPending: "ממתינים", dashAccepted: "התקבלו", dashRejected: "נדחו", dashPlans: "תוכניות", dashRecords: "רשומות", dashNodes: "צמתים", dashRelations: "קשרים", dashHigh: "גבוה", dashMedium: "בינוני", dashLow: "נמוך", dashCycles: "מחזורים", dashRecent: "אירועים אחרונים", dashEndpointUnavailable: "נקודת API מקומית זו אינה זמינה.", dashNoData: "לא נרשמו נתונים.",
     status: "ממשק מחקר", statusOnline: "מנוע המחקר המקומי מחובר",
     statusOffline: "מנוע המחקר המקומי אינו מחובר",
     mission: "חוקרים רעיונות. בודקים אותם. מאמתים אותם. לעולם אין לבלבל בין השערה למציאות.",
@@ -173,6 +184,7 @@ window.SSSWET_LOCALES = {
   ja: {
     name: "日本語", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "グローバル科学ダッシュボード", dashboardNote: "ローカル研究エンジンのライブ概要です。利用できない接続は明示されます。", refresh: "更新",
+    dashCampaigns: "研究キャンペーン", dashResources: "リソース調整", dashTransfers: "知識の共有", dashExperiments: "実験", dashOptimization: "適応型提案", dashGaps: "研究課題", dashGraph: "知識グラフ", dashActivity: "最近の活動", dashConflicts: "確認が必要な矛盾", dashUnavailable: "利用不可", dashNoRecords: "データなし", dashLive: "ライブデータ", dashActive: "進行中", dashBlocked: "ブロック", dashQueued: "待機中", dashCompleted: "完了", dashPending: "保留中", dashAccepted: "承認", dashRejected: "却下", dashPlans: "計画", dashRecords: "記録", dashNodes: "ノード", dashRelations: "関係", dashHigh: "高", dashMedium: "中", dashLow: "低", dashCycles: "サイクル", dashRecent: "最近のイベント", dashEndpointUnavailable: "このローカルAPIエンドポイントは利用できません。", dashNoData: "記録されたデータはありません。",
     status: "研究インターフェース", statusOnline: "ローカル研究エンジンに接続済み",
     statusOffline: "ローカル研究エンジンに未接続",
     mission: "アイデアを研究し、検証し、確かめる。仮説と現実を決して混同しない。",
@@ -188,6 +200,7 @@ window.SSSWET_LOCALES = {
   ko: {
     name: "한국어", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "글로벌 과학 대시보드", dashboardNote: "로컬 연구 엔진의 실시간 개요입니다. 연결되지 않은 항목은 명확하게 표시됩니다.", refresh: "새로고침",
+    dashCampaigns: "연구 캠페인", dashResources: "자원 조정", dashTransfers: "지식 이전", dashExperiments: "실험", dashOptimization: "적응형 제안", dashGaps: "연구 공백", dashGraph: "지식 그래프", dashActivity: "최근 활동", dashConflicts: "검토할 모순", dashUnavailable: "사용 불가", dashNoRecords: "데이터 없음", dashLive: "실시간 데이터", dashActive: "활성", dashBlocked: "차단됨", dashQueued: "대기열", dashCompleted: "완료", dashPending: "대기 중", dashAccepted: "수락됨", dashRejected: "거부됨", dashPlans: "계획", dashRecords: "기록", dashNodes: "노드", dashRelations: "관계", dashHigh: "높음", dashMedium: "중간", dashLow: "낮음", dashCycles: "주기", dashRecent: "최근 이벤트", dashEndpointUnavailable: "이 로컬 API 엔드포인트를 사용할 수 없습니다.", dashNoData: "기록된 데이터가 없습니다.",
     status: "연구 인터페이스", statusOnline: "로컬 연구 엔진 연결됨",
     statusOffline: "로컬 연구 엔진 연결되지 않음",
     mission: "아이디어를 연구하고 시험하고 검증합니다. 가설을 현실과 혼동하지 않습니다.",
@@ -203,6 +216,7 @@ window.SSSWET_LOCALES = {
   zh: {
     name: "中文", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "全球科学仪表板", dashboardNote: "本地研究引擎的实时概览。不可用的连接会明确标示。", refresh: "刷新",
+    dashCampaigns: "研究项目", dashResources: "资源协调", dashTransfers: "知识转移", dashExperiments: "实验", dashOptimization: "自适应提案", dashGaps: "研究空白", dashGraph: "知识图谱", dashActivity: "近期活动", dashConflicts: "待审查的矛盾", dashUnavailable: "不可用", dashNoRecords: "暂无记录", dashLive: "实时数据", dashActive: "进行中", dashBlocked: "已阻止", dashQueued: "排队中", dashCompleted: "已完成", dashPending: "待处理", dashAccepted: "已接受", dashRejected: "已拒绝", dashPlans: "计划", dashRecords: "记录", dashNodes: "节点", dashRelations: "关系", dashHigh: "高", dashMedium: "中", dashLow: "低", dashCycles: "周期", dashRecent: "近期事件", dashEndpointUnavailable: "此本地 API 端点不可用。", dashNoData: "尚无记录数据。",
     status: "研究界面", statusOnline: "本地研究引擎已连接",
     statusOffline: "本地研究引擎未连接",
     mission: "研究想法、测试想法、验证想法。绝不把假设与现实混为一谈。",
@@ -218,6 +232,7 @@ window.SSSWET_LOCALES = {
   hi: {
     name: "हिन्दी", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
     dashboard: "वैश्विक विज्ञान डैशबोर्ड", dashboardNote: "स्थानीय अनुसंधान इंजन का लाइव अवलोकन। अनुपलब्ध कनेक्शन स्पष्ट रूप से दिखाए जाते हैं।", refresh: "रीफ़्रेश",
+    dashCampaigns: "अनुसंधान अभियान", dashResources: "संसाधन समन्वय", dashTransfers: "ज्ञान हस्तांतरण", dashExperiments: "प्रयोग", dashOptimization: "अनुकूली प्रस्ताव", dashGaps: "अनुसंधान अंतराल", dashGraph: "ज्ञान ग्राफ", dashActivity: "हाल की गतिविधि", dashConflicts: "समीक्षा हेतु विरोधाभास", dashUnavailable: "उपलब्ध नहीं", dashNoRecords: "कोई रिकॉर्ड नहीं", dashLive: "लाइव डेटा", dashActive: "सक्रिय", dashBlocked: "अवरुद्ध", dashQueued: "कतार में", dashCompleted: "पूर्ण", dashPending: "लंबित", dashAccepted: "स्वीकृत", dashRejected: "अस्वीकृत", dashPlans: "योजनाएँ", dashRecords: "रिकॉर्ड", dashNodes: "नोड", dashRelations: "संबंध", dashHigh: "उच्च", dashMedium: "मध्यम", dashLow: "निम्न", dashCycles: "चक्र", dashRecent: "हाल की घटनाएँ", dashEndpointUnavailable: "यह स्थानीय API एंडपॉइंट उपलब्ध नहीं है।", dashNoData: "कोई डेटा दर्ज नहीं है।",
     status: "अनुसंधान इंटरफ़ेस", statusOnline: "स्थानीय अनुसंधान इंजन जुड़ा हुआ है",
     statusOffline: "स्थानीय अनुसंधान इंजन जुड़ा नहीं है",
     mission: "विचारों पर शोध करें। उनका परीक्षण करें। सत्यापन करें। परिकल्पना को वास्तविकता न समझें।",
