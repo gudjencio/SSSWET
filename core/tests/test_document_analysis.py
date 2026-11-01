@@ -49,3 +49,21 @@ def test_document_analysis_does_not_call_model_when_no_passage_matches():
     assert result.source_ids == ()
     assert "not run" in result.summary
     assert result.uncertainty == 1.0
+
+
+
+def test_document_analysis_requests_structured_cross_source_comparison():
+    model = StubModelProvider()
+    docs = [
+        CorpusDocument("paper-a:p1", "Experimental methods", "Experimental methods and control group design."),
+        CorpusDocument("paper-b:p2", "Results and limitations", "Results and limitations of the measured experiment."),
+    ]
+    provider = DocumentAnalysisProvider(model, docs)
+    provider.investigate("Compare experimental methods, results and limitations", "comparison")
+
+    prompt = model.objectives[0]
+    assert "HYPOTHESES AND OBJECTIVES" in prompt
+    assert "METHODS AND EXPERIMENTAL DESIGN" in prompt
+    assert "AGREEMENTS BETWEEN SOURCES" in prompt
+    assert "DISAGREEMENTS OR CONTRADICTIONS" in prompt
+    assert "For every statement, identify its source ID" in prompt
