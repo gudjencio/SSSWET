@@ -23,6 +23,10 @@ The project explores a disciplined workflow for turning research questions into 
 
 The read-only reproducibility intelligence service summarizes recorded comparisons by protocol and exposes a transparent five-part evidence-completeness index. Matching outputs do not count as independent verification unless that verification is explicitly recorded. Missing comparisons produce no score, and parameter sensitivity remains unassessed until normalized sweep metadata exists. The index is not a measure of scientific truth or validity. See [the reproducibility intelligence documentation](docs/REPRODUCIBILITY_INTELLIGENCE.md).
 
+## Parameter sensitivity planning
+
+Published laboratory protocols can carry explicit parameter ranges, units, baseline values, measurement uncertainty, replicate counts and safety constraints. The read-only sensitivity planner turns complete metadata into a one-factor-at-a-time scenario matrix for human review. Missing definitions remain visible instead of being guessed. The planner does not estimate causal effects or parameter interactions, create tasks, execute experiments or establish scientific validity. See [parameter sensitivity planning](docs/PARAMETER_SENSITIVITY_PLANNING.md).
+
 ## Research Integrity & Ethics Framework
 
 The append-only risk register records concerns involving data integrity, bias, conflicts of interest, reproducibility, safety, ethics, legal/regulatory constraints and security. Unresolved high or critical risks generate a human-review campaign-hold recommendation. The software does not automatically suspend campaigns, authorize research or certify that a risk has been eliminated. See [the framework documentation](docs/RESEARCH_INTEGRITY_ETHICS.md).
