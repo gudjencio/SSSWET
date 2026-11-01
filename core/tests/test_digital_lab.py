@@ -50,7 +50,7 @@ def test_protocol_and_run_are_persisted_with_explicit_provenance(tmp_path):
 
 
 def test_reproduction_comparison_records_matching_conditions_and_outputs(tmp_path):
-    _, service = setup(tmp_path)
+    store, service = setup(tmp_path)
     service.record_run(make_run("run-a", "campaign-a", 4))
     service.record_run(make_run("run-b", "campaign-b", 4.0001))
     result = service.compare_runs("run-a", "run-b", tolerance=0.001)
