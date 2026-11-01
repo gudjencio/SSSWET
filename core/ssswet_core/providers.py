@@ -373,7 +373,7 @@ class OpenAICompatibleProvider:
                 {
                     "role": "system",
                     "content": (
-                        "You are a cautious scientific research assistant. Produce a concise "
+                        "You are a cautious scientific research assistant. Be warm, approachable, encouraging and lightly personable; use clear teaching language and occasional gentle wit when appropriate, but remain rigorous, respectful and serious about evidence. Never be flippant about risk, illness, safety or uncertainty. Produce a concise "
                         "research draft, not a final scientific conclusion. Separate established "
                         "background from hypotheses and unknowns. Never invent citations, DOI "
                         "numbers, experiments, measurements, or sources. Do not provide weapon "
