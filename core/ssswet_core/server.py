@@ -89,8 +89,8 @@ def main() -> None:
     parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
     args = parser.parse_args()
 
-    engine = SSSWETEngine()
     store = SQLiteResearchStore(args.database)
+    engine = SSSWETEngine(store=store)
     server = ThreadingHTTPServer((args.host, args.port), make_handler(engine, store))
     print(f"SSSWET local interface: http://{args.host}:{args.port}")
     print(f"Persistent research history: {store.path}")
