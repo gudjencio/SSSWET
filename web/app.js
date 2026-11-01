@@ -669,12 +669,48 @@
       });
     } catch { showMessage(t.offline); }
   }
+  function localizeResearchLog(message) {
+    const raw = String(message || "").trim();
+    const language = translationSource(currentLanguage());
+    const dictionaries = {
+      fr: {
+        "Task lifecycle state updated.":"État du cycle de vie de la tâche mis à jour.",
+        "independent_verifier completed a research pass; evidence remains subject to verification.":"Le vérificateur indépendant a terminé un cycle de recherche ; les éléments recueillis restent à vérifier.",
+        "general_researcher completed a research pass; evidence remains subject to verification.":"Le chercheur généraliste a terminé un cycle de recherche ; les éléments recueillis restent à vérifier.",
+        "Research group created with role-matched agents.":"Groupe de recherche créé avec des agents affectés selon leurs rôles.",
+        "Specialist team allocated: 2 agents.":"Équipe de spécialistes affectée : 2 agents.",
+        "Specialist team allocated: 1 agent.":"Équipe de spécialistes affectée : 1 agent."
+      },
+      en: {
+        "Task lifecycle state updated.":"Task lifecycle state updated.",
+        "independent_verifier completed a research pass; evidence remains subject to verification.":"The independent verifier completed a research pass; evidence remains subject to verification.",
+        "general_researcher completed a research pass; evidence remains subject to verification.":"The general researcher completed a research pass; evidence remains subject to verification.",
+        "Research group created with role-matched agents.":"Research group created with role-matched agents.",
+        "Specialist team allocated: 2 agents.":"Specialist team allocated: 2 agents.",
+        "Specialist team allocated: 1 agent.":"Specialist team allocated: 1 agent."
+      }
+    };
+    const known = dictionaries[language] || dictionaries.en;
+    if (known[raw]) return known[raw];
+    const errorLike = /\\b(error|failed|failure|exception|traceback|timeout|refused|unavailable)\\b/i.test(raw);
+    if (!errorLike) return raw;
+    const details = raw
+      .replace(/\\bConnection refused\\b/gi, language === "fr" ? "Connexion refusée" : "Connection refused")
+      .replace(/\\bPermission denied\\b/gi, language === "fr" ? "Autorisation refusée" : "Permission denied")
+      .replace(/\\bTimeout\\b/gi, language === "fr" ? "Délai d’attente dépassé" : "Timeout")
+      .replace(/\\bService unavailable\\b/gi, language === "fr" ? "Service indisponible" : "Service unavailable")
+      .replace(/\\bHTTP (\\d{3})\\b/gi, language === "fr" ? "Réponse HTTP $1" : "HTTP $1");
+    return language === "fr"
+      ? "Erreur technique à examiner : " + details
+      : "Technical error requiring review: " + details;
+  }
+
   async function showActivity() {
     lastView = "activity";
     const t = currentTranslations();
     try {
       const events = await apiGet("/api/events");
-      const lines = events.slice(0, 5).map((event) => event.message).filter(Boolean);
+      const lines = events.slice(0, 8).map((event) => localizeResearchLog(event.message)).filter(Boolean);
       showMessage(lines.length ? lines.join(" • ") : t.noActivity);
     } catch { showMessage(t.offline); }
   }
