@@ -807,3 +807,47 @@ is represented as a recorded relationship, not a scientific conclusion.
 The HTTP endpoint is `GET /api/research-timeline`; optional query parameters
 are `campaign_id` and `limit`. The timeline does not mutate research state,
 create tasks, execute experiments, or establish scientific validity.
+
+
+### Cross-campaign peer review
+
+The PeerReviewService supports explicit review requests and append-only
+submissions from other active research campaigns. A request identifies the
+source campaign, a knowledge-graph node, the question to assess, and one or
+more reviewer campaigns. The node must belong to the source campaign.
+
+~~~python
+from ssswet_core.peer_review import PeerReviewService
+
+reviews = PeerReviewService(store)
+reviews.request(
+    "review-wave-001",
+    "campaign-wave-source",
+    "finding-wave-001",
+    ["campaign-wave-review"],
+    "research-coordinator",
+    "Can this method be reproduced from the documented assumptions?",
+)
+reviews.submit(
+    "submission-wave-001",
+    "review-wave-001",
+    "campaign-wave-review",
+    "inconclusive",
+    "The supplied record omits a necessary measurement uncertainty.",
+    "Independent analytical review of the documented method",
+    source_ids=("review-source-001",),
+    provenance_group="review-team-dataset",
+    independence_confirmed=True,
+    limitations="No physical reproduction was performed.",
+)
+~~~
+
+Allowed outcomes are supports, challenges, inconclusive and unable_to_assess.
+Each assigned reviewer campaign can submit once. Submissions are immutable.
+The read-only endpoint is GET /api/collaboration/peer-reviews; activity is
+also included in GET /api/research-timeline.
+
+Independence is explicitly self-declared, not authenticated. Campaign
+separation alone does not prove independent people, data, methods or funding.
+A peer-review outcome is not a vote and does not alter a finding's verification
+state or automatically resolve a contradiction.
