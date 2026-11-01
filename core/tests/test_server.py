@@ -76,3 +76,38 @@ def test_collective_memory_search_endpoint_is_read_only_and_traceable(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+
+def test_literature_watch_history_endpoint_is_read_only(tmp_path):
+    import json
+    import threading
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.literature_watch import LiteratureWatchService
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.providers import ProviderResult
+    from ssswet_core.server import make_handler
+
+    class Provider:
+        name = "test-provider"
+        def investigate(self, objective, strategy):
+            return ProviderResult("Metadata only", evidence=("A paper | DOI: 10.55/test",), source_ids=("10.55/test",))
+
+    store = SQLiteResearchStore(tmp_path / "watch-api.sqlite3")
+    report = LiteratureWatchService(Provider(), store).run("test topic")
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with urlopen(f"http://127.0.0.1:{server.server_port}/api/literature-watch") as response:
+            payload = json.loads(response.read())
+        assert payload["reports"][0]["watch_id"] == report.watch_id
+        assert payload["reports"][0]["scientific_validity_established"] is False
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
