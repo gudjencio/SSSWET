@@ -54,10 +54,18 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if args.corpus or args.pdf:
-        documents = load_corpus(args.corpus) if args.corpus else []
-        if args.pdf:
-            documents.extend(load_pdf_documents(args.pdf))
+    documents = load_corpus(args.corpus) if args.corpus else []
+    if args.pdf:
+        documents.extend(load_pdf_documents(args.pdf))
+
+    if documents and args.provider == "llm":
+        model_provider = OpenAICompatibleProvider(
+            api_key=os.getenv("SSSWET_LLM_API_KEY", ""),
+            model=args.model,
+            endpoint=args.endpoint,
+        )
+        provider = DocumentAnalysisProvider(model_provider, documents)
+    elif documents:
         provider = LocalCorpusProvider(documents)
     elif args.provider == "crossref":
         provider = CrossrefProvider(mailto=args.mailto)
