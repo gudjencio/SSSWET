@@ -10,9 +10,9 @@ const translations = {
     verified: "Latest verified results",
     ready: "The research system is ready.",
     footer: "ETDESS is the French translation of SSSWET. Public results remain subject to verification.",
-    discoveryMessage: "No public discovery has been published yet. The system is researching and verifying before publication.",
-    workingMessage: "Research tasks are being decomposed, assigned, checked, and recovered when blocked.",
-    verifiedMessage: "No independently verified public result is available yet. This is intentional: verification comes before publication."
+    discoveryMessage: "No public discovery has been published yet. The system researches and verifies before publication.",
+    workingMessage: "Research tasks are decomposed, assigned, checked, and recovered when blocked.",
+    verifiedMessage: "No independently verified public result is available yet. Verification comes before publication."
   },
   fr: {
     tagline: "Super Soldier Space Warping Engeriening Tech",
@@ -27,7 +27,7 @@ const translations = {
     footer: "ETDESS est la traduction française de SSSWET. Les résultats publics restent soumis à vérification.",
     discoveryMessage: "Aucune découverte publique n'a encore été publiée. Le système recherche et vérifie avant toute publication.",
     workingMessage: "Les tâches sont décomposées, distribuées, vérifiées et reprises lorsqu'elles sont bloquées.",
-    verifiedMessage: "Aucun résultat public vérifié indépendamment n'est encore disponible. C'est volontaire : la vérification précède la publication."
+    verifiedMessage: "Aucun résultat public vérifié indépendamment n'est encore disponible. La vérification précède la publication."
   }
 };
 
@@ -64,5 +64,8 @@ document.querySelectorAll("button[data-action]").forEach((button) => {
 });
 
 languageSelect.addEventListener("change", () => setLanguage(languageSelect.value));
-
 setLanguage(localStorage.getItem("ssswet-language") || preferredLanguage());
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
