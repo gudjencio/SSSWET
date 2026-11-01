@@ -126,7 +126,7 @@ if (!pageSource.includes('data-tech="timetravel"')) throw new Error("Time travel
 console.log("Validated the PayPal research-funding route, conditional future product delivery wording and time-travel technology.");
 
 const portfolioConfig = fs.readFileSync(new URL("./donation-config.js", `file://${__filename}`), "utf8");
-for (const key of ["cellular", "longevity", "armor", "jetpack", "translator", "spacetime", "timetravel"]) {
+for (const key of ["cellular", "longevity", "armor", "jetpack", "translator", "spacetime", "timetravel", "cleanenergy", "energyStorage", "water", "foodSystems", "climate", "biodiversity", "wildlife", "oceans", "reforestation", "agriculture", "circularEconomy", "airQuality", "mobility", "accessibility", "disasterResilience", "publicHealth", "sanitation", "education", "animalHealth", "materials", "carbonMonitoring", "pollinators"]) {
   if (!portfolioConfig.includes(key + ":")) throw new Error(`Research portfolio is missing ${key}`);
 }
 for (const field of ["funding_goal_eur: null", "confirmed_contributions_eur: null", 'stage: "planning"', 'prototype: false', 'availability: "not_available"']) {
