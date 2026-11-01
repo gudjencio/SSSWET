@@ -684,3 +684,7 @@ body { background:#000000 !important; }
 @media(max-width:760px){.bot-command-layout{grid-template-columns:1fr}.bot-command-visual{height:190px}.bot-command-main .bot-control-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.bot-command-heading{align-items:flex-start;flex-direction:column}.bot-live-pill{max-width:100%}}
 @media(max-width:420px){.bot-command-hero{padding:13px;border-radius:18px}.bot-command-visual{height:170px}.bot-command-main .bot-control-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.bot-robot-one{left:5%}.bot-robot-two{right:5%}}
 @media(prefers-reduced-motion:reduce){.bot-live-indicator,.bot-core-ring,.bot-agent-pulse{animation:none}}
+
+/* A disconnected engine must never look like a live session. */
+.bot-live-pill:has(#bot-control-status[data-state="offline"]) .bot-live-indicator { background:#8991a8; box-shadow:none; animation:none; }
+.bot-command-hero:has(#bot-control-status[data-state="offline"]) .bot-command-visual { filter:saturate(.72); }
