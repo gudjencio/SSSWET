@@ -162,6 +162,107 @@
       .map(([label, count]) => String(count) + " " + label).join(" · ") || currentTranslations().dashNoData;
   }
 
+
+  function renderOpportunityList(payload) {
+    const container = document.getElementById("opportunity-list");
+    container.replaceChildren();
+    const t = currentTranslations();
+    const items = Array.isArray(payload && payload.opportunities) ? payload.opportunities : [];
+    if (!items.length) {
+      const empty = document.createElement("p");
+      empty.className = "visual-empty";
+      empty.textContent = t.opportunityEmpty;
+      container.append(empty);
+      return;
+    }
+    items.slice(0, 12).forEach((item) => {
+      const details = document.createElement("details");
+      details.className = "opportunity-item";
+      const summary = document.createElement("summary");
+      const title = document.createElement("strong");
+      title.textContent = item.title || item.opportunity_id;
+      const meta = document.createElement("span");
+      meta.className = "opportunity-meta";
+      meta.textContent = (item.kind === "research_gap" ? t.gapSignal : t.linkSignal)
+        + " · " + String(item.priority || "medium").toUpperCase();
+      summary.append(title, meta);
+      const body = document.createElement("div");
+      body.className = "opportunity-body";
+      const description = document.createElement("p");
+      description.textContent = item.summary || "";
+      const action = document.createElement("p");
+      action.textContent = t.suggestedAction + ": " + (item.suggested_action || "");
+      const refs = document.createElement("p");
+      refs.className = "opportunity-references";
+      refs.textContent = t.references + ": " + (item.graph_node_ids || []).join(", ")
+        + ((item.campaign_ids || []).length ? " · " + t.campaignsShort + ": " + item.campaign_ids.join(", ") : "");
+      body.append(description, action, refs);
+      details.append(summary, body);
+      container.append(details);
+    });
+    const notice = document.createElement("p");
+    notice.className = "visual-disclaimer";
+    notice.textContent = t.opportunityDisclaimer;
+    container.append(notice);
+  }
+
+  function renderKnowledgeMap(payload) {
+    const container = document.getElementById("knowledge-map");
+    container.replaceChildren();
+    const t = currentTranslations();
+    const nodes = Array.isArray(payload && payload.nodes) ? payload.nodes.slice(0, 24) : [];
+    const edges = Array.isArray(payload && payload.edges) ? payload.edges : [];
+    if (!nodes.length) {
+      const empty = document.createElement("p");
+      empty.className = "visual-empty";
+      empty.textContent = t.mapEmpty;
+      container.append(empty);
+      return;
+    }
+    const ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg");
+    svg.setAttribute("viewBox", "0 0 720 320");
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", t.mapAccessible);
+    const positions = new Map();
+    nodes.forEach((node, index) => {
+      const angle = (Math.PI * 2 * index / nodes.length) - Math.PI / 2;
+      positions.set(node.node_id, {x: 360 + Math.cos(angle) * (nodes.length > 2 ? 245 : 150), y: 160 + Math.sin(angle) * 112});
+    });
+    edges.forEach((edge) => {
+      const a = positions.get(edge.source_id), b = positions.get(edge.target_id);
+      if (!a || !b) return;
+      const line = document.createElementNS(ns, "line");
+      line.setAttribute("x1", a.x); line.setAttribute("y1", a.y);
+      line.setAttribute("x2", b.x); line.setAttribute("y2", b.y);
+      line.setAttribute("class", "knowledge-edge");
+      const title = document.createElementNS(ns, "title");
+      title.textContent = edge.relation || t.recordedRelation;
+      line.append(title); svg.append(line);
+    });
+    nodes.forEach((node) => {
+      const point = positions.get(node.node_id);
+      const group = document.createElementNS(ns, "g");
+      group.setAttribute("class", "knowledge-node");
+      const circle = document.createElementNS(ns, "circle");
+      circle.setAttribute("cx", point.x); circle.setAttribute("cy", point.y); circle.setAttribute("r", "7");
+      const label = document.createElementNS(ns, "text");
+      label.setAttribute("x", point.x); label.setAttribute("y", point.y + 22);
+      label.setAttribute("text-anchor", "middle");
+      label.textContent = String(node.label || node.node_id).slice(0, 28);
+      const title = document.createElementNS(ns, "title");
+      title.textContent = (node.label || node.node_id) + " · " + (node.node_type || "record") + " · " + (node.verification_state || "unverified");
+      group.append(circle, label, title); svg.append(group);
+    });
+    container.append(svg);
+    const legend = document.createElement("p");
+    legend.className = "map-legend";
+    legend.textContent = nodes.length + " " + t.mapNodes + " · "
+      + edges.filter(edge => positions.has(edge.source_id) && positions.has(edge.target_id)).length
+      + " " + t.mapRelations + " · " + t.mapDisclaimer;
+    container.append(legend);
+  }
+
   async function showDashboard() {
     lastView = "dashboard";
     feed.hidden = true;
@@ -240,6 +341,15 @@
           [t.dashHigh, p.priority_counts && p.priority_counts.high || 0],
           [t.dashMedium, p.priority_counts && p.priority_counts.medium || 0],
           [t.dashLow, p.priority_counts && p.priority_counts.low || 0]
+        ])
+      },
+      {
+        key: "opportunities", path: "/api/research-opportunities", list: "opportunities",
+        title: t.opportunityTitle,
+        count: (a, p) => safeCount(p.total),
+        detail: (a, p) => dashboardMetrics([
+          [t.gapSignal, p.signal_counts && p.signal_counts.research_gaps || 0],
+          [t.linkSignal, p.signal_counts && p.signal_counts.interdisciplinary_links || 0]
         ])
       },
       {
@@ -367,6 +477,10 @@
         totalConflicts ? "live" : "empty"
       ));
     }
+    const graphResult = results.find(result => result.item.key === "graph");
+    renderKnowledgeMap(graphResult && !graphResult.error ? graphResult.payload : {nodes: [], edges: []});
+    const opportunityResult = results.find(result => result.item.key === "opportunities");
+    renderOpportunityList(opportunityResult && !opportunityResult.error ? opportunityResult.payload : {opportunities: []});
     if (results.every(result => result.error)) {
       const note = document.createElement("p");
       note.className = "dashboard-offline";
