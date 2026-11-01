@@ -110,3 +110,15 @@ ssswet-local
 Both commands use `.ssswet/ssswet.sqlite3` by default. Research outputs are
 stored as unverified until the separate evidence and reproduction requirements
 are met. See [core documentation](core/README.md) for details.
+
+### External literature discovery
+
+The local research runner can now query Crossref for bibliographic metadata:
+
+```bash
+ssswet-run --objective "wave propagation measurement methods" --domain physics --provider crossref
+```
+
+The returned publications are source leads, not verified conclusions. All
+provider outputs remain explicitly unverified pending full source review,
+independent evidence and reproducibility.
