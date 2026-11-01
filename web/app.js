@@ -654,6 +654,19 @@
     }
   }
 
+  function cleanDiscoverySummary(value) {
+    let summary = String(value || "").trim();
+    summary = summary.replace(/^\\[UNVERIFIED\\s*[·|]\\s*[^\\]]+\\]\\s*/i, "");
+    const bibliographic = summary.match(/^Combined discovery returned (\\d+) unique bibliographic lead\\(s\\) from Crossref and OpenAlex\\.\\s*Duplicate DOI records are collapsed\\.\\s*Metadata is not proof of quality or truth; review full texts, methods and independent evidence before drawing conclusions\\.?$/i);
+    if (bibliographic) {
+      const count = bibliographic[1];
+      return document.documentElement.lang.toLowerCase().startsWith("fr")
+        ? `Découverte bibliographique : ${count} références uniques trouvées dans Crossref et OpenAlex. Les DOI en double ont été regroupés ; la qualité scientifique des références reste à vérifier.`
+        : `Bibliographic discovery: ${count} unique references found in Crossref and OpenAlex. Duplicate DOIs were merged; the scientific quality of these references remains unverified.`;
+    }
+    return summary;
+  }
+
   async function showDiscoveries() {
     lastView = "discoveries";
     const t = currentTranslations();
@@ -661,7 +674,7 @@
       const items = await apiGet("/api/discoveries");
       const groups = new Map();
       items.forEach((item) => {
-        const summary = String(item.summary || item.statement || "").trim();
+        const summary = cleanDiscoverySummary(item.summary || item.statement || "");
         if (!summary) return;
         const key = summary.replace(/\\s+/g, " ").toLocaleLowerCase();
         if (!groups.has(key)) groups.set(key, { summary, roles: new Map(), count: 0 });
