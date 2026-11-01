@@ -139,6 +139,12 @@ class SQLiteResearchStore:
                     event_json TEXT NOT NULL,
                     created_at TEXT NOT NULL
                 );
+                CREATE TRIGGER IF NOT EXISTS lab_protocol_proposal_events_no_update
+                    BEFORE UPDATE ON lab_protocol_proposal_events
+                    BEGIN SELECT RAISE(ABORT, 'protocol proposal events are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS lab_protocol_proposal_events_no_delete
+                    BEFORE DELETE ON lab_protocol_proposal_events
+                    BEGIN SELECT RAISE(ABORT, 'protocol proposal events are immutable'); END;
                 CREATE TABLE IF NOT EXISTS lab_runs (
                     run_id TEXT PRIMARY KEY,
                     protocol_id TEXT NOT NULL,
