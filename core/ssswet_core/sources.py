@@ -19,12 +19,24 @@ class SourceRecord:
     publication_date_known: bool = False
     limitations: tuple[str, ...] = field(default_factory=tuple)
     retrieved_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    doi: str = ""
+    authors: tuple[str, ...] = field(default_factory=tuple)
+    institutions: tuple[str, ...] = field(default_factory=tuple)
+    dataset_ids: tuple[str, ...] = field(default_factory=tuple)
+    related_source_ids: tuple[str, ...] = field(default_factory=tuple)
+    provenance_group: str = ""
 
     def __post_init__(self) -> None:
         if not self.source_id.strip():
             raise ValueError("source_id must not be empty")
         if not self.title.strip():
             raise ValueError("title must not be empty")
+        if self.doi and not self.doi.strip():
+            raise ValueError("doi must be a non-empty string when provided")
+        if len(set(self.dataset_ids)) != len(self.dataset_ids):
+            raise ValueError("dataset_ids must not contain duplicates")
+        if self.source_id in self.related_source_ids:
+            raise ValueError("A source cannot be related to itself")
 
 
 @dataclass(frozen=True)
