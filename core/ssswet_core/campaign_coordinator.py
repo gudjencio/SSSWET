@@ -123,6 +123,25 @@ class CampaignCoordinator:
         self.resources.finish(task_id, success=success, actual_units=actual_units)
         self._save_snapshot()
 
+    def block_milestone(self, campaign_id: str, milestone_id: str, note: str) -> None:
+        campaign_data = self.store.get_campaign(campaign_id)
+        if campaign_data is None:
+            raise ValueError(f"Unknown campaign: {campaign_id}")
+        from .campaigns import CampaignMilestone, ResearchCampaign
+
+        campaign = ResearchCampaign(
+            campaign_id=campaign_data["campaign_id"],
+            title=campaign_data["title"],
+            objective=campaign_data["objective"],
+            domain=campaign_data["domain"],
+            state=campaign_data["state"],
+            milestones=tuple(CampaignMilestone(**item) for item in campaign_data["milestones"]),
+            warnings=tuple(campaign_data.get("warnings", ())),
+        )
+        self.store.save_campaign(update_milestone(
+            campaign, milestone_id, "blocked", notes=note
+        ))
+
     def snapshot(self) -> dict:
         return self.resources.snapshot()
 
