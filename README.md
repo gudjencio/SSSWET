@@ -148,7 +148,7 @@ Arabic and Hebrew use right-to-left layout. Translation coverage and quality are
 
 - **Web application:** [gudjencio.github.io/SSSWET](https://gudjencio.github.io/SSSWET/)
 - **Source code:** [github.com/gudjencio/SSSWET](https://github.com/gudjencio/SSSWET)
-- **Google Sites mirror instructions:** [GOOGLE_SITES_MIRROR.md](GOOGLE_SITES_MIRROR.md)
+- **Google Sites mirror:** [ssswet.google.com](https://sites.google.com/view/ssswet)
 - **X:** [@ssswetech](https://x.com/ssswetech)
 - **Instagram:** [@ssswetech](https://www.instagram.com/ssswetech)
 - **YouTube:** [@ssswetech](https://www.youtube.com/@ssswetech)
@@ -270,3 +270,8 @@ The [public research portfolio](docs/CONTRIBUTIONS.md#public-research-portfolio-
 ## Research journal
 
 The local research engine includes an append-only, hash-chained journal for dated technology-programme updates. Entries retain explicit classifications (hypothesis, literature, simulation, prototype, observation, independent review or project update), evidence references and progress states. The journal API reports chain integrity separately from scientific validity. Local journal writes are restricted to loopback clients; the static public site does not accept remote submissions.
+
+
+## Technology Feasibility Observatory
+
+The local research engine includes a read-only observatory for all seven technology programmes. It summarizes explicitly recorded literature, simulations, prototypes, tests and independent reviews, then identifies missing review areas without inventing a feasibility score or authorizing delivery. See [the observatory documentation](docs/TECHNOLOGY_FEASIBILITY_OBSERVATORY.md).
