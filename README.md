@@ -137,3 +137,20 @@ An OpenAI-compatible language-model endpoint can be configured locally using
 Credentials are never committed. Model responses remain unverified drafts;
 they are not scientific sources or validated discoveries. See
 [the core setup guide](core/README.md).
+
+
+### Local PDF research documents
+
+The local runner can extract text from PDF files page by page. Install the optional
+PDF dependency and pass one or more local files:
+
+```bash
+cd core
+python -m pip install -e ".[pdf]"
+ssswet-run --objective "Compare methods and limitations" --domain physics --pdf ./paper-one.pdf --pdf ./paper-two.pdf
+```
+
+PDFs stay on the local computer. Text extraction is bounded by file size,
+page count and per-page character limits. Scanned image-only PDFs need OCR
+and may produce no extracted text. Extracted passages are research material,
+not validated evidence.
