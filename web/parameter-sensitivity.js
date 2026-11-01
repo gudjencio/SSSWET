@@ -178,7 +178,7 @@
     }
   }
   refresh?.addEventListener("click", () => { load(); loadInteractions(); });
-  window.addEventListener("ssswet-language-changed", load);
+  window.addEventListener("ssswet-language-changed", () => { load(); loadInteractions(); });
   load();
   loadInteractions();
 })();
