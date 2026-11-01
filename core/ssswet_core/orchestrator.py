@@ -75,9 +75,9 @@ class ResearchOrchestrator:
 
     def assign_team(self, task: Task, roles: list[str]) -> list[Agent]:
         """Allocate and activate a specialist team for one parent research task."""
+        agents = self.bot_manager.ensure_role_capacity(roles)
         if task in self.tasks:
             self.tasks.remove(task)
-        agents = self.bot_manager.ensure_role_capacity(roles)
         task.status = TaskStatus.ACTIVE
         task.attempts += 1
         strategy = self.strategies.next(task.strategy_history)
