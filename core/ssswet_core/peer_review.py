@@ -103,18 +103,59 @@ class PeerReviewService:
         for case in cases:
             submissions = case.get("submissions", [])
             case["submission_count"] = len(submissions)
-            case["outcome_summary"] = {
-                outcome: sum(1 for item in submissions if item["outcome"] == outcome)
+            outcomes = [item["outcome"] for item in submissions]
+            outcome_counts = {
+                outcome: outcomes.count(outcome)
                 for outcome in sorted(REVIEW_OUTCOMES)
             }
+            source_usage: dict[str, int] = {}
+            provenance_usage: dict[str, int] = {}
+            for item in submissions:
+                for source_id in item.get("source_ids", []):
+                    source_usage[source_id] = source_usage.get(source_id, 0) + 1
+                provenance = item.get("provenance_group", "").strip()
+                if provenance:
+                    provenance_usage[provenance] = provenance_usage.get(provenance, 0) + 1
+            repeated_sources = sorted(
+                source_id for source_id, count in source_usage.items() if count > 1
+            )
+            repeated_provenance = sorted(
+                group for group, count in provenance_usage.items() if count > 1
+            )
+            distinct_outcomes = sorted(set(outcomes))
+            case["outcome_summary"] = outcome_counts
             case["all_reviewers_declared_independence"] = bool(submissions) and all(
                 item["independence_confirmed"] for item in submissions
             )
             case["independence_independently_verified"] = False
+            case["review_synthesis"] = {
+                "outcome_pattern": (
+                    "no_submissions" if not submissions else
+                    "unanimous" if len(distinct_outcomes) == 1 else "mixed"
+                ),
+                "distinct_outcomes": distinct_outcomes,
+                "reviewer_campaign_count": len({
+                    item["reviewer_campaign_id"] for item in submissions
+                }),
+                "distinct_methods": sorted({
+                    item["method"].strip() for item in submissions if item.get("method", "").strip()
+                }),
+                "shared_source_ids": repeated_sources,
+                "shared_provenance_groups": repeated_provenance,
+                "submissions_with_limitations": sum(
+                    1 for item in submissions if item.get("limitations", "").strip()
+                ),
+                "interpretation": (
+                    "Descriptive comparison only. Outcome patterns, reviewer declarations "
+                    "and method counts do not establish independence or scientific validity."
+                ),
+                "majority_vote_used_for_adjudication": False,
+            }
             case["scientific_validity_established"] = False
         return {
             "reviews": cases,
             "review_count": len(cases),
             "scientific_validity_established": False,
             "automatic_adjudication": False,
+            "majority_vote_used_for_adjudication": False,
         }
