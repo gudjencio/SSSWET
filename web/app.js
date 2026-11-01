@@ -5,6 +5,47 @@
   const fallback = locales.en || {};
   const languageSelect = document.getElementById("language");
   const feed = document.getElementById("feed");
+  const localApiBases = ["http://127.0.0.1:8765", "http://localhost:8765"];
+  const sameOriginBase = window.location.origin;
+  let activeApiBase = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(sameOriginBase)
+    ? sameOriginBase : null;
+  let lastApiFailure = "The local engine has not responded yet.";
+
+  window.ssswetApiFetch = async function(path, options = {}) {
+    const candidates = [...new Set([activeApiBase, ...localApiBases, sameOriginBase].filter(Boolean))];
+    const failures = [];
+    for (const base of candidates) {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 2200);
+      try {
+        const response = await fetch(new URL(path, base).toString(), {
+          ...options,
+          signal: options.signal || controller.signal,
+          cache: "no-store",
+          headers: { Accept: "application/json", ...(options.headers || {}) }
+        });
+        window.clearTimeout(timeout);
+        if (!response.ok) {
+          failures.push(base + " · HTTP " + response.status);
+          if ([404, 405].includes(response.status) || response.status >= 500) continue;
+          throw new Error("HTTP " + response.status);
+        }
+        activeApiBase = base;
+        window.SSSWET_API_BASE = base;
+        window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:true,base}}));
+        return response;
+      } catch (error) {
+        window.clearTimeout(timeout);
+        failures.push(base + " · " + (error.name === "AbortError" ? "timeout" : error.message));
+      }
+    }
+    lastApiFailure = failures.join(" | ") || "No API endpoint responded.";
+    window.SSSWET_API_BASE = null;
+    window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:false,error:lastApiFailure}}));
+    throw new Error(lastApiFailure);
+  };
+
+
   const agentCount = document.getElementById("agent-count");
   const systemStatus = document.getElementById("system-status");
   const dashboard = document.getElementById("dashboard");
@@ -193,7 +234,7 @@
     let node;
     while ((node = walker.nextNode())) {
       const parent = node.parentElement;
-      if (!parent || parent.closest("script,style,textarea,pre,code,svg")) continue;
+      if (!parent || parent.closest('script,style,textarea,pre,code,svg,a[href^="mailto:"]')) continue;
       const updated = capitalizeInitial(node.nodeValue);
       if (updated !== node.nodeValue) node.nodeValue = updated;
     }
@@ -215,7 +256,7 @@
       else record.addedNodes.forEach(node => {
         if (node.nodeType === Node.TEXT_NODE) {
           const parent = node.parentElement;
-          if (parent && !parent.closest("script,style,textarea,pre,code,svg")) {
+          if (parent && !parent.closest('script,style,textarea,pre,code,svg,a[href^="mailto:"]')) {
             const updated = capitalizeInitial(node.nodeValue);
             if (updated !== node.nodeValue) node.nodeValue = updated;
           }
@@ -366,9 +407,7 @@
   }
 
   async function apiGet(path) {
-    const response = await fetch(path, {
-      method: "GET", headers: { "Accept": "application/json" }, cache: "no-store"
-    });
+    const response = await window.ssswetApiFetch(path, { method: "GET" });
     if (!response.ok) throw new Error("HTTP " + response.status);
     return response.json();
   }
@@ -380,10 +419,18 @@
       agentCount.textContent = String(status.agents_total ?? 0).padStart(2, "0");
       systemStatus.textContent = t.statusOnline;
       systemStatus.dataset.connected = "true";
+      const connectionPanel = document.getElementById("engine-connection");
+      if (connectionPanel) connectionPanel.hidden = true;
     } catch {
       agentCount.textContent = "—";
       systemStatus.textContent = t.statusOffline;
       systemStatus.dataset.connected = "false";
+      const connectionPanel = document.getElementById("engine-connection");
+      const connectionMessage = document.getElementById("engine-connection-message");
+      if (connectionPanel) connectionPanel.hidden = false;
+      if (connectionMessage) connectionMessage.textContent = document.documentElement.lang.toLowerCase().startsWith("fr")
+        ? "Le moteur local n'est pas joignable. L'interface reste disponible en mode de consultation ; les données de recherche en direct apparaîtront automatiquement dès que le moteur sera lancé et accessible."
+        : "The local engine is not reachable. The interface remains available in fallback mode; live research data will appear automatically when the engine is running and accessible.";
     }
   }
 
@@ -1179,7 +1226,9 @@
     section.parentNode.insertBefore(foldout, section);
     foldout.append(summary, section);
   });
-  window.setInterval(refreshStatus, 15000);
+  document.getElementById("engine-connection-retry")?.addEventListener("click", refreshStatus);
+  window.setInterval(refreshStatus, 10000);
+  refreshStatus();
   capitalizeInterfaceText(document.body);
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
