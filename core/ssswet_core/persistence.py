@@ -164,6 +164,44 @@ class SQLiteResearchStore:
                 CREATE TRIGGER IF NOT EXISTS lab_comparisons_no_delete
                     BEFORE DELETE ON lab_comparisons
                     BEGIN SELECT RAISE(ABORT, 'lab comparisons are immutable'); END;
+                CREATE TABLE IF NOT EXISTS lab_datasets (
+                    dataset_id TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    record_json TEXT NOT NULL,
+                    content_fingerprint TEXT NOT NULL DEFAULT '',
+                    registered_at TEXT NOT NULL,
+                    PRIMARY KEY(dataset_id, version)
+                );
+                CREATE INDEX IF NOT EXISTS idx_lab_datasets_fingerprint
+                    ON lab_datasets(content_fingerprint);
+                CREATE INDEX IF NOT EXISTS idx_lab_datasets_time
+                    ON lab_datasets(registered_at DESC);
+                CREATE TRIGGER IF NOT EXISTS lab_datasets_no_update
+                    BEFORE UPDATE ON lab_datasets
+                    BEGIN SELECT RAISE(ABORT, 'dataset versions are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS lab_datasets_no_delete
+                    BEFORE DELETE ON lab_datasets
+                    BEGIN SELECT RAISE(ABORT, 'dataset versions are immutable'); END;
+                CREATE TABLE IF NOT EXISTS lab_dataset_transformations (
+                    transformation_id TEXT PRIMARY KEY,
+                    dataset_id TEXT NOT NULL,
+                    input_version INTEGER NOT NULL,
+                    output_version INTEGER NOT NULL,
+                    record_json TEXT NOT NULL,
+                    recorded_at TEXT NOT NULL,
+                    FOREIGN KEY(dataset_id, input_version)
+                        REFERENCES lab_datasets(dataset_id, version),
+                    FOREIGN KEY(dataset_id, output_version)
+                        REFERENCES lab_datasets(dataset_id, version)
+                );
+                CREATE INDEX IF NOT EXISTS idx_lab_dataset_transformations_dataset
+                    ON lab_dataset_transformations(dataset_id, recorded_at DESC);
+                CREATE TRIGGER IF NOT EXISTS lab_dataset_transformations_no_update
+                    BEFORE UPDATE ON lab_dataset_transformations
+                    BEGIN SELECT RAISE(ABORT, 'dataset transformations are immutable'); END;
+                CREATE TRIGGER IF NOT EXISTS lab_dataset_transformations_no_delete
+                    BEFORE DELETE ON lab_dataset_transformations
+                    BEGIN SELECT RAISE(ABORT, 'dataset transformations are immutable'); END;
                 CREATE TABLE IF NOT EXISTS adaptive_cycles (
                     cycle_id TEXT PRIMARY KEY,
                     study_id TEXT NOT NULL,
@@ -1085,6 +1123,80 @@ class SQLiteResearchStore:
                 (bounded,),
             ).fetchall()
         return [json.loads(row["comparison_json"]) for row in rows]
+
+
+
+    def save_lab_dataset(self, record: dict) -> dict:
+        required = ("dataset_id", "version", "registered_at", "record_fingerprint")
+        if any(key not in record for key in required):
+            raise ValueError("Dataset version record is incomplete")
+        with self._connect() as connection:
+            if connection.execute(
+                "SELECT 1 FROM lab_datasets WHERE dataset_id=? AND version=?",
+                (record["dataset_id"], record["version"]),
+            ).fetchone():
+                raise ValueError("Dataset version already exists; versions are immutable")
+            previous = connection.execute(
+                "SELECT MAX(version) AS version FROM lab_datasets WHERE dataset_id=?",
+                (record["dataset_id"],),
+            ).fetchone()["version"]
+            expected = 1 if previous is None else previous + 1
+            if record["version"] != expected:
+                raise ValueError("Dataset versions must be registered sequentially")
+            connection.execute(
+                """INSERT INTO lab_datasets(dataset_id, version, record_json,
+                   content_fingerprint, registered_at) VALUES (?, ?, ?, ?, ?)""",
+                (record["dataset_id"], record["version"],
+                 json.dumps(record, ensure_ascii=False, sort_keys=True),
+                 record.get("content_sha256", ""), record["registered_at"]),
+            )
+        return record
+
+    def get_lab_dataset(self, dataset_id: str, version: int) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT record_json FROM lab_datasets WHERE dataset_id=? AND version=?",
+                (dataset_id, version),
+            ).fetchone()
+        return json.loads(row["record_json"]) if row else None
+
+    def lab_dataset_history(self, limit: int = 200) -> list[dict]:
+        bounded = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT record_json FROM lab_datasets ORDER BY registered_at DESC, dataset_id, version DESC LIMIT ?",
+                (bounded,),
+            ).fetchall()
+        return [json.loads(row["record_json"]) for row in rows]
+
+    def save_lab_dataset_transformation(self, record: dict) -> dict:
+        with self._connect() as connection:
+            for field in ("input_version", "output_version"):
+                exists = connection.execute(
+                    "SELECT 1 FROM lab_datasets WHERE dataset_id=? AND version=?",
+                    (record["dataset_id"], record[field]),
+                ).fetchone()
+                if not exists:
+                    raise ValueError("Transformation references an unknown dataset version")
+            connection.execute(
+                """INSERT INTO lab_dataset_transformations(
+                    transformation_id, dataset_id, input_version, output_version,
+                    record_json, recorded_at) VALUES (?, ?, ?, ?, ?, ?)""",
+                (record["transformation_id"], record["dataset_id"],
+                 record["input_version"], record["output_version"],
+                 json.dumps(record, ensure_ascii=False, sort_keys=True),
+                 record["recorded_at"]),
+            )
+        return record
+
+    def lab_dataset_transformation_history(self, limit: int = 200) -> list[dict]:
+        bounded = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT record_json FROM lab_dataset_transformations ORDER BY recorded_at DESC, transformation_id LIMIT ?",
+                (bounded,),
+            ).fetchall()
+        return [json.loads(row["record_json"]) for row in rows]
 
 
     def save_adaptive_cycle(self, cycle_id: str, cycle: object) -> None:
