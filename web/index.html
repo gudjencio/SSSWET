@@ -23,29 +23,29 @@
     <header class="topbar"><div class="brand"><div class="brand-mark" id="brand-mark">SSSWET</div><div class="brand-subtitle" id="brand-subtitle">Super Soldier&#39;s Space Warping Engineering &amp; Tech</div></div><label class="language-control"><span class="visually-hidden" data-i18n="language">Language</span><select id="language" aria-label="Language"></select></label></header>
     <section class="bot-command-hero" aria-labelledby="bot-control-title">
       <div class="bot-command-heading">
-        <div><p class="eyebrow">SSSWET · LIVE RESEARCH NETWORK</p><h2 id="bot-control-title">Centre de supervision des bots</h2><p id="bot-control-caption">Les agents qui travaillent actuellement et leurs activités de recherche</p></div>
+        <div><p class="eyebrow" id="bot-control-network-label">SSSWET · LIVE RESEARCH NETWORK</p><h2 id="bot-control-title">Live activity</h2><p id="bot-control-caption">Current activity, engine status and recent research tasks</p></div>
         <div class="bot-live-pill"><span class="bot-live-indicator"></span><span id="bot-control-status" role="status" aria-live="polite">Connexion au moteur de recherche local…</span></div>
       </div>
       <div class="bot-command-layout">
         <section class="bot-command-main" aria-label="Activité des agents">
           <div class="bot-command-visual">
             <div class="bot-orbit bot-orbit-one"></div><div class="bot-orbit bot-orbit-two"></div>
-            <div class="bot-command-core"><span class="bot-core-ring"></span><span class="bot-core-label">SSSWET<br><small>RESEARCH NETWORK</small></span></div>
-            <div class="bot-command-robot bot-robot-one"><span class="agent-avatar agent-avatar-1"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small>RESEARCH</small></div>
-            <div class="bot-command-robot bot-robot-two"><span class="agent-avatar agent-avatar-2"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small>ANALYSIS</small></div>
-            <div class="bot-command-robot bot-robot-three"><span class="agent-avatar agent-avatar-3"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small>VERIFY</small></div>
+            <div class="bot-command-core"><span class="bot-core-ring"></span><span class="bot-core-label">SSSWET<br><small id="bot-core-network-label">RESEARCH NETWORK</small></span></div>
+            <div class="bot-command-robot bot-robot-one"><span class="agent-avatar agent-avatar-1"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small id="bot-visual-research">RESEARCH</small></div>
+            <div class="bot-command-robot bot-robot-two"><span class="agent-avatar agent-avatar-2"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small id="bot-visual-analysis">ANALYSIS</small></div>
+            <div class="bot-command-robot bot-robot-three"><span class="agent-avatar agent-avatar-3"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span><small id="bot-visual-verify">REVIEW</small></div>
             <div class="bot-visual-grid"></div>
           </div>
           <div class="bot-command-current" id="bot-control-current" aria-live="polite"><strong>Programme en cours :</strong> en attente des données du moteur local</div>
           <div id="bot-control-metrics" class="bot-control-metrics" aria-live="polite"></div>
         </section>
         <aside class="bot-command-side">
-          <div class="bot-side-heading"><span class="bot-side-icon">✳</span><div><h3>Agents en action</h3><p>Activité réellement enregistrée</p></div><button id="bot-control-refresh" class="refresh-button" type="button" aria-label="Actualiser l’activité">↻</button></div>
+          <div class="bot-side-heading"><span class="bot-side-icon">✳</span><div><h3 id="bot-control-side-title">Active now</h3><p id="bot-control-side-caption">Activity reported by the local engine</p></div><button id="bot-control-refresh" class="refresh-button" type="button" aria-label="Refresh activity" title="Refresh activity">↻</button></div>
           <div id="bot-control-agents" class="bot-control-agents" aria-live="polite"><p class="bot-command-empty">En attente du premier signal du moteur local…</p></div>
           <div class="bot-command-task-section"><strong id="bot-control-task-title">Dernières tâches de recherche</strong><div id="bot-control-tasks" class="bot-control-tasks" aria-live="polite"></div></div>
         </aside>
       </div>
-      <p class="bot-control-note">Les robots animés représentent l’identité visuelle de l’équipe. Les états, les tâches et les compteurs proviennent du moteur local ; une activité de recherche n’est pas une validation scientifique.</p>
+      <p id="bot-control-note" class="bot-control-note">The animated visual represents the research team. Activity and figures are displayed only when reported by the local engine; research activity does not constitute scientific validation.</p>
     </section>
     <section class="hero" aria-labelledby="title"><div class="status-dot"></div><p class="eyebrow" id="system-status" data-i18n="status">RESEARCH INTERFACE</p><h1 id="title">SSSWET</h1><p class="mission" data-i18n="mission">Research ideas. Test them. Verify them. Never confuse a hypothesis with reality.</p></section>
     <section id="engine-connection" class="engine-connection" hidden aria-live="polite">
