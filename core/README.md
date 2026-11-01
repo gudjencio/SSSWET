@@ -85,3 +85,30 @@ ssswet-run --objective "Compare published methods for measuring wave propagation
 The corpus is a JSON array. Each entry has `source_id`, `title`, `text`,
 and an optional `url`. The command labels all provider output as unverified.
 Without `--corpus`, it uses the deterministic demo provider.
+
+## Persistent local research history
+
+SSSWET can store research runs in a local SQLite database using only the
+Python standard library. Tasks, lifecycle events, source identifiers, provider
+summaries and evidence excerpts are retained across restarts. Stored provider
+outputs are explicitly classified as `unverified`; persistence does not
+upgrade scientific confidence.
+
+The command-line runner writes to `.ssswet/ssswet.sqlite3` by default:
+
+```bash
+ssswet-run --objective "Study wave propagation" --domain physics --corpus documents.json
+```
+
+Choose another database with `--database /path/to/history.sqlite3`.
+
+Run the local read-only interface against the same database:
+
+```bash
+ssswet-local --database .ssswet/ssswet.sqlite3
+```
+
+The API exposes recent tasks at `/api/work`, provider outputs at
+`/api/discoveries`, event history at `/api/events`, and independently
+validated memory at `/api/verified`. The interface never treats a stored
+provider output as a verified discovery.
