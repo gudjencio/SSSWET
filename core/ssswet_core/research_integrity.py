@@ -128,7 +128,7 @@ class ResearchIntegrityRegister:
             if dossier_id:
                 rows = connection.execute(
                     """SELECT * FROM research_integrity_events WHERE dossier_id=?
-                       ORDER BY created_at, event_id LIMIT ?""", (dossier_id, limit)
+                       ORDER BY created_at DESC, event_id DESC LIMIT ?""", (dossier_id, limit)
                 ).fetchall()
             else:
                 rows = connection.execute(
