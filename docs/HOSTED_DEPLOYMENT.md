@@ -6,7 +6,7 @@ SSSWET can run as a hosted service independently of a visitor's computer. The re
 
 1. Sign in to Render and create a new Blueprint from this repository.
 2. Review the generated service **ssswet-research-api** before confirming deployment.
-3. The Blueprint uses a paid Starter instance and a 1 GB persistent disk. Confirm the current price in Render before approving; the service is not deployed merely by committing these files.
+3. The Blueprint uses a paid 0.5 CPU / 512 MB instance and a 1 GB persistent disk. Confirm the current price in Render before approving; the service is not deployed merely by committing these files.
 4. Wait for the service health check at `/api/status` to pass.
 5. The public interface is configured for `https://ssswet-research-api.onrender.com`. If Render assigns a different hostname, update `web/api-config.js` to the exact service URL and commit the change.
 6. GitHub Pages deploys the updated static interface automatically after the web files change. Google Sites should continue embedding the GitHub Pages interface.
