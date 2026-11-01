@@ -79,6 +79,8 @@ class ResearchIntegrityRegister:
             raise ValueError("mitigation must not exceed 4000 characters")
         if not isinstance(authorization_reference, str) or len(authorization_reference.strip()) > 500:
             raise ValueError("authorization_reference must not exceed 500 characters")
+        if evidence_refs is None:
+            evidence_refs = []
         if not isinstance(evidence_refs, list) or len(evidence_refs) > 100:
             raise ValueError("evidence_refs must be a list of at most 100 identifiers")
         refs = [self._required(item, "evidence reference", 300) for item in evidence_refs]
