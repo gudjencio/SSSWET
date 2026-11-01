@@ -75,12 +75,30 @@
       if(tasksNode) tasksNode.innerHTML=taskCards.length?taskCards.join(""):'<p class="bot-command-empty">'+escape(t.emptyTasks)+'</p>';
     } catch(error) {
       lastConnectionOk = false;
-      statusNode.dataset.state="offline";
-      statusNode.textContent=t.statusOffline;
-      current.innerHTML='<strong>'+escape(t.offline)+'</strong><br><span>'+escape(t.offlineDetail)+'</span>';
-      metrics.innerHTML="";
-      agents.innerHTML='<p class="bot-command-empty">'+escape(t.offlineDetail)+'</p>';
-      if(tasksNode) tasksNode.innerHTML='<p class="bot-command-empty">'+escape(t.emptyTasks)+'</p>';
+      const httpStatus = Number(error && error.status || 0);
+      if (httpStatus) {
+        const french = document.documentElement.lang.toLowerCase().startsWith("fr");
+        const message = httpStatus === 404
+          ? (french
+              ? "Le moteur local répond, mais cette version ne fournit pas encore l’API du tableau de bord. Redémarrez le moteur avec la dernière version."
+              : "The local engine responds, but this version does not provide the dashboard API yet. Restart the engine with the latest version.")
+          : (french
+              ? "Le moteur local répond, mais l’API a renvoyé une erreur HTTP " + httpStatus + "."
+              : "The local engine responds, but the API returned HTTP " + httpStatus + ".");
+        statusNode.dataset.state="degraded";
+        statusNode.textContent=french?"Moteur joignable · mise à jour requise":"Engine reachable · update required";
+        current.innerHTML='<strong>'+escape(french?"API indisponible":"API unavailable")+'</strong><br><span>'+escape(message)+'</span>';
+        metrics.innerHTML="";
+        agents.innerHTML='<p class="bot-command-empty">'+escape(message)+'</p>';
+        if(tasksNode) tasksNode.innerHTML='<p class="bot-command-empty">'+escape(t.emptyTasks)+'</p>';
+      } else {
+        statusNode.dataset.state="offline";
+        statusNode.textContent=t.statusOffline;
+        current.innerHTML='<strong>'+escape(t.offline)+'</strong><br><span>'+escape(t.offlineDetail)+'</span>';
+        metrics.innerHTML="";
+        agents.innerHTML='<p class="bot-command-empty">'+escape(t.offlineDetail)+'</p>';
+        if(tasksNode) tasksNode.innerHTML='<p class="bot-command-empty">'+escape(t.emptyTasks)+'</p>';
+      }
     } finally { requestInProgress = false; }
   }
   window.SSSWET_BOT_CONTROL={refresh:load};
