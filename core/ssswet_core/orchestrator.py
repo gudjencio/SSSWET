@@ -38,7 +38,8 @@ class BotManager:
                 candidate = self._new_agent(role)
             if candidate is None:
                 raise RuntimeError("Agent capacity exhausted; team was not fully allocated.")
-            waiting.remove(candidate)
+            if candidate in waiting:
+                waiting.remove(candidate)
             selected.append(candidate)
         return selected
 
