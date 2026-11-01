@@ -15,8 +15,14 @@ def test_task_is_scheduled_to_a_bot():
 def test_two_independent_checks_can_verify_a_finding():
     engine = VerificationEngine()
     finding = Finding(task_id="t1", summary="candidate")
-    finding = engine.independent_check(finding, "independent calculation A", "source-a")
-    finding = engine.independent_check(finding, "independent calculation B", "source-b")
+    finding = engine.independent_check(
+        finding, "independent calculation A", "source-a",
+        independence_group="calculation-method-a", independence_confirmed=True,
+    )
+    finding = engine.independent_check(
+        finding, "independent calculation B", "source-b",
+        independence_group="calculation-method-b", independence_confirmed=True,
+    )
     assert finding.verification == VerificationState.INDEPENDENTLY_VERIFIED
     assert engine.is_publishable(finding)
 
