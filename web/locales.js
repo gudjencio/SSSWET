@@ -979,6 +979,31 @@ Object.entries(SSSWET_VOICE_LABELS).forEach(([code, labels]) => {
     window.SSSWET_LOCALES[code].voiceListen = labels[2];
   }
 });
-Object.values(window.SSSWET_LOCALES).forEach(locale => {
-  if (!locale.voiceHint) locale.voiceHint = "Spoken updates use the best matching voice available in your browser.";
+const SSSWET_VOICE_HINTS = {
+  en: "Spoken updates use the closest matching natural voice available in your browser.",
+  fr: "Les annonces vocales utilisent la voix naturelle la plus adaptée disponible dans votre navigateur.",
+  es: "Los avisos hablados utilizan la voz natural más adecuada disponible en tu navegador.",
+  de: "Sprachausgaben verwenden die am besten passende natürliche Stimme in deinem Browser.",
+  it: "Gli aggiornamenti vocali usano la voce naturale più adatta disponibile nel browser.",
+  pt: "As atualizações por voz usam a voz natural mais adequada disponível no navegador.",
+  nl: "Gesproken updates gebruiken de best passende natuurlijke stem in je browser.",
+  ru: "Для озвучивания используется наиболее подходящий естественный голос, доступный в браузере.",
+  uk: "Для озвучення використовується найбільш відповідний природний голос, доступний у браузері.",
+  ar: "تستخدم التحديثات الصوتية أقرب صوت طبيعي مناسب متاح في متصفحك.",
+  he: "העדכונים הקוליים משתמשים בקול הטבעי המתאים ביותר שזמין בדפדפן.",
+  ja: "音声による更新には、ブラウザーで利用できる最も適した自然な音声を使用します。",
+  ko: "음성 업데이트에는 브라우저에서 사용할 수 있는 가장 적합한 자연스러운 음성을 사용합니다.",
+  zh: "语音播报将使用浏览器中最合适的自然语音。",
+  hi: "बोले गए अपडेट आपके ब्राउज़र में उपलब्ध सबसे उपयुक्त प्राकृतिक आवाज़ का उपयोग करते हैं।",
+  id: "Pembaruan suara menggunakan suara alami yang paling sesuai dan tersedia di browser Anda.",
+  tr: "Sesli güncellemeler, tarayıcınızda bulunan en uygun doğal sesi kullanır.",
+  pl: "Komunikaty głosowe używają najlepiej dopasowanego naturalnego głosu dostępnego w przeglądarce.",
+  bn: "কণ্ঠে আপডেট শোনাতে আপনার ব্রাউজারে উপলভ্য সবচেয়ে উপযুক্ত স্বাভাবিক কণ্ঠ ব্যবহার করা হয়।",
+  sw: "Taarifa za sauti hutumia sauti ya asili inayofaa zaidi inayopatikana kwenye kivinjari chako."
+};
+Object.entries(window.SSSWET_LOCALES).forEach(([code, locale]) => {
+  if (!locale.voiceEnable) locale.voiceEnable = "Enable voice";
+  if (!locale.voiceDisable) locale.voiceDisable = "Disable voice";
+  if (!locale.voiceListen) locale.voiceListen = "Listen";
+  locale.voiceHint = SSSWET_VOICE_HINTS[code] || SSSWET_VOICE_HINTS.en;
 });
