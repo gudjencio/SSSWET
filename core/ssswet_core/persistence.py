@@ -132,6 +132,18 @@ class SQLiteResearchStore:
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
                 CREATE INDEX IF NOT EXISTS idx_resource_snapshots_created ON resource_snapshots(created_at DESC);
+                CREATE TABLE IF NOT EXISTS knowledge_transfers (
+                    transfer_id TEXT PRIMARY KEY,
+                    source_campaign_id TEXT NOT NULL,
+                    target_campaign_id TEXT NOT NULL,
+                    node_id TEXT NOT NULL,
+                    transfer_json TEXT NOT NULL,
+                    state TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    decided_at TEXT NOT NULL DEFAULT ''
+                );
+                CREATE INDEX IF NOT EXISTS idx_transfers_target ON knowledge_transfers(target_campaign_id, state);
+                CREATE INDEX IF NOT EXISTS idx_transfers_source ON knowledge_transfers(source_campaign_id, state);
                 CREATE TABLE IF NOT EXISTS knowledge (
                     item_key TEXT PRIMARY KEY,
                     statement TEXT NOT NULL,
@@ -679,3 +691,105 @@ class SQLiteResearchStore:
              "snapshot": json.loads(row["snapshot_json"])}
             for row in rows
         ]
+
+
+    def create_knowledge_transfer(self, transfer: object) -> None:
+        from .collaboration import transfer_to_dict
+        payload = transfer_to_dict(transfer)
+        if transfer.state != "pending":
+            raise ValueError("New knowledge transfers must begin pending")
+        with self._connect() as connection:
+            for campaign_id in (transfer.source_campaign_id, transfer.target_campaign_id):
+                if not connection.execute(
+                    "SELECT 1 FROM research_campaigns WHERE campaign_id = ?",
+                    (campaign_id,),
+                ).fetchone():
+                    raise ValueError(f"Unknown campaign: {campaign_id}")
+            if not connection.execute(
+                "SELECT 1 FROM knowledge_nodes WHERE node_id = ?",
+                (transfer.node_id,),
+            ).fetchone():
+                raise ValueError(f"Unknown knowledge node: {transfer.node_id}")
+            connection.execute(
+                """INSERT INTO knowledge_transfers(
+                    transfer_id, source_campaign_id, target_campaign_id,
+                    node_id, transfer_json, state, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (transfer.transfer_id, transfer.source_campaign_id,
+                 transfer.target_campaign_id, transfer.node_id,
+                 json.dumps(payload, ensure_ascii=False, sort_keys=True),
+                 transfer.state, transfer.created_at),
+            )
+
+    def decide_knowledge_transfer(self, transfer: object) -> None:
+        from .collaboration import transfer_to_dict
+        if transfer.state not in {"accepted", "rejected"} or not transfer.decided_at:
+            raise ValueError("A transfer decision must be accepted or rejected and timestamped")
+        payload = transfer_to_dict(transfer)
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT state FROM knowledge_transfers WHERE transfer_id = ?",
+                (transfer.transfer_id,),
+            ).fetchone()
+            if row is None:
+                raise ValueError("Unknown knowledge transfer")
+            if row["state"] != "pending":
+                raise ValueError("Only pending transfers can be decided")
+            connection.execute(
+                """UPDATE knowledge_transfers
+                   SET transfer_json = ?, state = ?, decided_at = ?
+                   WHERE transfer_id = ? AND state = 'pending'""",
+                (json.dumps(payload, ensure_ascii=False, sort_keys=True),
+                 transfer.state, transfer.decided_at, transfer.transfer_id),
+            )
+
+    def knowledge_transfer_history(
+        self, campaign_id: str | None = None, limit: int = 100
+    ) -> list[dict]:
+        bounded_limit = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            if campaign_id:
+                rows = connection.execute(
+                    """SELECT transfer_json FROM knowledge_transfers
+                       WHERE source_campaign_id = ? OR target_campaign_id = ?
+                       ORDER BY created_at DESC, transfer_id LIMIT ?""",
+                    (campaign_id, campaign_id, bounded_limit),
+                ).fetchall()
+            else:
+                rows = connection.execute(
+                    """SELECT transfer_json FROM knowledge_transfers
+                       ORDER BY created_at DESC, transfer_id LIMIT ?""",
+                    (bounded_limit,),
+                ).fetchall()
+        return [json.loads(row["transfer_json"]) for row in rows]
+
+    def campaign_conflict_report(self, campaign_id: str) -> dict:
+        if not isinstance(campaign_id, str) or not campaign_id.strip():
+            raise ValueError("campaign_id is required")
+        graph = self.knowledge_graph(limit=2000)
+        nodes = {node["node_id"]: node for node in graph["nodes"]}
+        conflicts = []
+        for edge in graph["edges"]:
+            if edge["relation"] != "contradicts":
+                continue
+            left = nodes.get(edge["source_id"])
+            right = nodes.get(edge["target_id"])
+            if left is None or right is None:
+                continue
+            left_campaign = (left.get("metadata") or {}).get("campaign_id")
+            right_campaign = (right.get("metadata") or {}).get("campaign_id")
+            if campaign_id in {left_campaign, right_campaign}:
+                conflicts.append({
+                    "source_id": edge["source_id"], "target_id": edge["target_id"],
+                    "source_label": left["label"], "target_label": right["label"],
+                    "note": edge["note"], "confidence": edge["confidence"],
+                    "source_campaign_id": left_campaign,
+                    "target_campaign_id": right_campaign,
+                    "requires_human_review": True,
+                })
+        return {
+            "campaign_id": campaign_id,
+            "contradictions": conflicts,
+            "count": len(conflicts),
+            "warning": "Graph contradictions are recorded claims, not adjudicated scientific disputes.",
+        }
