@@ -51,27 +51,13 @@
       <p id="technology-dialog-description"></p>
       <div id="technology-dialog-progress" class="technology-dialog-progress" aria-live="polite"></div>
       <div class="donation-fields">
-        <label><span data-tech-copy="amountLabel">Contribution amount</span><span class="donation-input-wrap"><input id="donation-amount" type="number" min="10" step="0.01" value="10" inputmode="decimal"><strong id="donation-currency">EUR</strong></span></label>
-        
+        <label><span data-tech-copy="amountLabel">Monthly contribution amount</span><span class="donation-input-wrap"><input id="donation-amount" type="number" min="1" max="100000" step="1" value="1" inputmode="numeric"><strong id="donation-currency">USD / month</strong></span></label>
       </div>
-      <div class="donation-summary"><span data-tech-copy="perContribution">Per contribution</span><strong id="donation-per">€0.50</strong><span data-tech-copy="totalLabel">Planned total</span><strong id="donation-total">€0.50</strong></div>
-      <div class="donation-fields donation-installment-fields">
-        <label><span id="donation-mode-label">Payment plan</span><select id="donation-payment-mode"><option id="donation-mode-single" value="single">One-time payment</option><option id="donation-mode-installments" value="installments">Split into voluntary instalments of at least USD 10</option></select></label>
-      </div>
-      <p id="donation-installment-summary" class="donation-note" aria-live="polite">One-time payment</p>
-      <section class="payment-reminder-panel" aria-labelledby="payment-reminder-title">
-        <h3 id="payment-reminder-title">Payment reminders</h3>
-        <p id="payment-reminder-description">After completing the first payment, you may request voluntary email reminders for the next instalment. No automatic charge will be made.</p>
-        <label><span id="payment-reminder-email-label">Email address</span><input id="payment-reminder-email" type="email" autocomplete="email" placeholder="you@example.com"></label>
-        <label><span id="payment-reminder-frequency-label">Reminder frequency</span><select id="payment-reminder-frequency"><option id="payment-reminder-weekly" value="weekly">Once a week</option><option id="payment-reminder-monthly" value="monthly" selected>Once a month</option><option id="payment-reminder-yearly" value="yearly">Once a year</option></select></label>
-        <label class="payment-reminder-confirm"><input id="payment-reminder-first-paid" type="checkbox"><span id="payment-reminder-confirm-label">I confirm that I have completed the first payment.</span></label>
-        <button id="payment-reminder-save" type="button" class="secondary-action" id="payment-reminder-save-label">Request email reminders</button>
-        <p id="payment-reminder-status" class="donation-note" role="status" aria-live="polite">Email reminders become available when the project reminder service is configured.</p>
-      </section>
-      <p id="donation-currency-note" class="donation-note" role="status">Currency is based on your browser's regional settings.</p>
-      <p id="donation-payment-status" class="donation-note" role="status"></p>
-      <div class="donation-actions"><button id="donation-checkout" type="button" disabled data-tech-copy="checkout">Continue to secure contribution</button><button id="donation-copy" type="button" class="secondary-action" data-tech-copy="copySummary">Copy contribution summary</button></div>
-      <p class="technology-disclaimer" data-tech-copy="paymentDisclaimer">Your contribution supports ongoing research, not an existing product purchase. You may contribute again as often as you wish; each payment is separate. PayPal opens the project account page: enter and confirm your chosen amount and available currency there. If a technology is eventually developed and made available, any future purchase and delivery offer will be announced separately with its own terms.</p>
+      <div class="donation-summary"><span data-tech-copy="perContribution">Monthly contribution</span><strong id="donation-per">$1.00 USD</strong><span data-tech-copy="totalLabel">Annual equivalent</span><strong id="donation-total">$12.00 USD</strong></div>
+      <p id="donation-currency-note" class="donation-note" role="status">Choose a monthly amount in USD. PayPal will display the subscription terms before approval.</p>
+      <p id="donation-payment-status" class="donation-note" role="status" aria-live="polite"></p>
+      <div id="paypal-button-container-P-75A66386EX5825057NLTZHII" class="paypal-subscription-container" aria-label="PayPal monthly subscription"></div>
+      <p class="technology-disclaimer" data-tech-copy="paymentDisclaimer">This is a recurring monthly contribution. The amount selected is billed monthly through PayPal until the subscriber cancels. Contributions support ongoing research and do not purchase an existing product or guarantee a result. Any future product offer and delivery terms will be communicated separately if a technology is developed and becomes available.</p>
     </dialog>
     <section class="panel" aria-label="Research interface">
       <div class="bot-status"><span data-i18n="agents">Research agents</span><strong id="agent-count">00</strong><span class="separator">·</span><span data-i18n="verification">verification-first</span></div>
