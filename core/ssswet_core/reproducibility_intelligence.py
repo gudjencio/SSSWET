@@ -77,14 +77,27 @@ class ReproducibilityIntelligence:
                 )
                 comparable = comparison.get("comparable") is True
                 matches = comparison.get("outputs_match_within_tolerance") is True
+                different_campaigns = bool(
+                    left and right and left.get("campaign_id") != right.get("campaign_id")
+                )
                 independent = bool(
                     comparison.get("independence_independently_verified") is True
-                    and comparison.get("different_campaigns") is True
+                    and different_campaigns
+                    and left and right
+                    and left.get("independence_declared") is True
+                    and right.get("independence_declared") is True
                 )
+                shared_sources = sorted(
+                    set((left or {}).get("source_ids", [])) & set((right or {}).get("source_ids", []))
+                )
+                shared_datasets = sorted(
+                    set((left or {}).get("dataset_ids", [])) & set((right or {}).get("dataset_ids", []))
+                )
+                left_group = (left or {}).get("provenance_group", "")
+                right_group = (right or {}).get("provenance_group", "")
                 separated = bool(
-                    comparison.get("provenance_groups_distinct") is True
-                    and not comparison.get("shared_source_ids")
-                    and not comparison.get("shared_dataset_ids")
+                    left_group and right_group and left_group != right_group
+                    and not shared_sources and not shared_datasets
                 )
                 components = {
                     "record_integrity": self.COMPONENTS["record_integrity"] if integrity else 0,
@@ -114,8 +127,8 @@ class ReproducibilityIntelligence:
                     "classification": classification,
                     "index": sum(components.values()),
                     "components": components,
-                    "shared_source_ids": comparison.get("shared_source_ids", []),
-                    "shared_dataset_ids": comparison.get("shared_dataset_ids", []),
+                    "shared_source_ids": shared_sources,
+                    "shared_dataset_ids": shared_datasets,
                     "independence_independently_verified": independent,
                     "scientific_validity_established": False,
                 })
