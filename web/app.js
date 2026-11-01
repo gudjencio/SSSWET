@@ -98,13 +98,15 @@
     const spoken = String(text || "").replace(/\\s+/g, " ").trim().slice(0, 1800);
     if (!spoken) return;
     const utterance = new SpeechSynthesisUtterance(spoken);
-    const language = currentLanguage();
+    const requestedLanguage = currentLanguage();
+    const copyLanguage = translationSource(requestedLanguage);
+    const speechLanguage = (window.SSSWET_AGENT_COPY || {})[copyLanguage] ? requestedLanguage : "en";
     const gender = agentIndex === 1 ? "male" : "female";
-    utterance.lang = language;
+    utterance.lang = speechLanguage;
     utterance.rate = 0.96;
     utterance.pitch = gender === "female" ? 1.04 : 0.94;
     utterance.volume = 1;
-    const voice = chooseVoice(language, gender);
+    const voice = chooseVoice(speechLanguage, gender);
     if (voice) utterance.voice = voice;
     speechSynthesisApi.speak(utterance);
   }
