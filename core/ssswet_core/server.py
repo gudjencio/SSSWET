@@ -52,7 +52,9 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
             self.wfile.write(body)
 
         def do_GET(self) -> None:
-            path = self.path.split("?", 1)[0]
+            from urllib.parse import parse_qs, urlsplit
+            parsed = urlsplit(self.path)
+            path = parsed.path
             if path == "/api/status":
                 self._json(public_status(engine, store))
             elif path == "/api/events":
@@ -63,6 +65,30 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 self._json(store.recent_steps(50))
             elif path == "/api/verified":
                 self._json(engine.memory.export_validated())
+            elif path == "/api/memory":
+                self._json({"items": store.collective_memory_items(limit=200)})
+            elif path == "/api/memory/search":
+                from .collective_memory import search_collective_memory
+                params = parse_qs(parsed.query)
+                query = params.get("q", [""])[0]
+                try:
+                    limit = int(params.get("limit", ["20"])[0])
+                except ValueError:
+                    self._json({"error": "The limit parameter must be an integer"}, 400)
+                    return
+                if not query.strip():
+                    self._json({"error": "A non-empty q parameter is required"}, 400)
+                    return
+                self._json({
+                    "query": query,
+                    "method": "lexical_overlap",
+                    "scientific_validity_established": False,
+                    "results": search_collective_memory(
+                        store.collective_memory_items(limit=500),
+                        query,
+                        limit=limit,
+                    ),
+                })
             elif path == "/api/knowledge-graph":
                 self._json(store.knowledge_graph(limit=500))
             elif path == "/api/research-gaps":
