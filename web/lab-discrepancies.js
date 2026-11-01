@@ -40,7 +40,7 @@
     status.textContent = l.loading;
     root.replaceChildren();
     try {
-      const response = await fetch("/api/lab-discrepancies", {headers:{Accept:"application/json"},cache:"no-store"});
+      const response = await window.ssswetApiFetch("/api/lab-discrepancies", {headers:{Accept:"application/json"}});
       if (!response.ok) throw new Error("HTTP " + response.status);
       const data = await response.json();
       status.textContent = data.count + " " + l.count;
