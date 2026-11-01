@@ -35,6 +35,8 @@ def test_engine_can_reach_independent_verification():
         "calculation A",
         "calculation B",
         source_ids=("calculation-a", "calculation-b"),
+        provenance_groups=("derivation-method-a", "derivation-method-b"),
+        independence_confirmed=True,
     )
     assert finding.verification == VerificationState.INDEPENDENTLY_VERIFIED
     assert engine.publishable(finding)[0]
