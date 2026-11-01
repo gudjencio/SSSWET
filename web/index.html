@@ -22,6 +22,10 @@
     </nav>
     <header class="topbar"><div class="brand"><div class="brand-mark" id="brand-mark">SSSWET</div><div class="brand-subtitle" id="brand-subtitle">Super Soldier&#39;s Space Warping Engineering &amp; Tech</div></div><label class="language-control"><span class="visually-hidden" data-i18n="language">Language</span><select id="language" aria-label="Language"></select></label></header>
     <section class="hero" aria-labelledby="title"><div class="status-dot"></div><p class="eyebrow" id="system-status" data-i18n="status">RESEARCH INTERFACE</p><h1 id="title">SSSWET</h1><p class="mission" data-i18n="mission">Research ideas. Test them. Verify them. Never confuse a hypothesis with reality.</p></section>
+    <section id="engine-connection" class="engine-connection" hidden aria-live="polite">
+      <div><strong data-connection-title>Local research engine not connected</strong><p id="engine-connection-message">The public interface is available in fallback mode. Live local research data will appear automatically when the engine is running.</p><p class="engine-connection-help">To enable live data, start <code>ssswet-local</code> on the computer hosting the engine and allow this website to access your local network when the browser asks.</p></div>
+      <button id="engine-connection-retry" type="button">Retry connection</button>
+    </section>
     <section class="technology-showcase" aria-labelledby="technology-title">
       <div class="technology-heading">
         <p class="eyebrow" data-tech-copy="eyebrow">FUTURE TECHNOLOGIES · RESEARCH PRIORITIES</p>
