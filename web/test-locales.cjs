@@ -35,3 +35,28 @@ if (locales.ar.dir !== "rtl" || locales.he.dir !== "rtl") {
   throw new Error("Arabic and Hebrew must use right-to-left layout");
 }
 console.log(`Validated ${Object.keys(locales).length} locales and ${required.length} required interface strings.`);
+
+const agentCopy = context.window.SSSWET_AGENT_COPY;
+if (!agentCopy || Object.keys(agentCopy).length !== Object.keys(locales).length) {
+  throw new Error("Every interface locale must have a localized first-load agent introduction");
+}
+for (const [code, copy] of Object.entries(agentCopy)) {
+  if (!locales[code]) throw new Error(`Agent introduction has no matching locale: ${code}`);
+  for (const key of ["welcome", "summary", "disclaimer"]) {
+    if (typeof copy[key] !== "string" || !copy[key].trim()) {
+      throw new Error(`Agent introduction ${code} is missing ${key}`);
+    }
+  }
+  if (!Array.isArray(copy.roles) || copy.roles.length !== 3 ||
+      copy.roles.some(role => !Array.isArray(role) || role.length !== 2 || role.some(value => !value.trim()))) {
+    throw new Error(`Agent introduction ${code} must define three named roles`);
+  }
+  if (!Array.isArray(copy.steps) || copy.steps.length < 5 ||
+      copy.steps.some(step => typeof step !== "string" || !step.trim())) {
+    throw new Error(`Agent introduction ${code} must define the research workflow`);
+  }
+  if (!Array.isArray(copy.questions) || copy.questions.length !== 3 ||
+      copy.questions.some(question => typeof question !== "string" || !question.trim())) {
+    throw new Error(`Agent introduction ${code} must define three guided questions`);
+  }
+}
