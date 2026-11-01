@@ -5,6 +5,7 @@
 window.SSSWET_LOCALES = {
   en: {
     name: "English", dir: "ltr",
+    dashboard: "Global science dashboard", dashboardNote: "Live overview from the local research engine. Missing connections are shown explicitly.", refresh: "Refresh",
     tagline: "Super Soldier Space Warping Engeriening Tech",
     status: "RESEARCH INTERFACE", statusOnline: "LOCAL RESEARCH ENGINE CONNECTED",
     statusOffline: "LOCAL RESEARCH ENGINE NOT CONNECTED",
@@ -20,6 +21,7 @@ window.SSSWET_LOCALES = {
   },
   fr: {
     name: "Français", dir: "ltr",
+    dashboard: "Tableau de bord scientifique global", dashboardNote: "Vue d'ensemble en direct du moteur de recherche local. Les connexions indisponibles sont signalées explicitement.", refresh: "Actualiser",
     tagline: "Super Soldier Space Warping Engeriening Tech",
     status: "INTERFACE DE RECHERCHE", statusOnline: "MOTEUR DE RECHERCHE LOCAL CONNECTÉ",
     statusOffline: "MOTEUR DE RECHERCHE LOCAL NON CONNECTÉ",
@@ -35,6 +37,7 @@ window.SSSWET_LOCALES = {
   },
   es: {
     name: "Español", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "Panel científico global", dashboardNote: "Resumen en directo del motor de investigación local. Las conexiones no disponibles se indican explícitamente.", refresh: "Actualizar",
     status: "INTERFAZ DE INVESTIGACIÓN", statusOnline: "MOTOR DE INVESTIGACIÓN LOCAL CONECTADO",
     statusOffline: "MOTOR DE INVESTIGACIÓN LOCAL NO CONECTADO",
     mission: "Investigar ideas. Ponerlas a prueba. Verificarlas. Nunca confundir una hipótesis con la realidad.",
@@ -49,6 +52,7 @@ window.SSSWET_LOCALES = {
   },
   de: {
     name: "Deutsch", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "Globales Wissenschafts-Dashboard", dashboardNote: "Live-Übersicht der lokalen Forschungsumgebung. Fehlende Verbindungen werden ausdrücklich angezeigt.", refresh: "Aktualisieren",
     status: "FORSCHUNGSSCHNITTSTELLE", statusOnline: "LOKALE FORSCHUNGSUMGEBUNG VERBUNDEN",
     statusOffline: "LOKALE FORSCHUNGSUMGEBUNG NICHT VERBUNDEN",
     mission: "Ideen erforschen. Sie testen. Sie überprüfen. Eine Hypothese niemals mit der Realität verwechseln.",
@@ -63,6 +67,7 @@ window.SSSWET_LOCALES = {
   },
   it: {
     name: "Italiano", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "Dashboard scientifico globale", dashboardNote: "Panoramica in tempo reale del motore di ricerca locale. Le connessioni mancanti sono indicate chiaramente.", refresh: "Aggiorna",
     status: "INTERFACCIA DI RICERCA", statusOnline: "MOTORE DI RICERCA LOCALE CONNESSO",
     statusOffline: "MOTORE DI RICERCA LOCALE NON CONNESSO",
     mission: "Studiare le idee. Metterle alla prova. Verificarle. Non confondere mai un'ipotesi con la realtà.",
@@ -77,6 +82,7 @@ window.SSSWET_LOCALES = {
   },
   pt: {
     name: "Português", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "Painel científico global", dashboardNote: "Visão geral em tempo real do mecanismo de pesquisa local. As conexões indisponíveis são indicadas explicitamente.", refresh: "Atualizar",
     status: "INTERFACE DE PESQUISA", statusOnline: "MOTOR DE PESQUISA LOCAL CONECTADO",
     statusOffline: "MOTOR DE PESQUISA LOCAL NÃO CONECTADO",
     mission: "Pesquisar ideias. Testá-las. Verificá-las. Nunca confundir uma hipótese com a realidade.",
@@ -91,6 +97,7 @@ window.SSSWET_LOCALES = {
   },
   nl: {
     name: "Nederlands", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "Wereldwijd wetenschappelijk dashboard", dashboardNote: "Liveoverzicht van de lokale onderzoeksmotor. Ontbrekende verbindingen worden expliciet weergegeven.", refresh: "Vernieuwen",
     status: "ONDERZOEKSINTERFACE", statusOnline: "LOKALE ONDERZOEKSMOTOR VERBONDEN",
     statusOffline: "LOKALE ONDERZOEKSMOTOR NIET VERBONDEN",
     mission: "Ideeën onderzoeken. Ze testen. Ze verifiëren. Een hypothese nooit verwarren met de werkelijkheid.",
@@ -105,6 +112,7 @@ window.SSSWET_LOCALES = {
   },
   ru: {
     name: "Русский", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "Глобальная научная панель", dashboardNote: "Обзор локальной исследовательской системы в реальном времени. Отсутствующие подключения отмечаются явно.", refresh: "Обновить",
     status: "ИНТЕРФЕЙС ИССЛЕДОВАНИЙ", statusOnline: "ЛОКАЛЬНАЯ ИССЛЕДОВАТЕЛЬСКАЯ СИСТЕМА ПОДКЛЮЧЕНА",
     statusOffline: "ЛОКАЛЬНАЯ ИССЛЕДОВАТЕЛЬСКАЯ СИСТЕМА НЕ ПОДКЛЮЧЕНА",
     mission: "Исследовать идеи. Проверять их. Подтверждать их. Никогда не путать гипотезу с реальностью.",
@@ -119,6 +127,7 @@ window.SSSWET_LOCALES = {
   },
   uk: {
     name: "Українська", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "Глобальна наукова панель", dashboardNote: "Огляд локальної дослідницької системи наживо. Відсутні підключення позначаються явно.", refresh: "Оновити",
     status: "ДОСЛІДНИЦЬКИЙ ІНТЕРФЕЙС", statusOnline: "ЛОКАЛЬНИЙ ДОСЛІДНИЦЬКИЙ РУШІЙ ПІДКЛЮЧЕНО",
     statusOffline: "ЛОКАЛЬНИЙ ДОСЛІДНИЦЬКИЙ РУШІЙ НЕ ПІДКЛЮЧЕНО",
     mission: "Досліджувати ідеї. Перевіряти їх. Підтверджувати їх. Не плутати гіпотезу з реальністю.",
@@ -133,6 +142,7 @@ window.SSSWET_LOCALES = {
   },
   ar: {
     name: "العربية", dir: "rtl", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "لوحة العلوم العالمية", dashboardNote: "نظرة مباشرة من محرك البحث المحلي. يتم توضيح الاتصالات غير المتاحة.", refresh: "تحديث",
     status: "واجهة البحث", statusOnline: "محرك البحث المحلي متصل",
     statusOffline: "محرك البحث المحلي غير متصل",
     mission: "ابحث عن الأفكار. اختبرها. تحقق منها. لا تخلط أبدًا بين الفرضية والواقع.",
@@ -147,6 +157,7 @@ window.SSSWET_LOCALES = {
   },
   he: {
     name: "עברית", dir: "rtl", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "לוח מחקר מדעי גלובלי", dashboardNote: "תצוגה חיה ממנוע המחקר המקומי. חיבורים חסרים מסומנים במפורש.", refresh: "רענון",
     status: "ממשק מחקר", statusOnline: "מנוע המחקר המקומי מחובר",
     statusOffline: "מנוע המחקר המקומי אינו מחובר",
     mission: "חוקרים רעיונות. בודקים אותם. מאמתים אותם. לעולם אין לבלבל בין השערה למציאות.",
@@ -161,6 +172,7 @@ window.SSSWET_LOCALES = {
   },
   ja: {
     name: "日本語", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "グローバル科学ダッシュボード", dashboardNote: "ローカル研究エンジンのライブ概要です。利用できない接続は明示されます。", refresh: "更新",
     status: "研究インターフェース", statusOnline: "ローカル研究エンジンに接続済み",
     statusOffline: "ローカル研究エンジンに未接続",
     mission: "アイデアを研究し、検証し、確かめる。仮説と現実を決して混同しない。",
@@ -175,6 +187,7 @@ window.SSSWET_LOCALES = {
   },
   ko: {
     name: "한국어", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "글로벌 과학 대시보드", dashboardNote: "로컬 연구 엔진의 실시간 개요입니다. 연결되지 않은 항목은 명확하게 표시됩니다.", refresh: "새로고침",
     status: "연구 인터페이스", statusOnline: "로컬 연구 엔진 연결됨",
     statusOffline: "로컬 연구 엔진 연결되지 않음",
     mission: "아이디어를 연구하고 시험하고 검증합니다. 가설을 현실과 혼동하지 않습니다.",
@@ -189,6 +202,7 @@ window.SSSWET_LOCALES = {
   },
   zh: {
     name: "中文", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "全球科学仪表板", dashboardNote: "本地研究引擎的实时概览。不可用的连接会明确标示。", refresh: "刷新",
     status: "研究界面", statusOnline: "本地研究引擎已连接",
     statusOffline: "本地研究引擎未连接",
     mission: "研究想法、测试想法、验证想法。绝不把假设与现实混为一谈。",
@@ -203,6 +217,7 @@ window.SSSWET_LOCALES = {
   },
   hi: {
     name: "हिन्दी", dir: "ltr", tagline: "Super Soldier Space Warping Engeriening Tech",
+    dashboard: "वैश्विक विज्ञान डैशबोर्ड", dashboardNote: "स्थानीय अनुसंधान इंजन का लाइव अवलोकन। अनुपलब्ध कनेक्शन स्पष्ट रूप से दिखाए जाते हैं।", refresh: "रीफ़्रेश",
     status: "अनुसंधान इंटरफ़ेस", statusOnline: "स्थानीय अनुसंधान इंजन जुड़ा हुआ है",
     statusOffline: "स्थानीय अनुसंधान इंजन जुड़ा नहीं है",
     mission: "विचारों पर शोध करें। उनका परीक्षण करें। सत्यापन करें। परिकल्पना को वास्तविकता न समझें।",
