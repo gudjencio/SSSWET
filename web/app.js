@@ -375,6 +375,84 @@
     renderNodeInspector(selectedKnowledgeNodeId);
   }
 
+  function renderLabReproducibility(matrixPayload, datasetPayload) {
+    const t = currentTranslations();
+    const summary = document.getElementById("lab-repro-summary");
+    const matrix = document.getElementById("lab-repro-matrix");
+    const datasets = document.getElementById("lab-dataset-audit");
+    summary.replaceChildren(); matrix.replaceChildren(); datasets.replaceChildren();
+
+    const metric = (label, value) => {
+      const item = document.createElement("div");
+      item.className = "lab-repro-metric";
+      const number = document.createElement("strong");
+      number.textContent = String(value);
+      const caption = document.createElement("span");
+      caption.textContent = label;
+      item.append(number, caption);
+      return item;
+    };
+    if (matrixPayload) {
+      summary.append(
+        metric(t.labProtocolGroups, matrixPayload.protocol_group_count || 0),
+        metric(t.labRecordedRuns, matrixPayload.run_count || 0),
+        metric(t.labPendingPairs, (matrixPayload.protocol_groups || []).reduce((n, group) => n + (group.pending_comparison_count || 0), 0))
+      );
+      const groups = Array.isArray(matrixPayload.protocol_groups) ? matrixPayload.protocol_groups : [];
+      if (!groups.length) {
+        const empty = document.createElement("p"); empty.className = "visual-empty";
+        empty.textContent = t.labNoRuns; matrix.append(empty);
+      }
+      groups.slice(0, 12).forEach(group => {
+        const article = document.createElement("article"); article.className = "lab-repro-item";
+        const heading = document.createElement("h5"); heading.textContent = (group.protocol_title || group.protocol_id) + " · v" + group.protocol_version;
+        const meta = document.createElement("p"); meta.textContent = (group.run_count || 0) + " " + t.labRecordedRuns + " · " + (group.distinct_campaign_count || 0) + " " + t.labCampaigns;
+        const pending = document.createElement("p"); pending.className = "lab-repro-status";
+        pending.textContent = (group.pending_comparison_count || 0) + " " + t.labPendingPairs;
+        article.append(heading, meta, pending);
+        (group.cross_campaign_pairs || []).slice(0, 8).forEach(pair => {
+          const row = document.createElement("p"); row.className = "lab-repro-pair";
+          row.textContent = pair.left_run_id + " ↔ " + pair.right_run_id + " · "
+            + (pair.comparison_recorded ? t.labCompared : t.labComparisonPending);
+          article.append(row);
+        });
+        matrix.append(article);
+      });
+    } else {
+      const error = document.createElement("p"); error.className = "visual-empty";
+      error.textContent = t.dashEndpointUnavailable; matrix.append(error);
+    }
+
+    if (datasetPayload) {
+      const integrity = datasetPayload.integrity || {};
+      const datasetsMetric = metric(t.labDatasetVersions, datasetPayload.version_count || 0);
+      const integrityMetric = metric(t.labIntegrityChecks, integrity.versions_checked || 0);
+      const state = document.createElement("span");
+      state.className = "lab-integrity-state" + (integrity.all_intact ? " is-intact" : " is-warning");
+      state.textContent = integrity.all_intact ? t.labFingerprintsIntact : t.labIntegrityWarning;
+      datasets.append(datasetsMetric, integrityMetric, state);
+      const shared = Array.isArray(datasetPayload.shared_content_candidates) ? datasetPayload.shared_content_candidates : [];
+      const heading = document.createElement("h5"); heading.textContent = t.labSharedContentCandidates + " (" + shared.length + ")";
+      datasets.append(heading);
+      if (!shared.length) {
+        const empty = document.createElement("p"); empty.className = "visual-empty";
+        empty.textContent = t.labNoSharedContent; datasets.append(empty);
+      }
+      shared.slice(0, 8).forEach(candidate => {
+        const item = document.createElement("p"); item.className = "lab-repro-pair";
+        item.textContent = candidate.content_sha256.slice(0, 16) + "… · "
+          + (candidate.records || []).length + " " + t.labDatasetVersions + " · "
+          + (candidate.campaigns || []).join(", ");
+        datasets.append(item);
+      });
+      const note = document.createElement("p"); note.className = "timeline-caption";
+      note.textContent = t.labFilesNotStored; datasets.append(note);
+    } else {
+      const error = document.createElement("p"); error.className = "visual-empty";
+      error.textContent = t.dashEndpointUnavailable; datasets.append(error);
+    }
+  }
+
   function renderResearchTimeline(payload) {
     currentTimelinePayload = payload || { events: [], total_events: 0, event_kinds: [] };
     const container = document.getElementById("research-timeline");
@@ -726,6 +804,12 @@
         totalConflicts ? "live" : "empty"
       ));
     }
+    const [reproductionMatrix, datasetAudit] = await Promise.all([
+      apiGet("/api/digital-lab/reproduction-matrix").catch(() => null),
+      apiGet("/api/digital-lab/datasets").catch(() => null)
+    ]);
+    if (requestId !== dashboardRequest) return;
+    renderLabReproducibility(reproductionMatrix, datasetAudit);
     const graphResult = results.find(result => result.item.key === "graph");
     renderKnowledgeMap(graphResult && !graphResult.error ? graphResult.payload : {nodes: [], edges: []});
     const opportunityResult = results.find(result => result.item.key === "opportunities");
