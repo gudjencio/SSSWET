@@ -140,3 +140,11 @@ SSSWET is under active development. Interfaces, APIs and data formats may change
 **Project:** SSSWET  
 **French designation:** ETDESS  
 **Contact:** ssswetindustries@gmail.com
+
+
+Campaign-specific literature monitoring can be configured for active campaigns
+and run on a recurring schedule with `ssswet-watch-campaigns`. The command
+processes due subscriptions once; use an operating-system scheduler for
+periodic invocation. Monitoring reports newly seen and previously seen
+bibliographic identifiers without automatically modifying research memory
+or campaign state. See the core developer guide for configuration details.
