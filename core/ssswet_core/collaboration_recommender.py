@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import re
 import uuid
+import hashlib
 from datetime import datetime, timezone
 
 from .collaboration import create_transfer
@@ -110,7 +111,9 @@ class CollaborationRecommender:
                     "campaign's declared objectives: " + ", ".join(ordered) + "."
                 )
                 recommendations.append(CollaborationRecommendation(
-                    recommendation_id=str(uuid.uuid4()),
+                    recommendation_id=hashlib.sha256(
+                        (source_id + '|' + target_id + '|' + node['node_id']).encode('utf-8')
+                    ).hexdigest()[:24],
                     source_campaign_id=source_id,
                     target_campaign_id=target_id,
                     node_id=node["node_id"],
