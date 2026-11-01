@@ -14,7 +14,7 @@ if %errorlevel%==0 (
   if errorlevel 1 goto install_failed
   echo.
   echo  Starting continuous research bots in a separate window...
-  start "SSSWET Research Bots" cmd /k "cd /d "%~dp0core" && py -m ssswet_core.research_daemon"
+  start "SSSWET Research Bots" cmd /k py -m ssswet_core.research_daemon
   echo  Starting the local interface...
   py -m ssswet_core.server
 ) else (
@@ -22,7 +22,7 @@ if %errorlevel%==0 (
   if errorlevel 1 goto install_failed
   echo.
   echo  Starting continuous research bots in a separate window...
-  start "SSSWET Research Bots" cmd /k "cd /d "%~dp0core" && python -m ssswet_core.research_daemon"
+  start "SSSWET Research Bots" cmd /k python -m ssswet_core.research_daemon
   echo  Starting the local interface...
   python -m ssswet_core.server
 )
