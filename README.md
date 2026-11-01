@@ -113,13 +113,13 @@ are met. See [core documentation](core/README.md) for details.
 
 ### External literature discovery
 
-The local research runner can query Crossref or OpenAlex individually, or search both services together with `--provider literature`:
+The local research runner can query Crossref, OpenAlex or arXiv individually, or search Crossref and OpenAlex together with `--provider literature`:
 
 ```bash
 ssswet-run --objective "wave propagation measurement methods" --domain physics --provider literature
 ```
 
-The combined provider merges results from both catalogues and deduplicates matching DOI records while retaining provider provenance. Use `--provider crossref` or `--provider openalex` to query one catalogue only.
+The combined provider merges results from both catalogues and deduplicates matching DOI records while retaining provider provenance. Use `--provider crossref`, `--provider openalex` or `--provider arxiv` to query one catalogue only. arXiv adds preprint records and abstracts; these may not be peer reviewed.
 
 The returned publications are source leads, not verified conclusions. Bibliographic metadata, citation counts and cross-catalogue agreement do not establish scientific validity. All
 provider outputs remain explicitly unverified pending full source review,
