@@ -197,3 +197,15 @@ for (const feature of ["registerPaymentReminder_", "confirmPaymentReminder_", "s
   if (!reminderScript.includes(feature)) throw new Error("Payment reminder service is missing: " + feature);
 }
 console.log("Validated payment UI syntax and the opt-in Apps Script reminder service.");
+
+const monthlyPaypalMarkup = pageSource.includes('paypal-button-container-P-75A66386EX5825057NLTZHII');
+if (!monthlyPaypalMarkup || !donationSourceLatest.includes("quantity: String(amount)") || !donationSourceLatest.includes("vault=true&intent=subscription")) {
+  throw new Error("Monthly PayPal subscription integration is incomplete.");
+}
+if (!paymentConfig.includes("PAYPAL_CLIENT_ID") || !paymentConfig.includes("PAYPAL_SUBSCRIPTION_PLAN_ID")) {
+  throw new Error("Monthly PayPal client or plan configuration is missing.");
+}
+if (!donationSourceLatest.includes('amount >= 1') || !donationSourceLatest.includes('amount <= 100000')) {
+  throw new Error("Monthly subscription amount validation is missing.");
+}
+console.log("Validated the PayPal monthly subscription flow and variable quantity configuration.");
