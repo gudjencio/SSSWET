@@ -66,7 +66,7 @@ Each entry includes a SHA-256 digest linked to the preceding entry. The integrit
 
 ## Technology Feasibility Observatory
 
-The local research engine exposes a read-only evidence-led overview through `GET /api/technology-feasibility`. It identifies recorded research maturity and missing review areas for all seven technology themes. It does not calculate an unsupported feasibility score, establish product readiness or authorize delivery. See [the observatory documentation](TECHNOLOGY_FEASIBILITY_OBSERVATORY.md).
+The local research engine exposes a read-only evidence-led overview through `GET /api/technology-feasibility`. It identifies recorded research maturity and missing review areas for all 29 technology themes. It does not calculate an unsupported feasibility score, establish product readiness or authorize delivery. See [the observatory documentation](TECHNOLOGY_FEASIBILITY_OBSERVATORY.md).
 
 ## Payment and privacy
 
