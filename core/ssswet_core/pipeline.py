@@ -147,7 +147,7 @@ class ResearchPipeline:
                 self.store.save_run(task, self.engine.orchestrator.events[event_start:], results)
             raise
 
-    def start(self, objective: str, domain: str = "general") -> tuple[str, list[PipelineStep]]:
+    def start(self, objective: str, domain: str = "general", progress_callback=None) -> tuple[str, list[PipelineStep]]:
         task = self.engine.submit(objective, domain)
         event_start = len(self.engine.orchestrator.events) - 1
         subtasks = self.decomposer.decompose(objective, domain)
@@ -167,6 +167,12 @@ class ResearchPipeline:
             ))
 
             for subtask, agent in zip(subtasks, agents, strict=True):
+                if progress_callback:
+                    progress_callback({
+                        "phase": "agent_working",
+                        "task_id": task.id,
+                        "active_agents": [{"id": agent.id, "role": agent.role, "task_id": task.id, "objective": subtask.objective}],
+                    })
                 result = self.provider.investigate(subtask.objective, "initial")
                 results.append(PipelineStep(subtask, self.provider.name, result, agent.id))
                 self.engine.orchestrator.events.append(ResearchEvent(
@@ -175,6 +181,13 @@ class ResearchPipeline:
                     task.id,
                     agent.id,
                 ))
+                if progress_callback:
+                    progress_callback({
+                        "phase": "agent_pass_completed",
+                        "task_id": task.id,
+                        "active_agents": [],
+                        "last_agent": {"id": agent.id, "role": agent.role},
+                    })
 
             # Provider output is not automatically promoted to a verified finding.
             self.engine.orchestrator.complete(task, agents[0].id, accepted=True)
