@@ -42,7 +42,7 @@ class LocalCorpusProvider:
     @staticmethod
     def _tokens(text: str) -> set[str]:
         return {
-            token for token in re.findall(r"[\\w-]{2,}", text.casefold())
+            token for token in re.findall(r"[\w-]{2,}", text.casefold())
             if token not in {"the", "and", "for", "with", "that", "this", "les", "des", "une", "pour", "dans"}
         }
 
@@ -70,7 +70,7 @@ class LocalCorpusProvider:
 
         evidence = tuple(
             f"[{doc.source_id}] {doc.title}: " +
-            re.sub(r"\\s+", " ", doc.text).strip()[:500]
+            re.sub(r"\s+", " ", doc.text).strip()[:500]
             for _, doc in selected
         )
         source_ids = tuple(doc.source_id for _, doc in selected)
