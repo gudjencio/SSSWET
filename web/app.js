@@ -51,11 +51,16 @@
     return "en";
   }
   function currentLanguage() { return languageSelect.value || "en"; }
-  function currentTranslations() { return { ...fallback, ...(locales[currentLanguage()] || {}) }; }
+  function translationSource(code) {
+    if (code === "fr-CA") return "fr";
+    if (code === "zh-CN" || code === "zh-TW") return "zh";
+    return code;
+  }
+  function currentTranslations() { return { ...fallback, ...(locales[translationSource(currentLanguage())] || {}) }; }
 
   function setLanguage(requested) {
     const selected = locales[requested] ? requested : "en";
-    const t = { ...fallback, ...locales[selected] };
+    const t = { ...fallback, ...(locales[translationSource(selected)] || {}) };
     const direction = t.dir === "rtl" ? "rtl" : "ltr";
     document.documentElement.lang = selected;
     document.documentElement.dir = direction;
@@ -96,7 +101,7 @@
   }
 
   function showAgentWelcome() {
-    const copy = (window.SSSWET_AGENT_COPY || {})[currentLanguage()]
+    const copy = (window.SSSWET_AGENT_COPY || {})[translationSource(currentLanguage())]
       || (window.SSSWET_AGENT_COPY || {}).en;
     if (!copy) { showMessage(currentTranslations().ready); return; }
     lastView = "ready";
