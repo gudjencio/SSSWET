@@ -231,3 +231,24 @@ shared datasets may be legitimate, metadata may be incomplete, and the registry
 does not infer scientific independence automatically. A human reviewer must
 assess provenance before recording an independent source group. The registry
 does not crawl publisher sites or verify authorship/institution claims by itself.
+
+
+### Persistent knowledge graph
+
+The local SQLite database can now store explicit knowledge nodes and typed
+relationships. Node types include hypotheses, findings, sources, datasets,
+experiments, questions, methods and concepts. Relationships include
+`supports`, `contradicts`, `derived_from`, `tests`, `uses_dataset`,
+`related_to`, `answers` and `requires_verification`.
+
+Create nodes with `KnowledgeNode` and connect existing nodes with
+`KnowledgeEdge`; both are available from `ssswet_core.knowledge_graph`.
+The store exposes `add_knowledge_node`, `add_knowledge_edge`,
+`knowledge_graph` and `knowledge_neighbors`. Edge endpoints must already
+exist. Repeated node IDs and edge triples are updated idempotently.
+
+The read-only local API exposes a bounded graph snapshot at
+`/api/knowledge-graph`. This endpoint returns stored metadata and explicit
+relationships; it does not infer missing links, establish causality, or upgrade
+verification states. A relationship such as `supports` records an attributed
+claim about evidence, not proof that the connected finding is true.
