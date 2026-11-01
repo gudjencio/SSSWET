@@ -11,7 +11,7 @@ See [research contributions and future technology availability](docs/CONTRIBUTIO
 
 ## Monthly PayPal contributions
 
-The contribution interface uses the PayPal subscription plan `P-75A66386EX5825057NLTZHII`. The base plan is USD 1 per month. The interface asks the supporter for a whole-dollar monthly amount and passes that value as the subscription `quantity`, so a quantity of 12 is intended to bill USD 12 per month.
+The contribution interface uses the PayPal subscription plan `P-75A66386EX5825057NLTZHII`. The base plan is USD 1 per month. The interface asks the supporter for a monthly amount in USD (minimum USD 1, adjustable to the cent) and passes that value as the subscription `quantity`, so a quantity of 12 is intended to bill USD 12 per month.
 
 **Important PayPal plan requirement:** PayPal supports custom subscription quantities only when the billing plan has `quantity_supported: true`. PayPal's plan API defaults this field to `false`. Confirm that the live plan has quantity support enabled before advertising variable monthly amounts. If it is disabled, PayPal may reject quantities above 1; in that case, the plan must be recreated or updated using a quantity-supported pricing configuration. The PayPal SDK snippet alone, with `quantity: 1`, does not prove that custom quantities are enabled.
 
