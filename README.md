@@ -172,6 +172,11 @@ contradictions without automatically choosing a winning claim or changing
 scientific verification states.
 
 
+## Digital-lab discrepancy review
+
+The local read-only endpoint `/api/lab-discrepancies` screens recorded comparisons for result divergences, incompatible conditions and incomplete comparison records. A divergence is only a review lead: it does not prove a scientific contradiction, identify a correct result or change verification states. See [the review guide](docs/LAB_DISCREPANCY_REVIEW.md).
+
+
 ## Versioned scientific memory
 
 The local research core includes an append-only scientific-memory ledger. Each entry is a versioned snapshot linked, where applicable, to campaign identifiers, knowledge-graph nodes, experiment plans and source identifiers. Revisions require an explicit superseded version and a review note; earlier snapshots remain in the archive.
