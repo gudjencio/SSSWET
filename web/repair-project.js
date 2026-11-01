@@ -2,9 +2,9 @@
   "use strict";
 
   const translations = {
-    en: "Repair project if broken",
+    en: "Repair if broken",
     ur: "اگر پروجیکٹ خراب ہو تو دوبارہ کھولیں",
-    fr: "Relancer le projet, s'il est cassé",
+    fr: "Relancer le projet, s’il est cassé",
     es: "Reiniciar el proyecto si está dañado",
     pt: "Reiniciar o projeto se estiver com problemas",
     it: "Riavvia il progetto se non funziona",
@@ -55,9 +55,10 @@
     button.href = projectUrl;
     button.target = "_blank";
     button.rel = "noopener noreferrer";
-    button.setAttribute("aria-label", translations.en);
+    button.setAttribute("aria-label", translations[languageCode()] || translations.en);
     updateLabel();
     document.getElementById("language")?.addEventListener("change", updateLabel);
+    window.addEventListener("ssswet-language-changed", updateLabel);
   }
 
   if (document.readyState === "loading") {
