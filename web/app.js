@@ -367,6 +367,7 @@
     dashboard.hidden = true;
     feed.hidden = false;
     const fragment = document.createDocumentFragment();
+
     const intro = document.createElement("p");
     intro.className = "feed-line agent-intro";
     const marker = document.createElement("span");
@@ -375,6 +376,11 @@
     lead.textContent = copy.welcome;
     intro.append(marker, lead, document.createTextNode(" " + copy.summary));
     fragment.append(intro);
+
+    const teamTitle = document.createElement("p");
+    teamTitle.className = "agent-section-title agent-team-title";
+    teamTitle.textContent = currentLanguage() === "fr" ? "Équipe de recherche" : "Research team";
+    fragment.append(teamTitle);
 
     const roles = document.createElement("div");
     roles.className = "agent-role-list";
@@ -401,29 +407,14 @@
       article.append(avatar, identity, speakButton);
       roles.append(article);
     });
-    const agentDetails = document.createElement("details");
-    agentDetails.className = "agent-details";
-    const agentSummary = document.createElement("summary");
-    agentSummary.textContent = currentLanguage() === "fr" ? "Découvrir les agents et leur méthode" : "Meet the agents & explore their workflow";
-    agentDetails.append(agentSummary, roles);
+    fragment.append(roles);
 
-    const stepsTitle = document.createElement("p");
-    stepsTitle.className = "agent-section-title";
-    stepsTitle.textContent = copy.stepsTitle || (currentLanguage() === "fr" ? "Étapes de recherche" : "Research workflow");
-    agentDetails.append(stepsTitle);
-    const steps = document.createElement("ol");
-    steps.className = "agent-steps";
-    copy.steps.forEach((step) => {
-      const item = document.createElement("li");
-      item.textContent = step;
-      steps.append(item);
-    });
-    agentDetails.append(steps);
-
+    const questionsPanel = document.createElement("section");
+    questionsPanel.className = "agent-questions-panel";
     const questionsTitle = document.createElement("p");
     questionsTitle.className = "agent-section-title";
-    questionsTitle.textContent = copy.questionsTitle || (currentLanguage() === "fr" ? "Questions proposées" : "Suggested questions");
-    agentDetails.append(questionsTitle);
+    questionsTitle.textContent = copy.questionsTitle || (currentLanguage() === "fr" ? "Que souhaitez-vous demander aux bots ?" : "What would you like to ask the research bots?");
+    questionsPanel.append(questionsTitle);
     const questions = document.createElement("div");
     questions.className = "agent-questions";
     const actions = [
@@ -439,7 +430,27 @@
       button.addEventListener("click", action);
       questions.append(button);
     });
-    agentDetails.append(questions);
+    questionsPanel.append(questions);
+    fragment.append(questionsPanel);
+
+    const agentDetails = document.createElement("details");
+    agentDetails.className = "agent-details";
+    const agentSummary = document.createElement("summary");
+    agentSummary.textContent = currentLanguage() === "fr" ? "Découvrir notre méthode de recherche" : "Explore our research workflow";
+    agentDetails.append(agentSummary);
+
+    const stepsTitle = document.createElement("p");
+    stepsTitle.className = "agent-section-title";
+    stepsTitle.textContent = copy.stepsTitle || (currentLanguage() === "fr" ? "Étapes de recherche" : "Research workflow");
+    agentDetails.append(stepsTitle);
+    const steps = document.createElement("ol");
+    steps.className = "agent-steps";
+    copy.steps.forEach((step) => {
+      const item = document.createElement("li");
+      item.textContent = step;
+      steps.append(item);
+    });
+    agentDetails.append(steps);
 
     const note = document.createElement("p");
     note.className = "agent-disclaimer";
