@@ -23,7 +23,7 @@ See [research contributions and future technology availability](docs/CONTRIBUTIO
 
 ## Research programme prioritisation
 
-The local dashboard includes a transparent, human-entered assessment workflow for all 29 research programmes. Six weighted criteria cover societal benefit, ecological and animal benefit, evidence maturity, technical feasibility, resource accessibility, and safety and legal readiness. Incomplete assessments remain visible but are excluded from ranking; previous submissions are preserved in append-only local SQLite history. Each entry requires a reviewer label and written rationale, with optional evidence references. Rankings are advisory decision-support indicators only: they do not establish scientific validity, authorize experiments, allocate funding or certify product readiness. See [research programme prioritisation](docs/RESEARCH_PRIORITISATION.md).
+The local dashboard includes a transparent, human-entered assessment workflow for all 32 research programmes. Six weighted criteria cover societal benefit, ecological and animal benefit, evidence maturity, technical feasibility, resource accessibility, and safety and legal readiness. Incomplete assessments remain visible but are excluded from ranking; previous submissions are preserved in append-only local SQLite history. Each entry requires a reviewer label and written rationale, with optional evidence references. Rankings are advisory decision-support indicators only: they do not establish scientific validity, authorize experiments, allocate funding or certify product readiness. See [research programme prioritisation](docs/RESEARCH_PRIORITISATION.md).
 
 ## Reproducibility intelligence
 
@@ -128,6 +128,36 @@ ssswet-run --objective "Compare experimental methods" --domain physics --pdf ./p
 For literature metadata discovery, use `--provider crossref`, `openalex`, `arxiv` or `literature`. A compatible language-model provider can be configured with local environment variables; API credentials must never be committed to the repository.
 
 The literature watch compares returned metadata with registered sources and collective-memory topics. It flags possible DOI duplicates, close title matches and related memory entries for review; it does not automatically import sources, alter campaigns or validate claims. Saved reports are available through the local read-only `/api/literature-watch` endpoint.
+
+### Continuous research and success notifications
+
+Run the 32-programme research daemon locally:
+
+```bash
+ssswet-research
+```
+
+The daemon performs a research cycle every hour by default. To run one cycle only:
+
+```bash
+ssswet-research --once
+```
+
+The optional Google Apps Script relay sends one concise email after a cycle containing successfully completed programmes. Failed or interrupted programme runs are not included, and notification failures do not cause completed research to be repeated. The relay does not transmit private user data or internal agent deliberations.
+
+To enable notifications:
+
+1. Deploy the Apps Script project as a web app that executes as the project owner. Set access according to the intended deployment and keep the shared-secret check enabled.
+2. In Apps Script **Project Settings → Script properties**, set `SSSWET_RELAY_SECRET` to a randomly generated secret of at least 32 characters.
+3. On the computer running SSSWET, configure the web-app deployment URL and the same secret as environment variables. In PowerShell:
+
+```powershell
+$env:SSSWET_RELAY_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"
+$env:SSSWET_RELAY_SECRET = Read-Host "Enter the SSSWET relay secret"
+ssswet-research
+```
+
+Keep the secret out of source files, commits, screenshots and public issue reports. Do not place it in the website's JavaScript. If either environment variable is missing, research continues normally and email notifications remain disabled. The relay requires HTTPS.
 
 See the [core developer guide](core/README.md) for command options, provider configuration, data formats and API details.
 
