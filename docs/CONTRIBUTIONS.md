@@ -42,3 +42,12 @@ PayPal.Me is a simple account redirection and does not automatically send paymen
 For each technology, update `confirmed_contributions_eur` with confirmed aggregate contributions attributed to that research theme, `funding_goal_eur` with an approved public target or `null`, `stage` with one of `planning`, `literature_review`, `feasibility`, `prototype`, `validation` or `available`, `prototype` with `true` only when a real prototype has been recorded, `availability` with `available` only when genuinely available under separately published terms, and `last_updated` with the latest review date in ISO format (`YYYY-MM-DD`) or `null`.
 
 A prototype, simulation, research paper or concept does not by itself establish a working or deliverable product. Availability must be reviewed separately, including technical feasibility, safety, legal compliance and delivery capability.
+
+
+## Research progress journal
+
+SSSWET maintains an append-only research journal for dated programme updates. Entries identify the relevant technology, update type, status, evidence classification, references and author label. The journal is available through the local research engine at `GET /api/research-journal`; local operators can add entries through `POST /api/research-journal`. Writes are restricted to the local machine.
+
+Each entry includes a SHA-256 digest linked to the preceding entry. The integrity report checks whether the recorded sequence has been altered. A valid hash chain demonstrates record integrity only; it does not authenticate the author, independently verify a source, establish scientific validity or prove that a reported prototype works. Entries are immutable in the application interface and database triggers reject ordinary updates and deletions.
+
+The static GitHub Pages site cannot accept journal writes or read a local SQLite database. The journal becomes available when the local SSSWET engine is running. Do not place personal donor data, credentials or private information in journal entries.
