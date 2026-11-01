@@ -194,3 +194,40 @@ def test_overview_reports_fingerprint_integrity(tmp_path):
     assert report["integrity"]["all_intact"] is True
     assert report["integrity"]["protocols_checked"] == 1
     assert report["integrity"]["runs_checked"] == 1
+
+
+def test_reproduction_matrix_tracks_cross_campaign_pairs_without_running_comparisons(tmp_path):
+    _, service = setup(tmp_path)
+    service.record_run(make_run("run-a", "campaign-a", 4))
+    service.record_run(make_run("run-b", "campaign-b", 4))
+    service.record_run(make_run("run-x", "campaign-x", 4))
+    report = service.reproduction_matrix()
+    group = report["protocol_groups"][0]
+    assert group["distinct_campaign_count"] == 3
+    assert group["run_count"] == 3
+    assert len(group["cross_campaign_pairs"]) == 3
+    assert group["pending_comparison_count"] == 3
+    assert report["automatic_comparisons_executed"] is False
+    service.compare_runs("run-a", "run-b")
+    updated = service.reproduction_matrix()["protocol_groups"][0]
+    assert updated["pending_comparison_count"] == 2
+    assert any(pair["comparison_recorded"] for pair in updated["cross_campaign_pairs"])
+
+
+def test_run_comparison_exposes_environment_and_model_reference_differences(tmp_path):
+    from dataclasses import replace
+
+    _, service = setup(tmp_path)
+    service.record_run(make_run("run-a", "campaign-a", 4))
+    other = replace(
+        make_run("run-b", "campaign-b", 4),
+        environment={"runtime": "Python", "version": "3.12"},
+        code_or_model_reference="model-reference-v2",
+    )
+    service.record_run(other)
+    report = service.compare_runs("run-a", "run-b")
+    assert report["comparable"] is True
+    assert report["same_environment"] is False
+    assert report["environment_differences"][0]["field"] == "version"
+    assert report["same_code_or_model_reference"] is False
+    assert report["independent_reproduction_candidate"] is True
