@@ -160,3 +160,18 @@ html[dir="rtl"] .subsection-heading, html[dir="rtl"] .opportunity-item summary {
   .subsection-heading span { text-align: start; }
   .opportunity-item summary { align-items: flex-start; flex-direction: column; gap: 6px; }
 }
+
+.knowledge-node { cursor: pointer; outline: none; }
+.knowledge-node circle { transition: r .16s ease, fill .16s ease, stroke .16s ease; }
+.knowledge-node:hover circle, .knowledge-node:focus circle { r: 11px; stroke: #fff; stroke-width: 3; }
+.knowledge-node.is-selected circle { fill: #b8a7ff; stroke: #fff; stroke-width: 3; r: 11px; }
+.knowledge-node.is-selected text { fill: #fff; font-weight: 700; }
+.node-inspector { margin-top: 12px; padding: 14px; border: 1px solid #292929; border-radius: 14px; background: rgba(255,255,255,.025); color: #aaa; font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
+.node-inspector h4 { margin: 0 0 5px; color: #f0f0f0; font-size: 13px; }
+.node-inspector h5 { margin: 14px 0 6px; color: #ddd; font-size: 11px; }
+.node-inspector p { margin: 6px 0; }
+.inspector-meta, .inspector-id { color: #858585; font-size: 10px; }
+.inspector-connections { margin: 0; padding-inline-start: 18px; display: grid; gap: 7px; }
+.inspector-connections li { padding-inline-start: 2px; }
+.text-link { border: 0; padding: 0; background: none; color: #c4b4ff; text-decoration: underline; cursor: pointer; font: inherit; }
+.text-link:hover, .text-link:focus-visible { color: #fff; }
