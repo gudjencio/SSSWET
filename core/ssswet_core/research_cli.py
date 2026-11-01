@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 
+from .documents import load_pdf_documents
 from .pipeline import ResearchPipeline
 from .persistence import SQLiteResearchStore
 from .providers import (
@@ -42,6 +43,7 @@ def main() -> None:
     parser.add_argument("--objective", required=True)
     parser.add_argument("--domain", default="general")
     parser.add_argument("--corpus", help="Optional JSON file containing local source documents")
+    parser.add_argument("--pdf", action="append", default=[], help="Local PDF to extract and search; may be repeated")
     parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
     parser.add_argument("--provider", choices=("demo", "crossref", "openalex", "arxiv", "literature", "llm"), default="demo")
     parser.add_argument("--mailto", default="", help="Optional contact email for Crossref requests")
@@ -52,8 +54,11 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if args.corpus:
-        provider = LocalCorpusProvider(load_corpus(args.corpus))
+    if args.corpus or args.pdf:
+        documents = load_corpus(args.corpus) if args.corpus else []
+        if args.pdf:
+            documents.extend(load_pdf_documents(args.pdf))
+        provider = LocalCorpusProvider(documents)
     elif args.provider == "crossref":
         provider = CrossrefProvider(mailto=args.mailto)
     elif args.provider == "openalex":
