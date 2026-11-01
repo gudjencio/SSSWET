@@ -11,7 +11,7 @@
 </head>
 <body>
   <main class="app-shell">
-    <nav class="social-corner" aria-label="SSSWET social networks">
+    <nav class="social-corner" aria-label="SSSWET social networks" data-i18n-aria="social">
       <a href="https://x.com/ssswetech" target="_blank" rel="noopener noreferrer" aria-label="SSSWET on X">X</a>
       <a href="https://www.instagram.com/ssswetech" target="_blank" rel="noopener noreferrer" aria-label="SSSWET on Instagram">IG</a>
       <a href="https://www.youtube.com/@ssswetech" target="_blank" rel="noopener noreferrer" aria-label="SSSWET on YouTube">YT</a>
@@ -22,10 +22,7 @@
         <div class="brand-mark">SSSWET</div>
         <div class="brand-subtitle" data-i18n="tagline">Super Soldier Space Warping Engeriening Tech</div>
       </div>
-      <select id="language" aria-label="Language">
-        <option value="en">English</option>
-        <option value="fr">Français</option>
-      </select>
+      <label class="language-control"><span class="visually-hidden" data-i18n="language">Language</span><select id="language" aria-label="Language"></select></label>
     </header>
 
     <section class="hero" aria-labelledby="title">
@@ -55,10 +52,11 @@
     </section>
 
     <footer class="footer">
-      <div class="contact">ssswetindustries@gmail.com</div>
+      <div class="contact"><span data-i18n="contact">Contact</span> · ssswetindustries@gmail.com</div>
       <div class="footer-note" data-i18n="footer">ETDESS is the French translation of SSSWET. Public results remain subject to verification.</div>
     </footer>
   </main>
+  <script src="locales.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
