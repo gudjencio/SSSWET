@@ -548,3 +548,22 @@ This is a deterministic local scheduler, not a self-running cloud cluster.
 Resource units are operator-defined accounting units, not a claim about CPU,
 GPU, energy or monetary cost. Snapshot persistence is explicit; it does not
 yet restore live agent processes or automatically resume interrupted work.
+
+
+### Cross-campaign knowledge collaboration
+
+The `ssswet_core.collaboration` module introduces explicit, auditable
+knowledge-transfer requests between two existing research campaigns. A
+request must reference an existing knowledge-graph node and both campaigns.
+The receiving campaign can accept or reject the request with a decision note.
+Only pending transfers can be decided, and the transfer history is retained.
+
+Accepting a transfer records the hand-off; it does not copy a claim into
+verified knowledge or alter the original node's verification state. The
+local read-only API exposes `/api/collaboration/transfers` and
+`/api/collaboration/campaign/{campaign_id}/conflicts`.
+
+The conflict report surfaces explicitly recorded `contradicts` graph edges
+whose endpoint metadata names the requested campaign. It is a review queue,
+not an automatic scientific verdict. A human reviewer must inspect the
+underlying evidence and provenance before resolving a disagreement.
