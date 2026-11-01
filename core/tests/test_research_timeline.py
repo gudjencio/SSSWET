@@ -29,11 +29,13 @@ def test_timeline_combines_memory_graph_and_campaign_scoped_events(tmp_path):
     assert filtered["chronology_is_not_validation"] is True
 
 
-def test_timeline_omits_records_without_grounded_timestamps(tmp_path):
+def test_timeline_uses_database_recording_timestamp_when_node_date_is_omitted(tmp_path):
     store = SQLiteResearchStore(tmp_path / "undated.sqlite3")
-    store.add_knowledge_node(KnowledgeNode("undated", "finding", "No date"))
+    store.add_knowledge_node(KnowledgeNode("undated", "finding", "No supplied date"))
     result = ResearchTimeline(store).build()
-    assert result["events"] == []
+    assert len(result["events"]) == 1
+    assert result["events"][0]["event_id"] == "graph-node:undated"
+    assert result["events"][0]["occurred_at"]
     assert result["undated_records_omitted"] is True
 
 
