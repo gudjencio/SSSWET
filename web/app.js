@@ -15,6 +15,7 @@
   let currentKnowledgeGraph = { nodes: [], edges: [] };
   let currentResearchOpportunities = { opportunities: [] };
   let currentCampaigns = [];
+  let currentTimelinePayload = { events: [], total_events: 0, event_kinds: [] };
 
   const languageNames = Object.keys(locales).sort((a, b) => {
     if (a === "en") return -1;
@@ -371,20 +372,33 @@
   }
 
   function renderResearchTimeline(payload) {
+    currentTimelinePayload = payload || { events: [], total_events: 0, event_kinds: [] };
     const container = document.getElementById("research-timeline");
     container.replaceChildren();
     const t = currentTranslations();
-    const events = Array.isArray(payload && payload.events) ? payload.events : [];
+    const allEvents = Array.isArray(currentTimelinePayload.events) ? currentTimelinePayload.events : [];
+    const search = (document.getElementById("timeline-search").value || "").trim().toLocaleLowerCase();
+    const selectedKind = document.getElementById("timeline-kind").value || "";
+    const events = allEvents.filter(event => {
+      if (selectedKind && event.kind !== selectedKind) return false;
+      if (!search) return true;
+      const refs = event.references && typeof event.references === "object" ? event.references : {};
+      const searchable = [
+        event.title, event.description, event.kind, event.campaign_id,
+        event.event_id, JSON.stringify(refs)
+      ].filter(Boolean).join(" ").toLocaleLowerCase();
+      return searchable.includes(search);
+    });
     if (!events.length) {
       const empty = document.createElement("p");
       empty.className = "visual-empty";
-      empty.textContent = t.timelineEmpty;
+      empty.textContent = allEvents.length ? t.timelineNoMatches : t.timelineEmpty;
       container.append(empty);
       return;
     }
     const list = document.createElement("ol");
     list.className = "timeline-list";
-    events.slice(0, 60).forEach(event => {
+    events.slice(0, 100).forEach(event => {
       const item = document.createElement("li");
       item.className = "timeline-event";
       const date = document.createElement("time");
@@ -433,9 +447,26 @@
     container.append(list);
     const summary = document.createElement("p");
     summary.className = "timeline-summary";
-    summary.textContent = events.length + " / " + (payload.total_events ?? events.length) + " " + t.timelineShown
-      + (payload.undated_records_omitted ? " · " + t.timelineUndated : "");
+    summary.textContent = events.length + " / " + (currentTimelinePayload.total_events ?? events.length) + " " + t.timelineShown
+      + (currentTimelinePayload.undated_records_omitted ? " · " + t.timelineUndated : "");
     container.append(summary);
+  }
+
+  function populateTimelineKinds(kinds) {
+    const select = document.getElementById("timeline-kind");
+    const selected = select.value;
+    select.replaceChildren();
+    const all = document.createElement("option");
+    all.value = "";
+    all.textContent = currentTranslations().allEventTypes;
+    select.append(all);
+    (Array.isArray(kinds) ? kinds : []).forEach(kind => {
+      const option = document.createElement("option");
+      option.value = kind;
+      option.textContent = String(kind).replaceAll("_", " ");
+      select.append(option);
+    });
+    select.value = (kinds || []).includes(selected) ? selected : "";
   }
 
   async function loadResearchTimeline(campaignId = "") {
@@ -445,6 +476,7 @@
     container.setAttribute("aria-busy", "true");
     try {
       const payload = await apiGet(endpoint);
+      populateTimelineKinds(payload.event_kinds);
       renderResearchTimeline(payload);
     } catch {
       container.replaceChildren();
@@ -712,6 +744,8 @@
     });
   });
   document.getElementById("timeline-campaign").addEventListener("change", event => loadResearchTimeline(event.target.value));
+  document.getElementById("timeline-search").addEventListener("input", () => renderResearchTimeline(currentTimelinePayload));
+  document.getElementById("timeline-kind").addEventListener("change", () => renderResearchTimeline(currentTimelinePayload));
   languageSelect.addEventListener("change", () => setLanguage(languageSelect.value));
   setLanguage(safeReadLanguage() || preferredLanguage());
   if ("serviceWorker" in navigator) {
