@@ -118,3 +118,23 @@ def test_campaign_pipeline_preserves_work_after_provider_failure(tmp_path):
     assert any(task.id == task_id for task in pipeline.engine.orchestrator.tasks)
     saved_campaign = store.get_campaign("failure-campaign")
     assert saved_campaign["milestones"][0]["state"] == "blocked"
+
+
+
+def test_pipeline_reports_live_agent_activity():
+    pipeline = ResearchPipeline()
+    updates = []
+    task_id, steps = pipeline.start(
+        "Study a harmless mathematical optimization problem",
+        "math",
+        progress_callback=updates.append,
+    )
+
+    assert task_id
+    assert len(steps) == 2
+    working = [item for item in updates if item["phase"] == "agent_working"]
+    completed = [item for item in updates if item["phase"] == "agent_pass_completed"]
+    assert len(working) == 2
+    assert len(completed) == 2
+    assert all(item["active_agents"] for item in working)
+    assert all(item["active_agents"] == [] for item in completed)
