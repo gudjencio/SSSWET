@@ -187,6 +187,26 @@
         : item.detail(array, payload || {});
       dashboardGrid.append(makeDashboardCard(item.title, error ? "—" : count, detail, error ? "error" : count ? "live" : "empty"));
     });
+
+    const campaignResult = results.find(result => result.item.key === "campaigns");
+    if (campaignResult && !campaignResult.error) {
+      const campaigns = campaignResult.array.slice(0, 25);
+      const conflictReports = await Promise.all(campaigns.map(async campaign => {
+        const id = campaign.campaign_id;
+        if (!id) return 0;
+        try {
+          const report = await apiGet("/api/collaboration/campaign/" + encodeURIComponent(id) + "/conflicts");
+          return safeCount(report.contradictions);
+        } catch { return 0; }
+      }));
+      if (requestId !== dashboardRequest) return;
+      const totalConflicts = conflictReports.reduce((sum, value) => sum + value, 0);
+      dashboardGrid.append(makeDashboardCard(
+        "Contradictions to review", totalConflicts,
+        totalConflicts ? "Recorded contradictions require human review; they are not automatically adjudicated." : "No campaign-linked contradiction is currently recorded.",
+        totalConflicts ? "live" : "empty"
+      ));
+    }
     if (results.every(result => result.error)) {
       const note = document.createElement("p");
       note.className = "dashboard-offline";
