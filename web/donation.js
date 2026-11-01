@@ -29,6 +29,94 @@
     timetravel: {
       en: ["Time travel research", "Exploratory study of time, causality, relativity, spacetime geometry and the mathematical limits of proposed temporal models. This is a long-term research ambition, not an available capability."],
       fr: ["Voyage dans le temps", "Étude exploratoire du temps, de la causalité, de la relativité, de la géométrie de l'espace-temps et des limites mathématiques des modèles temporels proposés. Il s'agit d'une ambition de recherche à long terme, pas d'une capacité disponible."]
+    },
+    cleanenergy: {
+      en: ["Clean energy systems", "Research into safe, scalable solar, wind, geothermal and other low-carbon energy systems."],
+      fr: ["Systèmes d’énergie propre", "Recherche sur des systèmes énergétiques bas carbone sûrs et évolutifs : solaire, éolien, géothermie et autres filières."]
+    },
+    energyStorage: {
+      en: ["Advanced energy storage", "Long-duration storage, safer batteries, grid balancing and responsible materials research."],
+      fr: ["Stockage avancé de l’énergie", "Stockage de longue durée, batteries plus sûres, équilibre des réseaux et recherche responsable sur les matériaux."]
+    },
+    water: {
+      en: ["Clean water and desalination", "Affordable water purification, contaminant detection, low-energy desalination and resilient access."],
+      fr: ["Eau potable et dessalement", "Purification abordable, détection des contaminants, dessalement sobre en énergie et accès résilient à l’eau."]
+    },
+    foodSystems: {
+      en: ["Sustainable food systems", "Resilient crops, food preservation, reduced waste and equitable access to nutritious food."],
+      fr: ["Systèmes alimentaires durables", "Cultures résilientes, conservation des aliments, réduction du gaspillage et accès équitable à une alimentation nutritive."]
+    },
+    climate: {
+      en: ["Climate adaptation", "Monitoring, forecasting, heat resilience, flood preparedness and evidence-led adaptation tools."],
+      fr: ["Adaptation climatique", "Surveillance, prévisions, résilience face aux fortes chaleurs, préparation aux inondations et outils d’adaptation fondés sur les preuves."]
+    },
+    biodiversity: {
+      en: ["Biodiversity protection", "Non-invasive monitoring, habitat connectivity and measurable conservation outcomes."],
+      fr: ["Protection de la biodiversité", "Suivi non invasif, continuité des habitats et résultats de conservation mesurables."]
+    },
+    wildlife: {
+      en: ["Wildlife protection", "Ethical tracking, rescue support, anti-poaching detection and safer coexistence with wildlife."],
+      fr: ["Protection de la faune sauvage", "Suivi éthique, aide au sauvetage, détection du braconnage et coexistence plus sûre avec la faune."]
+    },
+    oceans: {
+      en: ["Ocean and marine restoration", "Ocean observation, marine pollution reduction, reef monitoring and ecosystem recovery."],
+      fr: ["Océans et restauration marine", "Observation des océans, réduction de la pollution marine, suivi des récifs et restauration des écosystèmes."]
+    },
+    reforestation: {
+      en: ["Reforestation and habitat restoration", "Native-species restoration, soil recovery, ecological corridors and long-term survival monitoring."],
+      fr: ["Reforestation et restauration des habitats", "Restauration d’espèces indigènes, régénération des sols, corridors écologiques et suivi de la survie à long terme."]
+    },
+    agriculture: {
+      en: ["Regenerative agriculture", "Soil health, precision irrigation, biodiversity-friendly farming and lower-impact cultivation."],
+      fr: ["Agriculture régénératrice", "Santé des sols, irrigation de précision, agriculture favorable à la biodiversité et cultures à moindre impact."]
+    },
+    circularEconomy: {
+      en: ["Circular economy and recycling", "Repairable products, material recovery, safer recycling and reduced resource extraction."],
+      fr: ["Économie circulaire et recyclage", "Produits réparables, récupération des matériaux, recyclage plus sûr et réduction de l’extraction des ressources."]
+    },
+    airQuality: {
+      en: ["Clean air technologies", "Affordable air-quality sensing, filtration, emissions monitoring and exposure reduction."],
+      fr: ["Qualité de l’air", "Capteurs abordables, filtration, surveillance des émissions et réduction de l’exposition à la pollution."]
+    },
+    mobility: {
+      en: ["Sustainable mobility", "Accessible public transport, safer cycling, efficient logistics and low-emission mobility research."],
+      fr: ["Mobilité durable", "Transports publics accessibles, vélo plus sûr, logistique efficace et mobilité à faibles émissions."]
+    },
+    accessibility: {
+      en: ["Assistive and accessibility technology", "Affordable tools for communication, mobility, independent living and inclusive design."],
+      fr: ["Technologies d’assistance et d’accessibilité", "Outils abordables pour la communication, la mobilité, l’autonomie et la conception inclusive."]
+    },
+    disasterResilience: {
+      en: ["Disaster prevention and response", "Early warning, resilient infrastructure, emergency logistics and recovery coordination."],
+      fr: ["Prévention et réponse aux catastrophes", "Alertes précoces, infrastructures résilientes, logistique d’urgence et coordination du rétablissement."]
+    },
+    publicHealth: {
+      en: ["Public health and prevention", "Evidence-led prevention, accessible diagnostics, health information and community resilience."],
+      fr: ["Santé publique et prévention", "Prévention fondée sur les preuves, diagnostics accessibles, information sanitaire et résilience communautaire."]
+    },
+    sanitation: {
+      en: ["Sanitation and waste-water treatment", "Safe sanitation, decentralized treatment, water reuse and pollution prevention."],
+      fr: ["Assainissement et traitement des eaux usées", "Assainissement sûr, traitement décentralisé, réutilisation de l’eau et prévention de la pollution."]
+    },
+    education: {
+      en: ["Open science and education", "Free learning resources, scientific literacy, accessible laboratories and research collaboration."],
+      fr: ["Science ouverte et éducation", "Ressources pédagogiques libres, culture scientifique, laboratoires accessibles et collaboration en recherche."]
+    },
+    animalHealth: {
+      en: ["Animal health and welfare", "Non-invasive diagnostics, disease prevention, humane care and improved veterinary access."],
+      fr: ["Santé et bien-être animal", "Diagnostics non invasifs, prévention des maladies, soins respectueux et meilleur accès vétérinaire."]
+    },
+    materials: {
+      en: ["Sustainable and safer materials", "Durable, recyclable and non-toxic materials for construction, medicine and everyday products."],
+      fr: ["Matériaux durables et plus sûrs", "Matériaux durables, recyclables et non toxiques pour la construction, la médecine et les produits courants."]
+    },
+    carbonMonitoring: {
+      en: ["Carbon and ecosystem monitoring", "Transparent measurement of emissions, carbon storage and ecosystem health."],
+      fr: ["Surveillance du carbone et des écosystèmes", "Mesure transparente des émissions, du stockage du carbone et de la santé des écosystèmes."]
+    },
+    pollinators: {
+      en: ["Pollinator protection", "Habitat mapping, pesticide exposure reduction and monitoring of pollinator populations."],
+      fr: ["Protection des pollinisateurs", "Cartographie des habitats, réduction de l’exposition aux pesticides et suivi des populations de pollinisateurs."]
     }
   };
 
@@ -49,6 +137,25 @@
   const modal = document.getElementById("technology-dialog");
   const grid = document.getElementById("technology-grid");
   if (!modal || !grid) return;
+  Object.entries(technologies).forEach(([key, item], index) => {
+    if (grid.querySelector('[data-tech="' + key + '"]')) return;
+    const card = document.createElement("article");
+    card.className = "technology-card";
+    const number = document.createElement("span");
+    number.className = "technology-number";
+    number.textContent = String(index + 1).padStart(2, "0");
+    const heading = document.createElement("h3");
+    heading.textContent = item.en[0];
+    const summary = document.createElement("p");
+    summary.textContent = item.en[1];
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.tech = key;
+    button.textContent = "Explore & contribute";
+    card.append(number, heading, summary, button);
+    grid.append(card);
+  });
+
   const title = document.getElementById("technology-dialog-title");
   const description = document.getElementById("technology-dialog-description");
   const amountInput = document.getElementById("donation-amount");
