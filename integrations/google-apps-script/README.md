@@ -6,9 +6,11 @@ This optional service sends recurring reminders only to people who explicitly re
 
 1. Open the Google Apps Script project already used by SSSWET.
 2. Add the contents of `PaymentReminders.gs` as a new script file.
-3. In the existing `doPost(e)`, parse the incoming payload using the project's existing `parsePostBody(e)` helper. Before the research-success relay's secret check, add:
+3. In the existing `doPost(e)`, read the form payload using the project's existing `parsePostBody(e)` helper. The website sends a simple URL-encoded form request to avoid browser preflight restrictions. Resolve the nested JSON payload, then add the branch before the research-success relay's secret check:
 
    ```javascript
+   const incoming = parsePostBody(e);
+   const payload = incoming && incoming.payload ? JSON.parse(incoming.payload) : incoming;
    if (payload.type === "payment_reminder_register") {
      try {
        return jsonResponse(registerPaymentReminder_(payload));
@@ -18,7 +20,7 @@ This optional service sends recurring reminders only to people who explicitly re
    }
    ```
 
-   Keep the existing research-success relay and professional email workflow intact. Do not remove its secret validation.
+   Keep the existing research-success relay and professional email workflow intact. Do not remove its secret validation. The reminder branch uses email double opt-in and does not use or expose the research relay secret.
 4. In the existing `doGet(e)`, add this at the beginning:
 
    ```javascript
