@@ -93,6 +93,7 @@
           (plan.checks || []).forEach((check) => {
             const item = document.createElement("li"); const title = document.createElement("strong"); title.textContent = check.instruction; const reason = document.createElement("p"); reason.textContent = labels.reason + ": " + text(check.reason);
             const state = document.createElement("p"); state.className = "evidence-review-state"; const stateLabels = {pending: labels.pending, in_progress: labels.inProgress, completed: labels.completed, blocked: labels.blocked}; state.textContent = (stateLabels[check.review_state] || labels.pending) + " · " + (check.review_history || []).length + " " + labels.events;
+            (check.review_history || []).forEach((entry) => { const history = document.createElement("p"); history.className = "evidence-review-history"; history.textContent = text(entry.created_at) + " · " + text(entry.reviewer) + " · " + (stateLabels[entry.state] || entry.state) + " — " + text(entry.note); item.append(history); });
             const form = document.createElement("form"); form.className = "evidence-review-form";
             const reviewer = document.createElement("input"); reviewer.type = "text"; reviewer.maxLength = 200; reviewer.required = true; reviewer.placeholder = labels.reviewerLabel; reviewer.setAttribute("aria-label", labels.reviewerLabel);
             const note = document.createElement("textarea"); note.maxLength = 4000; note.required = true; note.rows = 2; note.placeholder = labels.reviewNote; note.setAttribute("aria-label", labels.reviewNote);
