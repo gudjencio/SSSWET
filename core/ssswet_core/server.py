@@ -179,6 +179,8 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     "blocked_tasks": sum(1 for task in tasks if task.get("status") == "blocked"),
                     "recent_events": recent_events[:30],
                     "agent_messages": agent_messages,
+                    "peer_review_requests": sum(1 for item in agent_messages if item.get("message_type") == "peer_review_request"),
+                    "peer_review_responses": sum(1 for item in agent_messages if item.get("message_type") == "peer_review_response"),
                     "recent_outputs": [
                         {
                             "task_id": step.get("task_id"),
