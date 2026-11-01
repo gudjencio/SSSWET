@@ -1,5 +1,13 @@
 from ssswet_core.pipeline import ResearchPipeline
 from ssswet_core.models import AgentStatus, TaskStatus
+from ssswet_core.providers import ProviderResult
+
+
+class BrokenProvider:
+    name = "broken-test-provider"
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        raise RuntimeError("test provider unavailable")
 
 
 def test_pipeline_assigns_distinct_role_matched_agents_and_creates_group():
@@ -31,3 +39,18 @@ def test_pipeline_records_group_and_research_events():
     assert "group_created" in kinds
     assert "research_pass" in kinds
     assert "task_completed" in kinds
+
+
+def test_provider_failure_preserves_task_and_releases_team():
+    pipeline = ResearchPipeline(provider=BrokenProvider())
+    try:
+        pipeline.start("Study a harmless mathematical optimization problem", "math")
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("Expected the test provider to fail")
+
+    queued = list(pipeline.engine.orchestrator.tasks)
+    assert len(queued) == 1
+    assert queued[0].status == TaskStatus.BLOCKED
+    assert all(agent.load == 0 for agent in pipeline.engine.orchestrator.bot_manager.agents.values())
