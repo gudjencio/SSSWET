@@ -47,7 +47,6 @@
   const title = document.getElementById("technology-dialog-title");
   const description = document.getElementById("technology-dialog-description");
   const amountInput = document.getElementById("donation-amount");
-  const countInput = document.getElementById("donation-count");
   const currencyLabel = document.getElementById("donation-currency");
   const perOutput = document.getElementById("donation-per");
   const totalOutput = document.getElementById("donation-total");
@@ -56,8 +55,8 @@
   const checkout = document.getElementById("donation-checkout");
   const copyButton = document.getElementById("donation-copy");
   const translations = {
-    en: { eyebrow:"FUTURE TECHNOLOGIES · RESEARCH PRIORITIES", title:"Choose a technology to support", intro:"Explore the research directions and open a contribution window for the technology you want to encourage.", disclaimer:"These are research themes, not claims that the technologies exist or are currently achievable. Contributions support the project and do not purchase a product or guarantee an outcome.", explore:"Explore & contribute", dialogEyebrow:"SUPPORT A RESEARCH DIRECTION", amountLabel:"Contribution amount", repeatLabel:"Number of separate contributions", perContribution:"Per contribution", totalLabel:"Planned total", currencyNote:"Currency is estimated from your browser's regional settings. The minimum is the equivalent of €0.50 per contribution.", paymentMissing:"Online payment is not activated for this currency yet. The secure payment link must be configured before contributions can be collected.", paymentReady:"A secure payment link is available for this currency.", checkout:"Continue to secure contribution", copySummary:"Copy contribution summary", paymentDisclaimer:"Online payment is activated only when an official payment link for this currency has been configured. You can contribute again as often as you wish; each separate contribution starts at the equivalent of €0.50.", invalid:"Enter at least the equivalent of €0.50 and one contribution.", copied:"Contribution summary copied.", copyError:"Unable to copy automatically. Please select and copy the summary." },
-    fr: { eyebrow:"TECHNOLOGIES DU FUTUR · PRIORITÉS DE RECHERCHE", title:"Choisissez une technologie à soutenir", intro:"Découvrez les axes de recherche et ouvrez une fenêtre de contribution pour la technologie que vous souhaitez encourager.", disclaimer:"Ces thèmes de recherche ne signifient pas que ces technologies existent ou soient réalisables aujourd'hui. Les contributions soutiennent le projet : elles n'achètent aucun produit et ne garantissent aucun résultat.", explore:"Découvrir et contribuer", dialogEyebrow:"SOUTENIR UN AXE DE RECHERCHE", amountLabel:"Montant de chaque contribution", repeatLabel:"Nombre de contributions distinctes", perContribution:"Par contribution", totalLabel:"Total envisagé", currencyNote:"La devise est estimée à partir des paramètres régionaux du navigateur. Le minimum est l'équivalent de 0,50 € par contribution.", paymentMissing:"Le paiement en ligne n'est pas encore activé pour cette devise. Un lien de paiement sécurisé doit être configuré avant de pouvoir collecter les contributions.", paymentReady:"Un lien de paiement sécurisé est disponible pour cette devise.", checkout:"Continuer vers le paiement sécurisé", copySummary:"Copier le récapitulatif", paymentDisclaimer:"Le paiement en ligne sera activé uniquement après configuration d'un lien officiel pour cette devise. Vous pourrez contribuer autant de fois que vous le souhaitez ; chaque contribution distincte commence à l'équivalent de 0,50 €.", invalid:"Saisissez au moins l'équivalent de 0,50 € et une contribution.", copied:"Récapitulatif copié.", copyError:"Copie automatique impossible. Veuillez sélectionner et copier le récapitulatif." }
+    en: { eyebrow:"FUTURE TECHNOLOGIES · RESEARCH PRIORITIES", title:"Choose a technology to support", intro:"Explore the research directions and open a contribution window for the technology you want to encourage.", disclaimer:"These are research themes, not claims that the technologies exist or are currently achievable. Contributions support the project and do not purchase a product or guarantee an outcome.", explore:"Explore & contribute", dialogEyebrow:"SUPPORT A RESEARCH DIRECTION", amountLabel:"Contribution amount", repeatLabel:"Number of separate contributions", perContribution:"Per contribution", totalLabel:"Planned total", currencyNote:"Currency is estimated from your browser's regional settings. The minimum is the equivalent of €0.50 per contribution.", paymentMissing:"Online payment is not activated for this currency yet. The secure payment link must be configured before contributions can be collected.", paymentReady:"A secure payment link is available for this currency.", checkout:"Continue to secure contribution", copySummary:"Copy contribution summary", paymentDisclaimer:"Online payment is activated only when an official payment link for this currency has been configured. You can make another contribution whenever you wish; each payment is a separate transaction and starts at the equivalent of €0.50.", invalid:"Enter at least the equivalent of €0.50 and one contribution.", copied:"Contribution summary copied.", copyError:"Unable to copy automatically. Please select and copy the summary." },
+    fr: { eyebrow:"TECHNOLOGIES DU FUTUR · PRIORITÉS DE RECHERCHE", title:"Choisissez une technologie à soutenir", intro:"Découvrez les axes de recherche et ouvrez une fenêtre de contribution pour la technologie que vous souhaitez encourager.", disclaimer:"Ces thèmes de recherche ne signifient pas que ces technologies existent ou soient réalisables aujourd'hui. Les contributions soutiennent le projet : elles n'achètent aucun produit et ne garantissent aucun résultat.", explore:"Découvrir et contribuer", dialogEyebrow:"SOUTENIR UN AXE DE RECHERCHE", amountLabel:"Montant de chaque contribution", repeatLabel:"Nombre de contributions distinctes", perContribution:"Par contribution", totalLabel:"Total envisagé", currencyNote:"La devise est estimée à partir des paramètres régionaux du navigateur. Le minimum est l'équivalent de 0,50 € par contribution.", paymentMissing:"Le paiement en ligne n'est pas encore activé pour cette devise. Un lien de paiement sécurisé doit être configuré avant de pouvoir collecter les contributions.", paymentReady:"Un lien de paiement sécurisé est disponible pour cette devise.", checkout:"Continuer vers le paiement sécurisé", copySummary:"Copier le récapitulatif", paymentDisclaimer:"Le paiement en ligne sera activé uniquement après configuration d'un lien officiel pour cette devise. Vous pourrez effectuer une nouvelle contribution quand vous le souhaitez ; chaque paiement est une transaction distincte et commence à l'équivalent de 0,50 €.", invalid:"Saisissez au moins l'équivalent de 0,50 € et une contribution.", copied:"Récapitulatif copié.", copyError:"Copie automatique impossible. Veuillez sélectionner et copier le récapitulatif." }
   };
   const copy = () => translations[(document.documentElement.lang || "en").startsWith("fr") ? "fr" : "en"];
   let selectedTechnology = null;
@@ -74,10 +73,9 @@
   }
   function updateAmounts() {
     const amount = Number(amountInput.value);
-    const count = Math.max(1, Math.min(1000, Math.floor(Number(countInput.value) || 1)));
-    const valid = Number.isFinite(amount) && amount >= minimumLocal && count >= 1;
+    const valid = Number.isFinite(amount) && amount >= minimumLocal;
     perOutput.textContent = Number.isFinite(amount) ? formatMoney(amount) : "—";
-    totalOutput.textContent = valid ? formatMoney(amount * count) : "—";
+    totalOutput.textContent = valid ? formatMoney(amount) : "—";
     checkout.disabled = !valid || !paymentLinks[currency];
     paymentStatus.textContent = valid ? (paymentLinks[currency] ? copy().paymentReady : copy().paymentMissing) : copy().invalid;
   }
@@ -93,7 +91,8 @@
         const rate = Number(data.rates && data.rates[currency]);
         if (!Number.isFinite(rate) || rate <= 0) throw new Error("Exchange rate unavailable");
         rates[currency] = rate;
-        minimumLocal = Math.ceil((0.5 * rate) * 100) / 100;
+        const fractionDigits = ["JPY", "KRW"].includes(currency) ? 0 : 2;
+        minimumLocal = Math.ceil((0.5 * rate) * Math.pow(10, fractionDigits)) / Math.pow(10, fractionDigits);
         rateReady = true;
         currencyNote.textContent = copy().currencyNote + " " + (copy() === translations.fr ? "Taux indicatif actualisé ; le montant final dépend du prestataire de paiement." : "Indicative live exchange rate; the final amount depends on the payment provider.");
       } catch (_) {
@@ -113,7 +112,6 @@
     title.textContent = item[language][0];
     description.textContent = item[language][1];
     amountInput.value = minimumLocal.toFixed(2);
-    countInput.value = "1";
     updateAmounts();
     if (typeof modal.showModal === "function") modal.showModal();
     else modal.setAttribute("open", "");
@@ -123,20 +121,16 @@
     if (button) openTechnology(button.dataset.tech);
   });
   amountInput.addEventListener("input", updateAmounts);
-  countInput.addEventListener("input", updateAmounts);
   checkout.addEventListener("click", () => {
     const url = paymentLinks[currency];
     if (!url || !/^https:\/\//i.test(url)) return;
     const amount = Number(amountInput.value);
-    const count = Math.max(1, Math.min(1000, Math.floor(Number(countInput.value) || 1)));
-    const separator = url.includes("?") ? "&" : "?";
-    window.open(url + separator + "client_reference_id=" + encodeURIComponent("ssswet-" + selectedTechnology + "-" + count) + "&prefilled_amount=" + encodeURIComponent(String(Math.round(amount * 100))), "_blank", "noopener,noreferrer");
+    window.open(url, "_blank", "noopener,noreferrer");
   });
   copyButton.addEventListener("click", async () => {
     const item = technologies[selectedTechnology];
     const amount = Number(amountInput.value);
-    const count = Math.max(1, Math.min(1000, Math.floor(Number(countInput.value) || 1)));
-    const summary = [item ? item[copy() === translations.fr ? "fr" : "en"][0] : "SSSWET", count + " × " + formatMoney(amount), "Total: " + formatMoney(amount * count), "Minimum: equivalent of EUR 0.50 per contribution"].join("\n");
+    const summary = [item ? item[copy() === translations.fr ? "fr" : "en"][0] : "SSSWET", "Contribution: " + formatMoney(amount), "Minimum: equivalent of EUR 0.50 per contribution"].join("\n");
     try { await navigator.clipboard.writeText(summary); paymentStatus.textContent = copy().copied; }
     catch (_) { paymentStatus.textContent = copy().copyError; }
   });
@@ -165,6 +159,7 @@
       card.querySelector("p").textContent = names[index][copy() === translations.fr ? "fr" : "en"][1];
     }
   });
+  currencyNote.textContent = copy().currencyNote;
   chooseCurrency();
   window.addEventListener("languagechange", () => window.location.reload());
   document.getElementById("language")?.addEventListener("change", () => {
