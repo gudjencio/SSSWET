@@ -139,6 +139,7 @@
     const loadIntegrity = () => get("/api/research-integrity?dossier_id=" + encodeURIComponent(dossier.dossier_id)).then((report) => {
       integrityList.replaceChildren(); const risks = Array.isArray(report.risks) ? report.risks : [];
       integrityStatus.textContent = risks.length ? risks.length + " " + labels.events : labels.riskEmpty;
+      integritySection.querySelectorAll(".evidence-integrity-warning").forEach((item) => item.remove());
       if (report.campaign_hold_recommendation) { const warning = document.createElement("p"); warning.className = "evidence-integrity-warning"; warning.textContent = labels.riskHold; integritySection.insertBefore(warning, integrityList); }
       risks.forEach((risk) => {
         const item = recordCard([[labels.id, risk.risk_id], [labels.riskCategory, risk.category], [labels.riskSeverity, risk.severity], [labels.state, risk.state], [labels.riskDescription, risk.description], [labels.riskReviewer, risk.reviewer_label], [labels.riskMitigation, risk.mitigation || "—"], [labels.riskAuthorization, risk.authorization_reference || "—"], [labels.created, risk.created_at]]);
