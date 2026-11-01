@@ -34,7 +34,7 @@ The project explores a disciplined workflow for turning research questions into 
 | Experimentation | Structured plans, simulation records and real-observation records |
 | Simulation studies | Bounded multi-model comparisons and reproducible output records |
 | Optimization | Human-reviewed adaptive scenario proposals |
-| Campaign coordination | Milestone scheduling, specialist allocation, resource quotas, retries and explicit completion approval |
+| Campaign coordination | Pipeline-integrated milestone scheduling, specialist allocation, resource quotas, retry tracking and explicit completion review |
 | Web interface | Responsive multilingual interface, global research dashboard and 15 initial language catalogues |
 
 Capabilities are implemented incrementally. The public web interface is a static application; the Python research engine runs locally and is not hosted by GitHub Pages.
