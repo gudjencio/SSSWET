@@ -2,6 +2,7 @@ import pytest
 
 from ssswet_core.digital_lab import DigitalLabService, LabProtocol, LabRun
 from ssswet_core.persistence import SQLiteResearchStore
+from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
 
 
 def make_protocol(state="published"):
@@ -26,6 +27,12 @@ def make_run(run_id, campaign, output, kind="simulation", independent=True):
 
 def setup(tmp_path):
     store = SQLiteResearchStore(tmp_path / "digital-lab.sqlite3")
+    for campaign_id in ("campaign-source", "campaign-a", "campaign-b", "campaign-x"):
+        campaign = create_campaign(
+            campaign_id, campaign_id, "Digital laboratory research", "computational science",
+            [CampaignMilestone("m1", "Protocol review", "Review shared protocol")],
+        )
+        store.save_campaign(set_campaign_state(campaign, "active"))
     service = DigitalLabService(store)
     service.publish_protocol(make_protocol())
     return store, service
