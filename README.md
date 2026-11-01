@@ -94,3 +94,19 @@ The repository is being built incrementally. Desktop and mobile packaging will u
 ## Author
 
 Gudjencio Hermann MARTIN
+
+## Persistent research history
+
+Local research runs can now be saved in SQLite and reopened through the
+read-only local interface. The CLI and interface can share the same database:
+
+```bash
+cd core
+python -m pip install -e .
+ssswet-run --objective "Study wave propagation" --domain physics --corpus documents.json
+ssswet-local
+```
+
+Both commands use `.ssswet/ssswet.sqlite3` by default. Research outputs are
+stored as unverified until the separate evidence and reproduction requirements
+are met. See [core documentation](core/README.md) for details.
