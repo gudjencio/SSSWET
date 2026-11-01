@@ -167,3 +167,28 @@ Model responses are labelled as generated drafts. They are not evidence,
 citations, measurements, or verified discoveries. The provider deliberately
 does not promote model-written references into source records. Human review,
 real source retrieval, independent checks and reproducibility remain required.
+
+
+## Local PDF document extraction
+
+Install the optional PDF dependency:
+
+```bash
+python -m pip install -e ".[pdf]"
+```
+
+Pass one or more PDFs to the local runner; they are extracted page by page and
+combined with an optional JSON corpus:
+
+```bash
+ssswet-run --objective "Compare experimental methods and limitations" --domain physics --pdf ./paper-a.pdf --pdf ./paper-b.pdf
+ssswet-run --objective "Review this topic" --corpus documents.json --pdf ./paper-a.pdf
+```
+
+Each non-empty page becomes a separate local corpus document with a page-level
+identifier. Extraction is bounded to 50 MiB per file, 500 pages per file and
+12,000 characters per page. Encrypted PDFs are rejected. Image-only scanned
+pages require OCR, which is not yet included. Files are read locally and are
+not uploaded by this feature. Extracted text can contain parsing errors and
+must be checked against the original PDF; it is not automatically evidence
+or a verified conclusion.
