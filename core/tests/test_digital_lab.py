@@ -297,8 +297,8 @@ def test_protocol_proposals_require_owner_review_and_latest_base(tmp_path):
 def test_protocol_proposal_rejects_unsafe_or_unknown_patch_fields(tmp_path):
     from ssswet_core.protocol_proposals import ProtocolProposalService
 
-    _, _ = setup(tmp_path)
-    service = ProtocolProposalService(_)
+    store, _ = setup(tmp_path)
+    service = ProtocolProposalService(store)
     with pytest.raises(ValueError, match="Unsupported protocol fields"):
         service.submit(
             "proposal-bad", "protocol-1", 1, "campaign-a",
