@@ -17,7 +17,7 @@
     root.replaceChildren();status.textContent="…";
     try{
       const query=filter.value?"?technology="+encodeURIComponent(filter.value):"";
-      const response=await fetch("/api/research-journal"+query,{cache:"no-store"});
+      const response=await window.ssswetApiFetch("/api/research-journal"+query);
       if(!response.ok) throw new Error("HTTP "+response.status);
       const report=await response.json();const chain=report.chain_integrity||{};
       status.textContent=(chain.chain_intact?t().intact:t().broken)+" · "+t().chain+" · "+chain.entries_checked+" "+t().entries+" · "+t().validity;
