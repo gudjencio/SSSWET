@@ -520,3 +520,36 @@ button:hover { border-color: #5a5274; background: linear-gradient(115deg, rgba(4
   .agent-avatar, .agent-robot-head, .agent-robot-body { animation: none !important; }
   .agent-role, .agent-question { transition: none; }
 }
+
+
+/* Consistent project-recovery action and voluntary payment reminders. */
+.repair-project-slot { display:flex; justify-content:center; width:100%; margin:0 auto 12px; }
+.repair-project-button {
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  min-height:42px; padding:11px 18px; border:1px solid rgba(176,158,224,.34);
+  border-radius:14px; color:#eee9fa; text-decoration:none; font-size:12px;
+  font-weight:650; letter-spacing:.025em;
+  background:linear-gradient(115deg,rgba(39,34,55,.94),rgba(13,16,22,.98) 58%,rgba(27,20,37,.96));
+  box-shadow:0 8px 28px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.06);
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+}
+.repair-project-button::before { content:"↻"; font-size:16px; line-height:1; }
+.repair-project-button:hover { transform:translateY(-1px); border-color:rgba(203,185,255,.72); box-shadow:0 10px 30px rgba(93,72,145,.18); }
+.repair-project-button:focus-visible { outline:2px solid #c8b5ff; outline-offset:3px; }
+.payment-reminder-panel {
+  display:grid; gap:10px; margin-top:16px; padding:15px;
+  border:1px solid rgba(169,154,220,.2); border-radius:14px;
+  background:linear-gradient(145deg,rgba(24,22,34,.58),rgba(8,10,14,.8));
+}
+.payment-reminder-panel h3 { margin:0; font-size:14px; font-weight:600; }
+.payment-reminder-panel p { margin:0; color:#a7a2b1; font-size:11px; line-height:1.55; }
+.payment-reminder-panel label { display:grid; gap:6px; color:#c8c3d0; font-size:11px; }
+.payment-reminder-panel input[type="email"], .payment-reminder-panel select {
+  width:100%; min-width:0; padding:10px 12px; border:1px solid #34303e;
+  border-radius:10px; color:#f2eff8; background:#0a0a10; font:inherit;
+}
+.payment-reminder-panel .payment-reminder-confirm { display:flex; align-items:flex-start; gap:9px; }
+.payment-reminder-panel .payment-reminder-confirm input { margin-top:2px; accent-color:#b7a2f2; }
+.payment-reminder-panel button { justify-self:start; padding:10px 13px; border-radius:10px; font-size:11px; }
+.donation-installment-fields { margin-top:12px; }
+#donation-payment-mode { width:100%; padding:11px 12px; border:1px solid #34303e; border-radius:10px; color:#f2eff8; background:#0a0a10; }
