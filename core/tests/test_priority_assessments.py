@@ -72,7 +72,7 @@ def test_assessment_api_is_readable_and_writes_only_from_loopback(tmp_path):
         assert report["assessed_programmes"] == 1
         assert report["ranked"][0]["programme_id"] == "clean-water"
         blocked = Request(base + "/api/research-priority-assessments", data=b"{}", headers={
-            "Origin": "https://gudjencio.github.io", "Content-Type": "application/json"
+            "Origin": "https://example.org", "Content-Type": "application/json"
         }, method="POST")
         with pytest.raises(HTTPError) as error:
             urlopen(blocked)
