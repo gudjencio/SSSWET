@@ -46,7 +46,7 @@
     te: ["SSSWET", "సూపర్ సైనికుల కోసం అంతరిక్ష వక్రీకరణ ఇంజినీరింగ్ మరియు సాంకేతికత"]
   };
   function applyProjectBranding(code) {
-    const pair = brandNames[code] || brandNames.en;
+    const pair = brandNames[translationSource(code)] || brandNames.en;
     const mark = document.getElementById("brand-mark");
     const subtitle = document.getElementById("brand-subtitle");
     const heading = document.getElementById("title");
