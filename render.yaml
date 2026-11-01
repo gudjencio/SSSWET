@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: ssswet-research-api
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /api/status
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    disk:
+      name: ssswet-research-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: SSSWET_HOST
+        value: "0.0.0.0"
+      - key: SSSWET_DATABASE
+        value: /var/data/ssswet.sqlite3
+      - key: SSSWET_ORDERS_DATABASE
+        value: /var/data/orders.sqlite3
+      - key: SSSWET_RESEARCH_INTERVAL_MINUTES
+        value: "60"
+      - key: SSSWET_ALLOWED_ORIGINS
+        value: "https://gudjencio.github.io,https://sites.google.com"
