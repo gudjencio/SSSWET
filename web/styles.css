@@ -553,3 +553,21 @@ button:hover { border-color: #5a5274; background: linear-gradient(115deg, rgba(4
 .payment-reminder-panel button { justify-self:start; padding:10px 13px; border-radius:10px; font-size:11px; }
 .donation-installment-fields { margin-top:12px; }
 #donation-payment-mode { width:100%; padding:11px 12px; border:1px solid #34303e; border-radius:10px; color:#f2eff8; background:#0a0a10; }
+
+
+/* PayPal recurring contribution button */
+.paypal-subscription-container {
+  width: 100%;
+  max-width: 430px;
+  min-height: 48px;
+  margin: 18px auto 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.paypal-subscription-container iframe {
+  max-width: 100% !important;
+}
+#donation-amount {
+  font-variant-numeric: tabular-nums;
+}
