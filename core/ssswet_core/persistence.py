@@ -440,7 +440,7 @@ class SQLiteResearchStore:
     ) -> dict:
         with self._connect() as connection:
             params: list = [node_id, node_id]
-            sql = "SELECT * FROM knowledge_edges WHERE source_id = ? OR target_id = ?"
+            sql = "SELECT * FROM knowledge_edges WHERE (source_id = ? OR target_id = ?)"
             if relation:
                 sql += " AND relation = ?"
                 params.append(relation)
