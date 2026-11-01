@@ -842,6 +842,22 @@ def test_official_web_origins_can_read_local_api_and_preflight_private_network(t
             assert response.status == 204
             assert response.headers["Access-Control-Allow-Origin"] == origin
             assert response.headers["Access-Control-Allow-Private-Network"] == "true"
+            assert "POST" in response.headers["Access-Control-Allow-Methods"]
+
+        write = Request(
+            base + "/api/research-journal",
+            data=json.dumps({
+                "technology": "biodiversity",
+                "event_type": "research_question",
+                "title": "Habitat connectivity",
+                "summary": "Record a research question from the approved public interface.",
+            }).encode(),
+            headers={"Origin": origin, "Content-Type": "application/json"},
+            method="POST",
+        )
+        with urlopen(write) as response:
+            assert response.status == 201
+            assert response.headers["Access-Control-Allow-Origin"] == origin
 
         rejected = Request(base + "/api/status", headers={"Origin": "https://example.com"}, method="OPTIONS")
         with pytest.raises(Exception):
