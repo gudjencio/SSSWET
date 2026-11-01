@@ -169,3 +169,23 @@ if (!donationSourceLatest.includes("grid.append(card)")) throw new Error("Dynami
 const stylesLatest = fs.readFileSync(new URL("./styles.css", "file://" + __filename), "utf8");
 if (!stylesLatest.includes("scroll-snap-type:x mandatory")) throw new Error("Mobile horizontal technology rail is missing.");
 console.log("Validated local engine discovery, offline alternatives, project email and expanded horizontal technology catalogue.");
+
+if (!donationSourceLatest.includes("latest/USD") || !donationSourceLatest.includes("minimumLocal = 10") || !donationSourceLatest.includes("paymentLinks.PAYPAL_ME")) {
+  throw new Error("USD 10 minimum and live USD conversion are required for contributions.");
+}
+if (!donationSourceLatest.includes("Math.floor(amountUsd / 10)") || !donationSourceLatest.includes("payment_reminder_register")) {
+  throw new Error("Voluntary USD 10 instalment calculation or reminder registration is missing.");
+}
+if (!pageSource.includes('id="donation-payment-mode"') || !pageSource.includes('id="payment-reminder-frequency"') || !pageSource.includes('id="payment-reminder-email"')) {
+  throw new Error("Instalment and email reminder controls are incomplete.");
+}
+if (!paymentConfig.includes("PAYMENT_REMINDER_URL") || paymentConfig.includes('"payment-enhancement.js"')) {
+  throw new Error("Payment reminder endpoint or single payment implementation is misconfigured.");
+}
+if (!stylesLatest.includes(".repair-project-button") || !stylesLatest.includes(".payment-reminder-panel")) {
+  throw new Error("Project recovery button or reminder panel styling is missing.");
+}
+for (const logText of ["function localizeResearchLog", "Task lifecycle state updated.", "Research group created with role-matched agents.", "Erreur technique à examiner"]) {
+  if (!appSource.includes(logText)) throw new Error("Localized research log handling is missing: " + logText);
+}
+console.log("Validated the USD 10 minimum, live currency conversion, voluntary instalments, reminder controls, recovery button and localized research logs.");
