@@ -114,3 +114,12 @@ for (const social of ["data-social=\"Instagram\"", "data-social=\"YouTube\"", "m
   if (!pageSource.includes(social)) throw new Error(`Social link feature missing: ${social}`);
 }
 console.log("Validated localized project branding, automatic voice attempt, compact panels and social icons.");
+
+const donationSource = fs.readFileSync(new URL("./donation.js", `file://${__filename}`), "utf8");
+const paymentConfig = fs.readFileSync(new URL("./donation-config.js", `file://${__filename}`), "utf8");
+for (const feature of ["timetravel", "Time travel research", "Voyage dans le temps", "PayPal", "future purchase and delivery", "ongoing effort to make them possible"]) {
+  if (!donationSource.includes(feature)) throw new Error(`Research funding feature missing: ${feature}`);
+}
+if (!paymentConfig.includes("https://www.paypal.com/paypalme/gudjencio")) throw new Error("The official PayPal destination is not configured.");
+if (!pageSource.includes('data-tech="timetravel"')) throw new Error("Time travel is missing from the public technology catalogue.");
+console.log("Validated the PayPal research-funding route, conditional future product delivery wording and time-travel technology.");
