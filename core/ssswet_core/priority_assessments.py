@@ -51,6 +51,8 @@ class PriorityAssessmentStore:
 
     @staticmethod
     def _clean_text(value: Any, field: str, maximum: int, required: bool = True) -> str:
+        if value is None and required:
+            raise ValueError(f"{field} is required")
         if not isinstance(value, str):
             raise ValueError(f"{field} must be text")
         result = value.strip()
