@@ -112,3 +112,20 @@ The API exposes recent tasks at `/api/work`, provider outputs at
 `/api/discoveries`, event history at `/api/events`, and independently
 validated memory at `/api/verified`. The interface never treats a stored
 provider output as a verified discovery.
+
+## External scholarly discovery with Crossref
+
+A public Crossref metadata provider can retrieve bibliographic records for
+multidisciplinary literature searches. It records DOI/URL, title, author
+metadata, publisher and publication year when available. It does not fetch
+paywalled full text, interpret a paper, or validate scientific claims.
+
+Example:
+
+```bash
+ssswet-run --objective "wave propagation measurement methods" --domain physics --provider crossref
+```
+
+An optional contact email can be supplied with `--mailto`. Crossref results
+are discovery leads only and remain marked unverified. Network failures or
+empty results are reported without fabricating substitute evidence.
