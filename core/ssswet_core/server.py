@@ -43,7 +43,10 @@ def public_events(engine: SSSWETEngine, store: SQLiteResearchStore | None = None
     ]
 
 
-def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registry=None, admin_token: str | None = None):
+def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registry=None, admin_token: str | None = None, priority_assessments=None):
+    if priority_assessments is None:
+        from .priority_assessments import PriorityAssessmentStore
+        priority_assessments = PriorityAssessmentStore(store.path)
     class SSSWETHandler(SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(WEB_ROOT), **kwargs)
@@ -199,6 +202,11 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             elif path == "/api/research-gaps":
                 from .research_gaps import ResearchGapAnalyzer
                 self._json(ResearchGapAnalyzer().report(store.knowledge_graph(limit=500)))
+            elif path == "/api/research-priority-assessments":
+                try:
+                    self._json(priority_assessments.overview(limit=int(parse_qs(parsed.query).get("limit", ["300"])[0])))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/research-priority-framework":
                 from .priority_framework import framework_definition
                 self._json(framework_definition())
@@ -432,7 +440,7 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             if private_order_write and not self._private_admin_allowed():
                 self._json({"error": "Local administrator authentication required"}, 401)
                 return
-            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks", "/api/research-journal"} and not private_order_write:
+            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks", "/api/research-journal", "/api/research-priority-assessments"} and not private_order_write:
                 self.send_error(405, "Unsupported write operation")
                 return
             try:
@@ -473,6 +481,11 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                             evidence_reference=payload.get("evidence_reference", ""),
                         )
                         self._json({"order": order}, 201)
+                elif request_path == "/api/research-priority-assessments":
+                    assessment = priority_assessments.append(payload)
+                    self._json({"assessment": assessment, "append_only": True,
+                                "automatic_funding_decisions": False,
+                                "scientific_validity_established": False}, 201)
                 elif request_path == "/api/research-journal":
                     from .research_journal import ResearchJournal
                     entry = ResearchJournal(store).append(
