@@ -118,6 +118,10 @@ Arabic and Hebrew use right-to-left layout. Translation coverage and quality are
 
 The Google Sites page is intended to embed the canonical web application, avoiding a separate copy that could become outdated.
 
+## License
+
+SSSWET is distributed under the [MIT License](LICENSE). The license permits use, modification and redistribution subject to its terms.
+
 ## Development and contributions
 
 Bug reports, reproducible test cases, documentation improvements, accessibility work and translation reviews are welcome through the repository's issue tracker and pull requests.
