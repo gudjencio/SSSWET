@@ -189,3 +189,11 @@ for (const logText of ["function localizeResearchLog", "Task lifecycle state upd
   if (!appSource.includes(logText)) throw new Error("Localized research log handling is missing: " + logText);
 }
 console.log("Validated the USD 10 minimum, live currency conversion, voluntary instalments, reminder controls, recovery button and localized research logs.");
+
+new Function(donationSourceLatest);
+const reminderScript = fs.readFileSync(new URL("../integrations/google-apps-script/PaymentReminders.gs", `file://${__filename}`), "utf8");
+new Function(reminderScript);
+for (const feature of ["registerPaymentReminder_", "confirmPaymentReminder_", "sendDuePaymentReminders_", "installPaymentReminderTrigger_", "unsubscribePaymentReminder_"]) {
+  if (!reminderScript.includes(feature)) throw new Error("Payment reminder service is missing: " + feature);
+}
+console.log("Validated payment UI syntax and the opt-in Apps Script reminder service.");
