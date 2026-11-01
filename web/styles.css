@@ -316,3 +316,12 @@ button:hover { border-color: #5a5274; background: linear-gradient(115deg, rgba(4
   h1 { font-size: clamp(34px, 10vw, 54px); }
   .agent-role { align-items: flex-start; }
 }
+
+
+/* Accessible voice controls and per-agent playback. */
+.voice-controls { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 9px; margin: 14px 0 4px; }
+.voice-toggle { min-width: 150px; padding: 9px 14px; border-radius: 999px; font-size: 10px; letter-spacing: .04em; }
+.voice-toggle[aria-pressed="true"] { border-color: #6a5b8c; background: linear-gradient(110deg, rgba(78,62,112,.5), rgba(18,25,32,.95)); }
+.voice-note { color: #777582; font-size: 9px; text-align: center; }
+.agent-speak { flex: 0 0 auto; padding: 7px 10px; border-radius: 999px; font-size: 9px; white-space: nowrap; }
+@media (max-width: 620px) { .voice-controls { flex-direction: column; } .agent-speak { margin-inline-start: auto; } }
