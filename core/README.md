@@ -847,7 +847,7 @@ Each assigned reviewer campaign can submit once. Submissions are immutable.
 The read-only endpoint is GET /api/collaboration/peer-reviews; activity is
 also included in GET /api/research-timeline.
 
-Independence is explicitly self-declared, not authenticated. Campaign
+Review reports compare outcome patterns, reviewer campaign counts, methods, overlapping source identifiers, repeated provenance groups and stated limitations. This descriptive synthesis does not rank reviewers, apply a majority rule or adjudicate the claim. Independence is explicitly self-declared, not authenticated. Campaign
 separation alone does not prove independent people, data, methods or funding.
 A peer-review outcome is not a vote and does not alter a finding's verification
 state or automatically resolve a contradiction.
