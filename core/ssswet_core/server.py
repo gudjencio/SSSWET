@@ -141,6 +141,18 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
             elif path == "/api/research-gaps":
                 from .research_gaps import ResearchGapAnalyzer
                 self._json(ResearchGapAnalyzer().report(store.knowledge_graph(limit=500)))
+            elif path == "/api/research-relations":
+                from .research_relations import ResearchRelationDiscovery
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["100"])[0])
+                    minimum = int(params.get("minimum_shared_terms", ["2"])[0])
+                except ValueError:
+                    self._json({"error": "limit and minimum_shared_terms must be integers"}, 400)
+                    return
+                self._json(ResearchRelationDiscovery(store).discover(
+                    limit=limit, minimum_shared_terms=minimum
+                ))
             elif path == "/api/digital-lab":
                 from .digital_lab import DigitalLabService
                 params = parse_qs(parsed.query)
