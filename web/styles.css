@@ -64,6 +64,10 @@ button:hover { transform: translateY(-1px); border-color: #555; background: #161
 button:active { transform: translateY(0); }
 .feed { min-height: 74px; margin-top: 15px; padding: 13px 15px; border-radius: 16px; background: #080808; color: #aaa; font-size: 13px; line-height: 1.55; }
 .feed-line { margin: 0; }
+.feed-line:has(.discovery-status) { display: flex; flex-wrap: wrap; align-items: baseline; gap: 5px 8px; padding: 9px 0; border-bottom: 1px solid #1d1d1d; }
+.discovery-status { display: inline-block; padding: 2px 7px; border: 1px solid #66552c; border-radius: 999px; color: #d9bd78; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; }
+.discovery-meta { color: #777; font-size: 11px; }
+.discovery-summary { flex-basis: 100%; color: #c3c3c3; }
 .feed-line span:first-child { color: #fff; margin-right: 6px; }
 .footer { width: 100%; margin-top: auto; padding-top: 30px; text-align: center; color: #777; font-size: 11px; }
 .contact { color: #aaa; margin-bottom: 7px; }
