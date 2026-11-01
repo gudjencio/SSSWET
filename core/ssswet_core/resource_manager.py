@@ -124,6 +124,7 @@ class ResourceManager:
                 break
             quota = self.quotas[request.campaign_id]
             quota.reserved_units += request.estimated_units
+            agent.current_task = request.task_id
             attempt = self._attempts.get(request.task_id, 0) + 1
             self._attempts[request.task_id] = attempt
             assignment = WorkAssignment(request, agent.id, attempt)
@@ -151,15 +152,16 @@ class ResourceManager:
         return agent
 
     def finish(self, task_id: str, success: bool, actual_units: float | None = None) -> None:
-        assignment = self.assignments.pop(task_id, None)
+        assignment = self.assignments.get(task_id)
         if assignment is None:
             raise ValueError("No active assignment exists for this task")
         request = assignment.request
         quota = self.quotas[request.campaign_id]
-        quota.reserved_units = max(0.0, quota.reserved_units - request.estimated_units)
         charge = request.estimated_units if actual_units is None else actual_units
         if charge < 0:
             raise ValueError("Actual resource units cannot be negative")
+        self.assignments.pop(task_id)
+        quota.reserved_units = max(0.0, quota.reserved_units - request.estimated_units)
         if quota.consumed_units + charge > quota.max_units:
             # Preserve the assignment for operator review instead of silently
             # charging beyond the configured campaign limit.
