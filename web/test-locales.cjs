@@ -22,7 +22,7 @@ const required = [
   "dashEndpointUnavailable", "dashNoData"
 ];
 const fullyTranslated = new Set(["en", "fr", "es", "de", "it", "pt", "nl", "ru", "uk", "ar", "he", "ja", "ko", "zh", "hi"]);
-const additionalTranslated = new Set(["id", "tr", "pl", "bn", "sw"]);
+const additionalTranslated = new Set(["id", "tr", "pl", "bn", "sw", "vi", "fa", "ur", "ta", "te"]);
 const additionalRequired = ["tagline", "status", "statusOnline", "statusOffline", "mission", "agents", "verification", "discover", "working", "verified", "ready", "footer", "offline", "noDiscoveries", "noActivity", "noVerified", "language", "social", "contact", "dashboard", "dashboardNote", "refresh", "timelineTitle", "timelineFilter", "allCampaigns", "timelineSearchLabel", "timelineSearchPlaceholder", "timelineTypeFilter", "allEventTypes", "timelineNoMatches", "timelineCaption", "timelineEmpty"];
 for (const [code, locale] of Object.entries(locales)) {
   if (!locale.name || !["ltr", "rtl"].includes(locale.dir)) {
@@ -45,7 +45,7 @@ for (const [code, locale] of Object.entries(locales)) {
     throw new Error(`Locale ${code} has an invalid text direction`);
   }
 }
-if (locales.ar.dir !== "rtl" || locales.he.dir !== "rtl") {
+if (locales.ar.dir !== "rtl" || locales.he.dir !== "rtl" || locales.fa.dir !== "rtl" || locales.ur.dir !== "rtl") {
   throw new Error("Arabic and Hebrew must use right-to-left layout");
 }
 console.log(`Validated ${Object.keys(locales).length} selectable locales, ${context.window.SSSWET_LANGUAGE_CATALOG.length} language options, and ${fullyTranslated.size} complete translations.`);
