@@ -227,18 +227,11 @@
     $("bot-stage-caption").textContent = selected.length
       ? (isActive ? t().stageActive : t().stageRecent)
       : t().stageEmpty;
-    const width = stage.clientWidth || 700;
-    const height = stage.clientHeight || 400;
-    const rx = Math.min(width * .39, 330);
-    const ry = Math.min(height * .34, 165);
     stage.innerHTML = selected.map((agent,index) => {
-      const angle = (-Math.PI/2) + (Math.PI*2*index/selected.length);
-      const x = 50 + (Math.cos(angle)*rx/width*100);
-      const y = 50 + (Math.sin(angle)*ry/height*100);
       const role = roleName(agent.role);
       const activeClass = isActive ? "is-active" : (String(agent.role||"").includes("verif") ? "is-review" : "");
       const id = agent.id || agent.agent_id;
-      return '<div class="bot-stage-agent '+activeClass+'" style="--x:'+x.toFixed(2)+'%;--y:'+y.toFixed(2)+'%;--delay:'+(-index*.43)+'s;--float-duration:'+(4.2+(index%4)*.7)+'s"><div class="bot-stage-agent-content">'+avatar(index)+'<strong>'+esc(role)+'</strong><small>'+esc(id)+'</small></div></div>';
+      return '<article class="bot-stage-agent '+activeClass+'"><div class="bot-stage-agent-content">'+avatar(index)+'<div class="bot-stage-agent-label"><strong>'+esc(role)+'</strong><small>'+esc(id)+'</small></div></div></article>';
     }).join("");
   }
 
