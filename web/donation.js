@@ -173,7 +173,8 @@
   const copy = () => translations[(document.documentElement.lang || "en").startsWith("fr") ? "fr" : "en"];
   let selectedTechnology = null;
   let currency = "EUR";
-  let minimumLocal = 0.50;
+  let minimumLocal = 10;
+  let usdToLocalRate = 1;
   let rateReady = false;
   const portfolioLabels = {
     en: { stage:"Research stage", goal:"Funding goal", confirmed:"Confirmed contributions", availability:"Availability", prototypeLabel:"Prototype status", unknown:"Not published", notSet:"Not set", planning:"Research planning", literature:"Literature review", feasibility:"Feasibility study", prototype:"Prototype development", validation:"Testing and validation", available:"Available for separate purchase", prototypeYes:"Prototype recorded", prototypeNo:"No prototype recorded", unavailable:"Not available", updated:"Last updated", progress:"Funding progress", manual:"Public figures are updated manually after payment confirmation. PayPal.Me does not synchronize payments with this website." },
@@ -189,39 +190,48 @@
   }
   function updateAmounts() {
     const amount = Number(amountInput.value);
-    const valid = Number.isFinite(amount) && amount >= minimumLocal;
-    perOutput.textContent = Number.isFinite(amount) ? formatMoney(amount) : "—";
-    totalOutput.textContent = valid ? formatMoney(amount) : "—";
-    const paymentConfigured = typeof paymentLinks.PAYPAL === "string" && /^https:\/\/www\.paypal\.com\/paypalme\/gudjencio\/?$/i.test(paymentLinks.PAYPAL);
-    checkout.disabled = !valid || !paymentConfigured;
-    paymentStatus.textContent = valid ? (paymentConfigured ? copy().paymentReady : copy().paymentMissing) : copy().invalid;
+    const valid = rateReady && Number.isFinite(amount) && amount >= minimumLocal;
+    const amountUsd = amount / usdToLocalRate;
+    const split = document.getElementById("donation-payment-mode")?.value === "installments";
+    const installmentCount = split && valid ? Math.max(1, Math.floor(amountUsd / 10)) : 1;
+    const installmentLocal = amount / installmentCount;
+    const installmentUsd = amountUsd / installmentCount;
+    perOutput.textContent = valid ? formatMoney(installmentLocal) : "—";
+    totalOutput.textContent = valid ? formatMoney(amount) + " · " + new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(amountUsd) : "—";
+    const countOutput = document.getElementById("donation-installment-summary");
+    if (countOutput) countOutput.textContent = split ? installmentCount + " separate payments · " + new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(installmentUsd) + " each" : "One-time payment";
+    const paymentConfigured = typeof paymentLinks.PAYPAL_ME === "string" && paymentLinks.PAYPAL_ME.startsWith("https://www.paypal.com/paypalme/gudjencio");
+    checkout.disabled = !valid || !paymentConfigured || (split && installmentUsd < 10);
+    paymentStatus.textContent = !valid ? copy().invalid : paymentConfigured ? copy().paymentReady : copy().paymentMissing;
   }
   async function chooseCurrency() {
     const region = localeRegion();
-    currency = currencyByRegion[region] || "EUR";
+    currency = currencyByRegion[region] || "USD";
     currencyLabel.textContent = currency;
-    if (currency !== "EUR") {
-      try {
-        const response = await fetch("https://open.er-api.com/v6/latest/EUR", { cache:"no-store" });
+    const digits = ["JPY", "KRW"].includes(currency) ? 0 : 2;
+    try {
+      if (currency === "USD") usdToLocalRate = 1;
+      else {
+        const response = await fetch("https://open.er-api.com/v6/latest/USD", {cache:"no-store"});
         if (!response.ok) throw new Error("Exchange-rate service unavailable");
         const data = await response.json();
         const rate = Number(data.rates && data.rates[currency]);
         if (!Number.isFinite(rate) || rate <= 0) throw new Error("Exchange rate unavailable");
+        usdToLocalRate = rate;
         rates[currency] = rate;
-        const fractionDigits = ["JPY", "KRW"].includes(currency) ? 0 : 2;
-        minimumLocal = Math.ceil((0.5 * rate) * Math.pow(10, fractionDigits)) / Math.pow(10, fractionDigits);
-        amountInput.min = String(minimumLocal);
-        amountInput.step = fractionDigits === 0 ? "1" : "0.01";
-        rateReady = true;
-        currencyNote.textContent = copy().currencyNote + " " + (copy() === translations.fr ? "Taux indicatif actualisé ; le montant final dépend du prestataire de paiement." : "Indicative live exchange rate; the final amount depends on the payment provider.");
-      } catch (_) {
-        currency = "EUR";
-        minimumLocal = 0.50;
-        amountInput.min = "0.50";
-        amountInput.step = "0.01";
-        currencyLabel.textContent = currency;
-        currencyNote.textContent = copy().currencyNote + " " + (copy() === translations.fr ? "Conversion indisponible : affichage en euros." : "Conversion unavailable: showing euros.");
       }
+      minimumLocal = Math.ceil(10 * usdToLocalRate * Math.pow(10,digits)) / Math.pow(10,digits);
+      amountInput.min = String(minimumLocal);
+      amountInput.step = digits === 0 ? "1" : "0.01";
+      if (Number(amountInput.value) < minimumLocal) amountInput.value = String(minimumLocal);
+      rateReady = true;
+      currencyNote.textContent = "Minimum: USD 10 · live indicative exchange rate. The payment provider may apply its own rate or fees."; 
+    } catch (_) {
+      currency = "USD"; usdToLocalRate = 1; minimumLocal = 10;
+      amountInput.min = "10"; amountInput.step = "0.01";
+      if (Number(amountInput.value) < 10) amountInput.value = "10";
+      currencyLabel.textContent = "USD"; rateReady = true;
+      currencyNote.textContent = "Exchange rate unavailable: amounts are shown in USD to preserve the exact minimum.";
     }
     updateAmounts();
   }
@@ -270,11 +280,18 @@
     if (button) openTechnology(button.dataset.tech);
   });
   amountInput.addEventListener("input", updateAmounts);
+  document.getElementById("donation-payment-mode")?.addEventListener("change", updateAmounts);
   checkout.addEventListener("click", () => {
-    const url = paymentLinks.PAYPAL;
+    const url = paymentLinks.PAYPAL_ME;
     const amount = Number(amountInput.value);
-    if (!url || !/^https:\/\/www\.paypal\.com\/paypalme\/gudjencio\/?$/i.test(url) || !Number.isFinite(amount) || amount < minimumLocal) return;
-    window.open(url, "_blank", "noopener,noreferrer");
+    if (!url || !url.startsWith("https://www.paypal.com/paypalme/gudjencio") || !Number.isFinite(amount) || amount < minimumLocal || !rateReady) return;
+    const split = document.getElementById("donation-payment-mode")?.value === "installments";
+    const usdTotal = amount / usdToLocalRate;
+    const count = split ? Math.max(1, Math.floor(usdTotal / 10)) : 1;
+    const digits = ["JPY","KRW"].includes(currency) ? 0 : 2;
+    const localPayment = Math.ceil((amount / count) * Math.pow(10,digits)) / Math.pow(10,digits);
+    const target = url.replace(/\\/$/, "") + "/" + encodeURIComponent(String(localPayment) + currency);
+    window.open(target, "_blank", "noopener,noreferrer");
   });
   copyButton.addEventListener("click", async () => {
     const item = technologies[selectedTechnology];
