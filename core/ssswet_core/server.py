@@ -74,6 +74,8 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                 self._json({"cycles": store.adaptive_cycle_history(limit=100)})
             elif path == "/api/campaigns":
                 self._json({"campaigns": store.campaign_history(limit=100)})
+            elif path == "/api/resources":
+                self._json({"snapshots": store.resource_snapshot_history(limit=50)})
             elif path == "/health":
                 self._json({"status": "ok"})
             elif path.startswith("/api/"):
