@@ -57,12 +57,20 @@
         cache: "no-store",
         headers: { Accept: "application/json", ...(options.headers || {}) }
       });
-      if (!response.ok) throw new Error("HTTP " + response.status);
+      if (!response.ok) {
+        const httpError = new Error("HTTP " + response.status);
+        httpError.status = response.status;
+        throw httpError;
+      }
       return response;
     } catch (error) {
-      activeApiBase = null;
-      window.SSSWET_API_BASE = null;
-      window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:false,error:error.message}}));
+      // An HTTP response proves that the local engine is reachable. Only
+      // transport/CORS failures should change the connection state.
+      if (!error.status) {
+        activeApiBase = null;
+        window.SSSWET_API_BASE = null;
+        window.dispatchEvent(new CustomEvent("ssswet-engine-connection", {detail:{connected:false,error:error.message}}));
+      }
       throw error;
     }
   };
