@@ -51,12 +51,6 @@
         return;
       }
 
-      const fallback = links.PAYPAL_NCP_10_USD;
-      if (rounded === 10 && typeof fallback === "string") {
-        window.open(fallback, "_blank", "noopener,noreferrer");
-        return;
-      }
-
       status.textContent = document.documentElement.lang?.startsWith("fr")
         ? "Aucun moyen de paiement PayPal configuré pour ce montant."
         : "No PayPal payment method is configured for this amount.";
