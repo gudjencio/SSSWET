@@ -166,3 +166,24 @@ def test_adaptive_cycle_history_persists_proposal_only_state(tmp_path):
     assert saved["execution_state"] == "proposal_only"
     assert saved["requires_human_approval_before_execution"] is True
     assert history[0]["cycle_id"] == "cycle-001"
+
+
+
+def test_autonomous_worker_heartbeat_round_trip(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "worker-state.sqlite3")
+    state = {
+        "worker": "autonomous_research",
+        "status": "running",
+        "current_technology": "cleanenergy",
+        "completed_programmes": 7,
+        "total_programmes": 32,
+        "active_agents": [{"id": "bot-001", "role": "independent_verifier", "task_id": "task-1"}],
+    }
+    store.save_research_worker_state(state)
+
+    loaded = store.research_worker_state()
+    assert loaded["status"] == "running"
+    assert loaded["current_technology"] == "cleanenergy"
+    assert loaded["completed_programmes"] == 7
+    assert loaded["active_agents"][0]["id"] == "bot-001"
+    assert loaded["updated_at"]
