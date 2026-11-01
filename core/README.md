@@ -59,3 +59,29 @@ availability of methods, known publication date, HTTPS URL and declared
 limitations. The resulting score is a prioritization aid, not a probability
 of truth and not a substitute for claim-level verification. A high source
 score never automatically upgrades a finding's verification state.
+
+## Role-based team execution
+
+The pipeline allocates one agent per decomposed role, creates a research group,
+records each pass as a structured event, and releases the team when the run
+finishes. If a provider fails, the parent task is preserved in the queue and
+the allocated agents are released. The agent pool grows only to meet unmet
+workload and remains bounded by its configured maximum.
+
+## Local document research
+
+`LocalCorpusProvider` searches a caller-supplied corpus using transparent
+lexical overlap. It returns the matching document IDs and excerpts, but does
+not claim semantic understanding or scientific verification.
+
+Install the core and run:
+
+```bash
+cd core
+python -m pip install -e .
+ssswet-run --objective "Compare published methods for measuring wave propagation" --domain physics --corpus documents.json
+```
+
+The corpus is a JSON array. Each entry has `source_id`, `title`, `text`,
+and an optional `url`. The command labels all provider output as unverified.
+Without `--corpus`, it uses the deterministic demo provider.
