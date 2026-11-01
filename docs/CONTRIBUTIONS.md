@@ -1,21 +1,29 @@
-# Configuring voluntary contributions
+# Research contributions and future technology availability
 
-The technology catalogue and contribution dialog are public-facing interface components. Payment collection is deliberately disabled until the project operator configures official hosted checkout links.
+SSSWET invites voluntary contributions to support ongoing research and development across its technology priorities.
 
-1. Create a hosted, variable-amount contribution page with a regulated payment provider.
-2. Configure the provider to accept the relevant currency and a minimum amount no higher than the equivalent of EUR 0.50.
-3. Add the verified HTTPS payment URL to `web/donation-config.js`, keyed by ISO 4217 currency code (for example, `EUR`, `USD`, `GBP` or `CAD`).
-4. Verify the payment page, legal disclosures, refund policy, recipient identity and currency handling before publishing the link.
+## Current contributions
 
-Example structure (replace the example URL with a real provider-issued link):
+The technology catalogue describes research ambitions, not products currently available for sale. Contributors can select a research theme and open the contribution dialog. The interface displays an indicative minimum equivalent to EUR 0.50, using the visitor's browser region and an exchange-rate estimate where available.
 
-```js
-window.SSSWET_DONATION_LINKS = {
-  EUR: "https://buy.stripe.com/your_verified_eur_link",
-  USD: "https://buy.stripe.com/your_verified_usd_link"
-};
-```
+Payments are redirected to the project's PayPal.Me page:
 
-Do not add secret API keys, private tokens, bank credentials or webhook signing secrets to this public repository. The browser detects a likely currency from the visitor's regional browser setting and uses a public exchange-rate feed for an indicative EUR 0.50 minimum conversion. If conversion is unavailable, the interface falls back to EUR. The payment provider's checkout page remains authoritative for the final amount and accepted currency.
+https://www.paypal.com/paypalme/gudjencio
 
-Each checkout opens one separate contribution. Visitors may return and make additional contributions; the interface does not claim to bundle multiple payments into one transaction.
+The visitor must enter and confirm the desired amount and an available currency on PayPal. The amount shown in the SSSWET interface is an estimate and is not transferred automatically to PayPal. PayPal's checkout is authoritative for accepted currencies, fees, conversion and payment confirmation.
+
+Contributors may make multiple separate payments. Each payment is an independent transaction. A contribution supports research and development; it is not a purchase of an existing technology and does not guarantee that a research objective will succeed.
+
+## Future products and delivery
+
+If a research direction eventually results in a technology that is scientifically, technically, legally and safely feasible, and a product is actually developed and made available, SSSWET may announce a separate acquisition and delivery offer for interested contributors.
+
+Any such offer must specify availability, eligibility, price (if applicable), delivery conditions, timelines, limitations, warranties and refund terms before a contributor accepts it. A contribution alone does not create an automatic entitlement to a future device, product, service or delivery. No delivery date or technical capability is promised in advance.
+
+## Continuing ambition
+
+The project's purpose is to keep investigating, testing, learning and improving in a sustained effort to make ambitious technologies possible. Research hypotheses, simulations, prototypes and independently verified capabilities must remain clearly distinguished.
+
+## Payment and privacy
+
+The public repository contains only the public PayPal.Me destination. It must never contain passwords, API secrets, private tokens, banking credentials or webhook signing keys. Donors should complete payments only on the official PayPal domain and retain their transaction confirmation.
