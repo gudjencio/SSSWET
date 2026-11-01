@@ -60,7 +60,7 @@ def run_pass(database: str, mailto: str = "") -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run continuous SSSWET technology research locally")
     parser.add_argument("--database", default=".ssswet/ssswet.sqlite3")
-    parser.add_argument("--interval-hours", type=float, default=6.0)
+    parser.add_argument("--interval-hours", type=float, default=1.0)
     parser.add_argument("--mailto", default="")
     parser.add_argument("--once", action="store_true")
     args = parser.parse_args()
