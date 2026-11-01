@@ -158,6 +158,15 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                     "automatic_adjudication": False,
                     "scientific_validity_changed": False,
                 })
+            elif path == "/api/collaboration/peer-reviews":
+                from .peer_review import PeerReviewService
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["200"])[0])
+                except ValueError:
+                    self._json({"error": "The limit parameter must be an integer"}, 400)
+                    return
+                self._json(PeerReviewService(store).report(limit=limit))
             elif path == "/api/collaboration/recommendations":
                 from .collaboration_recommender import CollaborationRecommender, recommendation_to_dict
                 self._json({
