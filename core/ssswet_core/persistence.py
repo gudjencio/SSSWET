@@ -123,6 +123,22 @@ class SQLiteResearchStore:
                 );
                 CREATE INDEX IF NOT EXISTS idx_lab_protocols_state
                     ON lab_protocols(state, created_at DESC);
+                CREATE TABLE IF NOT EXISTS lab_protocol_proposals (
+                    proposal_id TEXT PRIMARY KEY,
+                    protocol_id TEXT NOT NULL,
+                    base_version INTEGER NOT NULL,
+                    proposer_campaign_id TEXT NOT NULL,
+                    proposal_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_lab_protocol_proposals_status
+                    ON lab_protocol_proposals(created_at DESC);
+                CREATE TABLE IF NOT EXISTS lab_protocol_proposal_events (
+                    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    proposal_id TEXT NOT NULL REFERENCES lab_protocol_proposals(proposal_id),
+                    event_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
                 CREATE TABLE IF NOT EXISTS lab_runs (
                     run_id TEXT PRIMARY KEY,
                     protocol_id TEXT NOT NULL,
@@ -1039,6 +1055,110 @@ class SQLiteResearchStore:
                 (bounded,),
             ).fetchall()
         return [json.loads(row["protocol_json"]) for row in rows]
+
+    def save_lab_protocol_proposal(self, proposal: dict) -> dict:
+        required = ("proposal_id", "protocol_id", "proposer_campaign_id", "created_at")
+        if any(not isinstance(proposal.get(key), str) or not proposal[key].strip() for key in required):
+            raise ValueError("Proposal identifiers and timestamp are required")
+        payload = json.dumps(proposal, ensure_ascii=False, sort_keys=True)
+        with self._connect() as connection:
+            campaign = connection.execute(
+                "SELECT campaign_json FROM research_campaigns WHERE campaign_id=?",
+                (proposal["proposer_campaign_id"],),
+            ).fetchone()
+            if campaign is None or json.loads(campaign["campaign_json"]).get("state") != "active":
+                raise ValueError("Proposing campaign must exist and be active")
+            if connection.execute(
+                "SELECT 1 FROM lab_protocol_proposals WHERE proposal_id=?",
+                (proposal["proposal_id"],),
+            ).fetchone():
+                raise ValueError("Protocol proposal ID already exists")
+            connection.execute(
+                "INSERT INTO lab_protocol_proposals VALUES (?, ?, ?, ?, ?, ?)",
+                (proposal["proposal_id"], proposal["protocol_id"], proposal["base_version"],
+                 proposal["proposer_campaign_id"], payload, proposal["created_at"]),
+            )
+            connection.execute(
+                "INSERT INTO lab_protocol_proposal_events(proposal_id,event_json,created_at) VALUES(?,?,?)",
+                (proposal["proposal_id"], json.dumps({
+                    "event": "submitted", "actor_campaign_id": proposal["proposer_campaign_id"],
+                    "note": proposal["rationale"],
+                }, ensure_ascii=False, sort_keys=True), proposal["created_at"]),
+            )
+        return proposal
+
+    def get_lab_protocol_proposal(self, proposal_id: str) -> dict | None:
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT proposal_json FROM lab_protocol_proposals WHERE proposal_id=?",
+                (proposal_id,),
+            ).fetchone()
+            events = connection.execute(
+                "SELECT event_json FROM lab_protocol_proposal_events WHERE proposal_id=? ORDER BY event_id",
+                (proposal_id,),
+            ).fetchall()
+        if row is None:
+            return None
+        result = json.loads(row["proposal_json"])
+        result["events"] = [json.loads(item["event_json"]) for item in events]
+        return result
+
+    def lab_protocol_proposal_history(self, limit: int = 200) -> list[dict]:
+        bounded = max(1, min(int(limit), 500))
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT proposal_id FROM lab_protocol_proposals ORDER BY created_at DESC, proposal_id LIMIT ?",
+                (bounded,),
+            ).fetchall()
+        return [self.get_lab_protocol_proposal(row["proposal_id"]) for row in rows]
+
+    def decide_lab_protocol_proposal(self, proposal_id: str, decision: str,
+                                     reviewer_campaign_id: str, note: str,
+                                     decided_at: str, resulting_version: int = 0) -> dict:
+        if decision not in {"accepted", "rejected"} or not note.strip():
+            raise ValueError("A supported decision and review note are required")
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT proposal_json FROM lab_protocol_proposals WHERE proposal_id=?",
+                (proposal_id,),
+            ).fetchone()
+            if row is None:
+                raise ValueError("Protocol proposal does not exist")
+            proposal = json.loads(row["proposal_json"])
+            if proposal["status"] != "pending":
+                raise ValueError("Only pending proposals can be reviewed")
+            protocol = connection.execute(
+                "SELECT protocol_json FROM lab_protocols WHERE protocol_id=? AND version=?",
+                (proposal["protocol_id"], proposal["base_version"]),
+            ).fetchone()
+            if protocol is None:
+                raise ValueError("Base protocol version no longer exists")
+            owner_campaign_id = json.loads(protocol["protocol_json"])["owner_campaign_id"]
+            if reviewer_campaign_id != owner_campaign_id:
+                raise ValueError("Only the protocol owner campaign can decide this proposal")
+            campaign = connection.execute(
+                "SELECT campaign_json FROM research_campaigns WHERE campaign_id=?",
+                (reviewer_campaign_id,),
+            ).fetchone()
+            if campaign is None or json.loads(campaign["campaign_json"]).get("state") != "active":
+                raise ValueError("Reviewing campaign must be active")
+            proposal.update({
+                "status": decision, "reviewer_campaign_id": reviewer_campaign_id,
+                "review_note": note, "decided_at": decided_at,
+                "resulting_version": resulting_version,
+            })
+            connection.execute(
+                "UPDATE lab_protocol_proposals SET proposal_json=? WHERE proposal_id=?",
+                (json.dumps(proposal, ensure_ascii=False, sort_keys=True), proposal_id),
+            )
+            connection.execute(
+                "INSERT INTO lab_protocol_proposal_events(proposal_id,event_json,created_at) VALUES(?,?,?)",
+                (proposal_id, json.dumps({
+                    "event": decision, "actor_campaign_id": reviewer_campaign_id,
+                    "note": note, "resulting_version": resulting_version,
+                }, ensure_ascii=False, sort_keys=True), decided_at),
+            )
+        return self.get_lab_protocol_proposal(proposal_id)
 
     def save_lab_run(self, run: object) -> dict:
         from dataclasses import asdict
