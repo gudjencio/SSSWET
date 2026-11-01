@@ -1,0 +1,9 @@
+.evidence-graph { margin-top: 10px; padding: 10px; border: 1px solid #292929; border-radius: 11px; background: #070707; overflow: hidden; }
+.evidence-graph-svg { display: block; width: 100%; min-height: 280px; }
+.evidence-graph-edge { stroke: #333; stroke-width: 1; }
+.evidence-graph-node { outline: none; cursor: default; }
+.evidence-graph-node:focus circle { stroke-width: 2; }
+.evidence-graph-node text { fill: #777; font: 9px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; pointer-events: none; }
+.evidence-graph-legend { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+.evidence-graph-legend span { padding: 4px 6px; border: 1px solid #252525; border-radius: 999px; color: var(--evidence-node-color); font-size: 8px; }
+.evidence-graph-note { margin: 7px 0 0; color: #666; font-size: 9px; line-height: 1.5; }
