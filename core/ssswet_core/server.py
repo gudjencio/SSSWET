@@ -131,6 +131,7 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                 tasks = store.recent_tasks(100)
                 steps = store.recent_steps(200)
                 recent_events = store.recent_events(100)
+                agent_messages = store.recent_agent_messages(50)
                 task_by_id = {item["task_id"]: item for item in tasks}
                 review_task_ids = {
                     step.get("task_id") for step in steps
@@ -172,6 +173,7 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     "completed_tasks": sum(1 for task in tasks if task.get("status") == "complete"),
                     "blocked_tasks": sum(1 for task in tasks if task.get("status") == "blocked"),
                     "recent_events": recent_events[:30],
+                    "agent_messages": agent_messages,
                     "recent_outputs": [
                         {
                             "task_id": step.get("task_id"),
