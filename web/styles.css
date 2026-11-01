@@ -631,7 +631,7 @@ body { background:#000000 !important; }
 .bot-command-hero::before { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(115deg,transparent 15%,rgba(69,147,255,.07) 48%,transparent 76%); }
 .bot-command-heading { position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:17px; }
 .bot-command-heading .eyebrow { margin:0 0 6px; color:#9c8cff; font-size:9px; letter-spacing:.2em; }
-.bot-command-heading h2 { margin:0; color:#f2f1ff; font-size:clamp(18px,2.5vw,25px); letter-spacing:.015em; }
+.bot-command-heading h2 { margin:0; color:#f2f1ff; font-size:clamp(16px,2vw,21px); letter-spacing:.015em; }
 .bot-command-heading p:last-child { margin:5px 0 0; color:#9299b5; font-size:11px; }
 .bot-live-pill { display:flex; align-items:center; gap:9px; max-width:44%; padding:10px 13px; border:1px solid rgba(65,214,156,.36); border-radius:999px; background:rgba(4,28,30,.58); color:#bcebd8; font-size:10px; line-height:1.35; }
 .bot-live-indicator { flex:0 0 8px; width:8px; height:8px; border-radius:50%; background:#38db9a; box-shadow:0 0 13px #38db9a; animation:bot-live-pulse 1.8s ease-in-out infinite; }
@@ -662,7 +662,7 @@ body { background:#000000 !important; }
 .bot-command-main .bot-control-metric strong { color:#e8efff; font-size:19px; }.bot-command-main .bot-control-metric span { font-size:8px; }
 .bot-command-side { padding:14px; background:linear-gradient(155deg,rgba(14,19,42,.92),rgba(5,8,19,.94)); }
 .bot-side-heading { display:flex; align-items:center; gap:9px; padding-bottom:11px; border-bottom:1px solid rgba(110,126,183,.22); }
-.bot-side-icon { color:#aa91ff; font-size:22px; }.bot-side-heading h3 { margin:0; color:#f1efff; font-size:14px; }.bot-side-heading p { margin:3px 0 0; color:#8790ad; font-size:9px; }
+.bot-side-icon { color:#aa91ff; font-size:22px; }.bot-side-heading h3 { margin:0; color:#f1efff; font-size:12px; }.bot-side-heading p { margin:3px 0 0; color:#8790ad; font-size:9px; }
 .bot-side-heading .refresh-button { margin-left:auto; padding:6px 10px; border-color:rgba(116,128,198,.35); border-radius:9px; color:#c9d3f0; }
 .bot-control-agents { display:grid; grid-template-columns:1fr; gap:10px; margin-top:12px; }
 .bot-agent-group > strong { display:block; margin:0 0 7px; color:#a9b5d4; font-size:9px; letter-spacing:.08em; text-transform:uppercase; }
@@ -688,3 +688,6 @@ body { background:#000000 !important; }
 /* A disconnected engine must never look like a live session. */
 .bot-live-pill:has(#bot-control-status[data-state="offline"]) .bot-live-indicator { background:#8991a8; box-shadow:none; animation:none; }
 .bot-command-hero:has(#bot-control-status[data-state="offline"]) .bot-command-visual { filter:saturate(.72); }
+
+/* Keep the activity panel's secondary headings compact. */
+.bot-command-task-section>strong,.bot-agent-group>strong { font-size:8px; }
