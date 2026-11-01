@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 
 from .contradiction import ContradictionDetector, ResearchClaim, ClaimConflict
-from .memory import KnowledgeMemory
+from .memory import KnowledgeMemory, MemoryItem
+from .persistence import SQLiteResearchStore
 from .models import Finding, ResearchEvent, Task
 from .orchestrator import ResearchOrchestrator
 from .safety import SafetyGate
@@ -25,15 +26,24 @@ class SSSWETEngine:
     code at runtime.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, store: SQLiteResearchStore | None = None) -> None:
+        self.store = store
         self.orchestrator = ResearchOrchestrator()
         self.memory = KnowledgeMemory()
+        if self.store:
+            for saved in self.store.knowledge_items():
+                self.memory.remember(MemoryItem(**saved))
         self.verifier = VerificationEngine()
         self.safety = SafetyGate()
         self.strategies = StrategySelector()
         self.contradictions = ContradictionDetector()
         self._conflict_review_tasks: dict[tuple[str, str, tuple[str, ...]], str] = {}
         self.simulated_findings: list[Finding] = []
+
+    def remember_knowledge(self, item: MemoryItem) -> None:
+        self.memory.remember(item)
+        if self.store:
+            self.store.save_knowledge(item)
 
     def submit(self, objective: str, domain: str = "general", priority: int = 5) -> Task:
         return self.orchestrator.submit(objective, domain, priority)
