@@ -38,7 +38,7 @@ class AppsScriptSuccessRelay:
             "secret": self.secret,
             "type": "research_success",
             "technology": "SSSWET research cycle",
-            "summary": f"{len(safe_items)} technology research programme(s) completed successfully.",
+            "summary": "Completed successfully: " + ", ".join(item["technology"] for item in safe_items) + ".",
             "completed": safe_items,
             "success_count": len(safe_items),
         }
