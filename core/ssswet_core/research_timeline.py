@@ -128,6 +128,20 @@ class ResearchTimeline:
                  "independence_declared": run.get("independence_declared", False)},
             )
 
+        for comparison in self.store.lab_comparison_history(limit=500):
+            add(
+                "lab-comparison:" + comparison["comparison_id"],
+                comparison.get("compared_at"), "lab_runs_compared",
+                "Digital lab runs compared",
+                comparison.get("interpretation", ""),
+                references={
+                    "comparison_id": comparison["comparison_id"],
+                    "run_ids": [comparison.get("left_run_id", ""), comparison.get("right_run_id", "")],
+                    "outputs_match_within_tolerance": comparison.get("outputs_match_within_tolerance", False),
+                    "scientific_validity_established": False,
+                },
+            )
+
         for review in self.store.peer_review_history(limit=500):
             add(
                 "peer-review-request:" + review["review_id"], review.get("created_at"),
