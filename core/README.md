@@ -705,3 +705,35 @@ The resulting hand-off enters the existing pending/accepted/rejected review
 workflow. Acceptance does not upgrade a node's verification state. Pending
 transfers are excluded from duplicate recommendations. Only active campaigns
 are eligible; a paused or completed campaign is not suggested as a recipient.
+
+
+### Scientific dispute detection and review
+
+The `/api/disputes` endpoint lists explicit `contradicts` edges in the
+knowledge graph alongside persisted review cases. Detection is deterministic
+and only surfaces recorded relationships; it does not infer contradictions
+from free-form prose or decide which claim is correct.
+
+Use `DisputeResolutionService` to open a review case and record a human
+assessment. Reviews require a named reviewer and a substantive note. Available
+states are `open`, `reviewing`, `resolved`, `unresolved` and
+`insufficient_evidence`. Closed cases cannot be silently reopened or edited.
+The review record preserves source identifiers and provenance warnings, but
+does not alter either knowledge-graph node, its evidence, or its verification
+state. A resolved workflow case is not itself scientific proof.
+
+```python
+from ssswet_core.disputes import DisputeResolutionService
+from ssswet_core.persistence import SQLiteResearchStore
+
+store = SQLiteResearchStore()
+reviews = DisputeResolutionService(store)
+candidates = reviews.detected()
+if candidates:
+    case = reviews.open_case(candidates[0]["case_id"])
+    reviews.review(
+        case["case_id"], "reviewing",
+        "Compare source methods, datasets, conditions and uncertainty.",
+        "independent-reviewer",
+    )
+```
