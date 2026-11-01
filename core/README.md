@@ -550,6 +550,56 @@ GPU, energy or monetary cost. Snapshot persistence is explicit; it does not
 yet restore live agent processes or automatically resume interrupted work.
 
 
+### Campaign milestone coordination
+
+`ssswet_core.coordinator.CampaignCoordinator` connects saved campaign
+milestones to the bounded resource scheduler. It checks campaign and milestone
+states before queueing work, assigns specialist roles within configured
+campaign quotas, records attempts and resource snapshots, and preserves queued
+work when a campaign is paused.
+
+A successful scheduler assignment is not equivalent to scientific completion.
+The coordinator leaves a milestone in progress after work finishes; an
+authorized operator must explicitly approve milestone completion. Exhausted
+failed attempts mark the milestone as blocked for review. Dispatch only
+allocates local agents and reserves operator-defined resource units; it does
+not invoke providers, run experiments or perform physical actions.
+
+```python
+from ssswet_core.coordinator import CampaignCoordinator
+from ssswet_core.persistence import SQLiteResearchStore
+
+store = SQLiteResearchStore()
+coordinator = CampaignCoordinator(store)
+coordinator.configure_campaign(
+    "campaign-001",
+    max_parallel=2,
+    max_units=20,
+)
+coordinator.enqueue_milestone(
+    "campaign-001",
+    "literature-review",
+    "literature_analyst",
+    estimated_units=2,
+    priority=2,
+)
+assignments = coordinator.dispatch()
+# The operator or an approved worker reports the completed assignment:
+if assignments:
+    task_id = assignments[0].request.task_id
+    coordinator.finish_assignment(task_id, success=True, actual_units=1.5)
+    # Completion is a separate, explicit review decision:
+    coordinator.approve_milestone_completion(
+        "campaign-001", "literature-review"
+    )
+```
+
+The coordinator uses the campaign and resource records already stored in
+SQLite. Its snapshots are available through the existing read-only
+`/api/resources` endpoint. A paused or completed campaign cannot dispatch new
+milestone work.
+
+
 ### Cross-campaign knowledge collaboration
 
 The `ssswet_core.collaboration` module introduces explicit, auditable
