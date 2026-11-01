@@ -153,8 +153,18 @@ def main() -> None:
         print("[SSSWET] Apps Script relay is incomplete; configure both URL and secret.")
     else:
         print("[SSSWET] Apps Script relay is not configured; email notifications are disabled.")
+    worker_store = SQLiteResearchStore(database)
+
+    def publish_worker_state(state: dict) -> None:
+        worker_store.save_research_worker_state(state)
+
     while True:
-        run_pass(database, args.mailto, relay if relay.configured else None)
+        run_pass(
+            database,
+            args.mailto,
+            relay if relay.configured else None,
+            progress_callback=publish_worker_state,
+        )
         if args.once:
             return
         time.sleep(args.interval_hours * 3600)
