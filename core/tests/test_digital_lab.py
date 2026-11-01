@@ -139,3 +139,58 @@ def test_shared_dataset_prevents_independent_reproduction_candidate(tmp_path):
     assert result["comparable"] is True
     assert result["shared_dataset_ids"] == ["shared-dataset"]
     assert result["independent_reproduction_candidate"] is False
+
+
+
+def test_protocol_fingerprint_detects_database_tampering(tmp_path):
+    store, service = setup(tmp_path)
+    with store._connect() as connection:
+        connection.execute("DROP TRIGGER lab_protocols_no_update")
+        row = connection.execute(
+            "SELECT protocol_json FROM lab_protocols WHERE protocol_id='protocol-1' AND version=1"
+        ).fetchone()
+        import json
+        payload = json.loads(row["protocol_json"])
+        payload["objective"] = "altered after publication"
+        connection.execute(
+            "UPDATE lab_protocols SET protocol_json=? WHERE protocol_id='protocol-1' AND version=1",
+            (json.dumps(payload),),
+        )
+    with pytest.raises(ValueError, match="fingerprint check failed"):
+        service.record_run(make_run("run-tampered-protocol", "campaign-a", 4))
+
+
+def test_run_fingerprint_detects_database_tampering_before_comparison(tmp_path):
+    store, service = setup(tmp_path)
+    service.record_run(make_run("run-a", "campaign-a", 4))
+    service.record_run(make_run("run-b", "campaign-b", 4))
+    with store._connect() as connection:
+        connection.execute("DROP TRIGGER lab_runs_no_update")
+        row = connection.execute(
+            "SELECT run_json FROM lab_runs WHERE run_id='run-a'"
+        ).fetchone()
+        import json
+        payload = json.loads(row["run_json"])
+        payload["outputs"]["output"] = 999
+        connection.execute(
+            "UPDATE lab_runs SET run_json=? WHERE run_id='run-a'",
+            (json.dumps(payload),),
+        )
+    with pytest.raises(ValueError, match="fingerprint check failed"):
+        service.compare_runs("run-a", "run-b")
+
+
+@pytest.mark.parametrize("tolerance", [float("nan"), float("inf"), -float("inf"), True, "0.1"])
+def test_non_finite_or_invalid_tolerances_are_rejected(tmp_path, tolerance):
+    _, service = setup(tmp_path)
+    with pytest.raises(ValueError, match="finite, non-negative"):
+        service.compare_runs("missing-a", "missing-b", tolerance=tolerance)
+
+
+def test_overview_reports_fingerprint_integrity(tmp_path):
+    _, service = setup(tmp_path)
+    service.record_run(make_run("run-a", "campaign-a", 4))
+    report = service.overview()
+    assert report["integrity"]["all_intact"] is True
+    assert report["integrity"]["protocols_checked"] == 1
+    assert report["integrity"]["runs_checked"] == 1
