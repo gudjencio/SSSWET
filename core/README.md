@@ -202,3 +202,15 @@ pages require OCR, which is not yet included. Files are read locally and are
 not uploaded by this feature. Extracted text can contain parsing errors and
 must be checked against the original PDF; it is not automatically evidence
 or a verified conclusion.
+
+
+### Conservative verification states
+
+The verification engine does not infer independence from different citation IDs.
+A reviewer must provide a provenance group (for example, the originating research
+team or dataset lineage) and explicitly confirm that the source has been assessed
+as independent. Two records from the same provenance group count as one group.
+A reproduction state also requires explicit confirmation that a separate
+reproduction run was completed; supplying a run label alone is insufficient.
+These flags record an assessment, not an automatic audit of the underlying
+research. High-risk findings still require qualified real-world validation.
