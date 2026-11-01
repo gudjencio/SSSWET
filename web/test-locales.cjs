@@ -11,7 +11,15 @@ const required = [
   "name", "dir", "tagline", "status", "statusOnline", "statusOffline",
   "mission", "agents", "verification", "discover", "working", "verified",
   "ready", "footer", "offline", "noDiscoveries", "noActivity",
-  "noVerified", "language", "social", "contact"
+  "noVerified", "language", "social", "contact",
+  "dashboard", "dashboardNote", "refresh",
+  "dashCampaigns", "dashResources", "dashTransfers", "dashExperiments",
+  "dashOptimization", "dashGaps", "dashGraph", "dashActivity", "dashConflicts",
+  "dashUnavailable", "dashNoRecords", "dashLive", "dashActive", "dashBlocked",
+  "dashQueued", "dashCompleted", "dashPending", "dashAccepted", "dashRejected",
+  "dashPlans", "dashRecords", "dashNodes", "dashRelations", "dashHigh",
+  "dashMedium", "dashLow", "dashCycles", "dashRecent",
+  "dashEndpointUnavailable", "dashNoData"
 ];
 for (const [code, locale] of Object.entries(locales)) {
   for (const key of required) {
