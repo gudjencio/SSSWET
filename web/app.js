@@ -8,7 +8,7 @@
   const localApiBases = ["http://127.0.0.1:8765", "http://localhost:8765"];
   const remoteApiBase = String(window.SSSWET_REMOTE_API_BASE || "").replace(/\/+$/, "");
   const sameOriginBase = window.location.origin;
-  const isLocalOrigin = /^https?:\\/\\/(localhost|127\\.0\\.0\\.1)(:\\d+)?$/i.test(sameOriginBase);
+  const isLocalOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(sameOriginBase);
   let activeApiBase = isLocalOrigin ? sameOriginBase : null;
   let apiDiscoveryPromise = null;
   let lastApiFailure = "The hosted research service has not responded yet.";
