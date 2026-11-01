@@ -192,3 +192,112 @@ class CrossrefProvider:
             uncertainty=1.0,
             source_ids=tuple(source_ids),
         )
+
+
+class OpenAICompatibleProvider:
+    """Call a configurable OpenAI-compatible chat-completions endpoint.
+
+    Credentials are read only from the process environment. The provider
+    returns model-generated research drafts, never verified evidence.
+    """
+
+    name = "openai-compatible-model"
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str,
+        endpoint: str = "https://api.openai.com/v1/chat/completions",
+        timeout: float = 45.0,
+        max_tokens: int = 1200,
+    ):
+        from urllib.parse import urlparse
+
+        parsed = urlparse(endpoint)
+        if parsed.scheme != "https" and parsed.hostname not in {"localhost", "127.0.0.1", "::1"}:
+            raise ValueError("Model endpoint must use HTTPS, except for localhost.")
+        if not parsed.netloc:
+            raise ValueError("A valid model endpoint URL is required.")
+        if not api_key.strip():
+            raise ValueError("SSSWET_LLM_API_KEY is required for this provider.")
+        if not model.strip():
+            raise ValueError("SSSWET_LLM_MODEL is required for this provider.")
+        self.api_key = api_key.strip()
+        self.model = model.strip()
+        self.endpoint = endpoint
+        self.timeout = max(5.0, min(float(timeout), 90.0))
+        self.max_tokens = max(128, min(int(max_tokens), 3000))
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        from urllib.error import HTTPError, URLError
+        from urllib.request import Request, urlopen
+        import json
+
+        payload = {
+            "model": self.model,
+            "temperature": 0.2,
+            "max_tokens": self.max_tokens,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a cautious scientific research assistant. Produce a concise "
+                        "research draft, not a final scientific conclusion. Separate established "
+                        "background from hypotheses and unknowns. Never invent citations, DOI "
+                        "numbers, experiments, measurements, or sources. Do not provide weapon "
+                        "design or instructions for harming people. For high-risk medical, "
+                        "biological, chemical, aerospace or physical applications, stay at a "
+                        "non-operational overview level and flag expert review and real-world "
+                        "validation requirements. State what evidence would be needed next."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        f"Research task: {objective}\n"
+                        f"Current strategy: {strategy}\n"
+                        "Return a structured draft with: concise summary, known limitations, "
+                        "open questions, and suggested safe next verification steps. "
+                        "Clearly mark claims that need sources."
+                    ),
+                },
+            ],
+        }
+        request = Request(
+            self.endpoint,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "User-Agent": "SSSWET/0.1",
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=self.timeout) as response:
+                response_payload = json.loads(response.read().decode("utf-8"))
+            content = response_payload["choices"][0]["message"]["content"]
+            if isinstance(content, list):
+                content = " ".join(
+                    str(part.get("text", "")) for part in content if isinstance(part, dict)
+                )
+            draft = str(content).strip()
+            if not draft:
+                raise ValueError("The model returned an empty response.")
+        except (HTTPError, URLError, TimeoutError, OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+            return ProviderResult(
+                f"Model provider unavailable or response invalid: {type(exc).__name__}. "
+                "No research conclusion was inferred.",
+                uncertainty=1.0,
+            )
+
+        return ProviderResult(
+            summary=(
+                "MODEL-GENERATED DRAFT — not a source, experiment, or verified finding. "
+                "Independent literature review and verification are required.\n" + draft[:12000]
+            ),
+            evidence=(),
+            uncertainty=1.0,
+            source_ids=(),
+        )
