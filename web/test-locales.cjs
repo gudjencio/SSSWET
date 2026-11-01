@@ -78,8 +78,8 @@ for (const [code, copy] of Object.entries(agentCopy)) {
     throw new Error(`Agent introduction ${code} must define the research workflow`);
   }
   const questionsValid = Array.isArray(copy.questions)
-    ? copy.questions.length === 3 && copy.questions.every(question => typeof question === "string" && question.trim())
-    : copy.questions && ["working", "evidence", "review"].every(key => typeof copy.questions[key] === "string" && copy.questions[key].trim());
+    ? copy.questions.length === 3 && copy.questions.every(question => typeof question === "string" && question.trim().length > 0)
+    : !!copy.questions && ["working", "evidence", "review"].every(key => String(copy.questions[key] || "").trim().length > 0);
   if (!questionsValid) {
     throw new Error(`Agent introduction ${code} must define three guided questions`);
   }
