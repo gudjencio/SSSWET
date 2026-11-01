@@ -74,11 +74,10 @@ def test_transformation_requires_linked_registered_versions(tmp_path):
     assert len(store.lab_dataset_transformation_history()) == 1
 
 
-def test_transformation_rejects_unlinked_versions(tmp_path):
+def test_transformation_rejects_unknown_versions(tmp_path):
     _, registry = setup(tmp_path)
     registry.register_version(make_dataset(version=1))
-    registry.register_version(make_dataset(version=2, parent=1))
-    with pytest.raises(ValueError, match="parent"):
+    with pytest.raises(ValueError, match="unknown dataset version"):
         registry.record_transformation(DatasetTransformation(
             "transform-bad", "dataset-1", 1, 2, "Untracked transform",
             {}, "tool 1", "operator", "No validation performed",
