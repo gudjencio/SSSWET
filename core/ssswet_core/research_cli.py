@@ -13,6 +13,7 @@ from .providers import (
     CorpusDocument,
     CrossrefProvider,
     DeterministicDemoProvider,
+    DocumentAnalysisProvider,
     LocalCorpusProvider,
     OpenAICompatibleProvider,
     OpenAlexProvider,
