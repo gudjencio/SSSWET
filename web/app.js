@@ -241,6 +241,19 @@
         ])
       },
       {
+        key: "literature", path: "/api/literature-watch", list: "reports",
+        title: t.dashLiteratureWatch,
+        count: (a) => a.reduce((sum, report) => sum + safeCount(report.candidates), 0),
+        detail: (a) => {
+          const candidates = a.flatMap(report => Array.isArray(report.candidates) ? report.candidates : []);
+          return dashboardMetrics([
+            [t.dashCandidates, candidates.length],
+            [t.dashDuplicates, candidates.filter(x => x.classification === "possible_duplicate").length],
+            [t.dashTitleMatches, candidates.filter(x => x.classification === "possible_title_match").length]
+          ]);
+        }
+      },
+      {
         key: "events", path: "/api/events", list: null,
         title: t.dashActivity,
         count: (a) => a.length,
