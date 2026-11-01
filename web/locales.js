@@ -304,3 +304,488 @@ window.SSSWET_LOCALES = {
     language: "भाषा", social: "SSSWET सोशल नेटवर्क", contact: "संपर्क"
   }
 };
+
+
+/* Localized first-load introduction for the research roles. */
+window.SSSWET_AGENT_COPY = {
+  "en": {
+    "welcome": "Welcome to SSSWET.",
+    "summary": "A research coordination environment for exploring ideas, planning studies, comparing evidence and documenting uncertainty. Hypotheses, simulations and recorded observations remain distinct from independently verified findings.",
+    "roles": [
+      [
+        "Research coordination",
+        "Organizes questions, campaigns, milestones and next steps."
+      ],
+      [
+        "Evidence and methods",
+        "Tracks sources, protocols, comparisons, limitations and reproducibility."
+      ],
+      [
+        "Integrity and review",
+        "Flags missing information, discrepancies and risks requiring qualified human review."
+      ]
+    ],
+    "steps": [
+      "Define a question and its scope.",
+      "Review sources, assumptions and existing evidence.",
+      "Prepare a documented protocol and reproducible plan.",
+      "Record observations or simulation outputs with provenance.",
+      "Compare results, assess uncertainty and limitations.",
+      "Submit interpretations and safety or ethics issues for human review."
+    ],
+    "questions": [
+      "What are you working on right now?",
+      "What evidence and sources are recorded?",
+      "What needs verification or human review?"
+    ],
+    "disclaimer": "These are defined project roles, not proof that autonomous AI agents are currently running. Live activity requires the local research engine. GitHub Pages is a static preview."
+  },
+  "fr": {
+    "welcome": "Bienvenue dans SSSWET.",
+    "summary": "Un environnement de coordination de la recherche pour explorer des idées, préparer des études, comparer les preuves et documenter les incertitudes. Les hypothèses, simulations et observations enregistrées restent distinctes des résultats vérifiés indépendamment.",
+    "roles": [
+      [
+        "Coordination de la recherche",
+        "Organise les questions, campagnes, étapes et prochaines pistes."
+      ],
+      [
+        "Preuves et méthodes",
+        "Suit les sources, protocoles, comparaisons, limites et reproductibilité."
+      ],
+      [
+        "Intégrité et examen",
+        "Signale les informations manquantes, divergences et risques nécessitant un examen humain qualifié."
+      ]
+    ],
+    "steps": [
+      "Définir une question et son périmètre.",
+      "Examiner les sources, hypothèses et preuves existantes.",
+      "Préparer un protocole documenté et un plan reproductible.",
+      "Enregistrer les observations ou simulations avec leur provenance.",
+      "Comparer les résultats, évaluer les incertitudes et les limites.",
+      "Soumettre les interprétations et questions de sécurité ou d’éthique à un examen humain."
+    ],
+    "questions": [
+      "Sur quoi travaillez-vous actuellement ?",
+      "Quelles preuves et sources sont enregistrées ?",
+      "Que faut-il vérifier ou soumettre à un examen humain ?"
+    ],
+    "disclaimer": "Ces rôles sont définis pour le projet ; cela ne signifie pas que des agents IA autonomes fonctionnent déjà. L’activité en direct nécessite le moteur local. GitHub Pages est un aperçu statique."
+  },
+  "es": {
+    "welcome": "Te damos la bienvenida a SSSWET.",
+    "summary": "Un entorno de coordinación de investigación para explorar ideas, planificar estudios, comparar pruebas y documentar incertidumbres. Las hipótesis, simulaciones y observaciones registradas se distinguen de los resultados verificados independientemente.",
+    "roles": [
+      [
+        "Coordinación de investigación",
+        "Organiza preguntas, campañas, etapas y próximos pasos."
+      ],
+      [
+        "Pruebas y métodos",
+        "Registra fuentes, protocolos, comparaciones, límites y reproducibilidad."
+      ],
+      [
+        "Integridad y revisión",
+        "Señala datos faltantes, discrepancias y riesgos que requieren revisión humana cualificada."
+      ]
+    ],
+    "steps": [
+      "Definir una pregunta y su alcance.",
+      "Revisar fuentes, supuestos y pruebas existentes.",
+      "Preparar un protocolo documentado y un plan reproducible.",
+      "Registrar observaciones o simulaciones con su procedencia.",
+      "Comparar resultados y evaluar incertidumbres y límites.",
+      "Someter interpretaciones y cuestiones de seguridad o ética a revisión humana."
+    ],
+    "questions": [
+      "¿En qué estáis trabajando ahora?",
+      "¿Qué pruebas y fuentes están registradas?",
+      "¿Qué requiere verificación o revisión humana?"
+    ],
+    "disclaimer": "Estos son roles definidos del proyecto, no una afirmación de que haya agentes autónomos activos. La actividad en directo requiere el motor local. GitHub Pages es una vista previa estática."
+  },
+  "de": {
+    "welcome": "Willkommen bei SSSWET.",
+    "summary": "Eine Forschungsumgebung zur Koordination von Ideen, Studienplanung, Evidenzvergleichen und Unsicherheitsdokumentation. Hypothesen, Simulationen und aufgezeichnete Beobachtungen bleiben von unabhängig überprüften Ergebnissen getrennt.",
+    "roles": [
+      [
+        "Forschungskoordination",
+        "Organisiert Fragen, Kampagnen, Meilensteine und nächste Schritte."
+      ],
+      [
+        "Evidenz und Methoden",
+        "Erfasst Quellen, Protokolle, Vergleiche, Einschränkungen und Reproduzierbarkeit."
+      ],
+      [
+        "Integrität und Prüfung",
+        "Meldet fehlende Informationen, Abweichungen und Risiken für eine qualifizierte menschliche Prüfung."
+      ]
+    ],
+    "steps": [
+      "Frage und Umfang festlegen.",
+      "Quellen, Annahmen und vorhandene Evidenz prüfen.",
+      "Dokumentiertes Protokoll und reproduzierbaren Plan erstellen.",
+      "Beobachtungen oder Simulationen samt Herkunft erfassen.",
+      "Ergebnisse vergleichen und Unsicherheit sowie Grenzen bewerten.",
+      "Interpretationen und Sicherheits- oder Ethikfragen menschlich prüfen lassen."
+    ],
+    "questions": [
+      "Woran arbeitet ihr gerade?",
+      "Welche Belege und Quellen sind erfasst?",
+      "Was muss überprüft oder menschlich begutachtet werden?"
+    ],
+    "disclaimer": "Dies sind definierte Projektrollen und keine Behauptung aktiver autonomer KI-Agenten. Live-Aktivitäten erfordern die lokale Forschungs-Engine. GitHub Pages ist eine statische Vorschau."
+  },
+  "it": {
+    "welcome": "Benvenuto in SSSWET.",
+    "summary": "Un ambiente di coordinamento della ricerca per esplorare idee, pianificare studi, confrontare prove e documentare incertezze. Ipotesi, simulazioni e osservazioni registrate restano distinte dai risultati verificati in modo indipendente.",
+    "roles": [
+      [
+        "Coordinamento della ricerca",
+        "Organizza domande, campagne, tappe e attività successive."
+      ],
+      [
+        "Prove e metodi",
+        "Traccia fonti, protocolli, confronti, limiti e riproducibilità."
+      ],
+      [
+        "Integrità e revisione",
+        "Segnala informazioni mancanti, discrepanze e rischi da sottoporre a revisione umana qualificata."
+      ]
+    ],
+    "steps": [
+      "Definire una domanda e il suo ambito.",
+      "Esaminare fonti, ipotesi e prove disponibili.",
+      "Preparare un protocollo documentato e un piano riproducibile.",
+      "Registrare osservazioni o simulazioni con la relativa provenienza.",
+      "Confrontare i risultati e valutare incertezze e limiti.",
+      "Sottoporre interpretazioni e questioni di sicurezza o etica a revisione umana."
+    ],
+    "questions": [
+      "Su cosa state lavorando adesso?",
+      "Quali prove e fonti sono registrate?",
+      "Che cosa richiede verifica o revisione umana?"
+    ],
+    "disclaimer": "Questi sono ruoli definiti del progetto, non la prova che agenti IA autonomi siano attivi. L'attività in tempo reale richiede il motore locale. GitHub Pages è un'anteprima statica."
+  },
+  "pt": {
+    "welcome": "Boas-vindas ao SSSWET.",
+    "summary": "Um ambiente de coordenação de pesquisa para explorar ideias, planejar estudos, comparar evidências e documentar incertezas. Hipóteses, simulações e observações registradas permanecem distintas de resultados verificados de forma independente.",
+    "roles": [
+      [
+        "Coordenação da pesquisa",
+        "Organiza perguntas, campanhas, etapas e próximos passos."
+      ],
+      [
+        "Evidências e métodos",
+        "Acompanha fontes, protocolos, comparações, limitações e reprodutibilidade."
+      ],
+      [
+        "Integridade e revisão",
+        "Sinaliza informações ausentes, divergências e riscos que exigem revisão humana qualificada."
+      ]
+    ],
+    "steps": [
+      "Definir uma pergunta e seu escopo.",
+      "Analisar fontes, pressupostos e evidências existentes.",
+      "Preparar um protocolo documentado e um plano reproduzível.",
+      "Registrar observações ou simulações com sua procedência.",
+      "Comparar resultados e avaliar incertezas e limitações.",
+      "Encaminhar interpretações e questões de segurança ou ética para revisão humana."
+    ],
+    "questions": [
+      "Em que vocês estão trabalhando agora?",
+      "Quais evidências e fontes estão registradas?",
+      "O que precisa de verificação ou revisão humana?"
+    ],
+    "disclaimer": "Estas são funções definidas para o projeto, não uma afirmação de que agentes autônomos de IA estejam ativos. A atividade ao vivo exige o mecanismo local. O GitHub Pages é uma prévia estática."
+  },
+  "nl": {
+    "welcome": "Welkom bij SSSWET.",
+    "summary": "Een onderzoeksomgeving voor het verkennen van ideeën, plannen van studies, vergelijken van bewijs en documenteren van onzekerheid. Hypothesen, simulaties en vastgelegde waarnemingen blijven onderscheiden van onafhankelijk geverifieerde resultaten.",
+    "roles": [
+      [
+        "Onderzoekscoördinatie",
+        "Organiseert vragen, campagnes, mijlpalen en vervolgstappen."
+      ],
+      [
+        "Bewijs en methoden",
+        "Volgt bronnen, protocollen, vergelijkingen, beperkingen en reproduceerbaarheid."
+      ],
+      [
+        "Integriteit en beoordeling",
+        "Signaleert ontbrekende informatie, afwijkingen en risico's die deskundige menselijke beoordeling vereisen."
+      ]
+    ],
+    "steps": [
+      "Bepaal een vraag en de reikwijdte.",
+      "Beoordeel bronnen, aannames en bestaand bewijs.",
+      "Maak een gedocumenteerd protocol en reproduceerbaar plan.",
+      "Leg waarnemingen of simulaties met herkomst vast.",
+      "Vergelijk resultaten en beoordeel onzekerheid en beperkingen.",
+      "Leg interpretaties en veiligheids- of ethische kwesties voor aan mensen."
+    ],
+    "questions": [
+      "Waar werken jullie momenteel aan?",
+      "Welk bewijs en welke bronnen zijn vastgelegd?",
+      "Wat moet worden geverifieerd of menselijk beoordeeld?"
+    ],
+    "disclaimer": "Dit zijn gedefinieerde projectrollen, geen bewering dat autonome AI-agenten actief zijn. Live activiteit vereist de lokale onderzoeksengine. GitHub Pages is een statische preview."
+  },
+  "ru": {
+    "welcome": "Добро пожаловать в SSSWET.",
+    "summary": "Исследовательская среда для изучения идей, планирования исследований, сопоставления доказательств и документирования неопределённости. Гипотезы, симуляции и записанные наблюдения отделены от независимо проверенных результатов.",
+    "roles": [
+      [
+        "Координация исследований",
+        "Организует вопросы, кампании, этапы и дальнейшие задачи."
+      ],
+      [
+        "Доказательства и методы",
+        "Отслеживает источники, протоколы, сравнения, ограничения и воспроизводимость."
+      ],
+      [
+        "Добросовестность и проверка",
+        "Выявляет пробелы, расхождения и риски для квалифицированной проверки человеком."
+      ]
+    ],
+    "steps": [
+      "Сформулировать вопрос и определить его границы.",
+      "Изучить источники, допущения и имеющиеся данные.",
+      "Подготовить документированный протокол и воспроизводимый план.",
+      "Записать наблюдения или результаты моделирования с указанием происхождения.",
+      "Сравнить результаты, оценить неопределённость и ограничения.",
+      "Передать интерпретации и вопросы безопасности или этики на проверку человеку."
+    ],
+    "questions": [
+      "Над чем вы сейчас работаете?",
+      "Какие доказательства и источники зарегистрированы?",
+      "Что требует проверки или участия человека?"
+    ],
+    "disclaimer": "Это определённые роли проекта, а не утверждение о работе автономных ИИ-агентов. Текущая активность требует локального исследовательского движка. GitHub Pages — статический просмотр."
+  },
+  "uk": {
+    "welcome": "Вітаємо у SSSWET.",
+    "summary": "Середовище координації досліджень для вивчення ідей, планування досліджень, порівняння доказів і документування невизначеності. Гіпотези, симуляції та зафіксовані спостереження відокремлені від незалежно перевірених результатів.",
+    "roles": [
+      [
+        "Координація досліджень",
+        "Організовує запитання, кампанії, етапи та наступні кроки."
+      ],
+      [
+        "Докази й методи",
+        "Відстежує джерела, протоколи, порівняння, обмеження та відтворюваність."
+      ],
+      [
+        "Доброчесність і перевірка",
+        "Позначає прогалини, розбіжності й ризики для фахового людського перегляду."
+      ]
+    ],
+    "steps": [
+      "Сформулювати запитання та визначити його межі.",
+      "Переглянути джерела, припущення й наявні докази.",
+      "Підготувати документований протокол і відтворюваний план.",
+      "Зафіксувати спостереження або результати моделювання з їхнім походженням.",
+      "Порівняти результати, оцінити невизначеність та обмеження.",
+      "Передати інтерпретації й питання безпеки чи етики на людський розгляд."
+    ],
+    "questions": [
+      "Над чим ви зараз працюєте?",
+      "Які докази та джерела зареєстровано?",
+      "Що потребує перевірки або людського розгляду?"
+    ],
+    "disclaimer": "Це визначені ролі проєкту, а не твердження про роботу автономних ШІ-агентів. Поточна активність потребує локального дослідницького рушія. GitHub Pages — статичний попередній перегляд."
+  },
+  "ar": {
+    "welcome": "مرحبًا بك في SSSWET.",
+    "summary": "بيئة لتنسيق البحث واستكشاف الأفكار وتخطيط الدراسات ومقارنة الأدلة وتوثيق عدم اليقين. وتظل الفرضيات والمحاكاة والملاحظات المسجلة منفصلة عن النتائج التي جرى التحقق منها بشكل مستقل.",
+    "roles": [
+      [
+        "تنسيق البحث",
+        "ينظم الأسئلة والحملات والمراحل والخطوات التالية."
+      ],
+      [
+        "الأدلة والمنهجيات",
+        "يتتبع المصادر والبروتوكولات والمقارنات والقيود وقابلية إعادة الإنتاج."
+      ],
+      [
+        "النزاهة والمراجعة",
+        "يرصد المعلومات الناقصة والتباينات والمخاطر التي تتطلب مراجعة بشرية متخصصة."
+      ]
+    ],
+    "steps": [
+      "صياغة سؤال وتحديد نطاقه.",
+      "مراجعة المصادر والافتراضات والأدلة المتاحة.",
+      "إعداد بروتوكول موثق وخطة قابلة لإعادة الإنتاج.",
+      "تسجيل الملاحظات أو نتائج المحاكاة مع مصدرها.",
+      "مقارنة النتائج وتقييم عدم اليقين والقيود.",
+      "إحالة التفسيرات ومسائل السلامة والأخلاقيات إلى مراجعة بشرية."
+    ],
+    "questions": [
+      "ما الذي تعملون عليه الآن؟",
+      "ما الأدلة والمصادر المسجلة؟",
+      "ما الذي يحتاج إلى تحقق أو مراجعة بشرية؟"
+    ],
+    "disclaimer": "هذه أدوار محددة للمشروع وليست ادعاءً بعمل وكلاء ذكاء اصطناعي مستقلين. يتطلب النشاط المباشر محرك البحث المحلي. GitHub Pages معاينة ثابتة."
+  },
+  "he": {
+    "welcome": "ברוכים הבאים ל-SSSWET.",
+    "summary": "סביבת תיאום מחקר לחקר רעיונות, תכנון מחקרים, השוואת ראיות ותיעוד אי־ודאות. השערות, סימולציות ותצפיות מתועדות נשארות נפרדות מממצאים שאומתו באופן עצמאי.",
+    "roles": [
+      [
+        "תיאום מחקר",
+        "מארגן שאלות, קמפיינים, אבני דרך ושלבי המשך."
+      ],
+      [
+        "ראיות ושיטות",
+        "עוקב אחר מקורות, פרוטוקולים, השוואות, מגבלות ושחזוריות."
+      ],
+      [
+        "יושרה ובקרה",
+        "מזהה מידע חסר, פערים וסיכונים הדורשים בדיקה אנושית מקצועית."
+      ]
+    ],
+    "steps": [
+      "ניסוח שאלה והגדרת היקפה.",
+      "בחינת מקורות, הנחות וראיות קיימות.",
+      "הכנת פרוטוקול מתועד ותוכנית ניתנת לשחזור.",
+      "תיעוד תצפיות או תוצאות סימולציה ומקורן.",
+      "השוואת תוצאות והערכת אי־ודאות ומגבלות.",
+      "העברת פרשנויות ושאלות בטיחות או אתיקה לבדיקה אנושית."
+    ],
+    "questions": [
+      "על מה אתם עובדים כרגע?",
+      "אילו ראיות ומקורות מתועדים?",
+      "מה דורש אימות או בדיקה אנושית?"
+    ],
+    "disclaimer": "אלה תפקידי פרויקט מוגדרים, ולא טענה שסוכני AI אוטונומיים פועלים. פעילות בזמן אמת דורשת את מנוע המחקר המקומי. GitHub Pages הוא תצוגה מקדימה סטטית."
+  },
+  "ja": {
+    "welcome": "SSSWETへようこそ。",
+    "summary": "アイデアの探索、研究計画、証拠の比較、不確実性の記録を行う研究調整環境です。仮説、シミュレーション、記録された観察結果と独立して検証された結果を区別します。",
+    "roles": [
+      [
+        "研究コーディネーション",
+        "研究課題、キャンペーン、段階、次の作業を整理します。"
+      ],
+      [
+        "証拠と方法",
+        "情報源、プロトコル、比較、制約、再現性を追跡します。"
+      ],
+      [
+        "研究公正とレビュー",
+        "不足情報、相違点、人間の専門的確認が必要なリスクを示します。"
+      ]
+    ],
+    "steps": [
+      "問いと対象範囲を定める。",
+      "情報源、前提条件、既存の証拠を確認する。",
+      "文書化されたプロトコルと再現可能な計画を作成する。",
+      "観察結果やシミュレーション出力を出所とともに記録する。",
+      "結果を比較し、不確実性と限界を評価する。",
+      "解釈や安全・倫理上の論点を人間の審査に提出する。"
+    ],
+    "questions": [
+      "現在取り組んでいることは何ですか？",
+      "どの証拠や情報源が記録されていますか？",
+      "何を検証または人間による審査に回す必要がありますか？"
+    ],
+    "disclaimer": "これはプロジェクトで定義された役割であり、自律型AIエージェントが稼働中という意味ではありません。リアルタイムの活動にはローカル研究エンジンが必要です。GitHub Pagesは静的プレビューです。"
+  },
+  "ko": {
+    "welcome": "SSSWET에 오신 것을 환영합니다.",
+    "summary": "아이디어 탐색, 연구 계획, 증거 비교 및 불확실성 기록을 위한 연구 조정 환경입니다. 가설, 시뮬레이션, 기록된 관찰과 독립적으로 검증된 결과를 구분합니다.",
+    "roles": [
+      [
+        "연구 조정",
+        "연구 질문, 캠페인, 단계 및 다음 작업을 구성합니다."
+      ],
+      [
+        "증거와 방법",
+        "출처, 프로토콜, 비교, 한계 및 재현성을 추적합니다."
+      ],
+      [
+        "연구 무결성과 검토",
+        "누락 정보, 불일치 및 전문가의 인간 검토가 필요한 위험을 표시합니다."
+      ]
+    ],
+    "steps": [
+      "질문과 범위를 정의합니다.",
+      "출처, 가정 및 기존 증거를 검토합니다.",
+      "문서화된 프로토콜과 재현 가능한 계획을 준비합니다.",
+      "관찰 또는 시뮬레이션 결과와 출처를 기록합니다.",
+      "결과를 비교하고 불확실성과 한계를 평가합니다.",
+      "해석 및 안전·윤리 문제를 인간 검토에 제출합니다."
+    ],
+    "questions": [
+      "현재 무엇을 연구하고 있나요?",
+      "어떤 증거와 출처가 기록되어 있나요?",
+      "무엇을 검증하거나 사람이 검토해야 하나요?"
+    ],
+    "disclaimer": "이는 프로젝트에 정의된 역할이며 자율 AI 에이전트가 실행 중이라는 뜻은 아닙니다. 실시간 활동에는 로컬 연구 엔진 연결이 필요합니다. GitHub Pages는 정적 미리보기입니다."
+  },
+  "zh": {
+    "welcome": "欢迎来到 SSSWET。",
+    "summary": "这是一个研究协作环境，用于探索想法、规划研究、比较证据并记录不确定性。假设、模拟和已记录的观察与经过独立验证的结果保持区分。",
+    "roles": [
+      [
+        "研究协调",
+        "组织研究问题、研究活动、里程碑和后续步骤。"
+      ],
+      [
+        "证据与方法",
+        "跟踪来源、方案、比较、局限性和可重复性。"
+      ],
+      [
+        "诚信与审查",
+        "标记缺失信息、差异以及需要合格人员审查的风险。"
+      ]
+    ],
+    "steps": [
+      "提出问题并明确研究范围。",
+      "审查来源、假设和现有证据。",
+      "制定有记录的方案和可重复的研究计划。",
+      "记录观察结果或模拟输出及其来源。",
+      "比较结果，评估不确定性并识别局限。",
+      "将解释以及安全或伦理问题提交人工审查。"
+    ],
+    "questions": [
+      "你们目前正在研究什么？",
+      "记录了哪些证据和来源？",
+      "哪些内容需要验证或人工审查？"
+    ],
+    "disclaimer": "这些是项目定义的角色，并不表示自主 AI 代理目前正在运行。实时活动需要连接本地研究引擎。公开 GitHub Pages 界面是静态预览。"
+  },
+  "hi": {
+    "welcome": "SSSWET में आपका स्वागत है।",
+    "summary": "विचारों की खोज, अध्ययन की योजना, साक्ष्यों की तुलना और अनिश्चितता के दस्तावेज़ीकरण के लिए शोध समन्वय वातावरण। परिकल्पनाएँ, सिमुलेशन और दर्ज अवलोकन स्वतंत्र रूप से सत्यापित परिणामों से अलग रखे जाते हैं।",
+    "roles": [
+      [
+        "शोध समन्वय",
+        "शोध प्रश्नों, अभियानों, चरणों और अगले कार्यों का आयोजन करता है।"
+      ],
+      [
+        "साक्ष्य और विधियाँ",
+        "स्रोतों, प्रोटोकॉल, तुलनाओं, सीमाओं और पुनरुत्पादकता को दर्ज करता है।"
+      ],
+      [
+        "अखंडता और समीक्षा",
+        "अधूरी जानकारी, विसंगतियों और विशेषज्ञ मानवीय समीक्षा वाले जोखिमों को चिह्नित करता है।"
+      ]
+    ],
+    "steps": [
+      "प्रश्न तय करें और उसका दायरा निर्धारित करें।",
+      "स्रोतों, मान्यताओं और मौजूदा साक्ष्यों की समीक्षा करें।",
+      "दस्तावेज़ित प्रोटोकॉल और पुनरुत्पादित योजना तैयार करें।",
+      "अवलोकनों या सिमुलेशन परिणामों को उनके स्रोत सहित दर्ज करें।",
+      "परिणामों की तुलना करें और अनिश्चितता तथा सीमाओं का आकलन करें।",
+      "व्याख्याओं तथा सुरक्षा या नैतिकता के प्रश्नों को मानवीय समीक्षा के लिए भेजें।"
+    ],
+    "questions": [
+      "आप अभी किस पर काम कर रहे हैं?",
+      "कौन से साक्ष्य और स्रोत दर्ज हैं?",
+      "किस चीज़ को सत्यापन या मानवीय समीक्षा की आवश्यकता है?"
+    ],
+    "disclaimer": "ये परियोजना में निर्धारित भूमिकाएँ हैं; इसका अर्थ यह नहीं कि स्वायत्त AI एजेंट अभी चल रहे हैं। लाइव गतिविधि के लिए स्थानीय शोध इंजन आवश्यक है। GitHub Pages स्थिर पूर्वावलोकन है।"
+  }
+};
