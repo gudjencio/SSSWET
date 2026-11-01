@@ -67,7 +67,7 @@
     root.replaceChildren();
     status.textContent = l.loading;
     try {
-      const response = await fetch("/api/parameter-sensitivity-plans?limit=200", {
+      const response = await window.ssswetApiFetch("/api/parameter-sensitivity-plans?limit=200", {
         headers: {Accept: "application/json"}, cache: "no-store"
       });
       if (!response.ok) throw new Error("HTTP " + response.status);
@@ -131,7 +131,7 @@
     interactionRoot.replaceChildren();
     interactionStatus.textContent = l.interactionLoading;
     try {
-      const response = await fetch("/api/parameter-interaction-plans?limit=200", {
+      const response = await window.ssswetApiFetch("/api/parameter-interaction-plans?limit=200", {
         headers: {Accept: "application/json"}, cache: "no-store"
       });
       if (!response.ok) throw new Error("HTTP " + response.status);
