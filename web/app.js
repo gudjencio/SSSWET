@@ -14,6 +14,7 @@
   let selectedKnowledgeNodeId = null;
   let currentKnowledgeGraph = { nodes: [], edges: [] };
   let currentResearchOpportunities = { opportunities: [] };
+  let currentCampaigns = [];
 
   const languageNames = Object.keys(locales).sort((a, b) => {
     if (a === "en") return -1;
@@ -369,6 +370,112 @@
     renderNodeInspector(selectedKnowledgeNodeId);
   }
 
+  function renderResearchTimeline(payload) {
+    const container = document.getElementById("research-timeline");
+    container.replaceChildren();
+    const t = currentTranslations();
+    const events = Array.isArray(payload && payload.events) ? payload.events : [];
+    if (!events.length) {
+      const empty = document.createElement("p");
+      empty.className = "visual-empty";
+      empty.textContent = t.timelineEmpty;
+      container.append(empty);
+      return;
+    }
+    const list = document.createElement("ol");
+    list.className = "timeline-list";
+    events.slice(0, 60).forEach(event => {
+      const item = document.createElement("li");
+      item.className = "timeline-event";
+      const date = document.createElement("time");
+      date.className = "timeline-date";
+      const parsed = new Date(event.occurred_at);
+      date.dateTime = event.occurred_at || "";
+      date.textContent = Number.isNaN(parsed.getTime())
+        ? event.occurred_at || t.dateUnavailable
+        : new Intl.DateTimeFormat(currentLanguage(), { dateStyle: "medium", timeStyle: "short" }).format(parsed);
+      const heading = document.createElement("h4");
+      heading.textContent = event.title || event.kind || t.timelineEvent;
+      const kind = document.createElement("span");
+      kind.className = "timeline-kind";
+      kind.textContent = String(event.kind || t.timelineEvent).replaceAll("_", " ");
+      const description = document.createElement("p");
+      description.textContent = event.description || t.noDescription;
+      item.append(date, heading, kind, description);
+      if (event.campaign_id) {
+        const campaign = document.createElement("p");
+        campaign.className = "timeline-reference";
+        campaign.textContent = t.campaignsShort + ": " + event.campaign_id;
+        item.append(campaign);
+      }
+      const refs = event.references && typeof event.references === "object" ? event.references : {};
+      const referenceParts = [];
+      for (const key of ["graph_node_ids", "experiment_ids", "source_ids", "run_ids"]) {
+        if (Array.isArray(refs[key]) && refs[key].length) referenceParts.push(key.replaceAll("_", " ") + ": " + refs[key].join(", "));
+      }
+      for (const key of ["version_id", "dispute_case_id", "protocol_id", "comparison_id", "review_id", "watch_id"]) {
+        if (refs[key]) referenceParts.push(key.replaceAll("_", " ") + ": " + refs[key]);
+      }
+      if (referenceParts.length) {
+        const references = document.createElement("p");
+        references.className = "timeline-reference";
+        references.textContent = referenceParts.join(" · ");
+        item.append(references);
+      }
+      if (event.scientific_validity_established !== true) {
+        const status = document.createElement("span");
+        status.className = "timeline-status";
+        status.textContent = t.timelineNotValidation;
+        item.append(status);
+      }
+      list.append(item);
+    });
+    container.append(list);
+    const summary = document.createElement("p");
+    summary.className = "timeline-summary";
+    summary.textContent = events.length + " / " + (payload.total_events ?? events.length) + " " + t.timelineShown
+      + (payload.undated_records_omitted ? " · " + t.timelineUndated : "");
+    container.append(summary);
+  }
+
+  async function loadResearchTimeline(campaignId = "") {
+    const endpoint = "/api/research-timeline?limit=200"
+      + (campaignId ? "&campaign_id=" + encodeURIComponent(campaignId) : "");
+    const container = document.getElementById("research-timeline");
+    container.setAttribute("aria-busy", "true");
+    try {
+      const payload = await apiGet(endpoint);
+      renderResearchTimeline(payload);
+    } catch {
+      container.replaceChildren();
+      const error = document.createElement("p");
+      error.className = "visual-empty";
+      error.textContent = currentTranslations().timelineUnavailable;
+      container.append(error);
+    } finally {
+      container.setAttribute("aria-busy", "false");
+    }
+  }
+
+  function populateTimelineCampaigns(campaigns) {
+    currentCampaigns = Array.isArray(campaigns) ? campaigns : [];
+    const select = document.getElementById("timeline-campaign");
+    const selected = select.value;
+    select.replaceChildren();
+    const all = document.createElement("option");
+    all.value = "";
+    all.textContent = currentTranslations().allCampaigns;
+    select.append(all);
+    currentCampaigns.forEach(campaign => {
+      if (!campaign.campaign_id) return;
+      const option = document.createElement("option");
+      option.value = campaign.campaign_id;
+      option.textContent = campaign.title || campaign.campaign_id;
+      select.append(option);
+    });
+    select.value = currentCampaigns.some(campaign => campaign.campaign_id === selected) ? selected : "";
+  }
+
   async function showDashboard() {
     lastView = "dashboard";
     feed.hidden = true;
@@ -587,6 +694,9 @@
     renderKnowledgeMap(graphResult && !graphResult.error ? graphResult.payload : {nodes: [], edges: []});
     const opportunityResult = results.find(result => result.item.key === "opportunities");
     renderOpportunityList(opportunityResult && !opportunityResult.error ? opportunityResult.payload : {opportunities: []});
+    const campaignData = campaignResult && !campaignResult.error ? campaignResult.array : [];
+    populateTimelineCampaigns(campaignData);
+    await loadResearchTimeline(document.getElementById("timeline-campaign").value);
     if (results.every(result => result.error)) {
       const note = document.createElement("p");
       note.className = "dashboard-offline";
@@ -601,6 +711,7 @@
       if (actions[button.dataset.action]) actions[button.dataset.action]();
     });
   });
+  document.getElementById("timeline-campaign").addEventListener("change", event => loadResearchTimeline(event.target.value));
   languageSelect.addEventListener("change", () => setLanguage(languageSelect.value));
   setLanguage(safeReadLanguage() || preferredLanguage());
   if ("serviceWorker" in navigator) {
