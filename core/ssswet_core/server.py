@@ -126,6 +126,45 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                 self._json(public_events(engine, store))
             elif path == "/api/work":
                 self._json(store.recent_tasks(30))
+            elif path == "/api/bots":
+                worker = store.research_worker_state()
+                tasks = store.recent_tasks(100)
+                steps = store.recent_steps(200)
+                recent_events = store.recent_events(100)
+                task_by_id = {item["task_id"]: item for item in tasks}
+                pending_reviews = sum(
+                    1 for step in steps
+                    if str(step.get("classification", "unverified")).lower() in {"unverified", "pending", "candidate"}
+                )
+                recent_agents = []
+                seen_agents = set()
+                for step in steps:
+                    agent_id = step.get("agent_id")
+                    if not agent_id or agent_id in seen_agents:
+                        continue
+                    seen_agents.add(agent_id)
+                    task = task_by_id.get(step.get("task_id"), {})
+                    recent_agents.append({
+                        "id": agent_id,
+                        "role": step.get("role", "research agent"),
+                        "technology": task.get("domain", "general"),
+                        "task_id": step.get("task_id"),
+                        "last_seen": step.get("created_at"),
+                        "state": "completed_pass",
+                    })
+                    if len(recent_agents) >= 24:
+                        break
+                active_agents = worker.get("active_agents", []) if worker.get("status") == "running" else []
+                self._json({
+                    "worker": worker,
+                    "active_agents": active_agents,
+                    "recent_agents": recent_agents,
+                    "recent_tasks": tasks[:32],
+                    "pending_review_outputs": pending_reviews,
+                    "completed_tasks": sum(1 for task in tasks if task.get("status") == "complete"),
+                    "blocked_tasks": sum(1 for task in tasks if task.get("status") == "blocked"),
+                    "recent_events": recent_events[:30],
+                })
             elif path == "/api/discoveries":
                 self._json(store.recent_steps(50))
             elif path == "/api/verified":
@@ -557,9 +596,12 @@ def _background_research_worker(database: str, interval_minutes: float) -> None:
 
     relay = AppsScriptSuccessRelay(endpoint=os.environ.get("SSSWET_RELAY_URL", ""))
     mailto = os.environ.get("SSSWET_MAILTO", "")
+    store = SQLiteResearchStore(database)
+    def persist_progress(state: dict) -> None:
+        store.save_research_worker_state(state)
     while True:
         try:
-            run_pass(database, mailto, relay if relay.configured else None)
+            run_pass(database, mailto, relay if relay.configured else None, persist_progress)
         except Exception as exc:
             print(f"[SSSWET] Background research cycle interrupted ({type(exc).__name__}: {exc})")
         time.sleep(interval_minutes * 60)
