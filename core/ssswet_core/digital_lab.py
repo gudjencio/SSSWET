@@ -195,6 +195,9 @@ class DigitalLabService:
         )
         same_kind = left["kind"] == right["kind"]
         same_parameters = _canonical(left["parameters"]) == _canonical(right["parameters"])
+        same_environment = _canonical(left["environment"]) == _canonical(right["environment"])
+        environment_differences = _compare_values(left["environment"], right["environment"])
+        same_model_reference = left["code_or_model_reference"] == right["code_or_model_reference"]
         differences = _compare_values(left["outputs"], right["outputs"], tolerance)
         comparable = same_protocol and same_kind and same_parameters
         shared_source_ids = sorted(set(left.get("source_ids", [])) & set(right.get("source_ids", [])))
@@ -210,6 +213,11 @@ class DigitalLabService:
             "same_protocol_version": same_protocol,
             "same_execution_kind": same_kind,
             "same_parameters": same_parameters,
+            "same_environment": same_environment,
+            "environment_differences": environment_differences,
+            "same_code_or_model_reference": same_model_reference,
+            "left_code_or_model_reference": left["code_or_model_reference"],
+            "right_code_or_model_reference": right["code_or_model_reference"],
             "different_campaigns": left["campaign_id"] != right["campaign_id"],
             "independence_declared_by_both": bool(left["independence_declared"] and right["independence_declared"]),
             "independence_independently_verified": False,
@@ -236,6 +244,73 @@ class DigitalLabService:
         }
         return self.store.save_lab_comparison(result)
 
+    def reproduction_matrix(self, limit: int = 200) -> dict:
+        bounded = max(1, min(int(limit), 500))
+        protocols = self.store.lab_protocol_history(limit=bounded)
+        runs = self.store.lab_run_history(limit=bounded)
+        comparisons = self.store.lab_comparison_history(limit=bounded)
+        comparison_pairs = {
+            frozenset((item.get("left_run_id"), item.get("right_run_id")))
+            for item in comparisons
+        }
+        grouped: dict[tuple[str, int], list[dict]] = {}
+        for run in runs:
+            key = (run["protocol_id"], run["protocol_version"])
+            grouped.setdefault(key, []).append(run)
+        protocol_map = {
+            (item["protocol_id"], item["version"]): item for item in protocols
+        }
+        rows = []
+        for key, group in sorted(grouped.items()):
+            group.sort(key=lambda item: (item["campaign_id"], item["run_id"]))
+            pairs = []
+            for index, left in enumerate(group):
+                for right in group[index + 1:]:
+                    if left["campaign_id"] == right["campaign_id"]:
+                        continue
+                    pair = frozenset((left["run_id"], right["run_id"]))
+                    pairs.append({
+                        "left_run_id": left["run_id"],
+                        "right_run_id": right["run_id"],
+                        "campaigns": sorted((left["campaign_id"], right["campaign_id"])),
+                        "comparison_recorded": pair in comparison_pairs,
+                        "comparison_recommended": pair not in comparison_pairs,
+                    })
+            rows.append({
+                "protocol_id": key[0],
+                "protocol_version": key[1],
+                "protocol_title": protocol_map.get(key, {}).get("title", ""),
+                "run_count": len(group),
+                "campaign_ids": sorted({item["campaign_id"] for item in group}),
+                "distinct_campaign_count": len({item["campaign_id"] for item in group}),
+                "runs": [{
+                    "run_id": item["run_id"],
+                    "campaign_id": item["campaign_id"],
+                    "kind": item["kind"],
+                    "provenance_group": item.get("provenance_group", ""),
+                    "independence_declared": item.get("independence_declared", False),
+                } for item in group],
+                "cross_campaign_pairs": pairs,
+                "pending_comparison_count": sum(
+                    1 for item in pairs if item["comparison_recommended"]
+                ),
+                "all_pairs_compared": bool(pairs) and all(
+                    item["comparison_recorded"] for item in pairs
+                ),
+            })
+        return {
+            "protocol_groups": rows,
+            "protocol_group_count": len(rows),
+            "run_count": len(runs),
+            "scientific_validity_established": False,
+            "automatic_comparisons_executed": False,
+            "interpretation": (
+                "This matrix tracks cross-campaign run coverage and identifies pairs "
+                "without a recorded comparison. It does not execute comparisons or "
+                "establish independent reproduction."
+            ),
+        }
+
     def overview(self, limit: int = 200) -> dict:
         protocols = self.store.lab_protocol_history(limit=limit)
         runs = self.store.lab_run_history(limit=limit)
@@ -250,10 +325,15 @@ class DigitalLabService:
              "intact": _verify_fingerprint(item, "record_hash")}
             for item in runs
         ]
+        matrix = self.reproduction_matrix(limit=limit)
         return {
             "protocols": protocols,
             "runs": runs,
             "comparisons": comparisons,
+            "reproduction_matrix": matrix["protocol_groups"],
+            "pending_cross_campaign_comparisons": sum(
+                item["pending_comparison_count"] for item in matrix["protocol_groups"]
+            ),
             "integrity": {
                 "protocols_checked": len(protocol_integrity),
                 "runs_checked": len(run_integrity),
