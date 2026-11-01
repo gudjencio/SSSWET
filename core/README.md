@@ -34,3 +34,20 @@ The orchestrator should create additional agents when workload requires it, spli
 - `rejected`
 
 An agent consensus is not, by itself, scientific proof.
+
+## Evidence independence and disagreement review
+
+Evidence is retained with its source identity. Two evidence entries from the
+same source do not count as independent verification. A finding can only enter
+the independently verified state after at least two distinct source IDs have
+been recorded. Reproduction also requires a separate reproduction-run ID.
+
+Structured claims can be compared by subject, predicate and asserted value.
+When distinct sources assert incompatible values, the engine records a
+`disagreement_detected` event and queues one independent review task for that
+conflict signature. The review is not automatically considered resolved:
+the reviewer must inspect source quality, methods, context and uncertainty.
+Free-form text is not silently interpreted as structured scientific claims.
+
+Repeated detection of the same conflict does not create an unlimited queue of
+duplicate review tasks. Unresolved claims remain unresolved until reviewed.
