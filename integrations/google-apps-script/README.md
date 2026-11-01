@@ -1,3 +1,7 @@
+# Legacy payment reminder module
+
+> This module is retained for reference only. The current SSSWET website uses PayPal monthly subscriptions, which manage recurring billing and cancellation directly. This reminder module is not connected to the current checkout and should not be installed for the subscription flow.
+
 # Google Apps Script payment reminders
 
 This optional service sends recurring reminders only to people who explicitly request them. Every address must be confirmed by email. Reminders are not payment instructions from SSSWET and do not trigger automatic charges.
