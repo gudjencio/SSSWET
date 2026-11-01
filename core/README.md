@@ -433,3 +433,45 @@ heuristics, not probabilities, confidence intervals, causal explanations or
 proof of an optimum. Their usefulness depends on the supplied candidate range,
 parameter units/scaling and quality of the objective scores. Review proposals
 before running expensive or safety-relevant simulations.
+
+
+### Connected adaptive research cycle
+
+`ssswet_core.adaptive_cycle.propose_from_study` connects a completed
+multi-model simulation study to the adaptive optimizer. It accepts objective
+scores explicitly reviewed and supplied by the operator; it never guesses a
+score from raw model output. A scored scenario must have at least two
+successfully completed model runs in the study. The optimizer then ranks
+unobserved candidates from the caller-supplied finite set.
+
+The returned cycle is explicitly marked `proposal_only`. The local SQLite
+store can persist each cycle with `save_adaptive_cycle`, retrieve it with
+`get_adaptive_cycle`, and list history with `adaptive_cycle_history`.
+The read-only local API exposes recent history at `/api/optimization`.
+
+Example:
+
+```python
+from ssswet_core.adaptive_cycle import propose_from_study
+from ssswet_core.persistence import SQLiteResearchStore
+from ssswet_core.simulation_study import SimulationScenario
+
+cycle = propose_from_study(
+    completed_study,
+    [
+        SimulationScenario("baseline", {"input": 1}),
+        SimulationScenario("candidate-a", {"input": 3}),
+    ],
+    reviewed_scores={"baseline": 2.5},  # explicitly assessed by an operator
+    count=1,
+    direction="maximize",
+)
+store = SQLiteResearchStore()
+store.save_adaptive_cycle("cycle-001", cycle)
+```
+
+No proposed scenario is executed automatically. Human approval is required
+before a proposal is turned into another simulation run. The scores supplied
+to this bridge are operator assessments, not automatically inferred scientific
+measurements. Simulation output remains separate from real-world observation
+and verified findings.
