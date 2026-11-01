@@ -1005,6 +1005,10 @@ class SQLiteResearchStore:
                 raise ValueError("Reproducing campaign must exist")
             if json.loads(campaign["campaign_json"]).get("state") != "active":
                 raise ValueError("Reproducing campaign must be active")
+            if connection.execute(
+                "SELECT 1 FROM lab_runs WHERE run_id = ?", (run.run_id,)
+            ).fetchone():
+                raise ValueError("Lab run ID already exists; records are immutable")
             connection.execute(
                 """INSERT INTO lab_runs(
                     run_id, protocol_id, protocol_version, campaign_id,
