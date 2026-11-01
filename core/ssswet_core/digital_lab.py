@@ -204,8 +204,7 @@ class DigitalLabService:
             "source_ids": sorted(set(left.get("source_ids", [])) | set(right.get("source_ids", []))),
             "dataset_ids": sorted(set(left.get("dataset_ids", [])) | set(right.get("dataset_ids", []))),
         }
-        self.store.save_lab_comparison(result)
-        return result
+        return self.store.save_lab_comparison(result)
 
     def overview(self, limit: int = 200) -> dict:
         protocols = self.store.lab_protocol_history(limit=limit)
