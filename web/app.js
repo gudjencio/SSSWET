@@ -22,14 +22,15 @@
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 1200);
       try {
-        const results = await Promise.all(candidates.map(async (base) => {
+        const winningBase = await Promise.any(candidates.map(async (base) => {
           const response = await fetch(new URL('/api/status', base).toString(), {method:'GET',mode:'cors',headers:{Accept:'application/json'},cache:'no-store',signal:controller.signal});
           if (!response.ok) throw new Error('HTTP ' + response.status);
           const status = await response.json();
           if (status.service !== 'SSSWET') throw new Error('Unexpected service response');
           return base;
         }));
-        activeApiBase = results[0] || null;
+        controller.abort();
+        activeApiBase = winningBase || null;
         if (!activeApiBase) throw new Error('No local research engine responded.');
         window.SSSWET_API_BASE = activeApiBase;
         lastApiFailure = '';
