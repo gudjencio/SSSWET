@@ -31,16 +31,24 @@ The project explores a disciplined workflow for turning research questions into 
 | Evidence provenance | DOI, dataset and provenance-group records |
 | Knowledge graph | Typed nodes and explicit relationships |
 | Research review | Gap analysis and contradiction reporting |
-| Interdisciplinary discovery | Explainable cross-campaign relation suggestions for human review |
+| Interdisciplinary discovery | Explainable cross-campaign relation suggestions and unified research-opportunity synthesis for human review |
 | Experimentation | Structured plans, simulation records and real-observation records |
 | Simulation studies | Bounded multi-model comparisons and reproducible output records |
 | Optimization | Human-reviewed adaptive scenario proposals |
 | Campaign coordination | Pipeline-integrated milestone scheduling, specialist allocation, resource quotas, retry tracking and explicit completion review |
-| Web interface | Responsive multilingual interface, global research dashboard and 15 initial language catalogues |
+| Web interface | Responsive multilingual interface, global dashboard, knowledge-network visualization and expandable research-opportunity reviews |
 
 Capabilities are implemented incrementally. The public web interface is a static application; the Python research engine runs locally and is not hosted by GitHub Pages.
 
-## Architecture
+
+The global dashboard visualizes a bounded view of recorded knowledge-graph
+nodes and declared edges, and lists research-gap and interdisciplinary-link
+opportunities with their graph and campaign references. These are review
+leads only: the dashboard does not infer missing scientific relationships,
+create tasks or validate claims. The live dashboard requires the local Python
+service; a static Pages deployment cannot expose the local SQLite research
+state. See [research opportunity synthesis](docs/RESEARCH_OPPORTUNITIES.md).
+\n## Architecture
 
 The repository is organized into two main parts:
 
