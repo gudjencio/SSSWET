@@ -83,13 +83,14 @@ class ParameterInteractionPlanner:
                 if isinstance(replicates, bool) or not isinstance(replicates, int) or not 2 <= replicates <= 100:
                     errors.append(f"Candidate {index + 1} replicates must be an integer between 2 and 100.")
                     continue
-                if any(name not in designs for name in pair):
+                missing_baselines = [name for name in required if name not in designs]
+                if missing_baselines:
                     pair_plans.append({
                         "parameters": pair,
                         "classification": "incomplete_factor_metadata",
                         "errors": {
-                            name: design_errors.get(name, ["No valid parameter definition."])
-                            for name in pair if name not in designs
+                            name: design_errors.get(name, ["A complete baseline definition is required to hold this parameter constant."])
+                            for name in missing_baselines
                         },
                         "scenarios": [],
                         "scenario_count": 0,
