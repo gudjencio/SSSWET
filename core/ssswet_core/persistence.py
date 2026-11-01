@@ -112,7 +112,14 @@ class SQLiteResearchStore:
                     record_json TEXT NOT NULL,
                     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 );
-                CREATE INDEX IF NOT EXISTS idx_experiment_records_plan ON experiment_records(experiment_id);\n                CREATE TABLE IF NOT EXISTS adaptive_cycles (\n                    cycle_id TEXT PRIMARY KEY,\n                    study_id TEXT NOT NULL,\n                    cycle_json TEXT NOT NULL,\n                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n                );\n                CREATE INDEX IF NOT EXISTS idx_adaptive_cycles_study ON adaptive_cycles(study_id);
+                CREATE INDEX IF NOT EXISTS idx_experiment_records_plan ON experiment_records(experiment_id);
+                CREATE TABLE IF NOT EXISTS adaptive_cycles (
+                    cycle_id TEXT PRIMARY KEY,
+                    study_id TEXT NOT NULL,
+                    cycle_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_adaptive_cycles_study ON adaptive_cycles(study_id);
                 CREATE TABLE IF NOT EXISTS knowledge (
                     item_key TEXT PRIMARY KEY,
                     statement TEXT NOT NULL,
