@@ -93,3 +93,102 @@ class DeterministicDemoProvider:
             evidence=(f"Strategy recorded: {strategy}",),
             uncertainty=1.0,
         )
+
+
+class CrossrefProvider:
+    """Retrieve scholarly publication metadata from the public Crossref API.
+
+    This provider discovers bibliographic records; it does not read or validate
+    full papers and never treats publication metadata as proof of a claim.
+    """
+
+    name = "crossref-literature-search"
+    endpoint = "https://api.crossref.org/works"
+
+    def __init__(self, max_results: int = 5, timeout: float = 12.0, mailto: str = ""):
+        self.max_results = max(1, min(int(max_results), 20))
+        self.timeout = max(2.0, min(float(timeout), 30.0))
+        self.mailto = mailto.strip()
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        from urllib.error import HTTPError, URLError
+        from urllib.parse import urlencode
+        from urllib.request import Request, urlopen
+        import json
+
+        query = objective.strip()
+        if not query:
+            return ProviderResult("The literature search objective is empty.", uncertainty=1.0)
+
+        parameters = {"query.bibliographic": query, "rows": self.max_results}
+        if self.mailto:
+            parameters["mailto"] = self.mailto
+        url = self.endpoint + "?" + urlencode(parameters)
+        request = Request(
+            url,
+            headers={
+                "Accept": "application/json",
+                "User-Agent": "SSSWET/0.1 (scholarly metadata discovery; contact: " +
+                (self.mailto or "no-contact-provided") + ")",
+            },
+        )
+        try:
+            with urlopen(request, timeout=self.timeout) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
+            return ProviderResult(
+                f"Crossref literature search unavailable: {type(exc).__name__}. No result was inferred.",
+                uncertainty=1.0,
+            )
+
+        message = payload.get("message", {}) if isinstance(payload, dict) else {}
+        items = message.get("items", []) if isinstance(message, dict) else []
+        evidence: list[str] = []
+        source_ids: list[str] = []
+        for item in items[:self.max_results]:
+            if not isinstance(item, dict):
+                continue
+            titles = item.get("title") or []
+            title = str(titles[0]).strip() if titles else ""
+            if not title:
+                continue
+            doi = str(item.get("DOI", "")).strip()
+            url_value = str(item.get("URL", "")).strip()
+            publisher = str(item.get("publisher", "")).strip()
+            date_parts = (
+                item.get("published-print", {}).get("date-parts")
+                or item.get("published-online", {}).get("date-parts")
+                or item.get("created", {}).get("date-parts")
+                or []
+            )
+            year = date_parts[0][0] if date_parts and date_parts[0] else "date unavailable"
+            authors = item.get("author") or []
+            author_names = [
+                " ".join(part for part in (author.get("given"), author.get("family")) if part)
+                for author in authors[:4] if isinstance(author, dict)
+            ]
+            author_text = ", ".join(author_names) or "authors unavailable"
+            identity = doi or url_value
+            if not identity:
+                continue
+            source_ids.append(identity)
+            evidence.append(
+                f"{title} | {author_text} | {year} | {publisher or 'publisher unavailable'} "
+                f"| DOI: {doi or 'unavailable'} | URL: {url_value}"
+            )
+
+        if not evidence:
+            return ProviderResult(
+                "Crossref returned no usable bibliographic records for this query.",
+                uncertainty=1.0,
+            )
+        return ProviderResult(
+            summary=(
+                f"Crossref returned {len(evidence)} bibliographic record(s). "
+                "These are discovery leads only; abstracts, full texts, methods and claims "
+                "must be reviewed independently."
+            ),
+            evidence=tuple(evidence),
+            uncertainty=1.0,
+            source_ids=tuple(source_ids),
+        )
