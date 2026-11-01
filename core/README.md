@@ -113,9 +113,9 @@ The API exposes recent tasks at `/api/work`, provider outputs at
 validated memory at `/api/verified`. The interface never treats a stored
 provider output as a verified discovery.
 
-## External scholarly discovery with Crossref and OpenAlex
+## External scholarly discovery with Crossref, OpenAlex and arXiv
 
-Public Crossref and OpenAlex metadata providers retrieve bibliographic records for multidisciplinary literature searches. Crossref records DOI/URL, title, author metadata, publisher and publication year. OpenAlex adds work identifiers, venue metadata and citation counts when available. Neither provider fetches paywalled full text, interprets a paper, or validates scientific claims. The combined provider deduplicates DOI matches and labels the catalogue supplying each record.
+Public Crossref and OpenAlex metadata providers retrieve bibliographic records for multidisciplinary literature searches. An additional arXiv provider retrieves preprint metadata and abstracts, which can be useful in physics, mathematics, computing and related fields. Crossref records DOI/URL, title, author metadata, publisher and publication year. OpenAlex adds work identifiers, venue metadata and citation counts when available. Neither provider fetches paywalled full text, interprets a paper, or validates scientific claims. The combined provider deduplicates DOI matches and labels the catalogue supplying each record.
 
 Example:
 
@@ -123,7 +123,7 @@ Example:
 ssswet-run --objective "wave propagation measurement methods" --domain physics --provider literature
 ```
 
-Use `--provider crossref` or `--provider openalex` to query a single catalogue. An optional contact email can be supplied with `--mailto`.
+Use `--provider crossref`, `--provider openalex` or `--provider arxiv` to query a single catalogue. An optional contact email can be supplied with `--mailto` for Crossref and OpenAlex. arXiv records may be preprints and are not necessarily peer reviewed.
 
 Crossref and OpenAlex results are discovery leads only and remain marked unverified. Network failures or
 empty results are reported without fabricating substitute evidence.
