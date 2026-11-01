@@ -121,7 +121,7 @@ new Function(donationSourceLatest);
 for (const feature of ["timetravel", "Time travel research", "Voyage dans le temps", "PayPal", "PAYPAL_SUBSCRIPTION_PLAN_ID", "monthly contribution", "ongoing effort to make them possible"]) {
   if (!donationSourceLatest.includes(feature)) throw new Error(`Research funding feature missing: ${feature}`);
 }
-if (!paymentConfig.includes("https://www.paypal.com/paypalme/gudjencio")) throw new Error("The official PayPal destination is not configured.");
+if (!paymentConfig.includes("PAYPAL_CLIENT_ID") || !paymentConfig.includes("PAYPAL_SUBSCRIPTION_PLAN_ID")) throw new Error("The official PayPal subscription plan is not configured.");
 if (!pageSource.includes('data-tech="timetravel"')) throw new Error("Time travel is missing from the public technology catalogue.");
 console.log("Validated the PayPal research-funding route, conditional future product delivery wording and time-travel technology.");
 
