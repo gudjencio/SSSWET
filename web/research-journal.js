@@ -57,5 +57,14 @@
     finally{button.disabled=false;}
   });
   refresh?.addEventListener("click",load);filter?.addEventListener("change",load);
-  window.addEventListener("ssswet-language-changed",load);load();
+  window.addEventListener("ssswet-language-changed",()=>{
+    [filter,form?.elements?.technology].filter(Boolean).forEach(select=>{
+      Array.from(select.options).forEach(option=>{
+        const item=technologyCatalogue[option.value];
+        if(item) option.textContent=(document.documentElement.lang||"en").toLowerCase().startsWith("fr")?item.fr[0]:item.en[0];
+      });
+    });
+    load();
+  });
+  load();
 })();
