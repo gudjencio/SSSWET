@@ -248,6 +248,14 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore):
                     self._json(LabVerificationPlanner(store).build(limit=limit))
                 except ValueError as exc:
                     self._json({"error": str(exc)}, 400)
+            elif path == "/api/reproducibility-intelligence":
+                from .reproducibility_intelligence import ReproducibilityIntelligence
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["200"])[0])
+                    self._json(ReproducibilityIntelligence(store).build(limit=limit))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/lab-verification-events":
                 self._json({"events": store.lab_verification_event_history(limit=1000), "append_only": True})
             elif path == "/api/disputes":
