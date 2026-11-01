@@ -57,10 +57,10 @@ for (const [code, locale] of Object.entries(locales)) {
 }
 const appSource = fs.readFileSync(new URL("./app.js", `file://${__filename}`), "utf8");
 const pageSource = fs.readFileSync(new URL("./index.html", `file://${__filename}`), "utf8");
-for (const feature of ["SpeechSynthesisUtterance", "speechSynthesis", "chooseVoice", "speakAsAgent", "capitalizeInterfaceText", "MutationObserver"]) {
+for (const feature of ["SpeechSynthesisUtterance", "speechSynthesis", "chooseVoice", "speakAsAgent", "speakLongText", "readCurrentFeed", "capitalizeInterfaceText", "MutationObserver"]) {
   if (!appSource.includes(feature)) throw new Error(`Voice or capitalization feature missing: ${feature}`);
 }
-if (!pageSource.includes('id="voice-toggle"')) throw new Error("The voice activation control is missing");
+if (!pageSource.includes('id="voice-toggle"') || !pageSource.includes('id="voice-read"') || !pageSource.includes('id="voice-pause"') || !pageSource.includes('id="voice-resume"') || !pageSource.includes('id="voice-stop"')) throw new Error("The voice controls are incomplete");
 
 const agentCopy = context.window.SSSWET_AGENT_COPY;
 if (!agentCopy || !fullyTranslated.size) {
