@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>SSSWET — Private order administration</title>
+<link rel="stylesheet" href="admin.css">
+<script src="admin.js" defer></script>
+</head>
+<body>
+<main class="shell">
+<header><a href="./">SSSWET</a><span>PRIVATE OPERATIONS</span></header>
+<section class="panel" id="login-panel">
+<h1>Order administration</h1>
+<p>Local operator access only. Your token remains in this page's memory and is not saved.</p>
+<label for="token">Administrator token</label>
+<input id="token" type="password" autocomplete="off" spellcheck="false">
+<button id="connect">Connect securely</button>
+<p id="login-message" role="status"></p>
+</section>
+<section class="panel" id="orders-panel" hidden>
+<div class="heading"><div><h1>Orders</h1><p id="summary">Loading private order register…</p></div><button id="refresh">Refresh</button></div>
+<div id="orders" class="orders"></div>
+</section>
+<section class="panel" id="detail-panel" hidden>
+<button id="back" class="secondary">← Back to orders</button>
+<div id="detail"></div>
+<div class="actions">
+<h2>Record a verified payment</h2>
+<p>Only enter a transaction after independently confirming settlement in the provider account.</p>
+<form id="payment-form">
+<label>Amount<input name="amount" type="number" min="0.01" step="0.01" required></label>
+<label>Currency<input name="currency" maxlength="3" value="EUR" required></label>
+<label>Provider<input name="provider" value="PayPal" required></label>
+<label>Provider transaction reference<input name="provider_reference" required></label>
+<label>Verified by<input name="verified_by" required></label>
+<button type="submit">Record verified payment</button>
+</form>
+<h2>Update fulfilment</h2>
+<form id="fulfilment-form">
+<label>Status<select name="state"><option value="preparing">Preparing</option><option value="shipped">Shipped</option><option value="received">Received</option><option value="cancelled">Cancelled</option><option value="refunded">Refunded</option></select></label>
+<label>Operator<input name="operator" required></label>
+<label>Carrier / receipt evidence reference<input name="evidence_reference"></label>
+<button type="submit">Update order status</button>
+</form>
+</div>
+<p id="action-message" role="status"></p>
+</section>
+<footer>Private local interface · No delivery addresses are stored here · Keep the server bound to 127.0.0.1</footer>
+</main>
+</body>
+</html>
