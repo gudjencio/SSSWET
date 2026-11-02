@@ -35,3 +35,18 @@ The initial profiles include Mira Solène (cross-disciplinary research), Elias V
 
 - `GET /api/agent-identities` returns the role profiles and counts of recorded persistent activity.
 - The registry methods support append-only memories and evidence-linked collaboration events. No public write endpoint is enabled for these records.
+
+
+## Structured peer-review synthesis
+
+When independent review passes have been recorded, the research pipeline creates a
+separate `peer_review_synthesis` message. It consolidates the number of review
+passes, returned evidence leads, source identifiers and reported uncertainty
+without treating bibliographic discovery as scientific confirmation.
+
+The synthesis explicitly preserves open questions: inspection of full source
+documents, claim-by-claim corroboration or contradiction, methodological quality,
+reproducibility, alternative explanations, and relevant safety, ethical, legal
+and accessibility considerations. Empty or source-free reviews are labelled as
+insufficient evidence leads. A completed review sequence is not an approval,
+certification, clinical validation or implementation recommendation.
