@@ -49,6 +49,14 @@ if (locales.ar.dir !== "rtl" || locales.he.dir !== "rtl" || locales.fa.dir !== "
   throw new Error("Arabic and Hebrew must use right-to-left layout");
 }
 console.log(`Validated ${Object.keys(locales).length} selectable locales, ${context.window.SSSWET_LANGUAGE_CATALOG.length} language options, and ${fullyTranslated.size} complete translations.`);
+const timeTravelLinkSource = fs.readFileSync(new URL("./virtual-time-travel-link.js", `file://${__filename}`), "utf8");
+for (const code of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi","id","tr","pl","bn","sw","vi","fa","ur","ta","te"]) {
+  if (!timeTravelLinkSource.includes(code + ":\"")) throw new Error(`Virtual Time Travel launch label is missing locale ${code}`);
+}
+for (const feature of ["ssswet-language-changed", "data-language", "document.documentElement.lang", "MutationObserver", "virtual-time-travel-launch"]) {
+  if (!timeTravelLinkSource.includes(feature)) throw new Error("Virtual Time Travel launch localization is missing " + feature);
+}
+console.log("Validated the Virtual Time Travel launch label in all 25 translated interface locales and on language changes.");
 
 for (const [code, locale] of Object.entries(locales)) {
   if (!locale.voiceEnable || !locale.voiceDisable || !locale.voiceListen) {
