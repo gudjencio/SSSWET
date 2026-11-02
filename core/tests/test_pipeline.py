@@ -312,3 +312,53 @@ def test_pipeline_persists_structured_peer_review_synthesis(tmp_path):
     assert "Review passes recorded: 2" in syntheses[0]["content"]
     assert "https://doi.org/10.1000/example-record" in syntheses[0]["content"]
     assert "does not establish that any claim is true" in syntheses[0]["content"]
+
+
+def test_campaign_pipeline_executes_allocated_agents_concurrently(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+    from ssswet_core.campaign_coordinator import CampaignCoordinator
+    from ssswet_core.campaigns import CampaignMilestone, create_campaign, set_campaign_state
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.resource_manager import ResourceManager
+
+    barrier = Barrier(2, timeout=3)
+
+    class ConcurrentProvider:
+        name = "concurrency-test-provider"
+
+        def investigate(self, objective: str, strategy: str) -> ProviderResult:
+            barrier.wait()
+            return ProviderResult(
+                summary="Both independent campaign assignments reached the provider concurrently.",
+                evidence=("Concurrency was observed by a two-party barrier.",),
+                uncertainty=0.9,
+            )
+
+    store = SQLiteResearchStore(tmp_path / "campaign-concurrency.sqlite3")
+    campaign = create_campaign(
+        "concurrency-campaign", "Concurrency study",
+        "Study a harmless parallel scheduling test", "general",
+        [CampaignMilestone("review", "Review", "Review parallel execution")],
+    )
+    store.save_campaign(set_campaign_state(campaign, "active"))
+    coordinator = CampaignCoordinator(
+        store, ResourceManager(max_active_assignments=2)
+    )
+    pipeline = ResearchPipeline(
+        provider=ConcurrentProvider(), store=store,
+        campaign_coordinator=coordinator, agent_workers=2,
+    )
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(
+            pipeline.start_in_campaign,
+            "Study a harmless parallel scheduling test",
+            "concurrency-campaign", "review",
+        )
+        task_id, steps = future.result(timeout=6)
+
+    assert task_id
+    assert len(steps) == 2
+    assert len({step.agent_id for step in steps}) == 2
+    assert len(coordinator.snapshot()["completed_task_ids"]) == 2
