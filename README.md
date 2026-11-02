@@ -110,3 +110,7 @@ The persistent agent memory layer supports bounded team-wide retrieval for share
 ## Context-aware claim comparison
 
 - Context-aware claim comparison separates differences in scope, conditions, units and observation dates before flagging review leads. See [Context-aware research claim comparison](docs/CONTEXT_AWARE_CLAIM_COMPARISON.md).
+
+## Independent reviewer selection
+
+SSSWET can prepare auditable reviewer-panel proposals that exclude prior reviewers and declared conflicts, avoid repeated campaigns, and flag shared evidence sources for disclosure. Proposals do not execute assignments or certify independence. See [Independent reviewer selection safeguards](docs/INDEPENDENT_REVIEWER_SELECTION.md).
