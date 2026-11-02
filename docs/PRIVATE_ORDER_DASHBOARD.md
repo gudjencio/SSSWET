@@ -1,33 +1,11 @@
-# Private order dashboard
+# Private operations
 
-Open the local dashboard at `http://127.0.0.1:8765/admin.html` after starting the local service.
+Certain administrative functions are intended for authorized local operation only. They are not public services and must not be exposed through the public website, a public tunnel or an unauthenticated network endpoint.
 
-## Configure the administrator token
+Administrative credentials must be generated and stored locally using an appropriate secrets manager or protected environment configuration. Never commit credentials, paste them into public issues, include them in screenshots, or send them through ordinary project feedback channels.
 
-Generate a long random token locally (do not commit it or send it to anyone):
+Access should be limited to authorized operators. Use a protected device account, encrypted storage and current security updates.
 
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(48))"
-```
+Administrative and payment records must be checked against authoritative provider records before an operator relies on them. Do not enter customer addresses, identity documents, payment credentials or other sensitive personal data into public project tools or research records.
 
-Set it as the `SSSWET_ADMIN_TOKEN` environment variable before starting SSSWET.
-
-PowerShell:
-
-```powershell
-$env:SSSWET_ADMIN_TOKEN = "paste-your-private-token-here"
-ssswet-local
-```
-
-macOS/Linux:
-
-```bash
-export SSSWET_ADMIN_TOKEN="paste-your-private-token-here"
-ssswet-local
-```
-
-The dashboard keeps the token in page memory only. It is not written to local storage or cookies. The private API checks the token, loopback client address, Host and Origin. Keep the server bound to `127.0.0.1`; do not expose it through a public tunnel, LAN, reverse proxy or the Google Sites mirror.
-
-The dashboard records operator-entered payment confirmations; it does not verify PayPal transactions automatically. Check the provider's official transaction history before recording a payment. Never enter customer addresses here.
-
-This is a local operator prototype. Before production use, add operating-system account protection, HTTPS for any remote administration, stronger operator identity/audit controls, backup/restore procedures and a legally compliant separate fulfilment-address workflow.
+Local administrative software is experimental. It is not, by itself, a secure production order-management, payment-processing or fulfilment system. Any remote administrative deployment requires a separate security and privacy review.
