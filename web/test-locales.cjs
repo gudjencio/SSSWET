@@ -244,7 +244,7 @@ if (!mainStyles.includes(".app-shell > .social-corner") ||
   throw new Error("Mobile social navigation must remain in document flow above the header.");
 }
 const serviceWorkerCache = fs.readFileSync(new URL("./sw.js", `file://${__filename}`), "utf8");
-if (!/const CACHE = "ssswet-web-v\\d+"/.test(serviceWorkerCache)) {
+if (!/const CACHE = "ssswet-web-v[0-9]+"/.test(serviceWorkerCache)) {
   throw new Error("The mobile layout must be delivered through a versioned service-worker cache.");
 }
 console.log("Validated the PayPal monthly subscription flow, variable quantity configuration and mobile social navigation.");
