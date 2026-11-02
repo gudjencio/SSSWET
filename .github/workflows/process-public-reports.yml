@@ -1,0 +1,36 @@
+name: Process public improvement reports
+on:
+  issues:
+    types: [opened, labeled]
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+concurrency:
+  group: ssswet-report-\${{ github.event.issue.number }}
+  cancel-in-progress: false
+jobs:
+  process-report:
+    if: contains(github.event.issue.labels.*.name, 'public report') && !github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install report validation tools
+        run: python -m pip install pytest
+      - name: Process report and prepare a tested improvement
+        env:
+          GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: \${{ secrets.OPENAI_API_KEY }}
+          GITHUB_REPOSITORY: \${{ github.repository }}
+          GITHUB_API_URL: \${{ github.api_url }}
+          ISSUE_NUMBER: \${{ github.event.issue.number }}
+          SSSWET_REPORT_MODEL: gpt-4.1-mini
+        run: python .github/scripts/process_public_report.py
