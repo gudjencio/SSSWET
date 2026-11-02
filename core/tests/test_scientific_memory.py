@@ -127,3 +127,52 @@ def test_overview_reports_broken_evidence_links_without_promoting_claims(tmp_pat
     }
     assert result["versions_with_missing_links"] == 1
     assert result["scientific_validity_established"] is False
+
+
+def test_evolution_alert_flags_only_current_memory_challenged_by_later_record(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "evolution-alerts.sqlite3")
+    store.add_knowledge_node(KnowledgeNode(
+        "hypothesis-node", "hypothesis", "Initial hypothesis",
+        created_at="2026-01-01T00:00:00+00:00",
+    ))
+    store.add_knowledge_node(KnowledgeNode(
+        "later-finding", "finding", "Later contradictory finding",
+        created_at="2026-02-01T00:00:00+00:00",
+    ))
+    store.add_knowledge_edge(KnowledgeEdge(
+        "hypothesis-node", "later-finding", "contradicts",
+        note="A later observation challenges the earlier model.",
+        confidence=0.7,
+        created_at="2026-02-01T00:00:00+00:00",
+    ))
+    service = ScientificMemoryService(store)
+    service.add_version(ScientificMemoryVersion.create(
+        "memory-v1", "hypothesis-key", "Initial model",
+        "The initial model explains the observations.",
+        graph_node_ids=("hypothesis-node",),
+    ))
+    result = service.evolution_alerts()
+    assert result["alert_count"] == 1
+    alert = result["alerts"][0]
+    assert alert["version_id"] == "memory-v1"
+    assert alert["later_contradicting_node_id"] == "later-finding"
+    assert alert["automatic_status_change"] is False
+    assert result["scientific_validity_established"] is False
+
+
+def test_evolution_alert_ignores_older_or_unlinked_contradictions(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "evolution-alerts-filter.sqlite3")
+    store.add_knowledge_node(KnowledgeNode(
+        "hypothesis-node", "hypothesis", "Hypothesis",
+        created_at="2026-03-01T00:00:00+00:00",
+    ))
+    store.add_knowledge_node(KnowledgeNode(
+        "older-finding", "finding", "Older finding",
+        created_at="2026-02-01T00:00:00+00:00",
+    ))
+    store.add_knowledge_edge(KnowledgeEdge("hypothesis-node", "older-finding", "contradicts"))
+    service = ScientificMemoryService(store)
+    service.add_version(ScientificMemoryVersion.create(
+        "v1", "key", "Topic", "Statement", graph_node_ids=("hypothesis-node",),
+    ))
+    assert service.evolution_alerts()["alerts"] == []
