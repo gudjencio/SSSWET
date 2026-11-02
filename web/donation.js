@@ -180,7 +180,7 @@
   const copyButton = document.getElementById("donation-copy");
   const translations = {
     en: { eyebrow:"FUTURE TECHNOLOGIES · RESEARCH PRIORITIES", title:"Choose a technology to support", intro:"Explore the research directions and open a contribution window for the technology you want to encourage.", disclaimer:"These are research themes, not claims that the technologies exist or are currently achievable. The project will keep exploring, testing and refining ideas in an ongoing effort to make them possible. Contributions fund research and development; they are not a purchase or a guarantee of results. If a technology becomes feasible and a product is actually developed, a future offer and delivery terms will be communicated separately.", explore:"Explore & contribute", dialogEyebrow:"FUND RESEARCH & DEVELOPMENT", amountLabel:"Monthly contribution amount (USD)", repeatLabel:"Number of separate contributions", perContribution:"Monthly contribution", totalLabel:"Annual equivalent", currencyNote:"Choose a monthly amount in USD. PayPal will display the subscription terms before approval.", paymentMissing:"The PayPal subscription is not configured.", paymentReady:"Choose your monthly amount, then approve the recurring subscription securely with PayPal.", checkout:"Continue to PayPal", copySummary:"Copy research contribution summary", paymentDisclaimer:"This is a recurring monthly contribution. The amount selected is billed monthly through PayPal until the subscriber cancels. Contributions support ongoing research and do not purchase an existing product or guarantee a result. Any future product offer and delivery terms will be communicated separately if a technology is developed and becomes available.", invalid:"Enter a monthly amount between USD 1 and USD 100,000.", copied:"Contribution summary copied.", copyError:"Unable to copy automatically. Please select and copy the summary." },
-    fr: { eyebrow:"TECHNOLOGIES DU FUTUR · PRIORITÉS DE RECHERCHE", title:"Choisissez une technologie à soutenir", intro:"Découvrez les axes de recherche et ouvrez une fenêtre de contribution pour la technologie que vous souhaitez encourager.", disclaimer:"Ces axes ne signifient pas que les technologies existent ou soient réalisables aujourd'hui. Le projet poursuivra continuellement les recherches, les essais et les améliorations pour tenter de les rendre possibles. Les contributions financent la recherche et le développement ; elles ne constituent pas un achat et ne garantissent aucun résultat. Si une technologie devient réalisable et qu'un produit est effectivement développé, une offre et des conditions de livraison seront communiquées séparément.", explore:"Découvrir et contribuer", dialogEyebrow:"FINANCER LA RECHERCHE ET LE DÉVELOPPEMENT", amountLabel:"Montant mensuel de la contribution (USD)", repeatLabel:"Nombre de contributions distinctes", perContribution:"Contribution mensuelle", totalLabel:"Équivalent annuel", currencyNote:"Choisissez un montant mensuel en USD. PayPal affichera les conditions de l’abonnement avant validation.", paymentMissing:"L’abonnement PayPal n’est pas configuré.", paymentReady:"Choisissez votre montant mensuel, puis approuvez l’abonnement récurrent en toute sécurité avec PayPal.", checkout:"Continuer vers PayPal", copySummary:"Copier le récapitulatif du financement", paymentDisclaimer:"Il s’agit d’une contribution mensuelle récurrente. Le montant choisi est facturé chaque mois par PayPal jusqu’à l’annulation de l’abonnement. Les contributions financent la recherche en cours et ne constituent pas l’achat d’un produit existant ni une garantie de résultat. Toute future offre de produit et de livraison sera communiquée séparément si une technologie est développée et devient disponible.", invalid:"Saisissez un montant mensuel compris entre 1 et 100 000 USD.", copied:"Récapitulatif copié.", copyError:"Copie automatique impossible. Veuillez sélectionner et copier le récapitulatif." }
+    fr: { eyebrow:"TECHNOLOGIES DU FUTUR · PRIORITÉS DE RECHERCHE", title:"Choisissez une technologie à soutenir", intro:"Découvrez les axes de recherche et ouvrez une fenêtre de contribution pour la technologie que vous souhaitez encourager.", disclaimer:"Ces axes ne signifient pas que les technologies existent ou soient réalisables aujourd'hui. Le projet poursuivra continuellement les recherches, les essais et les améliorations pour tenter de les rendre possibles. Les contributions financent la recherche et le développement ; elles ne constituent pas un achat et ne garantissent aucun résultat. Si une technologie devient réalisable et qu'un produit est effectivement développé, une offre et des conditions de livraison seront communiquées séparément.", explore:"Découvrir et contribuer", dialogEyebrow:"FINANCER LA RECHERCHE ET LE DÉVELOPPEMENT", amountLabel:"Montant mensuel de la contribution (dollars américains)", repeatLabel:"Nombre de contributions distinctes", perContribution:"Contribution mensuelle", totalLabel:"Équivalent annuel", currencyNote:"Choisissez un montant mensuel en dollars américains. PayPal affichera les conditions de l’abonnement avant validation.", paymentMissing:"L’abonnement PayPal n’est pas configuré.", paymentReady:"Choisissez votre montant mensuel, puis approuvez l’abonnement récurrent en toute sécurité avec PayPal.", checkout:"Continuer vers PayPal", copySummary:"Copier le récapitulatif du financement", paymentDisclaimer:"Il s’agit d’une contribution mensuelle récurrente. Le montant choisi est facturé chaque mois par PayPal jusqu’à l’annulation de l’abonnement. Les contributions financent la recherche en cours et ne constituent pas l’achat d’un produit existant ni une garantie de résultat. Toute future offre de produit et de livraison sera communiquée séparément si une technologie est développée et devient disponible.", invalid:"Saisissez un montant mensuel compris entre 1 et 100 000 dollars américains.", copied:"Récapitulatif copié.", copyError:"Copie automatique impossible. Veuillez sélectionner et copier le récapitulatif." }
   };
   const copy = () => translations[(document.documentElement.lang || "en").startsWith("fr") ? "fr" : "en"];
   function applyPaymentLanguage() {
@@ -226,10 +226,13 @@
   function updateAmounts() {
     const amount = Number(amountInput.value);
     const valid = Number.isFinite(amount) && amount >= 1 && amount <= 100000;
-    const money = new Intl.NumberFormat(copy() === translations.fr ? "fr-FR" : "en-US", {style:"currency",currency:"USD",minimumFractionDigits:2}).format(amount || 0);
-    perOutput.textContent = valid ? money + " / month" : "—";
-    totalOutput.textContent = valid ? new Intl.NumberFormat(copy() === translations.fr ? "fr-FR" : "en-US", {style:"currency",currency:"USD"}).format(amount * 12) + " / year" : "—";
-    currencyLabel.textContent = copy() === translations.fr ? "USD / mois" : "USD / month";
+    const french = copy() === translations.fr;
+    const money = value => french
+      ? new Intl.NumberFormat("fr-FR", {minimumFractionDigits:2, maximumFractionDigits:2}).format(value) + " dollars américains"
+      : new Intl.NumberFormat("en-US", {style:"currency",currency:"USD",minimumFractionDigits:2}).format(value);
+    perOutput.textContent = valid ? money(amount) + (french ? " / mois" : " / month") : "—";
+    totalOutput.textContent = valid ? money(amount * 12) + (french ? " / an" : " / year") : "—";
+    currencyLabel.textContent = copy() === translations.fr ? "dollars américains / mois" : "USD / month";
     const configured = Boolean(paymentLinks.PAYPAL_CLIENT_ID && paymentLinks.PAYPAL_SUBSCRIPTION_PLAN_ID);
     paymentStatus.textContent = !valid ? copy().invalid : configured ? copy().paymentReady : copy().paymentMissing;
   }
@@ -240,7 +243,7 @@
     amountInput.value = String(Math.max(1, Math.round((Number(amountInput.value) || 1) * 100) / 100));
     currencyLabel.textContent = copy() === translations.fr ? "USD / mois" : "USD / month";
     currencyNote.textContent = copy() === translations.fr
-      ? "Choisissez votre montant mensuel en USD. PayPal affichera les conditions de l’abonnement avant validation."
+      ? "Choisissez votre montant mensuel en dollars américains. PayPal affichera les conditions de l’abonnement avant validation."
       : "Choose your monthly amount in USD. PayPal will display the subscription terms before approval.";
     updateAmounts();
   }
@@ -274,11 +277,11 @@
       const paypal = await loadPayPalSdk();
       if (!paypal || !paypal.Buttons) throw new Error("PayPal Buttons are unavailable.");
       paypal.Buttons({
-        style: {shape:"pill", color:"blue", layout:"vertical", label:"paypal"},
+        style: {shape:"pill", color:"black", layout:"vertical", label:"paypal"},
         createSubscription: function(data, actions) {
           const amount = Number(amountInput.value);
           if (!Number.isFinite(amount) || amount < 1 || amount > 100000) {
-            paymentStatus.textContent = copy() === translations.fr ? "Saisissez un montant mensuel d’au moins 1 USD." : "Enter a monthly amount of at least USD 1.";
+            paymentStatus.textContent = copy() === translations.fr ? "Saisissez un montant mensuel d’au moins 1 dollar américain." : "Enter a monthly amount of at least USD 1.";
             return Promise.reject(new Error("Invalid monthly contribution amount."));
           }
           return actions.subscription.create({
