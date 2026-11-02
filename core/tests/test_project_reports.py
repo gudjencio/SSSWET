@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from sssswet_core import project_reports
+from ssswet_core import project_reports
 
 
 class FakeResponse:
