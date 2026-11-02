@@ -21,3 +21,13 @@ def test_catalogue_registration_is_idempotent_and_does_not_claim_validation(tmp_
     assert dossier["current_recorded_state"] == "concept"
     assert dossier["scientific_validity_established"] is False
     assert dossier["events"][-1]["payload"]["research_status"] == "not_assessed"
+
+
+def test_engine_can_register_full_catalogue(tmp_path):
+    from ssswet_core.engine import SSSWETEngine
+
+    engine = SSSWETEngine(SQLiteResearchStore(tmp_path / "engine-catalogue.sqlite3"))
+    result = engine.register_technology_catalogue(actor_id="catalogue-bot")
+    assert result["catalogue_size"] == 100
+    assert result["created_count"] == 100
+    assert engine.get_technology_dossier("education")["domain"] == "society"
