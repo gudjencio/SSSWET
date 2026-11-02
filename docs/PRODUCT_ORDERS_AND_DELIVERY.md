@@ -18,7 +18,7 @@ Personal and fulfilment information must never be placed in public repositories,
 
 ## Proposed monthly financing model
 
-The project has documented a proposed [monthly technology financing policy](MONTHLY_TECHNOLOGY_FINANCING.md). It is not active: no product checkout, subscription for technology purchases, product price or delivery promise is currently enabled. Any future launch must pass the safeguards and reviews described there.
+The project has documented a proposed [monthly technology financing policy](MONTHLY_TECHNOLOGY_FINANCING.md), including bot-generated provisional estimates, explicit research uncertainty and customer credits for collected uncertainty reserves when an official product price is announced. It is not active: no product checkout, subscription for technology research funding, product price or delivery promise is currently enabled. Any future launch must pass the safeguards and reviews described there.
 
 ## No current product promise
 
