@@ -1,6 +1,6 @@
 # Technology Feasibility Observatory
 
-The observatory provides a deterministic, read-only overview of the 29 SSSWET technology programmes. It uses only explicitly classified entries in the local research journal.
+The observatory provides a deterministic, read-only overview of the 40 SSSWET technology programmes. It uses only explicitly classified entries in the local research journal.
 
 ## Scope
 
@@ -16,7 +16,7 @@ The absence of a record means only that the local journal contains no matching e
 
 ## API
 
-- GET /api/technology-feasibility returns all 29 programmes.
+- GET /api/technology-feasibility returns all 40 programmes.
 - GET /api/technology-feasibility?technology=timetravel returns the selected programme.
 
 The endpoint is read-only and does not create tasks, launch experiments, contact institutions or authorize purchases or deliveries.
