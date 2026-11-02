@@ -58,8 +58,18 @@ function showEvent(index){
  const clip=media.find(m=>m.timestamp<=e.timestamp&&m.timestamp+Math.max(1000,m.duration||0)>=e.timestamp)||media.filter(m=>m.timestamp<=e.timestamp).slice(-1)[0];
  if(clip?.blob){const video=$("vt-playback");if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(clip.blob);video.src=objectUrl;video.hidden=false;}else{$("vt-playback").hidden=true;}
 }
+function reliableGpsEvents(){
+ const raw=events.filter(e=>e.kind==="gps"&&e.coords&&(!Number.isFinite(e.accuracy)||e.accuracy<=150)).sort((a,b)=>a.timestamp-b.timestamp);
+ const accepted=[];
+ for(const item of raw){
+  const previous=accepted[accepted.length-1];
+  if(previous&&item.timestamp-previous.timestamp<60000&&distanceMeters(previous.coords,item.coords)>5000)continue;
+  accepted.push(item);
+ }
+ return accepted;
+}
 function geoFeatures(){
- const gps=events.filter(e=>e.kind==="gps"&&e.coords),features=[],zones=new Map();
+ const gps=reliableGpsEvents(),features=[],zones=new Map();
  gps.forEach(e=>{const key=e.coords.latitude.toFixed(3)+":"+e.coords.longitude.toFixed(3);if(!zones.has(key))zones.set(key,e.coords)});
  zones.forEach(center=>{const ring=[];for(let step=0;step<=36;step++){const point=destination(center,step*Math.PI/18,40);ring.push([point.longitude,point.latitude])}features.push({type:"Feature",geometry:{type:"Polygon",coordinates:[ring]},properties:{kind:"visited-zone"}})});
  gps.forEach(e=>features.push({type:"Feature",geometry:{type:"Point",coordinates:[e.coords.longitude,e.coords.latitude]},properties:{kind:e.kind,timestamp:e.timestamp}}));
@@ -74,18 +84,22 @@ function localizeMapControls(){
 function initMap(){
  if(!window.maplibregl){setStatus("mapError");return}
  try{
-  map=new maplibregl.Map({container:"vt-map",style:"https://tiles.openfreemap.org/styles/liberty",center:[2.35,48.86],zoom:2,pitch:64,bearing:-12,antialias:true,attributionControl:true,hash:false,fadeDuration:150});
+  map=new maplibregl.Map({container:"vt-map",style:"https://tiles.openfreemap.org/styles/liberty",center:[2.2,46.5],zoom:4.7,pitch:68,bearing:-12,antialias:true,attributionControl:true,hash:false,fadeDuration:150});
   map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),"top-right");
   map.on("dragstart",()=>{followPosition=false});
   map.on("load",()=>{
-   try{map.addSource("vt-terrain",{type:"raster-dem",url:"https://demotiles.maplibre.org/terrain-tiles/tiles.json",tileSize:256});map.setTerrain({source:"vt-terrain",exaggeration:1.35});map.addLayer({id:"vt-terrain-hillshade",type:"hillshade",source:"vt-terrain",paint:{"hillshade-exaggeration":0.42,"hillshade-shadow-color":"#172330","hillshade-highlight-color":"#d5e2eb","hillshade-illumination-direction":335}})}catch(_){/* Terrain relief is optional; the vector map remains usable if unavailable. */}
+   try{map.setFog({range:[0.8,8],color:"#101b29", "horizon-blend":0.12, "space-color":"#050912", "star-intensity":0.12});}catch(_){}
+   try{map.addSource("vt-terrain",{type:"raster-dem",url:"https://demotiles.maplibre.org/terrain-tiles/tiles.json",tileSize:256});map.setTerrain({source:"vt-terrain",exaggeration:1.75});map.addLayer({id:"vt-terrain-hillshade",type:"hillshade",source:"vt-terrain",paint:{"hillshade-exaggeration":0.42,"hillshade-shadow-color":"#172330","hillshade-highlight-color":"#d5e2eb","hillshade-illumination-direction":335}})}catch(_){/* Terrain relief is optional; the vector map remains usable if unavailable. */}
    map.addSource("vt-observations",{type:"geojson",data:geoFeatures()});
    map.addLayer({id:"vt-scanned-zones",type:"fill",source:"vt-observations",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#63b6e8","fill-opacity":0.13}});
    map.addLayer({id:"vt-observation-points",type:"circle",source:"vt-observations",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":5,"circle-color":"#8fd5ff","circle-stroke-width":2,"circle-stroke-color":"#07111b"}});
    map.addSource("vt-scenario",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
    map.addLayer({id:"vt-scenario-line",type:"line",source:"vt-scenario",paint:{"line-color":"#f1c47a","line-width":3,"line-dasharray":[2,2]}});
    const vectorSource=map.getSource("openmaptiles");
-   if(vectorSource&&!map.getLayer("vt-3d-buildings")){try{map.addLayer({id:"vt-3d-buildings",source:"openmaptiles","source-layer":"building",type:"fill-extrusion",minzoom:13,paint:{"fill-extrusion-color":["case",["has","colour"],["get","colour"],"#536d82"],"fill-extrusion-height":["coalesce",["to-number",["get","render_height"]],["to-number",["get","height"]],8],"fill-extrusion-base":["coalesce",["to-number",["get","render_min_height"]],0],"fill-extrusion-opacity":0.78}})}catch(_){}}
+   if(vectorSource&&!map.getLayer("vt-3d-buildings")){try{
+    const labels=map.getStyle().layers.find(layer=>layer.type==="symbol")?.id;
+    map.addLayer({id:"vt-3d-buildings",source:"openmaptiles","source-layer":"building",type:"fill-extrusion",minzoom:12,paint:{"fill-extrusion-color":["case",["has","colour"],["get","colour"],["case",["has","building:colour"],["get","building:colour"],"#627d94"]],"fill-extrusion-height":["coalesce",["to-number",["get","render_height"]],["to-number",["get","height"]],8],"fill-extrusion-base":["coalesce",["to-number",["get","render_min_height"]],0],"fill-extrusion-opacity":0.9,"fill-extrusion-vertical-gradient":true}},labels);
+   }catch(_){}}
    updateMap();
    localizeMapControls();
   });
@@ -93,7 +107,21 @@ function initMap(){
  }catch(_){setStatus("mapError")}
 }
 function locate(){if(!navigator.geolocation){setStatus("locationDenied");return}setStatus("locating");navigator.geolocation.getCurrentPosition(pos=>{currentPosition=pos;const c=[pos.coords.longitude,pos.coords.latitude];if(map)map.flyTo({center:c,zoom:19,pitch:68,duration:1200});$("vt-coordinates").textContent=c[1].toFixed(6)+", "+c[0].toFixed(6)+" · ±"+Math.round(pos.coords.accuracy)+" m";setStatus("located")},()=>setStatus("locationDenied"),{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
-function onPosition(pos){currentPosition=pos;const coords={latitude:pos.coords.latitude,longitude:pos.coords.longitude};$("vt-coordinates").textContent=coords.latitude.toFixed(6)+", "+coords.longitude.toFixed(6)+" · ±"+Math.round(pos.coords.accuracy)+" m";if(Date.now()-lastGpsWrite>1800){lastGpsWrite=Date.now();saveEvent("gps",{coords,accuracy:pos.coords.accuracy,altitude:pos.coords.altitude,altitudeAccuracy:pos.coords.altitudeAccuracy,speed:pos.coords.speed,heading:pos.coords.heading}).catch(()=>{})}if(map&&scanActive&&followPosition)map.easeTo({center:[coords.longitude,coords.latitude],zoom:Math.max(map.getZoom(),18),pitch:66,duration:700})}
+let lastAcceptedGps=null;
+function onPosition(pos){
+ const accuracy=Number(pos.coords.accuracy);
+ if(!Number.isFinite(accuracy)||accuracy>150){
+  $("vt-coordinates").textContent=locale==="fr"?"Position trop imprécise (±"+Math.round(accuracy||0)+" m) — non enregistrée.":"Position too imprecise (±"+Math.round(accuracy||0)+" m) — ignored.";
+  return;
+ }
+ const coords={latitude:pos.coords.latitude,longitude:pos.coords.longitude};
+ if(lastAcceptedGps&&Date.now()-lastAcceptedGps.timestamp<60000&&distanceMeters(lastAcceptedGps.coords,coords)>5000){
+  $("vt-coordinates").textContent=locale==="fr"?"Position incohérente détectée — ignorée.":"Inconsistent location jump detected — ignored.";
+  return;
+ }
+ currentPosition=pos;lastAcceptedGps={coords,timestamp:Date.now()};
+ $("vt-coordinates").textContent=coords.latitude.toFixed(6)+", "+coords.longitude.toFixed(6)+" · ±"+Math.round(accuracy)+" m";
+ if(Date.now()-lastGpsWrite>1800){lastGpsWrite=Date.now();saveEvent("gps",{coords,accuracy:pos.coords.accuracy,altitude:pos.coords.altitude,altitudeAccuracy:pos.coords.altitudeAccuracy,speed:pos.coords.speed,heading:pos.coords.heading}).catch(()=>{})}if(map&&scanActive&&followPosition)map.easeTo({center:[coords.longitude,coords.latitude],zoom:Math.max(map.getZoom(),18),pitch:66,duration:700})}
 function requestOrientationPermission(){const tasks=[];for(const type of ["DeviceOrientationEvent","DeviceMotionEvent"]){const C=window[type];if(C&&typeof C.requestPermission==="function")tasks.push(C.requestPermission().catch(()=> "denied"))}return Promise.all(tasks)}
 function onOrientation(e){if(!scanActive||Date.now()-lastOrientationWrite<900)return;lastOrientationWrite=Date.now();saveEvent("orientation",{alpha:e.alpha,beta:e.beta,gamma:e.gamma,absolute:e.absolute}).catch(()=>{})}
 function onMotion(e){if(!scanActive||Date.now()-lastMotionWrite<900)return;lastMotionWrite=Date.now();const a=e.accelerationIncludingGravity||e.acceleration;if(a)saveEvent("motion",{x:a.x,y:a.y,z:a.z,interval:e.interval}).catch(()=>{})}
@@ -134,7 +162,12 @@ async function addAnnotation(){const description=$("vt-event-description").value
 function playTimeline(){if(playbackTimer){clearInterval(playbackTimer);playbackTimer=null;$("vt-play").textContent=t().play;return}if(!events.length)return;$("vt-play").textContent=t().pause;playbackTimer=setInterval(()=>{let i=Number($("vt-time").value)+1;if(i>=events.length){clearInterval(playbackTimer);playbackTimer=null;$("vt-play").textContent=t().play;i=events.length-1}showEvent(i)},750)}
 async function exportIndex(){const payload={format:"ssswet-virtual-time-map-index-v1",exported_at:new Date().toISOString(),observations:events};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="ssswet-observation-index.json";a.click();URL.revokeObjectURL(url);$("vt-data-feedback").textContent=t().exported}
 async function deleteData(){if(!confirm(t().deleteConfirm))return;stopScan();await removeAll("events");await removeAll("media");events=[];media=[];mediaBytes=0;refreshTimeline();refreshStorage();updateMap();$("vt-data-feedback").textContent=t().deleted}
-async function init(){localize();$("vt-language").addEventListener("change",()=>{localize();refreshTimeline()});db=await openDb();events=await all("events");media=await all("media");mediaBytes=media.reduce((total,item)=>total+(item.blob?.size||0),0);events.sort((a,b)=>a.timestamp-b.timestamp);media.sort((a,b)=>a.timestamp-b.timestamp);refreshStorage();refreshTimeline();initMap();
+async function init(){
+ const browserLocales=[...(navigator.languages||[]),navigator.language].filter(Boolean).map(value=>value.toLowerCase());
+ const detected=browserLocales.map(value=>value.split("-")[0]).find(value=>languages[value]);
+ const parisTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone==="Europe/Paris";
+ $("vt-language").value=detected|| (parisTimezone?"fr":"en");
+ localize();$("vt-language").addEventListener("change",()=>{localize();refreshTimeline()});db=await openDb();events=await all("events");media=await all("media");mediaBytes=media.reduce((total,item)=>total+(item.blob?.size||0),0);events.sort((a,b)=>a.timestamp-b.timestamp);media.sort((a,b)=>a.timestamp-b.timestamp);refreshStorage();refreshTimeline();initMap();
  $("vt-locate").addEventListener("click",locate);$("vt-start").addEventListener("click",startScan);$("vt-stop").addEventListener("click",stopScan);$("vt-add-event").addEventListener("click",()=>addAnnotation().catch(()=>{}));$("vt-time").addEventListener("input",e=>showEvent(Number(e.target.value)));$("vt-prev").addEventListener("click",()=>showEvent(Number($("vt-time").value)-1));$("vt-next").addEventListener("click",()=>showEvent(Number($("vt-time").value)+1));$("vt-play").addEventListener("click",playTimeline);$("vt-model").addEventListener("click",runModel);$("vt-export").addEventListener("click",exportIndex);$("vt-delete").addEventListener("click",()=>deleteData().catch(()=>{}));window.addEventListener("beforeunload",()=>{if(scanActive)stopScan()});
 }
 init().catch(()=>setStatus("needPermission"));
