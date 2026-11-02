@@ -23,7 +23,7 @@ const t=()=>languages[locale]||languages.en;
 function setStatus(key){$("vt-status").textContent=t()[key]||key}
 function localize(){
  const lang=$("vt-language").value;locale=languages[lang]?lang:"en";
- document.documentElement.lang=locale;document.documentElement.dir=["ar","he"].includes(locale)?"rtl":"ltr";
+ document.documentElement.lang=locale;document.documentElement.dir=["ar","he"].includes(locale)?"rtl":"ltr";document.title=(t().brand||"Virtual Time Travel Mapping")+" · SSSWET";document.querySelectorAll("[data-a]").forEach(node=>{const value=(extraCopy[locale]||extraCopy.en)[node.dataset.a];if(value)node.setAttribute("aria-label",value)});const horizon=$("vt-horizon");if(horizon){const words=extraCopy[locale]||extraCopy.en;horizon.options[0].textContent=words.m1;horizon.options[1].textContent=words.m5;horizon.options[2].textContent=words.m15;}
  document.querySelectorAll("[data-i]").forEach(node=>{const value=t()[node.dataset.i];if(value)node.textContent=value});
  document.querySelectorAll("[data-ph]").forEach(node=>{const value=t()[node.dataset.ph];if(value)node.placeholder=value});
  if(map)map.setRTLTextPlugin?.(null);
@@ -35,7 +35,7 @@ function all(name){return new Promise((resolve,reject)=>{const req=store(name).g
 function removeAll(name){return new Promise((resolve,reject)=>{const req=store(name,"readwrite").clear();req.onsuccess=()=>resolve();req.onerror=()=>reject(req.error)})}
 function newId(){return Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9)}
 async function saveEvent(kind,data={}){const entry={id:newId(),timestamp:Date.now(),kind,...data};await put("events",entry);events.push(entry);events.sort((a,b)=>a.timestamp-b.timestamp);refreshTimeline();refreshStorage();updateMap();return entry}
-function refreshStorage(){$("vt-storage-count").textContent=events.length+" "+(locale==="fr"?"observations":"observations")+" · "+media.length+" "+(locale==="fr"?"extraits":"media clips")}
+function refreshStorage(){const words=extraCopy[locale]||extraCopy.en;$("vt-storage-count").textContent=events.length+" "+words.obs+" · "+media.length+" "+words.clips;}
 function eventLabel(kind){return t()[kind]||kind}
 function formatTime(ts){return new Date(ts).toLocaleString(locale,{dateStyle:"medium",timeStyle:"medium"})}
 function refreshTimeline(){
@@ -49,7 +49,7 @@ function showEvent(index){
  const e=events[index];let detail=eventLabel(e.kind)+" · "+formatTime(e.timestamp);
  if(e.coords)detail+=" · "+e.coords.latitude.toFixed(6)+", "+e.coords.longitude.toFixed(6);
  if(e.accuracy)detail+=" · "+t().accuracy+": ±"+Math.round(e.accuracy)+" m";
- if(e.description)detail+=" · "+e.description;
+ if(e.eventType){const typeOption=$("vt-event-type").querySelector('option[value="'+e.eventType+'"]');if(typeOption)detail+=" · "+typeOption.textContent;}if(e.description)detail+=" · "+e.description;
  $("vt-selected").textContent=detail;
  if(e.coords&&map)map.flyTo({center:[e.coords.longitude,e.coords.latitude],zoom:Math.max(map.getZoom(),17),essential:true});
  const clip=media.find(m=>m.timestamp<=e.timestamp&&m.timestamp+Math.max(1000,m.duration||0)>=e.timestamp)||media.filter(m=>m.timestamp<=e.timestamp).slice(-1)[0];
