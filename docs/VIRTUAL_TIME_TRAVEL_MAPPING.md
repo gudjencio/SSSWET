@@ -60,6 +60,12 @@ The prototype caps locally stored media at 150 MiB per browser database. Once th
 5. Compare competing physical models against later recorded observations and publish calibration metrics.
 6. Require independent review before any model is described as validated.
 
+## Local correspondence distribution screening
+
+The keyframe review also reports how candidate visual correspondences are distributed across a coarse image grid. The metric compares occupied grid regions in the two sampled frames and reports spatial coverage alongside the candidate-match count. This helps flag a high match count concentrated in a small image region, which can be misleading when repeated textures dominate.
+
+This is a screening heuristic only. It does not estimate camera pose, optical flow, geometric overlap, depth, metric scale, a homography, epipolar geometry or a 3D reconstruction. It must not be used as proof that a scene can be reconstructed. The result is sensitive to image content, repeated patterns, blur, exposure and viewpoint changes; independent calibration and geometric validation remain necessary.
+
 ## Scientific status
 
 **Status: research concept and early web prototype.** No claim is made that virtual time travel, exact reconstruction of unrecorded history or reliable prediction of arbitrarily distant future events has been achieved.
