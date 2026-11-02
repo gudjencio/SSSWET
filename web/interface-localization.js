@@ -43,7 +43,7 @@
     const label = form.querySelector('[name="' + name + '"]')?.closest("label");
     if (!label) return;
     const node = [...label.childNodes].find(item => item.nodeType === Node.TEXT_NODE && item.textContent.trim());
-    if (node) node.textContent = value + " ";
+    if (node && node.textContent.trim() !== value) node.textContent = value + " ";
   }
   function apply() {
     const code = language();
@@ -53,9 +53,9 @@
       const names = ["programme_id","societal_benefit","ecological_benefit","evidence_maturity","technical_feasibility","resource_accessibility","safety_legal_readiness","reviewer_label","rationale","evidence_refs"];
       names.forEach((name,index) => setLabel(priority,name,words.priority[index]));
       const submit = priority.querySelector('button[type="submit"]');
-      if (submit) submit.textContent = words.priority[10];
+      if (submit && submit.textContent !== words.priority[10]) submit.textContent = words.priority[10];
       const note = priority.querySelector(".priority-assessment-note");
-      if (note && code === "fr") note.textContent = "Chaque envoi crée une entrée permanente dans l’historique. Les critères sans note restent non évalués. Cet outil n’autorise ni financement, ni expérience, ni produit.";
+      if (note && code === "fr") { const value = "Chaque envoi crée une entrée permanente dans l’historique. Les critères sans note restent non évalués. Cet outil n’autorise ni financement, ni expérience, ni produit."; if (note.textContent !== value) note.textContent = value; }
       const placeholders = {
         en:["e.g. SSSWET research team","Explain the judgement and note uncertainties.","One URL or reference per line (optional)"],
         fr:["ex. : équipe de recherche SSSWET","Expliquez le jugement et signalez les incertitudes.","Une URL ou une référence par ligne (facultatif)"]
@@ -66,17 +66,17 @@
     if (journal) {
       ["technology","event_type","title","summary","classification","state","evidence_refs","author_label"].forEach((name,index)=>setLabel(journal,name,words.journal[index]));
       const submit = journal.querySelector('button[type="submit"]');
-      if (submit) submit.textContent = words.journal[8];
+      if (submit && submit.textContent !== words.journal[8]) submit.textContent = words.journal[8];
       const note = journal.querySelector(".research-journal-note");
-      if (note && code === "fr") note.textContent = "La saisie est limitée à la machine locale. Les entrées ne peuvent être ni modifiées ni supprimées. Une chaîne de hachage détecte les modifications ultérieures, sans établir la validité scientifique.";
+      if (note && code === "fr") { const value = "La saisie est limitée à la machine locale. Les entrées ne peuvent être ni modifiées ni supprimées. Une chaîne de hachage détecte les modifications ultérieures, sans établir la validité scientifique."; if (note.textContent !== value) note.textContent = value; }
     }
     const filters = document.getElementById("research-journal-filter");
     const options = optionLabels[code] || {};
     [priority,journal,filters].filter(Boolean).forEach(root=>root.querySelectorAll("option").forEach(option=>{const translated=options[option.textContent.trim()];if(translated)option.textContent=translated;}));
     const summary = document.querySelector(".priority-assessment-editor > summary");
-    if (summary) summary.textContent = code === "fr" ? "Enregistrer ou actualiser une évaluation" : "Record or update an assessment";
+    if (summary) { const value = code === "fr" ? "Enregistrer ou actualiser une évaluation" : "Record or update an assessment"; if (summary.textContent !== value) summary.textContent = value; }
     const heading = document.querySelector("#research-journal-form h4");
-    if (heading) heading.textContent = code === "fr" ? "Enregistrer une mise à jour du projet" : "Record a project update";
+    if (heading) { const value = code === "fr" ? "Enregistrer une mise à jour du projet" : "Record a project update"; if (heading.textContent !== value) heading.textContent = value; }
     document.documentElement.dataset.interfaceLanguage = code;
   }
   document.addEventListener("DOMContentLoaded",apply,{once:true});
