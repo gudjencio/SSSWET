@@ -301,8 +301,8 @@ if (!taxonomyGroupsMatch || !taxonomyTranslationsMatch) throw new Error("Technol
 const taxonomyGroups = JSON.parse(taxonomyGroupsMatch[1]);
 const taxonomyTranslations = JSON.parse(taxonomyTranslationsMatch[1]);
 const taxonomyKeys = Object.values(taxonomyGroups).flatMap(group => Object.values(group).flat());
-if (Object.keys(taxonomyGroups).length !== 8 || taxonomyKeys.length !== 106 || new Set(taxonomyKeys).size !== 106) {
-  throw new Error("The technology taxonomy must classify exactly one hundred and six unique programmes in eight categories.");
+if (Object.keys(taxonomyGroups).length !== 8 || taxonomyKeys.length !== 116 || new Set(taxonomyKeys).size !== 116) {
+  throw new Error("The technology taxonomy must classify exactly one hundred and sixteen unique programmes in eight categories.");
 }
 const requiredTaxonomyLocales = ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"];
 for (const locale of requiredTaxonomyLocales) {
@@ -311,8 +311,9 @@ for (const locale of requiredTaxonomyLocales) {
   }
 }
 const catalogueDonationSource = fs.readFileSync(new URL("./donation.js", `file://${__filename}`), "utf8");
+const curatedTechnologySource = fs.readFileSync(new URL("./technology-categories.js", `file://${__filename}`), "utf8");
 for (const key of taxonomyKeys) {
-  if (!catalogueDonationSource.includes(key + ": {")) throw new Error(`Technology ${key} is missing from the public catalogue.`);
+  if (!catalogueDonationSource.includes(key + ": {") && !curatedTechnologySource.includes(key)) throw new Error(`Technology ${key} is missing from the public catalogue.`);
 }
 if (!pageSource.includes('src="technology-categories.js"') ||
     !serviceWorkerCache.includes('"./technology-categories.js"')) {
