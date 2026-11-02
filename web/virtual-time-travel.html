@@ -4,18 +4,18 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#05070b">
 <meta name="description" content="SSSWET Virtual Time Travel Mapping — consent-based spatial capture, observation replay and uncertainty-aware scenario modelling.">
-<title>Virtual Time Travel Mapping · SSSWET</title>
+<title>Voyage virtuel dans le temps · SSSWET</title>
 <link rel="stylesheet" href="virtual-time-travel.css">
 <link href="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js"></script>
 </head>
 <body>
 <header class="vt-header">
-  <a class="vt-brand" href="./index.html"><span class="vt-mark" data-i="acronym">SSSWET</span><span data-i="brand">Virtual Time Travel Mapping</span></a>
-  <div class="vt-header-actions"><label class="vt-language"><span class="sr-only" data-i="language">Language</span><select id="vt-language" aria-label="Language"><option value="en">English</option><option value="fr" selected>Français</option><option value="es">Español</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="nl">Nederlands</option><option value="ru">Русский</option><option value="uk">Українська</option><option value="ar">العربية</option><option value="he">עברית</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option><option value="hi">हिन्दी</option></select></label><a class="vt-back" href="./index.html" data-i="back">Back to SSSWET</a></div>
+  <a class="vt-brand" href="./index.html"><span class="vt-mark" data-i="acronym">SSSWET</span><span data-i="brand">Voyage virtuel dans le temps</span></a>
+  <div class="vt-header-actions"><label class="vt-language"><span class="sr-only" data-i="language">Language</span><select id="vt-language" aria-label="Language"><option value="en">English</option><option value="fr" selected>Français</option><option value="es">Español</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="nl">Nederlands</option><option value="ru">Русский</option><option value="uk">Українська</option><option value="ar">العربية</option><option value="he">עברית</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option><option value="hi">हिन्दी</option></select></label><a class="vt-back" href="./index.html" data-i="back">Retour à SSSWET</a></div>
 </header>
 <main class="vt-shell">
-  <section class="vt-intro"><p class="eyebrow">SSSWET · SPATIOTEMPORAL RESEARCH</p><h1 data-i="title">Explore a place through recorded time</h1><p data-i="intro">Build a personal 3D map from locations you visit, replay observations you actually recorded, and compare them with clearly labelled model scenarios.</p><div class="vt-status" id="vt-status" role="status" aria-live="polite" data-i="ready">Ready. No sensors are active.</div></section>
+  <section class="vt-intro"><p class="eyebrow">SSSWET · SPATIOTEMPORAL RESEARCH</p><h1 data-i="title">Voyage virtuel dans le temps</h1><p data-i="intro">Cartographiez les lieux que vous visitez, retrouvez les observations réellement enregistrées et examinez des scénarios clairement distingués des faits observés.</p><div class="vt-status" id="vt-status" role="status" aria-live="polite" data-i="ready">Ready. No sensors are active.</div></section>
   <section class="vt-map-section" aria-label="3D map" data-a="mapSectionAria">
     <div class="vt-map-heading"><div><h2 data-i="mapTitle">Your persistent 3D map</h2><p data-i="mapHelp">Explore the map. Start a scan only when you are ready and have permission to record.</p></div><button id="vt-locate" class="secondary" type="button" data-i="locate">Locate me</button></div>
     <div id="vt-map" role="application" aria-label="Interactive 3D map" data-a="mapAria"></div>
