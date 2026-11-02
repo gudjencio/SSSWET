@@ -1508,3 +1508,126 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 /* Match PayPal's embedded button area to the contribution dialog. */
 .paypal-subscription-container { background:transparent !important; border:0 !important; box-shadow:none !important; overflow:hidden; border-radius:999px; }
 .paypal-subscription-container iframe { background:transparent !important; color-scheme:dark; }
+
+
+/* Global alignment pass: keep every primary interface region on one centered axis. */
+.app-shell {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  width:min(1160px,100%) !important;
+  margin-inline:auto !important;
+  box-sizing:border-box;
+}
+.app-shell > header,
+.app-shell > section,
+.app-shell > footer,
+.app-shell > .engine-connection,
+.app-shell > .technology-showcase,
+.app-shell > .panel {
+  width:100%;
+  max-width:1040px;
+  margin-inline:auto !important;
+  box-sizing:border-box;
+}
+.app-shell > .topbar {
+  max-width:1040px;
+  justify-content:center !important;
+}
+.app-shell > .bot-command-hero,
+.app-shell > .technology-showcase {
+  align-self:center;
+}
+.app-shell > .panel {
+  max-width:960px;
+}
+.app-shell > .engine-connection {
+  max-width:960px;
+}
+.app-shell > .footer {
+  max-width:1040px;
+  text-align:center;
+}
+.technology-showcase,
+.technology-heading,
+.technology-disclaimer,
+.portfolio-manual-note {
+  text-align:center;
+}
+.technology-grid {
+  justify-content:center;
+  justify-items:stretch;
+  margin-inline:auto;
+}
+.technology-card {
+  text-align:center;
+  align-items:center;
+}
+.technology-card p {
+  width:100%;
+}
+.technology-card button {
+  margin-inline:auto;
+}
+.technology-dialog {
+  box-sizing:border-box;
+  margin:auto;
+  text-align:center;
+}
+.technology-dialog::backdrop { background:rgba(0,0,0,.78); }
+.donation-fields,
+.donation-summary,
+.donation-note,
+.technology-dialog-progress {
+  width:100%;
+  box-sizing:border-box;
+  margin-inline:auto;
+}
+.donation-fields label { text-align:center; }
+.donation-input-wrap { justify-content:center; }
+.donation-input-wrap input { text-align:center; }
+.donation-summary { text-align:center; }
+.donation-summary strong { text-align:center; }
+.paypal-subscription-container { margin-inline:auto !important; }
+.bot-command-layout,
+.bot-command-main,
+.bot-command-side,
+.bot-conversation {
+  width:100%;
+  max-width:100%;
+  margin-inline:auto;
+  box-sizing:border-box;
+}
+.bot-command-current,
+.bot-command-main .bot-control-metrics {
+  margin-inline:auto !important;
+}
+.bot-command-side,
+.bot-conversation {
+  text-align:center;
+}
+.bot-side-heading,
+.bot-conversation-heading {
+  justify-content:center !important;
+}
+.bot-control-agents,
+.bot-control-tasks {
+  justify-content:center;
+  justify-items:stretch;
+}
+.bot-control-agent {
+  text-align:start;
+}
+.bot-visitor-questions {
+  justify-content:center !important;
+}
+@media(max-width:700px) {
+  .app-shell { padding-inline:10px !important; }
+  .app-shell > header,
+  .app-shell > section,
+  .app-shell > footer { max-width:100%; }
+  .technology-showcase { width:100% !important; }
+  .technology-dialog { width:min(94vw,520px); padding:18px; }
+  .donation-input-wrap { flex-wrap:wrap; }
+  .donation-input-wrap input { width:100%; }
+}
