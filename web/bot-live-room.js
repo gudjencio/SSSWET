@@ -282,6 +282,18 @@
     if (!valid.length && !handoffCards.length) messages.push('<p class="bot-conversation-empty">'+esc(t().empty)+'</p>');
     if (activeCount) messages.push('<div class="bot-thinking" style="--agent-count:'+Math.max(1,activeCount)+'"><span>'+esc(thinking)+' · '+activeCount+'</span><i></i><i></i><i></i></div>');
     feed.innerHTML = messages.join("");
+    const visual = $("bot-command-visual");
+    if (visual) {
+      let bubbles = visual.querySelector(".bot-thought-bubbles");
+      if (!bubbles) {
+        bubbles = document.createElement("div");
+        bubbles.className = "bot-thought-bubbles";
+        bubbles.setAttribute("aria-label", lang()==="fr" ? "Échanges des agents" : "Agent thought bubbles");
+        visual.appendChild(bubbles);
+      }
+      const thoughts = handoffs.slice(0,2).map(item => item.content).concat(valid.slice(0,2).map(item => item.summary)).filter(Boolean).slice(0,3);
+      bubbles.innerHTML = thoughts.map((message,index) => '<div class="bot-thought-bubble thought-'+index+'">'+esc(String(message).slice(0,150))+'</div>').join("");
+    }
     if (speakNew && voiceEnabled && fresh.length) speak(fresh[fresh.length-1].summary);
   }
 
