@@ -28,3 +28,10 @@ The endpoint returns HTTP 400 when `version_id` is missing and HTTP 404 when the
 ## Existing overview
 
 Use `GET /api/scientific-memory` to retrieve the memory overview. Add `q` for lexical retrieval and `limit` to bound the response. The overview identifies current and superseded versions and flags links to graph contradictions for human review.
+
+
+## Reference integrity
+
+The overview checks whether linked source, experiment, and knowledge-graph identifiers resolve in the current research store. Each version exposes `missing_links` and `has_missing_links`; the overview provides aggregate counts.
+
+A missing link indicates an incomplete or unavailable local record, not that the underlying source or experiment is invalid. The check is bounded by the overview's graph and experiment limits and does not modify memory records or scientific status.
