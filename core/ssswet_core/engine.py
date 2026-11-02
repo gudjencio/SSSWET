@@ -15,6 +15,7 @@ from .technology_dependency_graph import TechnologyDependencyGraph
 from .research_opportunity import evaluate_research_opportunity, rank_research_opportunities
 from .protective_system_scoring import calculate_protective_system_score, rank_protective_systems
 from .technology_progression import evaluate_progression, persistence_status
+from .agent_identity import AgentIdentityRegistry
 
 
 @dataclass
@@ -36,6 +37,7 @@ class SSSWETEngine:
     def __init__(self, store: SQLiteResearchStore | None = None) -> None:
         self.store = store
         self.technology_dossiers = TechnologyDossierRegistry(store) if store else None
+        self.agent_identities = AgentIdentityRegistry(store) if store else None
         self.technology_dependencies = TechnologyDependencyGraph(store) if store else None
         self.orchestrator = ResearchOrchestrator()
         self.memory = KnowledgeMemory()
@@ -160,6 +162,15 @@ class SSSWETEngine:
             raise RuntimeError("A persistent research store is required for dependency-aware prioritisation")
         return rank_research_opportunities(
             opportunities, self.technology_dependencies.graph()
+        )
+
+
+    def search_team_memories(self, query: str, *, limit: int = 12, agent_ids: list[str] | None = None) -> list[dict]:
+        """Retrieve bounded, source-linked memories across the research team."""
+        if self.agent_identities is None:
+            raise RuntimeError("A persistent research store is required for team memory retrieval")
+        return self.agent_identities.search_team_memories(
+            query, limit=limit, agent_ids=agent_ids
         )
 
     def estimate_technology_costs(self, **pricing_inputs) -> dict:
