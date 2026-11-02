@@ -6,6 +6,7 @@ It is not a probability, scientific-quality score, safety assessment or truth cl
 from __future__ import annotations
 
 from collections import defaultdict
+from math import isfinite
 from typing import Any
 
 from .digital_lab import _verify_fingerprint
