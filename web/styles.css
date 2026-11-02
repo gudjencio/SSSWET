@@ -1506,8 +1506,26 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 .bot-stage-caption { display:none !important; }
 
 /* Match PayPal's embedded button area to the contribution dialog. */
-.paypal-subscription-container { background:transparent !important; border:0 !important; box-shadow:none !important; overflow:hidden; border-radius:999px; }
-.paypal-subscription-container iframe { background:transparent !important; color-scheme:dark; }
+.paypal-subscription-container {
+  width:min(100%, 430px) !important;
+  min-height:86px !important;
+  box-sizing:border-box !important;
+  margin:18px auto 12px !important;
+  padding:12px 16px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:#ffffff !important;
+  border:2px solid #252525 !important;
+  border-radius:18px !important;
+  box-shadow:0 5px 18px rgba(0,0,0,.24) !important;
+  overflow:visible !important;
+}
+.paypal-subscription-container iframe {
+  max-width:100% !important;
+  background:#ffffff !important;
+  color-scheme:light !important;
+}
 
 
 /* Global alignment pass: keep every primary interface region on one centered axis. */
