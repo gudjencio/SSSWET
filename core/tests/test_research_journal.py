@@ -78,3 +78,21 @@ def test_journal_accepts_the_eight_additional_research_areas(tmp_path):
         )
         assert entry["technology"] == technology
     assert journal.verify_chain()["chain_intact"] is True
+
+
+def test_journal_supports_exactly_one_hundred_research_programmes(tmp_path):
+    from ssswet_core.research_journal import TECHNOLOGIES
+    assert len(TECHNOLOGIES) == 100
+    required = {
+        "blackHoleObservation", "blackHoleProbeSystems", "blackHoleResilientVehicles",
+        "nuclearBlastResilience", "radiationProtection",
+    }
+    assert required <= TECHNOLOGIES
+    journal = ResearchJournal(SQLiteResearchStore(tmp_path / "hundred-programmes.sqlite3"))
+    for technology in sorted(required):
+        record = journal.append(
+            technology=technology, event_type="research_question",
+            title="Initial safety and feasibility review",
+            summary="Define evidence requirements, physical limits and qualified review boundaries.",
+        )
+        assert record["technology"] == technology
