@@ -415,3 +415,17 @@ if (!stylesLatest.includes(".app-shell > .topbar") || !stylesLatest.includes("ju
   throw new Error("The responsive language selector is not centered in the application header.");
 }
 console.log("Validated 15-language research registry labels, cached interface assets and centered language navigation.");
+
+const virtualHtml = fs.readFileSync(__dirname + "/virtual-time-travel.html", "utf8");
+const virtualScript = fs.readFileSync(__dirname + "/virtual-time-travel.js", "utf8");
+const virtualLink = fs.readFileSync(__dirname + "/virtual-time-travel-link.js", "utf8");
+new Function(virtualScript);
+new Function(virtualLink);
+for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"]) {
+  if (!virtualScript.includes(locale + ":{")) throw new Error("Virtual Time Travel translation missing for " + locale);
+}
+for (const control of ["vt-start","vt-stop","vt-locate","vt-time","vt-model","vt-delete","vt-export"]) {
+  if (!virtualHtml.includes('id="' + control + '"')) throw new Error("Virtual Time Travel control missing: " + control);
+}
+if (!virtualHtml.includes("map provider") || !virtualScript.includes("modelPast")) throw new Error("Virtual Time Travel disclosure or model distinction is missing.");
+console.log("Validated Virtual Time Travel scripts, controls and 15 interface locales.");
