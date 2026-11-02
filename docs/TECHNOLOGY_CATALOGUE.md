@@ -1,6 +1,6 @@
 # SSSWET technology catalogue
 
-The public interface presents **110 selected contribution themes** grouped into eight categories. The scientific registry contains **510 research-programme dossiers**: the original 106 entries, 394 generated research scopes and ten curated additions. These are research records, not 510 validated technologies.
+The public interface presents **116 selected contribution themes** grouped into eight categories. The scientific registry contains **510 research-programme dossiers**: the original 106 entries, 394 generated research scopes and ten curated additions. These are research records, not 510 validated technologies.
 
 ## Categories and subcategories
 
