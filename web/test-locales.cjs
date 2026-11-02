@@ -67,8 +67,8 @@ if (!agentCopy || !fullyTranslated.size) {
   throw new Error("The first-load agent introduction catalogue is missing");
 }
 if (!Array.isArray(context.window.SSSWET_LANGUAGE_CATALOG) ||
-    context.window.SSSWET_LANGUAGE_CATALOG.length < 180) {
-  throw new Error("The complete selectable language catalogue is missing");
+    context.window.SSSWET_LANGUAGE_CATALOG.length !== 286) {
+  throw new Error("Expected exactly 286 selectable languages (186 existing + 100 additions)");
 }
 const languageCodes = context.window.SSSWET_LANGUAGE_CATALOG.map(item => item.split("|")[0]);
 if (new Set(languageCodes).size !== languageCodes.length) {
