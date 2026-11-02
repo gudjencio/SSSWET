@@ -470,7 +470,8 @@
     $("bot-questions-label").textContent=c.questions;
     $("bot-voice-toggle").textContent=voiceEnabled?c.voiceOn:c.voiceOff;
     $("bot-voice-toggle").setAttribute("aria-pressed",voiceEnabled?"true":"false");
-    $("bot-voice-toggle").setAttribute("aria-label",voiceEnabled?(lang()==="fr"?"Désactiver la lecture vocale":"Turn voice reading off"):(lang()==="fr"?"Activer la lecture vocale":"Turn voice reading on"));
+    $("bot-voice-toggle").setAttribute("aria-label",voiceEnabled?c.voiceOn:c.voiceOff);
+    $("bot-voice-toggle").setAttribute("title",voiceEnabled?c.voiceOn:c.voiceOff);
     const buttons = [...document.querySelectorAll("[data-bot-question]")];
     buttons.forEach(button => {
       const key=button.dataset.botQuestion;
