@@ -382,3 +382,20 @@ for (const phrase of ["Status: proposed design", "blanket", "statutory guarantee
   }
 }
 console.log("Validated disabled monthly technology financing, tax transparency, refunds, warranty and repair safeguards.");
+
+
+const extraLocalization = fs.readFileSync(new URL("./interface-localization.js", `file://${__filename}`), "utf8");
+new Function(extraLocalization);
+for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"]) {
+  if (!extraLocalization.includes(locale + ": { priority:")) {
+    throw new Error("Research interface form translations are missing for " + locale);
+  }
+}
+const platformRouting = fs.readFileSync(new URL("./platform-routing.js", `file://${__filename}`), "utf8");
+new Function(platformRouting);
+for (const locale of ["zh","hi"]) {
+  if (!platformRouting.includes(locale + ": { heading:")) {
+    throw new Error("Platform installation translations are missing for " + locale);
+  }
+}
+console.log("Validated research-form localization and device installation guidance for all 15 complete interface locales.");
