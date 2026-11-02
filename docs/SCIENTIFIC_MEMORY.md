@@ -35,3 +35,10 @@ Use `GET /api/scientific-memory` to retrieve the memory overview. Add `q` for le
 The overview checks whether linked source, experiment, and knowledge-graph identifiers resolve in the current research store. Each version exposes `missing_links` and `has_missing_links`; the overview provides aggregate counts.
 
 A missing link indicates an incomplete or unavailable local record, not that the underlying source or experiment is invalid. The check is bounded by the overview's graph and experiment limits and does not modify memory records or scientific status.
+
+
+## Evolution alerts
+
+The `GET /api/scientific-memory/suggestions` response includes `potentially_outdated_memory`. An alert is emitted when a current memory version links to a graph node that has a recorded `contradicts` edge to another node whose recorded creation time is later than the memory version.
+
+Alerts identify records for human re-examination; they do not establish that a hypothesis is false, do not rank evidence quality, and never revise or archive memory automatically. The response includes the later node, edge note and recorded confidence when available.
