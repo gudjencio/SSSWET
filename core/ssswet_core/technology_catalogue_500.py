@@ -15,7 +15,7 @@ def register_catalogue(registry: TechnologyDossierRegistry, actor_id: str = "cat
     """Idempotently register all 510 research programmes as unvalidated dossiers."""
     created = []
     updated_scope = []
-    existing = {item["technology_id"] for item in registry.list_dossiers(limit=1000)}
+    existing = {item["technology_id"] for item in registry.list_dossiers(limit=510)}
     for item in TECHNOLOGY_CATALOGUE:
         is_new = item["technology_id"] not in existing
         if is_new:
