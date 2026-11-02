@@ -136,6 +136,61 @@ class ScientificMemoryService:
             "automatic_adjudication": False,
         }
 
+    def evolution_alerts(self, limit: int = 500) -> dict:
+        """Flag current memories challenged by later graph evidence for human review."""
+        versions = self.store.scientific_memory_history(limit=limit)
+        graph = self.store.knowledge_graph(limit=2000)
+        nodes = {node["node_id"]: node for node in graph["nodes"]}
+        latest_by_key: dict[str, str] = {}
+        for version in reversed(versions):
+            latest_by_key.setdefault(version["memory_key"], version["version_id"])
+
+        alerts = []
+        for version in versions:
+            if latest_by_key.get(version["memory_key"]) != version["version_id"]:
+                continue
+            for edge in graph["edges"]:
+                if edge["relation"] != "contradicts":
+                    continue
+                linked_id = None
+                later_id = None
+                if edge["source_id"] in version.get("graph_node_ids", []):
+                    linked_id, later_id = edge["source_id"], edge["target_id"]
+                elif edge["target_id"] in version.get("graph_node_ids", []):
+                    linked_id, later_id = edge["target_id"], edge["source_id"]
+                if not linked_id or later_id not in nodes:
+                    continue
+                later_node = nodes[later_id]
+                linked_node = nodes.get(linked_id, {})
+                memory_time = version.get("created_at", "")
+                discovery_time = later_node.get("created_at", "")
+                if not discovery_time or not memory_time or discovery_time <= memory_time:
+                    continue
+                alerts.append({
+                    "version_id": version["version_id"],
+                    "memory_key": version["memory_key"],
+                    "topic": version["topic"],
+                    "statement": version["statement"],
+                    "linked_node_id": linked_id,
+                    "linked_node_label": linked_node.get("label", ""),
+                    "later_contradicting_node_id": later_id,
+                    "later_contradicting_node_label": later_node.get("label", ""),
+                    "discovery_recorded_at": discovery_time,
+                    "edge_note": edge.get("note", ""),
+                    "edge_confidence": edge.get("confidence", 0.0),
+                    "suggestion": "Re-examine this hypothesis against the later contradictory record, including methods, provenance, and limitations.",
+                    "automatic_status_change": False,
+                    "scientific_validity_established": False,
+                })
+        alerts.sort(key=lambda item: (item["discovery_recorded_at"], item["version_id"]), reverse=True)
+        return {
+            "alerts": alerts,
+            "alert_count": len(alerts),
+            "review_required": bool(alerts),
+            "automatic_revision": False,
+            "scientific_validity_established": False,
+        }
+
     def overview(self, query: str = "", limit: int = 200) -> dict:
         versions = self.store.scientific_memory_history(limit=limit)
         graph = self.store.knowledge_graph(limit=2000)
