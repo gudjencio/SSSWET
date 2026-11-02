@@ -18,3 +18,12 @@ The service binds to Render's assigned port, runs the existing hourly autonomous
 The browser-facing API is read-only for public dashboard data. Existing local-only administrative and review-write restrictions remain in place. Do not add secrets, API keys, relay tokens or private credentials to this repository. Configure any future provider credentials as encrypted environment variables in the hosting provider.
 
 A successful deployment is confirmed only when Render reports the service healthy and `https://ssswet-research-api.onrender.com/api/status` returns JSON with `"service":"SSSWET"`. Before that, the public interface may still show unavailable live data.
+
+
+## Public improvement reports
+
+The public interface includes a **Report / Signaler** menu. Submissions are validated by the hosted API and opened as GitHub issues in the SSSWET repository. The intake endpoint never edits repository files or applies a suggestion automatically.
+
+To enable submissions on Render, create a fine-grained GitHub personal access token restricted to `gudjencio/SSSWET` with **Issues: Read and write** permission. Add it to the Render web service as the secret environment variable `SSSWET_GITHUB_TOKEN`. Never place this token in the public website, repository files, browser storage or client-side configuration. Redeploy the service after setting the variable.
+
+Reports are requests for review, not authorization to remove or replace existing project functionality. Any implementation should preserve existing behaviour and pass the automated checks.
