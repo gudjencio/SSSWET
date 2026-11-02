@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   process-report:
-    if: contains(github.event.issue.labels.*.name, 'public report') && !github.event.issue.pull_request
+    if: (github.event.action == 'opened' || github.event.label.name == 'public report') && contains(github.event.issue.labels.*.name, 'public report') && !github.event.issue.pull_request
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
