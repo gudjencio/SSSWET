@@ -158,24 +158,52 @@ class ResearchPipeline:
                 assignments = self.campaign_coordinator.dispatch()
                 if not assignments:
                     break
-                for assignment in assignments:
-                    request_id = assignment.request.task_id
-                    subtask = subtask_by_id[request_id]
-                    agent = self.campaign_coordinator.resources.bot_manager.agents[assignment.agent_id]
-                    used_agents[agent.id] = agent
-                    try:
-                        result = self._investigate(subtask.objective, "initial", subtask.role, task.id)
-                    except Exception as error:
-                        self.campaign_coordinator.finish(request_id, success=False)
-                        self.engine.orchestrator.events.append(ResearchEvent("campaign_research_attempt_failed", f"A provider attempt failed ({type(error).__name__}); retry policy applied.", task.id, agent.id))
-                        state = self.campaign_coordinator.snapshot()
-                        if request_id in state["failed_task_ids"]:
-                            finished_ids.add(request_id)
-                        continue
-                    results.append(PipelineStep(subtask, self.provider.name, result, agent.id))
-                    self.campaign_coordinator.finish(request_id, success=True)
-                    finished_ids.add(request_id)
-                    self.engine.orchestrator.events.append(ResearchEvent("campaign_research_pass", f"{subtask.role} completed a provider pass; output remains subject to verification.", task.id, agent.id))
+                # Execute every currently allocated assignment concurrently. The resource
+                # manager still controls campaign quotas, retries and maximum active work.
+                with ThreadPoolExecutor(
+                    max_workers=max(1, min(self.agent_workers, len(assignments))),
+                    thread_name_prefix="ssswet-campaign",
+                ) as executor:
+                    futures = {
+                        executor.submit(
+                            self._investigate,
+                            assignment.request.objective,
+                            "initial",
+                            assignment.request.role,
+                            task.id,
+                        ): assignment
+                        for assignment in assignments
+                    }
+                    for future in as_completed(futures):
+                        assignment = futures[future]
+                        request_id = assignment.request.task_id
+                        subtask = subtask_by_id[request_id]
+                        agent = self.campaign_coordinator.resources.bot_manager.agents[assignment.agent_id]
+                        used_agents[agent.id] = agent
+                        try:
+                            result = future.result()
+                        except Exception as error:
+                            self.campaign_coordinator.finish(request_id, success=False)
+                            self.engine.orchestrator.events.append(ResearchEvent(
+                                "campaign_research_attempt_failed",
+                                f"A provider attempt failed ({type(error).__name__}); retry policy applied.",
+                                task.id,
+                                agent.id,
+                            ))
+                            state = self.campaign_coordinator.snapshot()
+                            if request_id in state["failed_task_ids"]:
+                                finished_ids.add(request_id)
+                            continue
+
+                        results.append(PipelineStep(subtask, self.provider.name, result, agent.id))
+                        self.campaign_coordinator.finish(request_id, success=True)
+                        finished_ids.add(request_id)
+                        self.engine.orchestrator.events.append(ResearchEvent(
+                            "campaign_research_pass",
+                            f"{subtask.role} completed a provider pass; output remains subject to verification.",
+                            task.id,
+                            agent.id,
+                        ))
             if used_agents:
                 self.groups.create(task.id, list(used_agents.values()), "campaign milestone research and independent verification")
             all_completed = all(task_id in self.campaign_coordinator.snapshot()["completed_task_ids"] for task_id in task_ids)
