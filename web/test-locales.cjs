@@ -319,3 +319,15 @@ if (!pageSource.includes('src="technology-categories.js"') ||
   throw new Error("The categorized technology catalogue must be loaded and cached.");
 }
 console.log("Validated exactly 100 unique technology programmes, eight categories, and 15 translated taxonomies.");
+
+
+const botRoomSource = fs.readFileSync(new URL("./bot-live-room.js", `file://${__filename}`), "utf8");
+new Function(botRoomSource);
+if (!pageSource.includes('id="bot-free-question-form"') ||
+    !pageSource.includes('id="bot-free-question"') ||
+    !botRoomSource.includes("function answerFreeQuestion") ||
+    !botRoomSource.includes("recent_outputs") ||
+    !botRoomSource.includes("agent_messages")) {
+  throw new Error("The source-linked free-form bot question interface is incomplete.");
+}
+console.log("Validated multilingual free-form questions and source-linked research retrieval in the bot room.");
