@@ -29,6 +29,14 @@ Voluntary research support and general contribution information are described in
 
 Read the [Public information and disclosure policy](docs/PUBLICATION_POLICY.md) before reusing, submitting or publishing project material. Public availability does not make confidential or unpublished material suitable for disclosure. The repository's current license governs reuse of the files it covers; it does not grant rights to trademarks, patents, confidential know-how or third-party material.
 
+## Copyright and project identity
+
+Copyright © 2026 Gudjencio MARTIN. All rights reserved in the SSSWET project identity, including its name, acronym, logo and official branding, except where a separate written permission applies.
+
+The name **SSSWET**, its acronym and official visual identity may not be used to present an independent copy, fork, derivative project or service as the official SSSWET project, or to imply endorsement or affiliation. A copy or fork must use a clearly distinct name and branding and must identify its own maintainers.
+
+The code license and the project name are separate matters. See [NOTICE.md](NOTICE.md) for attribution and project-identity guidance. This notice does not claim that a trademark registration exists.
+
 ## Security
 
 Please do not publish credentials, private data or suspected vulnerabilities in public issues. See [SECURITY.md](SECURITY.md) for responsible reporting.
