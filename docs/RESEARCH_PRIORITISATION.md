@@ -34,7 +34,7 @@ The local API exposes the rubric at `/api/research-priority-framework`. The scor
 
 ## Recording assessments
 
-The local interface includes a form for all 29 programme identifiers. Each submission requires a reviewer label and written rationale; evidence references can be added as URLs or citations. Scores may be left unassessed, in which case the entry remains incomplete and is excluded from the ranked comparison.
+The local interface includes a form for all 40 programme identifiers. Each submission requires a reviewer label and written rationale; evidence references can be added as URLs or citations. Scores may be left unassessed, in which case the entry remains incomplete and is excluded from the ranked comparison.
 
 Assessment records are stored in the local SQLite research database as append-only history. A later submission becomes the current assessment for that programme without overwriting earlier entries. The assessment API is:
 
