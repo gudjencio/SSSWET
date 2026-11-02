@@ -38,8 +38,18 @@
       ]
     }
   };
-  const language = () => String(document.getElementById("language")?.value || document.documentElement.lang || "en").toLowerCase().split("-")[0];
+  const buttonLabels = {
+    en:"Report", fr:"Signaler", es:"Informar", de:"Melden", it:"Segnala",
+    pt:"Denunciar", nl:"Melden", ru:"Сообщить", uk:"Повідомити", ar:"إبلاغ",
+    he:"דיווח", ja:"報告", ko:"신고", zh:"报告", hi:"रिपोर्ट करें"
+  };
+  const language = () => String(
+    document.documentElement.dataset.language ||
+    document.getElementById("language")?.value ||
+    document.documentElement.lang || "en"
+  ).toLowerCase().split("-")[0];
   const text = () => copy[language()] || copy.en;
+  const buttonLabel = () => buttonLabels[language()] || "Report";
   const style = document.createElement("style");
   style.textContent = `
     .report-project-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:11px 18px;border:1px solid rgba(255,92,92,.55);border-radius:14px;color:#fff;background:linear-gradient(115deg,#9f242b,#65171d);font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.24)}
@@ -80,7 +90,7 @@
     actions.append(cancel,submit);form.append(heading,intro,categoryLabel,titleLabel,detailLabel,status,actions);dialog.append(form);
     slot.append(button,dialog);
     function localize(){
-      const t=text();button.textContent=t.button;button.setAttribute("aria-label",t.button);
+      const t=text();button.textContent=buttonLabel();button.setAttribute("aria-label",buttonLabel());
       heading.textContent=t.title;intro.textContent=t.intro;
       categoryLabel.firstChild.textContent=t.category;titleLabel.firstChild.textContent=t.titleLabel;
       detailLabel.firstChild.textContent=t.detail;title.placeholder=t.titleLabel;detail.placeholder=t.placeholder;
