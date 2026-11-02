@@ -207,8 +207,81 @@
   let voiceEnabled = false;
   let initialized = false;
   let knownOutputIds = new Set();
+  let spokenMessageIds = new Set();
   let currentData = null;
   let requestBusy = false;
+  let speechQueue = [];
+  let speechBusy = false;
+  let conversationTimer = null;
+  let lastThinkingSound = 0;
+  let speakerTurn = 0;
+  const speechApi = window.speechSynthesis || null;
+
+  function bestVoice(language, agentIndex) {
+    if (!speechApi) return null;
+    const base = String(language || "en").toLowerCase().split("-")[0];
+    const voices = speechApi.getVoices().filter(voice => String(voice.lang || "").toLowerCase().split("-")[0] === base);
+    if (!voices.length) return null;
+    const quality = /natural|neural|online|premium|enhanced|google|microsoft|siri/i;
+    const preferred = voices.slice().sort((a,b) =>
+      Number(quality.test(b.name || "")) - Number(quality.test(a.name || "")) ||
+      Number(!b.localService) - Number(!a.localService)
+    );
+    return preferred[Math.abs(agentIndex) % preferred.length] || null;
+  }
+
+  function drainSpeechQueue() {
+    if (!voiceEnabled || speechBusy || !speechApi || !speechQueue.length) return;
+    const item = speechQueue.shift();
+    if (!item || !String(item.text || "").trim()) { drainSpeechQueue(); return; }
+    speechBusy = true;
+    const utterance = new SpeechSynthesisUtterance(String(item.text).replace(/\\s+/g," ").trim().slice(0,1100));
+    const language = document.documentElement.lang || "en";
+    utterance.lang = language;
+    const voice = bestVoice(language,item.agentIndex || 0);
+    if (voice) { utterance.voice = voice; utterance.lang = voice.lang || language; }
+    utterance.rate = 0.91 + ((item.agentIndex || 0) % 3) * 0.025;
+    utterance.pitch = item.agentIndex % 2 ? 0.96 : 1.02;
+    utterance.volume = 1;
+    const finish = () => { speechBusy = false; window.setTimeout(drainSpeechQueue,220); };
+    utterance.onend = finish;
+    utterance.onerror = finish;
+    speechApi.speak(utterance);
+  }
+
+  function speak(message, agentIndex = 0) {
+    if (!voiceEnabled || !speechApi || typeof SpeechSynthesisUtterance === "undefined") return;
+    const text = String(message || "").trim();
+    if (!text) return;
+    speechQueue.push({text,agentIndex});
+    drainSpeechQueue();
+  }
+
+  function scheduleBotConversation() {
+    window.clearTimeout(conversationTimer);
+    const delay = 26000 + Math.floor(Math.random()*15000);
+    conversationTimer = window.setTimeout(() => {
+      if (voiceEnabled && !document.hidden && currentData) {
+        const active = Array.isArray(currentData.active_agents) ? currentData.active_agents : [];
+        const handoffs = Array.isArray(currentData.agent_messages) ? currentData.agent_messages : [];
+        const outputs = Array.isArray(currentData.recent_outputs) ? currentData.recent_outputs : [];
+        const recent = handoffs.find(item => item.content && !spokenMessageIds.has(String(item.id || item.created_at || item.content)));
+        if (recent) {
+          const id = String(recent.id || recent.created_at || recent.content);
+          spokenMessageIds.add(id);
+          const role = roleName(recent.sender_role);
+          speak(role + ". " + recent.content, speakerTurn++);
+        } else if (active.length && Date.now()-lastThinkingSound > 65000 && Math.random() < 0.18) {
+          speak(["Hmm…","Mhmm…","Let me think…"][Math.floor(Math.random()*3)],speakerTurn++);
+          lastThinkingSound = Date.now();
+        } else if (outputs.length && active.length) {
+          const item = outputs.find(entry => entry.summary && String(entry.summary).trim());
+          if (item) speak(roleName(item.role) + ". " + item.summary,speakerTurn++);
+        }
+      }
+      scheduleBotConversation();
+    },delay);
+  }
 
   function renderStage(data) {
     const active = Array.isArray(data.active_agents) ? data.active_agents : [];
@@ -294,18 +367,10 @@
       const thoughts = handoffs.slice(0,2).map(item => item.content).concat(valid.slice(0,2).map(item => item.summary)).filter(Boolean).slice(0,3);
       bubbles.innerHTML = thoughts.map((message,index) => '<div class="bot-thought-bubble thought-'+index+'">'+esc(String(message).slice(0,150))+'</div>').join("");
     }
-    if (speakNew && voiceEnabled && fresh.length) speak(fresh[fresh.length-1].summary);
-  }
-
-  function speak(message) {
-    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-      const answer=$("bot-visitor-answer"); answer.hidden=false; answer.textContent=t().voiceUnavailable; return;
+    if (speakNew && voiceEnabled && fresh.length) {
+      const item=fresh[fresh.length-1];
+      speak(roleName(item.role) + ". " + item.summary,speakerTurn++);
     }
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(String(message).slice(0,1200));
-    utterance.lang = document.documentElement.lang || "en";
-    utterance.rate = 1.02;
-    window.speechSynthesis.speak(utterance);
   }
 
   function renderLabels() {
@@ -342,7 +407,7 @@
         : format(t().answerVerification,values);
     const node=$("bot-visitor-answer");
     node.hidden=false; node.textContent=answer;
-    if(voiceEnabled) speak(answer);
+    if(voiceEnabled) speak(answer,speakerTurn++);
   }
 
   async function refresh() {
@@ -353,6 +418,7 @@
       if(!response.ok) throw new Error("HTTP "+response.status);
       const data=await response.json();
       currentData=data;
+      window.dispatchEvent(new CustomEvent("ssswet-bot-data",{detail:data}));
       renderStage(data);
       renderFeed(data,true);
     } catch (_) {
@@ -363,10 +429,35 @@
   $("bot-voice-toggle").addEventListener("click",() => {
     voiceEnabled=!voiceEnabled;
     renderLabels();
-    if(!voiceEnabled && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    if(!voiceEnabled && speechApi) { speechQueue=[]; speechApi.cancel(); speechBusy=false; }
   });
   document.querySelectorAll("[data-bot-question]").forEach(button => {
     button.addEventListener("click",() => answerQuestion(button.dataset.botQuestion));
+  });
+  document.addEventListener("click",event => {
+    const technologyButton=event.target.closest("button[data-tech]");
+    if(!technologyButton) return;
+    window.setTimeout(() => {
+      const title=$("technology-dialog-title")?.textContent?.trim();
+      const description=$("technology-dialog-description")?.textContent?.trim();
+      if(voiceEnabled && title && description) {
+        const intro = lang()==="fr" ? "Voici le résumé de cette technologie." :
+          lang()==="es" ? "Este es el resumen de esta tecnología." :
+          lang()==="de" ? "Hier ist die Zusammenfassung dieser Technologie." :
+          lang()==="it" ? "Ecco il riepilogo di questa tecnologia." :
+          lang()==="pt" ? "Aqui está o resumo desta tecnologia." :
+          lang()==="nl" ? "Hier is de samenvatting van deze technologie." :
+          lang()==="ru" ? "Краткое описание этой технологии." :
+          lang()==="uk" ? "Ось короткий огляд цієї технології." :
+          lang()==="ar" ? "إليك ملخص هذه التقنية." :
+          lang()==="he" ? "הנה סיכום הטכנולוגיה הזו." :
+          lang()==="ja" ? "この技術の概要です。" :
+          lang()==="ko" ? "이 기술의 요약입니다." :
+          lang()==="zh" ? "以下是这项技术的摘要。" :
+          lang()==="hi" ? "यह इस तकनीक का सारांश है।" : "Here is a summary of this technology.";
+        speak(intro + " " + title + ". " + description,speakerTurn++);
+      }
+    },180);
   });
   window.addEventListener("ssswet-language-changed",() => {
     renderLabels();
@@ -377,4 +468,5 @@
   renderLabels();
   refresh();
   window.setInterval(refresh,12000);
+  scheduleBotConversation();
 })();
