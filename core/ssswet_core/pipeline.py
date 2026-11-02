@@ -284,7 +284,7 @@ class ResearchPipeline:
                             self.store.publish_agent_message(
                                 task_id=task.id,
                                 sender_agent_id=reviewer.agent_id,
-                                sender_role=reviewer.role,
+                                sender_role=reviewer.subtask.role,
                                 recipient_agent_id=sender.agent_id,
                                 recipient_role=sender.subtask.role,
                                 message_type="peer_review_response",
