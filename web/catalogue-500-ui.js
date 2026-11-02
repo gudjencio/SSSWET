@@ -44,21 +44,21 @@
     return value;
   };
   const catalogueCopy = {
-    en:["510 registered research programmes · 110 contribution themes","The scientific registry contains 510 research dossiers. The contribution interface separately presents 110 selected themes. The 394 generated entries and ten curated additions are research programmes, not demonstrated technologies."],
-    fr:["510 programmes de recherche enregistrés · 110 thèmes de contribution","Le registre scientifique comprend 510 dossiers de recherche. L’interface de contribution présente séparément 110 thèmes sélectionnés. Les 394 entrées générées et les dix ajouts sélectionnés sont des programmes de recherche, pas des technologies démontrées."],
-    es:["510 programas de investigación registrados · 110 temas de contribución","El registro científico contiene 510 expedientes de investigación. La interfaz de contribución presenta por separado 110 temas seleccionados. Las 394 entradas añadidas son líneas de investigación generadas, no tecnologías demostradas."],
-    de:["510 registrierte Forschungsprogramme · 110 Beitragsthemen","Das wissenschaftliche Register enthält 510 Forschungsakten. Die Beitragsoberfläche zeigt davon getrennt 110 ausgewählte Themen. Die 394 hinzugefügten Einträge sind generierte Forschungsansätze, keine nachgewiesenen Technologien."],
-    it:["510 programmi di ricerca registrati · 110 temi di contributo","Il registro scientifico contiene 510 dossier di ricerca. L’interfaccia dei contributi presenta separatamente 110 temi selezionati. Le 394 voci aggiunte sono percorsi di ricerca generati, non tecnologie dimostrate."],
-    pt:["510 programas de pesquisa registrados · 110 temas de contribuição","O registro científico contém 510 dossiês de pesquisa. A interface de contribuição apresenta separadamente 110 temas selecionados. As 394 entradas adicionadas são linhas de pesquisa geradas, não tecnologias demonstradas."],
-    nl:["510 geregistreerde onderzoeksprogramma’s · 110 bijdragethema’s","Het wetenschappelijke register bevat 510 onderzoeksdossiers. De bijdrage-interface toont daarnaast 110 geselecteerde thema’s. De 394 toegevoegde items zijn gegenereerde onderzoekslijnen, geen bewezen technologieën."],
-    ru:["510 зарегистрированных исследовательских программ · 110 тем для поддержки","Научный реестр содержит 510 исследовательских досье. Интерфейс поддержки отдельно представляет 110 выбранных тем. 394 добавленные записи — это сгенерированные направления исследований, а не доказанные технологии."],
-    uk:["510 зареєстрованих дослідницьких програм · 110 тем для підтримки","Науковий реєстр містить 510 дослідницьких досьє. Інтерфейс внесків окремо представляє 110 вибраних тем. 394 додані записи — це згенеровані напрями досліджень, а не доведені технології."],
-    ar:["510 برنامجًا بحثيًا مسجلًا · 110 موضوع للمساهمة","يضم السجل العلمي 510 ملف بحثي. وتعرض واجهة المساهمات بشكل منفصل 110 موضوع مختار. الإدخالات الـ394 المضافة هي مسارات بحث مولّدة وليست تقنيات مثبتة."],
-    he:["510 תוכניות מחקר רשומות · 110 נושאים לתרומה","המאגר המדעי כולל 510 תיקי מחקר. ממשק התרומות מציג בנפרד 110 נושאים נבחרים. 394 הרשומות שנוספו הן כיווני מחקר שנוצרו, ולא טכנולוגיות שהוכחו."],
-    ja:["登録済み研究プログラム510件 · 支援テーマ110件","科学研究レジストリには510件の研究記録があります。寄付インターフェースでは別途110件のテーマを提示します。追加された394件は生成された研究課題であり、実証済みの技術ではありません。"],
-    ko:["등록된 연구 프로그램 510개 · 후원 주제 110개","과학 연구 레지스트리에는 510개의 연구 기록이 있습니다. 기여 인터페이스에는 별도로 110개의 선택된 주제가 표시됩니다. 추가된 394개 항목은 생성된 연구 범위이며 입증된 기술이 아닙니다."],
-    zh:["已登记的研究计划 510 项 · 贡献主题 110 项","科学登记库包含 510 份研究档案。贡献界面另行展示 110 个精选主题。新增的 394 项是生成的研究方向，并非已证实的技术。"],
-    hi:["510 पंजीकृत अनुसंधान कार्यक्रम · 110 योगदान विषय","वैज्ञानिक रजिस्टर में 510 अनुसंधान अभिलेख हैं। योगदान इंटरफ़ेस अलग से 110 चुने हुए विषय दिखाता है। जोड़ी गई 394 प्रविष्टियाँ उत्पन्न अनुसंधान क्षेत्र हैं, प्रमाणित तकनीकें नहीं।"]
+    en:["510 registered research programmes · 116 contribution themes","The scientific registry contains 510 research dossiers. The contribution interface separately presents 116 selected themes. The 394 generated entries and ten curated additions are research programmes, not demonstrated technologies."],
+    fr:["510 programmes de recherche enregistrés · 116 thèmes de contribution","Le registre scientifique comprend 510 dossiers de recherche. L’interface de contribution présente séparément 116 thèmes sélectionnés. Les 394 entrées générées et les dix ajouts sélectionnés sont des programmes de recherche, pas des technologies démontrées."],
+    es:["510 programas de investigación registrados · 116 temas de contribución","El registro científico contiene 510 expedientes de investigación. La interfaz de contribución presenta por separado 116 temas seleccionados. Las 394 entradas añadidas son líneas de investigación generadas, no tecnologías demostradas."],
+    de:["510 registrierte Forschungsprogramme · 116 Beitragsthemen","Das wissenschaftliche Register enthält 510 Forschungsakten. Die Beitragsoberfläche zeigt davon getrennt 116 ausgewählte Themen. Die 394 hinzugefügten Einträge sind generierte Forschungsansätze, keine nachgewiesenen Technologien."],
+    it:["510 programmi di ricerca registrati · 116 temi di contributo","Il registro scientifico contiene 510 dossier di ricerca. L’interfaccia dei contributi presenta separatamente 116 temi selezionati. Le 394 voci aggiunte sono percorsi di ricerca generati, non tecnologie dimostrate."],
+    pt:["510 programas de pesquisa registrados · 116 temas de contribuição","O registro científico contém 510 dossiês de pesquisa. A interface de contribuição apresenta separadamente 116 temas selecionados. As 394 entradas adicionadas são linhas de pesquisa geradas, não tecnologias demonstradas."],
+    nl:["510 geregistreerde onderzoeksprogramma’s · 116 bijdragethema’s","Het wetenschappelijke register bevat 510 onderzoeksdossiers. De bijdrage-interface toont daarnaast 116 geselecteerde thema’s. De 394 toegevoegde items zijn gegenereerde onderzoekslijnen, geen bewezen technologieën."],
+    ru:["510 зарегистрированных исследовательских программ · 116 тем для поддержки","Научный реестр содержит 510 исследовательских досье. Интерфейс поддержки отдельно представляет 116 выбранных тем. 394 добавленные записи — это сгенерированные направления исследований, а не доказанные технологии."],
+    uk:["510 зареєстрованих дослідницьких програм · 116 тем для підтримки","Науковий реєстр містить 510 дослідницьких досьє. Інтерфейс внесків окремо представляє 116 вибраних тем. 394 додані записи — це згенеровані напрями досліджень, а не доведені технології."],
+    ar:["510 برنامجًا بحثيًا مسجلًا · 116 موضوع للمساهمة","يضم السجل العلمي 510 ملف بحثي. وتعرض واجهة المساهمات بشكل منفصل 116 موضوع مختار. الإدخالات الـ394 المضافة هي مسارات بحث مولّدة وليست تقنيات مثبتة."],
+    he:["510 תוכניות מחקר רשומות · 116 נושאים לתרומה","המאגר המדעי כולל 510 תיקי מחקר. ממשק התרומות מציג בנפרד 116 נושאים נבחרים. 394 הרשומות שנוספו הן כיווני מחקר שנוצרו, ולא טכנולוגיות שהוכחו."],
+    ja:["登録済み研究プログラム510件 · 支援テーマ116件","科学研究レジストリには510件の研究記録があります。寄付インターフェースでは別途116件のテーマを提示します。追加された394件は生成された研究課題であり、実証済みの技術ではありません。"],
+    ko:["등록된 연구 프로그램 510개 · 후원 주제 116개","과학 연구 레지스트리에는 510개의 연구 기록이 있습니다. 기여 인터페이스에는 별도로 116개의 선택된 주제가 표시됩니다. 추가된 394개 항목은 생성된 연구 범위이며 입증된 기술이 아닙니다."],
+    zh:["已登记的研究计划 510 项 · 贡献主题 116 项","科学登记库包含 510 份研究档案。贡献界面另行展示 116 个精选主题。新增的 394 项是生成的研究方向，并非已证实的技术。"],
+    hi:["510 पंजीकृत अनुसंधान कार्यक्रम · 116 योगदान विषय","वैज्ञानिक रजिस्टर में 510 अनुसंधान अभिलेख हैं। योगदान इंटरफ़ेस अलग से 116 चुने हुए विषय दिखाता है। जोड़ी गई 394 प्रविष्टियाँ उत्पन्न अनुसंधान क्षेत्र हैं, प्रमाणित तकनीकें नहीं।"]
   };
   function apply() {
     const language = lang();
@@ -76,7 +76,7 @@
     document.querySelectorAll("body *:not(script):not(style)").forEach(el => {
       if (el.children.length) return;
       const text = el.textContent || "";
-      const next = text.replace(/64\s*\/\s*110/g, "64 / 510").replace(/\/\s*110(\s+programmes?\b)/gi, "/ 510$1");
+      const next = text.replace(/64\s*\/\s*116/g, "64 / 510").replace(/\/\s*116(\s+programmes?\b)/gi, "/ 510$1");
       if (next !== text) el.textContent = next;
     });
   }
