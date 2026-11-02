@@ -68,3 +68,12 @@ The prototype caps locally stored media at 150 MiB per browser database. Once th
 ## Terrain and 3D detail
 
 The interactive map combines the OpenFreeMap Liberty vector style with optional MapLibre demonstration elevation tiles. When the elevation source is available, the interface enables terrain elevation, hillshading and a more pronounced 3D camera angle. Building footprints are extruded where the basemap supplies building geometry and height attributes; missing height attributes use a conservative visual fallback and must not be interpreted as surveyed building measurements. Coverage and detail vary by location. Demonstration elevation tiles are not a survey-grade terrain dataset, and the map must not be presented as a precise 3D scan of a property or street. OpenStreetMap/OpenFreeMap and MapLibre demo tile attribution is displayed in the interface.
+
+
+## Camera capture and 3D reconstruction status
+
+Camera access is opt-in and begins only after the user explicitly starts a local scan. The current browser prototype records a local video stream when camera capture is selected; it also records GPS and device motion/orientation when those sources are selected and available. **The current camera stream is not yet converted into a metrically scaled 3D mesh or point cloud and is not automatically fused with the basemap.** The video must therefore be treated as source evidence, not as a completed 3D scan.
+
+A defensible reconstruction pipeline requires calibrated camera intrinsics, overlapping frames, visual feature matching, camera-pose estimation, scale recovery (for example from depth sensing or surveyed references), georeferencing, confidence metadata, and validation against independent measurements. Where supported, a future depth-sensing integration may provide per-frame depth; devices without depth support will need a separate photogrammetry workflow. The basemap geometry, camera-derived geometry, and unobserved areas must remain visually and semantically distinct. No synthetic fill should be displayed as measured structure.
+
+The interface starts with every sensor permission unchecked. Opening the page loads the map and local timeline only; it does not request camera, microphone, location, or motion access. The user must select sources and press the start control.
