@@ -25,6 +25,14 @@ jobs:
           python-version: "3.12"
       - name: Install report validation tools
         run: python -m pip install pytest
+      - name: Route every received report to the human-review queue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh label create needs-human-review --color E5A000 --description "Automatically triaged; awaiting maintainer review" || true
+          gh issue edit "$ISSUE_NUMBER" --add-label "needs-human-review"
       - name: Process report and prepare a tested improvement
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
