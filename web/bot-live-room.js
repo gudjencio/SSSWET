@@ -312,7 +312,8 @@
       role: agent.role || "",
       active: isActive,
       review: !isActive && String(agent.role || "").includes("verif"),
-      phase: agent.phase || ""
+      phase: agent.phase || "",
+      language: lang()
     })));
     if (stage.dataset.renderSignature === signature) return;
     stage.dataset.renderSignature = signature;
