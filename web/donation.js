@@ -168,12 +168,14 @@
   });
 
   window.SSSWET_TECHNOLOGIES = technologies;
-  const catalogueCount = document.getElementById("technology-catalogue-count");
-  if (catalogueCount) {
+  function updateCatalogueCount() {
+    const element = document.getElementById("technology-catalogue-count");
+    if (!element) return;
     const total = Object.keys(technologies).length;
     const french = (document.documentElement.lang || "en").startsWith("fr");
-    catalogueCount.textContent = total + (french ? " programmes de recherche" : " research programmes");
+    element.textContent = total + (french ? " programmes de recherche" : " research programmes");
   }
+  updateCatalogueCount();
   // Configure only official, verified payment links here. No payment credentials belong in this public file.
   const paymentLinks = window.SSSWET_DONATION_LINKS || {};
   const portfolio = window.SSSWET_RESEARCH_PORTFOLIO || {};
@@ -508,6 +510,7 @@
   window.addEventListener("languagechange", () => window.location.reload());
   document.getElementById("language")?.addEventListener("change", () => {
     const language = copy() === translations.fr ? "fr" : "en";
+    updateCatalogueCount();
     document.querySelectorAll("[data-tech-copy]").forEach(element => {
       const key = element.dataset.techCopy;
       const value = copy()[key === "dialogEyebrow" ? "dialogEyebrow" : key];
