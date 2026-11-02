@@ -24,10 +24,12 @@
     if(caption) caption.textContent=t.caption;
     if(note) note.textContent=t.note;
     const brand=(lang()==="fr"?"ETDESS":"SSSWET");
+    const brandMark=$("brand-mark");
     const networkLabel=$("bot-control-network-label"), coreNetworkLabel=$("bot-core-network-label"), coreBrand=$("bot-core-brand");
-    if(networkLabel) networkLabel.textContent=brand+" · "+t.network;
-    if(coreBrand) coreBrand.textContent=brand;
-    if(coreNetworkLabel) coreNetworkLabel.textContent=t.network;
+    if(brandMark) brandMark.textContent=brand;
+    if(networkLabel) networkLabel.textContent="";
+    if(coreBrand) coreBrand.textContent="";
+    if(coreNetworkLabel) coreNetworkLabel.textContent="";
     if(sideTitle) sideTitle.textContent=t.agent;
     if(sideCaption) sideCaption.textContent=t.activityRecorded || t.recent;
     const visualLabels=[["bot-visual-research",t.research],["bot-visual-analysis",t.analysis],["bot-visual-verify",t.verify]];
