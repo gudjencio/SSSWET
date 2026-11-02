@@ -2,6 +2,7 @@ import pytest
 
 from ssswet_core.provisional_pricing import REQUIRED_COST_CATEGORIES
 from ssswet_core.pricing_evidence import build_agent_pricing_estimate
+from ssswet_core.engine import SSSWETEngine
 
 
 def _submissions():
@@ -120,3 +121,17 @@ def test_missing_category_is_not_filled_with_an_invented_zero():
 def test_estimate_must_have_unique_id():
     with pytest.raises(ValueError, match="estimate_id"):
         _build(estimate_id="")
+
+def test_research_engine_exposes_the_agent_pricing_workflow():
+    engine = SSSWETEngine()
+    result = engine.estimate_technology_costs(
+        estimate_id="estimate-001",
+        submissions=_submissions(),
+        independent_review=_review(),
+        currency="EUR",
+        uncertainty_rate="0.05",
+        tax_rate="0.20",
+        confidence="0.90",
+    )
+    assert result["publishable"] is True
+    assert result["estimate_id"] == "estimate-001"
