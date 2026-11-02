@@ -11,6 +11,7 @@ from .verification import VerificationEngine
 from .pricing_evidence import build_agent_pricing_estimate
 from .technology_dossier import TechnologyDossierRegistry
 from .technology_catalogue import register_catalogue
+from .technology_dependency_graph import TechnologyDependencyGraph
 
 
 @dataclass
@@ -32,6 +33,7 @@ class SSSWETEngine:
     def __init__(self, store: SQLiteResearchStore | None = None) -> None:
         self.store = store
         self.technology_dossiers = TechnologyDossierRegistry(store) if store else None
+        self.technology_dependencies = TechnologyDependencyGraph(store) if store else None
         self.orchestrator = ResearchOrchestrator()
         self.memory = KnowledgeMemory()
         if self.store:
