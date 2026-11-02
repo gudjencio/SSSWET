@@ -6,6 +6,7 @@ const button=document.createElement("button");button.id="ssswet-read-selection";
 function locale(){const code=(document.getElementById("language")?.value||document.documentElement.lang||"en").toLowerCase().split("-")[0];return labels[code]?code:"en"}
 function update(){const t=labels[locale()];button.textContent=speaking?t.stop:t.read;button.setAttribute("aria-label",speaking?t.stop:t.read);button.title=speaking?t.stop:t.read}
 function onSelection(){const value=String(window.getSelection?.()||"").trim();if(value.length>1){selected=value.slice(0,5000);button.disabled=false}else if(!speaking){selected="";button.disabled=true}}
+button.addEventListener("mousedown",event=>event.preventDefault());
 button.addEventListener("click",()=>{
  if(!("speechSynthesis" in window)||typeof SpeechSynthesisUtterance==="undefined")return;
  if(speaking){speechSynthesis.cancel();speaking=false;update();return}
