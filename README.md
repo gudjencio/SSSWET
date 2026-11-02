@@ -20,6 +20,7 @@ The project may change its public descriptions and availability as research, rev
 - Do not present speculative concepts as established capabilities.
 - Require appropriate human, scientific, safety and legal review before real-world use.
 - Protect personal information, credentials and confidential material from publication.
+- Record declared risks and uncertainties without inventing probability, impact or safety conclusions; see [Research Risk & Uncertainty Register](docs/RESEARCH_RISK_UNCERTAINTY_REGISTER.md).
 
 ## Contributions
 
