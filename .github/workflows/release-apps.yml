@@ -1,0 +1,78 @@
+name: Build SSSWET applications
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    name: Desktop package (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            args: --win nsis
+          - os: macos-latest
+            args: --mac dmg
+          - os: ubuntu-latest
+            args: --linux AppImage
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npx electron-builder --publish never ${{ matrix.args }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ssswet-desktop-${{ matrix.os }}
+          path: dist/*
+          if-no-files-found: error
+
+  android:
+    name: Android application package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: npm install
+      - run: npx cap add android
+      - run: npx cap sync android
+      - name: Build Android APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+      - name: Prepare installable APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk SSSWET-android-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ssswet-android
+          path: SSSWET-android-debug.apk
+          if-no-files-found: error
+
+  release:
+    name: Publish application downloads
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [desktop, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: release-assets/*
