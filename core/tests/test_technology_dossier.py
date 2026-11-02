@@ -91,3 +91,30 @@ def test_invalid_payload_and_identifiers_are_rejected(registry):
         )
     with pytest.raises(ValueError, match="identifier"):
         registry.get("../secret")
+
+
+def test_engine_exposes_persistent_dossier_workflow(tmp_path):
+    from ssswet_core.engine import SSSWETEngine
+
+    engine = SSSWETEngine(SQLiteResearchStore(tmp_path / "engine.sqlite3"))
+    engine.create_technology_dossier(
+        technology_id="engine-tech-1", title="Test propulsion concept",
+        domain="propulsion", actor_id="mira",
+    )
+    engine.record_technology_event(
+        technology_id="engine-tech-1", event_type="negative_result",
+        payload={"finding": "Initial model did not converge"},
+        source_refs=["simulation:run-001"], actor_id="jun",
+    )
+    dossier = engine.get_technology_dossier("engine-tech-1")
+    assert dossier["event_count"] == 2
+    assert dossier["events"][-1]["event_type"] == "negative_result"
+
+
+def test_engine_requires_persistent_store_for_dossiers():
+    from ssswet_core.engine import SSSWETEngine
+
+    with pytest.raises(RuntimeError, match="persistent research store"):
+        SSSWETEngine().create_technology_dossier(
+            technology_id="t", title="T", domain="science", actor_id="mira"
+        )
