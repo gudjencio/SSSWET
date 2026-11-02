@@ -27,3 +27,12 @@ The public interface includes a localized **Report** control (shown as **Signale
 To enable submissions on Render, create a fine-grained GitHub personal access token restricted to `gudjencio/SSSWET` with **Issues: Read and write** permission. Add it to the Render web service as the secret environment variable `SSSWET_GITHUB_TOKEN`. Never place this token in the public website, repository files, browser storage or client-side configuration. Redeploy the service after setting the variable.
 
 Reports are requests for review, not authorization to remove or replace existing project functionality. Any implementation should preserve existing behaviour and pass the automated checks.
+
+
+## Automated improvement proposals
+
+Public reports labelled `public report` trigger the report-processing workflow. When the repository secret `OPENAI_API_KEY` is configured, the workflow evaluates the request, drafts a narrowly scoped additive patch, rejects deletions and protected paths, runs the core test suite and web-interface checks, and opens a pull request only when all checks pass. Reports that are unclear, destructive, unsafe, or require scientific or human judgment remain available for manual review.
+
+Add `OPENAI_API_KEY` under **Repository Settings → Secrets and variables → Actions**. The key is used only by the private GitHub Actions runner and must never be placed in public files or browser configuration. The workflow uses the repository's temporary `GITHUB_TOKEN` to create a branch and pull request.
+
+Automatic processing does not automatically merge code into the live project. Every generated pull request remains reviewable before integration, preserving a final safeguard against malicious or mistaken public suggestions. The public **View my improvements** menu stores the reports submitted from that browser locally and links to their GitHub issue records.
