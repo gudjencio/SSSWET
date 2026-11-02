@@ -17,6 +17,10 @@ def _campaign():
             CampaignMilestone("m1", "Literature review", "Map existing methods"),
             CampaignMilestone("m2", "Simulation", "Compare bounded models"),
         ],
+        hypothesis="The proposed measurement method improves reproducibility.",
+        success_criteria=("Pre-registered reproducibility threshold is met",),
+        failure_criteria=("Independent replication fails the pre-registered threshold",),
+        safety_gates=("Qualified review before any physical experiment",),
     )
 
 
@@ -55,3 +59,22 @@ def test_campaign_persistence_survives_reopen(tmp_path):
     saved = reopened.get_campaign("campaign-1")
     assert saved["state"] == "active"
     assert len(reopened.campaign_history()) == 1
+
+
+def test_campaign_preserves_hypothesis_evidence_and_safety_plan():
+    campaign = _campaign()
+    assert campaign.hypothesis
+    assert campaign.success_criteria
+    assert campaign.failure_criteria
+    assert campaign.safety_gates
+    active = set_campaign_state(campaign, "active")
+    assert active.hypothesis == campaign.hypothesis
+    assert active.success_criteria == campaign.success_criteria
+
+
+def test_campaign_requires_success_failure_and_safety_criteria():
+    with pytest.raises(ValueError, match="success and failure"):
+        create_campaign(
+            "incomplete", "Incomplete plan", "Objective", "science",
+            [CampaignMilestone("m1", "Review", "Review evidence")],
+        )
