@@ -64,11 +64,9 @@ The prototype caps locally stored media at 150 MiB per browser database. Once th
 
 **Status: research concept and early web prototype.** No claim is made that virtual time travel, exact reconstruction of unrecorded history or reliable prediction of arbitrarily distant future events has been achieved.
 
-
 ## Terrain and 3D detail
 
 The interactive map combines the OpenFreeMap Liberty vector style with optional MapLibre demonstration elevation tiles. When the elevation source is available, the interface enables terrain elevation, hillshading and a more pronounced 3D camera angle. Building footprints are extruded where the basemap supplies building geometry and height attributes; missing height attributes use a conservative visual fallback and must not be interpreted as surveyed building measurements. Coverage and detail vary by location. Demonstration elevation tiles are not a survey-grade terrain dataset, and the map must not be presented as a precise 3D scan of a property or street. OpenStreetMap/OpenFreeMap and MapLibre demo tile attribution is displayed in the interface.
-
 
 ## Camera capture and 3D reconstruction status
 
@@ -84,4 +82,24 @@ The prototype can analyse one previously recorded local video after the user sel
 
 Candidate frames are exported individually as JPEG images at the source video dimensions when the browser supports full-resolution canvas export. Candidate images remain in memory during the session and are not automatically written to IndexedDB or uploaded. The extraction process limits exported candidate data to 100 MiB per analysis; the existing local media database remains subject to its separate 150 MiB cap.
 
-This feature is only a preparatory image-selection aid. It does not estimate camera poses, solve lens calibration, recover metric scale, build a point cloud or mesh, or perform photogrammetry. A sharp frame is not necessarily geometrically useful, and a large visual change does not prove that two frames overlap appropriately. Any later reconstruction pipeline will require calibrated capture, overlap checks, pose estimation, scale recovery, georeferencing and independent validation.
+## Visual continuity screening
+
+After candidate frames are rendered, the browser performs a second local-only screening pass over the visible frame previews. Each preview is reduced to a small grayscale luminance vector, normalized for overall brightness, and compared with the preceding candidate using a normalized Euclidean image distance. The displayed **visual continuity** score is `100 × (1 − normalized change)` and is intended only to highlight sequences that may contain moderate visual continuity or unusually large visual changes.
+
+A higher score means the adjacent previews are more visually similar under this simple representation; a lower score means the adjacent previews differ more. The score is deliberately presented as a heuristic rather than an overlap measurement. It does not estimate feature correspondence, camera pose, lens geometry, depth, scale, or true geometric overlap. Exposure changes, motion blur, repeated textures and viewpoint changes can all affect the result. A high score can therefore still be useless for reconstruction, while a lower score can occur between genuinely useful frames.
+
+The continuity aid is designed to help a later reconstruction stage reject obviously redundant or abruptly changing candidates before more expensive feature matching. It does not perform photogrammetry, pose estimation, point-cloud generation, mesh generation, georeferencing or independent validation.
+
+## Reconstruction readiness boundary
+
+The current workflow is intentionally staged:
+
+1. **Recorded evidence:** retain the original local video and sensor observations.
+2. **Candidate selection:** screen frames for sharpness, visual change and visual continuity.
+3. **Geometric reconstruction:** future work must establish feature correspondences, calibrated camera poses and depth/scale constraints.
+4. **Spatial registration:** future work must distinguish measured geometry from basemap geometry and establish georeferencing uncertainty.
+5. **Validation:** reconstructed geometry must be compared with independent measurements before being described as validated.
+
+Until stages 3–5 exist and are independently evaluated, the interface must not describe candidate frames or map extrusions as a reconstructed physical scene.
+
+This feature is only a preparatory image-selection aid. A sharp frame is not necessarily geometrically useful, and a large visual change does not prove that two frames overlap appropriately. Any later reconstruction pipeline will require calibrated capture, overlap checks, pose estimation, scale recovery, georeferencing and independent validation.
