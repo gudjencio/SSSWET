@@ -244,6 +244,33 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     self._json({"error": "The limit parameter must be an integer"}, 400)
                     return
                 self._json(ScientificMemoryService(store).overview(query=query, limit=limit))
+            elif path == "/api/source-independence":
+                from .sources import analyze_source_independence
+                params = parse_qs(parsed.query)
+                raw_ids = params.get("source_ids", [""])[0]
+                source_ids = list(dict.fromkeys(
+                    item.strip() for item in raw_ids.split(",") if item.strip()
+                ))
+                if not source_ids:
+                    self._json({"error": "A non-empty source_ids parameter is required"}, 400)
+                    return
+                if len(source_ids) > 100:
+                    self._json({"error": "At most 100 source IDs may be compared"}, 400)
+                    return
+                records = []
+                missing = []
+                for source_id in source_ids:
+                    record = store.get_source(source_id)
+                    if record is None:
+                        missing.append(source_id)
+                    else:
+                        records.append(record)
+                report = analyze_source_independence(records)
+                self._json({
+                    **report,
+                    "requested_source_ids": source_ids,
+                    "missing_source_ids": missing,
+                })
             elif path == "/api/research-timeline":
                 from .research_timeline import ResearchTimeline
                 params = parse_qs(parsed.query)
