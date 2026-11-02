@@ -1663,3 +1663,6 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
   .app-shell > .technology-showcase,
   .app-shell > .panel { width:100% !important; max-width:100% !important; margin-inline:auto !important; }
 }
+
+/* Keep only one live-room voice control and one copy of the shared agent prompts. */
+.panel > .voice-controls { display:none !important; }
