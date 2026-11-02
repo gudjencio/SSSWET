@@ -2,7 +2,7 @@ from ssswet_core.research_daemon import TECHNOLOGY_OBJECTIVES
 from ssswet_core.research_journal import TECHNOLOGIES
 
 
-def test_research_daemon_covers_public_technology_catalogue():
+def test_research_daemon_covers_all_one_hundred_public_technology_programmes():
     keys = [key for key, _ in TECHNOLOGY_OBJECTIVES]
     assert len(keys) == 40
     assert len(keys) == len(set(keys))
