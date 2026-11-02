@@ -505,8 +505,9 @@
   const translations = {
     en: { eyebrow:"FUTURE TECHNOLOGIES · RESEARCH PRIORITIES", title:"Choose a technology to support", intro:"Explore the research directions and open a contribution window for the technology you want to encourage.", disclaimer:"These are research themes, not claims that the technologies exist or are currently achievable. The project will keep exploring, testing and refining ideas in an ongoing effort to make them possible. Contributions fund research and development; they are not a purchase or a guarantee of results. If a technology becomes feasible and a product is actually developed, a future offer and delivery terms will be communicated separately.", explore:"Explore & contribute", dialogEyebrow:"FUND RESEARCH & DEVELOPMENT", amountLabel:"Monthly contribution amount (USD)", repeatLabel:"Number of separate contributions", perContribution:"Monthly contribution", totalLabel:"Annual equivalent", currencyNote:"Choose a monthly amount in USD. PayPal will display the subscription terms before approval.", paymentMissing:"The PayPal subscription is not configured.", paymentReady:"Choose your monthly amount, then approve the recurring subscription securely with PayPal.", checkout:"Continue to PayPal", copySummary:"Copy research contribution summary", paymentDisclaimer:"This is a recurring monthly contribution. The amount selected is billed monthly through PayPal until the subscriber cancels. Contributions support ongoing research and do not purchase an existing product or guarantee a result. Any future product offer and delivery terms will be communicated separately if a technology is developed and becomes available.", invalid:"Enter a monthly amount between USD 1 and USD 100,000.", copied:"Contribution summary copied.", copyError:"Unable to copy automatically. Please select and copy the summary." },
     fr: { eyebrow:"TECHNOLOGIES DU FUTUR · PRIORITÉS DE RECHERCHE", title:"Choisissez une technologie à soutenir", intro:"Découvrez les axes de recherche et ouvrez une fenêtre de contribution pour la technologie que vous souhaitez encourager.", disclaimer:"Ces axes ne signifient pas que les technologies existent ou soient réalisables aujourd'hui. Le projet poursuivra continuellement les recherches, les essais et les améliorations pour tenter de les rendre possibles. Les contributions financent la recherche et le développement ; elles ne constituent pas un achat et ne garantissent aucun résultat. Si une technologie devient réalisable et qu'un produit est effectivement développé, une offre et des conditions de livraison seront communiquées séparément.", explore:"Découvrir et contribuer", dialogEyebrow:"FINANCER LA RECHERCHE ET LE DÉVELOPPEMENT", amountLabel:"Montant mensuel en dollars américains · équivalent en euros", repeatLabel:"Nombre de contributions distinctes", perContribution:"Contribution mensuelle", totalLabel:"Équivalent annuel", currencyNote:"Le montant est facturé en dollars américains. Son équivalent en euros est affiché à titre indicatif selon le taux de change de référence le plus récent. PayPal affichera les conditions avant validation.", paymentMissing:"L’abonnement PayPal n’est pas configuré.", paymentReady:"Choisissez votre montant mensuel, puis approuvez l’abonnement récurrent en toute sécurité avec PayPal.", checkout:"Continuer vers PayPal", copySummary:"Copier le récapitulatif du financement", paymentDisclaimer:"Il s’agit d’une contribution mensuelle récurrente. Le montant choisi est facturé chaque mois par PayPal jusqu’à l’annulation de l’abonnement. Les contributions financent la recherche en cours et ne constituent pas l’achat d’un produit existant ni une garantie de résultat. Toute future offre de produit et de livraison sera communiquée séparément si une technologie est développée et devient disponible.", invalid:"Saisissez un montant mensuel compris entre 1 et 100 000 dollars américains.", copied:"Récapitulatif copié.", copyError:"Copie automatique impossible. Veuillez sélectionner et copier le récapitulatif." }
+    ja: { eyebrow:"未来技術・研究の優先分野", title:"支援する技術分野を選択", intro:"研究テーマを確認し、応援したい分野への研究支援を選択できます。", disclaimer:"これらは研究テーマであり、技術の実在や実現可能性を保証するものではありません。寄付は研究開発を支援するもので、製品の購入や成果を保証するものではありません。", explore:"詳細を見る・支援する", dialogEyebrow:"研究開発を支援", amountLabel:"毎月の支援額（米ドル）", repeatLabel:"個別の支援回数", perContribution:"毎月の支援額", totalLabel:"年間換算額", currencyNote:"現地通貨での換算額は参考表示です。実際の請求通貨は米ドルです。", paymentMissing:"PayPalの定期支払いは設定されていません。", paymentReady:"毎月の支援額を選び、PayPalで定期支払いの内容を確認してください。", checkout:"PayPalに進む", copySummary:"支援内容をコピー", paymentDisclaimer:"これは毎月の継続的な研究支援です。解約するまでPayPalを通じて毎月請求されます。既存製品の購入や成果を保証するものではありません。", invalid:"毎月の支援額は米ドルで1ドル以上100,000ドル以下にしてください。", copied:"支援内容をコピーしました。", copyError:"自動コピーできませんでした。内容を選択してコピーしてください。" },
   };
-  const copy = () => translations[(document.documentElement.lang || "en").startsWith("fr") ? "fr" : "en"];
+  const copy = () => translations[uiLanguage()] || translations.en;
 
   function populateTechnologySelectors() {
     const language = copy() === translations.fr ? "fr" : "en";
@@ -537,19 +538,20 @@
   }
   function applyPaymentLanguage() {
     const fr = copy() === translations.fr;
+    const ja = uiLanguage() === "ja";
     const labels = {
-      mode: fr ? "Modalité de paiement" : "Payment plan",
-      single: fr ? "Paiement unique" : "One-time payment",
-      installments: fr ? "Fractionner en échéances volontaires d’au moins 1 dollar américain" : "Split into voluntary instalments of at least USD 1",
-      reminderTitle: fr ? "Rappels de paiement" : "Payment reminders",
-      reminderDescription: fr ? "Après le premier paiement, vous pouvez demander des rappels volontaires par e-mail pour la prochaine échéance. Aucun prélèvement automatique ne sera effectué." : "After completing the first payment, you may request voluntary email reminders for the next instalment. No automatic charge will be made.",
-      email: fr ? "Adresse e-mail" : "Email address",
-      frequency: fr ? "Fréquence des rappels" : "Reminder frequency",
-      weekly: fr ? "Une fois par semaine" : "Once a week",
-      monthly: fr ? "Une fois par mois" : "Once a month",
-      yearly: fr ? "Une fois par an" : "Once a year",
-      confirmation: fr ? "Je confirme avoir effectué le premier paiement." : "I confirm that I have completed the first payment.",
-      save: fr ? "Demander les rappels par e-mail" : "Request email reminders"
+      mode: ja ? "お支払い方法" : fr ? "Modalité de paiement" : "Payment plan",
+      single: ja ? "一括払い" : fr ? "Paiement unique" : "One-time payment",
+      installments: ja ? "米ドル1ドル以上の任意分割払い" : fr ? "Fractionner en échéances volontaires d’au moins 1 dollar américain" : "Split into voluntary instalments of at least USD 1",
+      reminderTitle: ja ? "支払いリマインダー" : fr ? "Rappels de paiement" : "Payment reminders",
+      reminderDescription: ja ? "初回支払い後、次回分のメール通知を希望できます。自動請求は行われません。" : fr ? "Après le premier paiement, vous pouvez demander des rappels volontaires par e-mail pour la prochaine échéance. Aucun prélèvement automatique ne sera effectué." : "After completing the first payment, you may request voluntary email reminders for the next instalment. No automatic charge will be made.",
+      email: ja ? "メールアドレス" : fr ? "Adresse e-mail" : "Email address",
+      frequency: ja ? "通知頻度" : fr ? "Fréquence des rappels" : "Reminder frequency",
+      weekly: ja ? "毎週" : fr ? "Une fois par semaine" : "Once a week",
+      monthly: ja ? "毎月" : fr ? "Une fois par mois" : "Once a month",
+      yearly: ja ? "毎年" : fr ? "Une fois par an" : "Once a year",
+      confirmation: ja ? "初回支払いが完了したことを確認します。" : fr ? "Je confirme avoir effectué le premier paiement." : "I confirm that I have completed the first payment.",
+      save: ja ? "メール通知を申し込む" : fr ? "Demander les rappels par e-mail" : "Request email reminders"
     };
     const set = (id, value) => { const element = document.getElementById(id); if (element) element.textContent = value; };
     set("donation-mode-label", labels.mode); set("donation-mode-single", labels.single); set("donation-mode-installments", labels.installments);
@@ -573,12 +575,12 @@
   };
 
   function localeRegion() {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    if (regionByTimezone[timezone]) return regionByTimezone[timezone];
     try {
       const explicit = new Intl.Locale(navigator.language || "en").region || "";
       if (explicit) return explicit;
     } catch (_) {}
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-    if (regionByTimezone[timezone]) return regionByTimezone[timezone];
     return regionByLanguage[uiLanguage()] || "";
   }
   function formatLocal(value) {
