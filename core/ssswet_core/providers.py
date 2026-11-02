@@ -299,12 +299,25 @@ class MultiSourceLiteratureProvider:
         # Query independent scholarly indexes concurrently so one slow source does not
         # delay the other. Both results are still merged and deduplicated below.
         with ThreadPoolExecutor(max_workers=len(self.providers), thread_name_prefix="ssswet-source") as executor:
-            futures = [executor.submit(provider.investigate, objective, strategy) for provider in self.providers]
-            results = [future.result() for future in futures]
+            futures = {
+                executor.submit(provider.investigate, objective, strategy): provider
+                for provider in self.providers
+            }
+            results = []
+            failures: list[str] = []
+            for future, provider in futures.items():
+                try:
+                    results.append((provider, future.result()))
+                except Exception as exc:
+                    failures.append(f"{provider.name}: {type(exc).__name__}")
+                    results.append((provider, ProviderResult(
+                        f"{provider.name} search failed unexpectedly ({type(exc).__name__}).",
+                        uncertainty=1.0,
+                    )))
         evidence: list[str] = []
         source_ids: list[str] = []
         seen: set[str] = set()
-        for provider, result in zip(self.providers, results):
+        for provider, result in results:
             for source_id, item in zip(result.source_ids, result.evidence):
                 normalized = source_id.casefold().replace("https://doi.org/", "").strip()
                 key = normalized or item.casefold()
@@ -315,7 +328,8 @@ class MultiSourceLiteratureProvider:
                 source_ids.append(source_id)
         if not evidence:
             return ProviderResult(
-                "Crossref and OpenAlex returned no usable records. Check network access or broaden the query.",
+                "Crossref and OpenAlex returned no usable records. Check network access or broaden the query. "
+                + ("Source failures: " + "; ".join(failures) if failures else ""),
                 uncertainty=1.0,
             )
         return ProviderResult(
@@ -324,6 +338,7 @@ class MultiSourceLiteratureProvider:
                 "from Crossref and OpenAlex. Duplicate DOI records are collapsed. "
                 "Metadata is not proof of quality or truth; review full texts, methods and "
                 "independent evidence before drawing conclusions."
+                + (" One source failed: " + "; ".join(failures) if failures else ""),
             ),
             evidence=tuple(evidence),
             uncertainty=1.0,
