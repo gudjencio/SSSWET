@@ -35,7 +35,13 @@
     placeholderDoi: "DOI, URL ou identifiant d’un enregistrement existant",
     placeholderTitle: "Saisir un titre",
     placeholderSummary: "Résumer la mise à jour du projet",
-    placeholderSearch: "Rechercher des titres, descriptions ou références"
+    placeholderSearch: "Rechercher des titres, descriptions ou références",
+    prioritySummary: "Enregistrer ou actualiser une évaluation", journalHeading: "Enregistrer une mise à jour du projet",
+    priorityStatus: "Connectez le moteur de recherche local pour consulter et enregistrer les évaluations des programmes.",
+    feasibilityStatus: "Examen fondé sur les preuves des sept programmes technologiques. Connectez le moteur local pour consulter les données enregistrées.",
+    feasibilityNote: "Cet observatoire résume les entrées enregistrées dans le projet. Il ne démontre ni la faisabilité, ni la sécurité, ni la validité scientifique, ni la disponibilité d’un produit. L’absence d’un enregistrement ne prouve pas qu’aucun travail n’existe ailleurs.",
+    journalStatus: "Connectez le moteur de recherche local pour consulter les mises à jour enregistrées du projet.",
+    weight: "Pondération : "
   };
   const optionLabels = {
     "Not assessed":fr.notAssessed,"0 — Very low":"0 — Très faible","1 — Low":"1 — Faible","2 — Limited":"2 — Limité","3 — Moderate":"3 — Modéré","4 — Strong":"4 — Élevé","5 — Very strong":"5 — Très élevé",
@@ -84,6 +90,14 @@
     const filter = document.getElementById("research-journal-filter");
     if (filter) filter.querySelectorAll("option").forEach(o => { if (optionLabels[o.textContent.trim()]) o.textContent = optionLabels[o.textContent.trim()]; });
     const search = document.getElementById("timeline-search"); if (search) search.placeholder = fr.placeholderSearch;
+    const summary = document.querySelector(".priority-assessment-editor > summary"); if (summary) summary.textContent = fr.prioritySummary;
+    const journalHeading = document.querySelector("#research-journal-form h4"); if (journalHeading) journalHeading.textContent = fr.journalHeading;
+    const priorityStatus = document.getElementById("priority-assessment-status"); if (priorityStatus && priorityStatus.textContent.includes("Connect the local research engine")) priorityStatus.textContent = fr.priorityStatus;
+    const feasibilityStatus = document.getElementById("technology-feasibility-status"); if (feasibilityStatus && feasibilityStatus.textContent.includes("Evidence-led review")) feasibilityStatus.textContent = fr.feasibilityStatus;
+    const feasibilityNote = document.querySelector(".technology-feasibility-note"); if (feasibilityNote) feasibilityNote.textContent = fr.feasibilityNote;
+    const journalStatus = document.getElementById("research-journal-status"); if (journalStatus && journalStatus.textContent.includes("Connect the local research engine")) journalStatus.textContent = fr.journalStatus;
+    document.querySelectorAll(".priority-score-grid small").forEach(el => { el.textContent = el.textContent.replace(" weight", " de pondération").replace("% de pondération", " % de pondération"); });
+    const journalToolsLabel = document.querySelector(".research-journal-tools label"); if (journalToolsLabel) setFirstText(journalToolsLabel, fr.technology);
     const aria = [["#priority-assessment-form","Formulaire d’évaluation des priorités"],["#research-journal-form","Formulaire du journal de recherche"],["#technology-grid","Programmes technologiques à soutenir"]];
     aria.forEach(([selector,label]) => document.querySelector(selector)?.setAttribute("aria-label",label));
   }
