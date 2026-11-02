@@ -403,3 +403,12 @@ def test_decomposer_does_not_add_safety_lens_to_unrelated_simple_question():
 
     tasks = TaskDecomposer().decompose("Calculate a simple arithmetic mean", "math")
     assert [task.role for task in tasks] == ["mathematician", "independent_verifier"]
+
+
+def test_comparison_alone_does_not_trigger_unnecessary_systems_work():
+    from ssswet_core.decomposer import TaskDecomposer
+
+    tasks = TaskDecomposer().decompose(
+        "Compare two harmless numerical optimization methods", "math"
+    )
+    assert [task.role for task in tasks] == ["mathematician", "independent_verifier"]
