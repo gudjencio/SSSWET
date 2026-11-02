@@ -1,17 +1,22 @@
 (() => {
   "use strict";
 
-  const loadPlatformRouting = () => {
-    if (document.querySelector('script[data-ssswet-platform-routing]')) return;
+  const loadScript = (src, marker) => {
+    if (document.querySelector(`script[${marker}]`)) return;
     const script = document.createElement("script");
-    script.src = "platform-routing.js";
+    script.src = src;
     script.async = false;
-    script.dataset.ssswetPlatformRouting = "true";
+    script.setAttribute(marker, "true");
     document.body.appendChild(script);
   };
 
-  if (document.body) loadPlatformRouting();
-  else document.addEventListener("DOMContentLoaded", loadPlatformRouting, { once: true });
+  const loadInterfaceEnhancements = () => {
+    loadScript("ui-enhancements.js", "data-ssswet-ui-enhancements");
+    loadScript("platform-routing.js", "data-ssswet-platform-routing");
+  };
+
+  if (document.body) loadInterfaceEnhancements();
+  else document.addEventListener("DOMContentLoaded", loadInterfaceEnhancements, { once: true });
 
   if (!("serviceWorker" in navigator)) return;
 
