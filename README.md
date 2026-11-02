@@ -20,6 +20,10 @@ Research into protective equipment may cover lawful military, civil-protection, 
 
 The proposed, currently disabled [monthly technology financing model](docs/MONTHLY_TECHNOLOGY_FINANCING.md) documents subscription sequencing, tax transparency, cancellation, refunds and repair safeguards.
 
+## Virtual Time Travel Mapping
+
+Try the [standalone Virtual Time Travel Mapping prototype](https://gudjencio.github.io/SSSWET/virtual-time-travel.html). It supports consent-based local spatial capture, recorded observation replay and clearly labelled short-horizon scenarios. It does not recover unrecorded history or guarantee future outcomes.
+
 ## Continuous scientific and engineering improvement
 
 The purpose of the SSSWET research bots is not only to catalogue ideas: they are intended to help advance scientific understanding and develop technologies toward greater usefulness, performance, durability, efficiency, maintainability, safety and evidence quality.
