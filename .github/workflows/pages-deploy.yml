@@ -31,6 +31,10 @@ jobs:
           node --check web/app.js
           node --check web/locales.js
           node --check web/platform-downloads.js
+          node --check web/donation.js
+          node --check web/technology-categories.js
+          node --check web/donation-config.js
+          node --check web/product-purchase-config.js
           node --check web/version-center.js
           node web/test-locales.cjs
       - name: Upload Pages artifact
