@@ -201,6 +201,21 @@ class AgentIdentityRegistry:
             ).fetchall()
         return [dict(row) for row in rows]
 
+    def collaborations(self, agent_id: str, limit: int = 20) -> list[dict]:
+        """Return recent, source-linked collaboration events for one stable agent ID."""
+        agent_id = str(agent_id).strip()
+        if not agent_id or len(agent_id) > 100:
+            raise ValueError("invalid agent_id")
+        if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 100:
+            raise ValueError("limit must be between 1 and 100")
+        with self.store._connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM agent_relationship_events WHERE agent_id=? "
+                "ORDER BY created_at DESC LIMIT ?",
+                (agent_id, limit),
+            ).fetchall()
+        return [dict(row) for row in rows]
+
     def record_collaboration(
         self, *, agent_id: str, other_agent_id: str, event_type: str,
         evidence_reference: str, note: str = "",
