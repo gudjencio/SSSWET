@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from .contradiction import ContradictionDetector, ResearchClaim, ClaimConflict
+from .context_aware_claim_comparison import ContextAwareClaimComparator, ClaimContext
 from .memory import KnowledgeMemory, MemoryItem
 from .persistence import SQLiteResearchStore
 from .models import Finding, ResearchEvent, Task
@@ -48,6 +49,7 @@ class SSSWETEngine:
         self.safety = SafetyGate()
         self.strategies = StrategySelector()
         self.contradictions = ContradictionDetector()
+        self.contextual_claim_comparator = ContextAwareClaimComparator()
         self._conflict_review_tasks: dict[tuple[str, str, tuple[str, ...]], str] = {}
         self.simulated_findings: list[Finding] = []
 
@@ -129,6 +131,10 @@ class SSSWETEngine:
                 parent_task_id or review_task.id,
             ))
         return conflicts
+
+    def compare_contextual_claims(self, claims: list[ClaimContext]):
+        """Compare structured claims without conflating different contexts."""
+        return self.contextual_claim_comparator.compare(claims)
 
     def register_technology_catalogue(self, actor_id: str = "catalogue") -> dict:
         if self.technology_dossiers is None:
