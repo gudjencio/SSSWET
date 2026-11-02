@@ -1,0 +1,60 @@
+{
+  "name": "ssswet-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Official SSSWET desktop and mobile application build",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "build:desktop": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.12",
+    "@capacitor/cli": "^7.4.3"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/android": "^7.4.3"
+  },
+  "build": {
+    "appId": "org.ssswet.platform",
+    "productName": "SSSWET",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "desktop/**",
+      "web/**",
+      "package.json"
+    ],
+    "artifactName": "SSSWET-${version}-${os}-${arch}.${ext}",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.education"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Science"
+    }
+  }
+}
