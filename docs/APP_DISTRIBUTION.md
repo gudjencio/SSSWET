@@ -10,7 +10,7 @@ An Android APK preview is also built by the application release workflow. It is 
 
 ## Desktop
 
-The desktop wrapper uses Electron and packages the same public web interface. Release builds target:
+The desktop wrapper uses Electron and packages the same public web interface. Initial packages are not code-signed or notarized, so Windows SmartScreen or macOS Gatekeeper may display a warning. Production signing and notarization require platform-specific certificates and protected secrets. Release builds target:
 - Windows: NSIS installer (.exe)
 - macOS: disk image (.dmg)
 - Linux: AppImage
@@ -21,7 +21,7 @@ The application uses a restricted renderer configuration: context isolation and 
 
 Create and push a version tag such as `v1.0.0` to trigger the release workflow. The workflow builds desktop packages on their respective operating systems, builds the Android preview APK, and attaches the resulting files to the GitHub Release.
 
-A manual workflow run uploads build artifacts to GitHub Actions but does not publish a GitHub Release.
+A manual workflow run uploads build artifacts to GitHub Actions but does not publish a GitHub Release. The first public installers and Android preview package will appear in the Releases archive only after a version tag is published and the build succeeds. SHA-256 checksums are attached to each release for integrity verification.
 
 Official downloads are linked from the SSSWET website. Do not distribute unsigned, altered or unofficial packages as official SSSWET releases.
 
