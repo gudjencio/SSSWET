@@ -177,7 +177,7 @@
         const issue = await issueResponse.json();
         const comments = commentsResponse.ok ? await commentsResponse.json() : [];
         const prMatch = (Array.isArray(comments)?comments:[]).map(comment =>
-          String(comment.body||"").match(/https:\/\/github\\.com\/gudjencio\/SSSWET\/pull\/(\\d+)/i)
+          String(comment.body||"").match(/https:\/\/github\.com\/gudjencio\/SSSWET\/pull\/(\d+)/i)
         ).find(Boolean);
         if (prMatch) {
           const prResponse = await fetch(base+"/pulls/"+Number(prMatch[1]),{headers});
@@ -208,7 +208,7 @@
         const title=document.createElement("strong");title.textContent=report.title+" · "+(report.category||"");
         const state=document.createElement("p");state.textContent=labels.received;state.className="ssswet-report-live-status";
         const links=document.createElement("p");links.className="ssswet-report-history-links";
-        if(report.issue_url && /^https:\/\/github\\.com\/gudjencio\/SSSWET\/issues\/\\d+$/i.test(report.issue_url)){
+        if(report.issue_url && /^https:\/\/github\.com\/gudjencio\/SSSWET\/issues\/\d+$/i.test(report.issue_url)){
           const link=document.createElement("a");link.href=report.issue_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=labels.issue;links.append(link);
         }
         item.append(title,state,links);historyList.append(item);
@@ -218,7 +218,7 @@
         const live=await getLiveReportStatus(row.report);
         row.state.textContent=labels[live.key]||labels.received;
         if(live.unavailable) row.state.textContent+=" · "+labels.unavailable;
-        if(live.pr_url && /^https:\/\/github\\.com\/gudjencio\/SSSWET\/pull\/\\d+$/i.test(live.pr_url)){
+        if(live.pr_url && /^https:\/\/github\.com\/gudjencio\/SSSWET\/pull\/\d+$/i.test(live.pr_url)){
           const link=document.createElement("a");link.href=live.pr_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=labels.proposal;
           if(row.links.childNodes.length) row.links.append(" · ");
           row.links.append(link);
