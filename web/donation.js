@@ -138,31 +138,31 @@
       fr: ["Interfaces cerveau-machine", "Recherche non invasive sur les interfaces cerveau-machine, l’accessibilité, la qualité du signal et la protection des données neuronales."]
     },
     quantumNetworks: {
-      en: ["Réseaux de communication quantique", "Fundamental research into experimental quantum networks, quantum key distribution and their physical limits."],
+      en: ["Quantum communication networks", "Fundamental research into experimental quantum networks, quantum key distribution and their physical limits."],
       fr: ["Réseaux de communication quantique", "Recherche fondamentale sur les réseaux quantiques expérimentaux, la distribution quantique de clés et leurs limites physiques."]
     },
     fusionEnergy: {
-      en: ["Énergie de fusion", "Research into materials, confinement, thermal management and fusion-related energy systems, without promising net energy production."],
+      en: ["Fusion energy", "Research into materials, confinement, thermal management and fusion-related energy systems, without promising net energy production."],
       fr: ["Énergie de fusion", "Recherche sur les matériaux, le confinement, la gestion thermique et les systèmes associés à la fusion, sans promesse de production nette."]
     },
     spaceLifeSupport: {
-      en: ["Écosystèmes spatiaux en boucle fermée", "Closed-loop life-support systems, water and air recycling, food production and resilient space habitats."],
+      en: ["Closed-loop space life-support ecosystems", "Closed-loop life-support systems, water and air recycling, food production and resilient space habitats."],
       fr: ["Écosystèmes spatiaux en boucle fermée", "Systèmes de support-vie, recyclage de l’eau et de l’air, production alimentaire et résilience des habitats spatiaux."]
     },
     autonomousLabs: {
-      en: ["Laboratoires scientifiques autonomes", "Automated measurements, experimental traceability, quality control and human validation of research protocols."],
+      en: ["Autonomous research laboratories", "Automated measurements, experimental traceability, quality control and human validation of research protocols."],
       fr: ["Laboratoires scientifiques autonomes", "Automatisation des mesures, traçabilité expérimentale, contrôle qualité et validation humaine des protocoles."]
     },
     roboticsExoskeletons: {
-      en: ["Robotique avancée et exosquelettes", "Assistive robotics, ergonomics, mobility, human–machine interaction and user safety."],
+      en: ["Advanced robotics and exoskeletons", "Assistive robotics, ergonomics, mobility, human–machine interaction and user safety."],
       fr: ["Robotique avancée et exosquelettes", "Robotique d’assistance, ergonomie, mobilité, interaction humain-machine et sécurité des utilisateurs."]
     },
     planetaryMonitoring: {
-      en: ["Surveillance planétaire et risques astéroïdaux", "Astronomical detection, orbital tracking, uncertainty estimation and scientific risk assessment."],
+      en: ["Planetary monitoring and asteroid-risk assessment", "Astronomical detection, orbital tracking, uncertainty estimation and scientific risk assessment."],
       fr: ["Surveillance planétaire et risques astéroïdaux", "Détection astronomique, suivi orbital, estimation des incertitudes et évaluation scientifique des risques."]
     },
     advancedComputing: {
-      en: ["Calcul avancé et intelligence artificielle scientifique", "Computational tools, interpretable scientific models, reproducibility and evaluation of AI-system limitations."],
+      en: ["Advanced computing and scientific AI", "Computational tools, interpretable scientific models, reproducibility and evaluation of AI-system limitations."],
       fr: ["Calcul avancé et intelligence artificielle scientifique", "Outils de calcul, modèles scientifiques interprétables, reproductibilité et évaluation des limites des systèmes d’IA."]
     }
   });
@@ -218,6 +218,34 @@
     fr: { eyebrow:"TECHNOLOGIES DU FUTUR · PRIORITÉS DE RECHERCHE", title:"Choisissez une technologie à soutenir", intro:"Découvrez les axes de recherche et ouvrez une fenêtre de contribution pour la technologie que vous souhaitez encourager.", disclaimer:"Ces axes ne signifient pas que les technologies existent ou soient réalisables aujourd'hui. Le projet poursuivra continuellement les recherches, les essais et les améliorations pour tenter de les rendre possibles. Les contributions financent la recherche et le développement ; elles ne constituent pas un achat et ne garantissent aucun résultat. Si une technologie devient réalisable et qu'un produit est effectivement développé, une offre et des conditions de livraison seront communiquées séparément.", explore:"Découvrir et contribuer", dialogEyebrow:"FINANCER LA RECHERCHE ET LE DÉVELOPPEMENT", amountLabel:"Montant mensuel en dollars américains · équivalent en euros", repeatLabel:"Nombre de contributions distinctes", perContribution:"Contribution mensuelle", totalLabel:"Équivalent annuel", currencyNote:"Le montant est facturé en dollars américains. Son équivalent en euros est affiché à titre indicatif selon le taux de change de référence le plus récent. PayPal affichera les conditions avant validation.", paymentMissing:"L’abonnement PayPal n’est pas configuré.", paymentReady:"Choisissez votre montant mensuel, puis approuvez l’abonnement récurrent en toute sécurité avec PayPal.", checkout:"Continuer vers PayPal", copySummary:"Copier le récapitulatif du financement", paymentDisclaimer:"Il s’agit d’une contribution mensuelle récurrente. Le montant choisi est facturé chaque mois par PayPal jusqu’à l’annulation de l’abonnement. Les contributions financent la recherche en cours et ne constituent pas l’achat d’un produit existant ni une garantie de résultat. Toute future offre de produit et de livraison sera communiquée séparément si une technologie est développée et devient disponible.", invalid:"Saisissez un montant mensuel compris entre 1 et 100 000 dollars américains.", copied:"Récapitulatif copié.", copyError:"Copie automatique impossible. Veuillez sélectionner et copier le récapitulatif." }
   };
   const copy = () => translations[(document.documentElement.lang || "en").startsWith("fr") ? "fr" : "en"];
+
+  function populateTechnologySelectors() {
+    const language = copy() === translations.fr ? "fr" : "en";
+    const definitions = [
+      { selector: '#priority-assessment-form select[name="programme_id"]' },
+      { selector: '#research-journal-filter', includeAll: true },
+      { selector: '#research-journal-form select[name="technology"]' }
+    ];
+    for (const definition of definitions) {
+      const select = document.querySelector(definition.selector);
+      if (!select) continue;
+      const previous = select.value;
+      select.replaceChildren();
+      if (definition.includeAll) {
+        const all = document.createElement("option");
+        all.value = "";
+        all.textContent = language === "fr" ? "Toutes les technologies" : "All technologies";
+        select.append(all);
+      }
+      Object.entries(technologies).forEach(([key, item]) => {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = item[language][0];
+        select.append(option);
+      });
+      if ([...select.options].some(option => option.value === previous)) select.value = previous;
+    }
+  }
   function applyPaymentLanguage() {
     const fr = copy() === translations.fr;
     const labels = {
@@ -468,6 +496,7 @@
   currencyNote.textContent = copy().currencyNote;
   applyPaymentLanguage();
   renderPortfolio();
+  populateTechnologySelectors();
   chooseCurrency();
   loadEuroExchangeRate();
   window.addEventListener("languagechange", () => window.location.reload());
@@ -489,6 +518,7 @@
     }
     updateCurrencyNote();
     renderPortfolio();
+    populateTechnologySelectors();
     updateAmounts();
   });
 })();
