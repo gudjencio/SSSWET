@@ -5,21 +5,21 @@
   if (!root) return;
 
   const copy = {
-    en: { label: "Local visual correspondences", matched: "candidate matches", note: "Screening heuristic only; matches are not camera poses, tracked features, or proof of 3D overlap." },
-    fr: { label: "Correspondances visuelles locales", matched: "correspondances candidates", note: "Heuristique de présélection uniquement ; ces correspondances ne sont ni des poses caméra, ni des points suivis, ni une preuve de recouvrement 3D." },
-    es: { label: "Correspondencias visuales locales", matched: "correspondencias candidatas", note: "Solo es una heurística de selección; no representa poses de cámara, puntos rastreados ni prueba de solapamiento 3D." },
-    de: { label: "Lokale visuelle Übereinstimmungen", matched: "Kandidatenübereinstimmungen", note: "Nur eine Auswahlheuristik; keine Kameraposen, verfolgten Merkmale oder ein Nachweis der 3D-Überlappung." },
-    it: { label: "Corrispondenze visive locali", matched: "corrispondenze candidate", note: "Solo un'euristica di preselezione; non rappresenta pose della fotocamera, punti tracciati o prova di sovrapposizione 3D." },
-    pt: { label: "Correspondências visuais locais", matched: "correspondências candidatas", note: "Apenas uma heurística de seleção; não representa poses de câmera, pontos rastreados nem prova de sobreposição 3D." },
-    nl: { label: "Lokale visuele overeenkomsten", matched: "kandidaat-overeenkomsten", note: "Alleen een selectieheuristiek; geen cameraposities, gevolgde kenmerken of bewijs van 3D-overlap." },
-    ru: { label: "Локальные визуальные соответствия", matched: "кандидатных соответствий", note: "Только эвристика отбора; это не положения камеры, не отслеженные признаки и не доказательство 3D-перекрытия." },
-    uk: { label: "Локальні візуальні відповідності", matched: "кандидатних відповідностей", note: "Лише евристика відбору; це не положення камери, не відстежені ознаки й не доказ 3D-перекриття." },
-    ar: { label: "المطابقات البصرية المحلية", matched: "مطابقات مرشحة", note: "هذه إرشادية للاختيار فقط؛ ولا تمثل وضعيات الكاميرا أو النقاط المتتبعة أو إثبات التداخل ثلاثي الأبعاد." },
-    he: { label: "התאמות חזותיות מקומיות", matched: "התאמות מועמדות", note: "זהו מדד סינון בלבד; הוא אינו מייצג תנוחות מצלמה, נקודות במעקב או הוכחת חפיפה תלת־ממדית." },
-    ja: { label: "局所的な視覚対応", matched: "候補対応", note: "これは選別用ヒューリスティックであり、カメラ姿勢、追跡特徴、3D重複の証明を示すものではありません。" },
-    ko: { label: "로컬 시각 대응", matched: "후보 대응", note: "선별용 휴리스틱일 뿐이며 카메라 자세, 추적 특징 또는 3D 중첩을 증명하지 않습니다." },
-    zh: { label: "局部视觉对应", matched: "候选对应", note: "这只是筛选启发式指标，不代表相机姿态、跟踪特征，也不能证明三维重叠。" },
-    hi: { label: "स्थानीय दृश्य मिलान", matched: "उम्मीदवार मिलान", note: "यह केवल चयन ह्यूरिस्टिक है; यह कैमरा पोज़, ट्रैक किए गए फीचर या 3D ओवरलैप का प्रमाण नहीं है।" }
+    en: { label: "Local visual correspondences", matched: "candidate matches", distribution: "spatial distribution", note: "Screening heuristic only; matches are not camera poses, tracked features, or proof of 3D overlap." },
+    fr: { label: "Correspondances visuelles locales", matched: "correspondances candidates", distribution: "distribution spatiale", note: "Heuristique de présélection uniquement ; ces correspondances ne sont ni des poses caméra, ni des points suivis, ni une preuve de recouvrement 3D." },
+    es: { label: "Correspondencias visuales locales", matched: "correspondencias candidatas", distribution: "distribución espacial", note: "Solo es una heurística de selección; no representa poses de cámara, puntos rastreados ni prueba de solapamiento 3D." },
+    de: { label: "Lokale visuelle Übereinstimmungen", matched: "Kandidatenübereinstimmungen", distribution: "räumliche Verteilung", note: "Nur eine Auswahlheuristik; keine Kameraposen, verfolgten Merkmale oder ein Nachweis der 3D-Überlappung." },
+    it: { label: "Corrispondenze visive locali", matched: "corrispondenze candidate", distribution: "distribuzione spaziale", note: "Solo un'euristica di preselezione; non rappresenta pose della fotocamera, punti tracciati o prova di sovrapposizione 3D." },
+    pt: { label: "Correspondências visuais locais", matched: "correspondências candidatas", distribution: "distribuição espacial", note: "Apenas uma heurística de seleção; não representa poses de câmera, pontos rastreados nem prova de sobreposição 3D." },
+    nl: { label: "Lokale visuele overeenkomsten", matched: "kandidaat-overeenkomsten", distribution: "ruimtelijke spreiding", note: "Alleen een selectieheuristiek; geen cameraposities, gevolgde kenmerken of bewijs van 3D-overlap." },
+    ru: { label: "Локальные визуальные соответствия", matched: "кандидатных соответствий", distribution: "пространственное распределение", note: "Только эвристика отбора; это не положения камеры, не отслеженные признаки и не доказательство 3D-перекрытия." },
+    uk: { label: "Локальні візуальні відповідності", matched: "кандидатних відповідностей", distribution: "просторовий розподіл", note: "Лише евристика відбору; це не положення камери, не відстежені ознаки й не доказ 3D-перекриття." },
+    ar: { label: "المطابقات البصرية المحلية", matched: "مطابقات مرشحة", distribution: "التوزيع المكاني", note: "هذه إرشادية للاختيار فقط؛ ولا تمثل وضعيات الكاميرا أو النقاط المتتبعة أو إثبات التداخل ثلاثي الأبعاد." },
+    he: { label: "התאמות חזותיות מקומיות", matched: "התאמות מועמדות", distribution: "פיזור מרחבי", note: "זהו מדד סינון בלבד; הוא אינו מייצג תנוחות מצלמה, נקודות במעקב או הוכחת חפיפה תלת־ממדית." },
+    ja: { label: "局所的な視覚対応", matched: "候補対応", distribution: "空間分布", note: "これは選別用ヒューリスティックであり、カメラ姿勢、追跡特徴、3D重複の証明を示すものではありません。" },
+    ko: { label: "로컬 시각 대응", matched: "후보 대응", distribution: "공간 분포", note: "선별용 휴리스틱일 뿐이며 카메라 자세, 추적 특징 또는 3D 중첩을 증명하지 않습니다." },
+    zh: { label: "局部视觉对应", matched: "候选对应", distribution: "空间分布", note: "这只是筛选启发式指标，不代表相机姿态、跟踪特征，也不能证明三维重叠。" },
+    hi: { label: "स्थानीय दृश्य मिलान", matched: "उम्मीदवार मिलान", distribution: "स्थानिक वितरण", note: "यह केवल चयन ह्यूरिस्टिक है; यह कैमरा पोज़, ट्रैक किए गए फीचर या 3D ओवरलैप का प्रमाण नहीं है।" }
   };
 
   const language = () => {
@@ -58,19 +58,28 @@
     return Math.sqrt(sum / a.length);
   };
 
-  const correspondenceCount = (a, b) => {
-    if (!a.length || !b.length) return 0;
-    let matches = 0;
-    for (const descriptor of a) {
-      let best = Infinity, second = Infinity;
-      for (const candidate of b) {
-        const d = distance(descriptor, candidate);
-        if (d < best) { second = best; best = d; }
+  const correspondenceDistribution = (a, b) => {
+    if (!a.length || !b.length) return { count: 0, coverage: 0 };
+    const occupiedA = new Set();
+    const occupiedB = new Set();
+    let count = 0;
+    for (let i = 0; i < a.length; i += 1) {
+      let best = Infinity, second = Infinity, bestIndex = -1;
+      for (let j = 0; j < b.length; j += 1) {
+        const d = distance(a[i], b[j]);
+        if (d < best) { second = best; best = d; bestIndex = j; }
         else if (d < second) second = d;
       }
-      if (best < 0.72 && best / Math.max(second, 1e-6) < 0.82) matches += 1;
+      if (best >= 0.72 || best / Math.max(second, 1e-6) >= 0.82 || bestIndex < 0) continue;
+      const ax = i % 10, ay = Math.floor(i / 10);
+      const bx = bestIndex % 10, by = Math.floor(bestIndex / 10);
+      occupiedA.add(`${Math.min(3, Math.floor(ax / 3))}:${Math.min(3, Math.floor(ay / 2))}`);
+      occupiedB.add(`${Math.min(3, Math.floor(bx / 3))}:${Math.min(3, Math.floor(by / 2))}`);
+      count += 1;
     }
-    return matches;
+    const coverageA = occupiedA.size / 16;
+    const coverageB = occupiedB.size / 16;
+    return { count, coverage: Math.round(((coverageA + coverageB) / 2) * 100) };
   };
 
   let timer = 0;
@@ -82,13 +91,13 @@
     const text = copy[language()];
     root.querySelectorAll(".vt-keyframe-correspondence, .vt-keyframe-correspondence-note").forEach(node => node.remove());
     for (let i = 1; i < images.length; i += 1) {
-      const count = correspondenceCount(descriptors[i - 1], descriptors[i]);
+      const result = correspondenceDistribution(descriptors[i - 1], descriptors[i]);
       const card = images[i].closest(".vt-keyframe-card");
       if (!card) continue;
       const metric = document.createElement("div");
       metric.className = "vt-keyframe-correspondence";
       metric.setAttribute("role", "note");
-      metric.innerHTML = `<strong>${text.label}</strong><span>${count}</span><small>${text.matched}</small>`;
+      metric.innerHTML = `<strong>${text.label}</strong><span>${result.count}</span><small>${text.matched}</small><small>${text.distribution}: ${result.coverage}%</small>`;
       card.appendChild(metric);
     }
     const note = document.createElement("p");
