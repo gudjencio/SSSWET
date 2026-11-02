@@ -37,3 +37,10 @@ Example request body:
 - The service does not calculate a majority-based scientific verdict, certify reviewer independence, resolve disputes, or establish scientific validity.
 - A review board summary is not peer-review accreditation or institutional approval.
 - The local-only write restriction is not a substitute for authentication, authorization, CSRF protection or an institutional audit policy in any networked deployment.
+
+
+## Competing-position summaries
+
+Each dossier summary now includes `competing_positions`, grouped by the recorded verdict. Each group retains the submitted reviewer labels, rationales, methods assessments, limitations and evidence-reference identifiers. The grouping is descriptive only: it does not infer that reviewers share the same underlying explanation, rank the positions, or decide which one is correct.
+
+When more than one verdict is present, `adjudication_required_for_resolution` is set to `true`. This flag indicates that human follow-up is needed if a resolution is sought; it does not trigger an automatic adjudication process. Reviewers can use the preserved rationales and evidence references to identify what additional source inspection, replication or measurement would help distinguish the positions. The service does not generate experimental instructions or authorize research.
