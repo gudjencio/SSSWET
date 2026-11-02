@@ -435,6 +435,8 @@
   });
 
   window.SSSWET_TECHNOLOGIES = technologies;
+  Object.assign(technologies, window.SSSWET_TECHNOLOGIES || {});
+
   const catalogueCountLabels = {
     en: "research programmes", fr: "programmes de recherche", es: "programas de investigación",
     de: "Forschungsprogramme", it: "programmi di ricerca", pt: "programas de pesquisa",
@@ -734,7 +736,7 @@
     const note=document.getElementById("portfolio-manual-note"); if(note) note.textContent=labels.manual;
   }
   function openTechnology(key) {
-    const item = technologies[key];
+    const item = technologies[key] || window.SSSWET_TECHNOLOGIES?.[key];
     if (!item) return;
     selectedTechnology = key;
     const language = copy() === translations.fr ? "fr" : "en";
