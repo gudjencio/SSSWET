@@ -63,3 +63,17 @@ def test_engine_requires_persistent_store_for_team_memory_search():
     engine = SSSWETEngine()
     with pytest.raises(RuntimeError, match="persistent research store"):
         engine.search_team_memories("materials")
+
+
+def test_engine_exposes_context_aware_claim_comparison():
+    from ssswet_core.contradiction import ResearchClaim
+    from ssswet_core.context_aware_claim_comparison import ClaimContext
+
+    engine = SSSWETEngine()
+    claims = [
+        ClaimContext(ResearchClaim("coating", "thickness", "120", "source-a"), scope="sample", unit="um"),
+        ClaimContext(ResearchClaim("coating", "thickness", "105", "source-b"), scope="sample", unit="um"),
+    ]
+    result = engine.compare_contextual_claims(claims)
+    assert len(result) == 1
+    assert result[0].classification == "potential_conflict"
