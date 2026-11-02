@@ -314,6 +314,7 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     "runs": store.campaign_watch_run_history(limit=200),
                 })
             elif path == "/api/knowledge-graph":
+                self._json(store.knowledge_graph(limit=500))
             elif path == "/api/research-observatory":
                 from .research_observatory import ResearchKnowledgeObservatory
                 params = parse_qs(parsed.query)
@@ -322,7 +323,16 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     self._json(ResearchKnowledgeObservatory().build(store, limit=limit))
                 except ValueError as exc:
                     self._json({"error": str(exc)}, 400)
-                self._json(store.knowledge_graph(limit=500))
+            elif path == "/api/evidence-quality-matrix":
+                from .evidence_quality_matrix import EvidenceQualityMatrix
+                params = parse_qs(parsed.query)
+                dossier_id = params.get("dossier_id", [""])[0].strip() or None
+                try:
+                    limit = int(params.get("limit", ["100"])[0])
+                    self._json(EvidenceQualityMatrix().build(store, dossier_id=dossier_id, limit=limit))
+                except ValueError as exc:
+                    message = str(exc)
+                    self._json({"error": message}, 404 if message == "unknown evidence dossier" else 400)
             elif path == "/api/research-gaps":
                 from .research_gaps import ResearchGapAnalyzer
                 self._json(ResearchGapAnalyzer().report(store.knowledge_graph(limit=500)))
