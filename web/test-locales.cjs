@@ -451,3 +451,9 @@ for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja
   if (!newCopySource.includes("\"" + locale + "\":")) throw new Error("New technology descriptions are missing locale " + locale);
 }
 if (!newCopySource.includes("SSSWET_TECHNOLOGIES")) throw new Error("Curated technology metadata is not exposed to the contribution interface.");
+
+
+const virtualTimeSource = fs.readFileSync(new URL("./virtual-time-travel.js", `file://${__filename}`), "utf8");
+if (!virtualTimeSource.includes("lastOrientationWrite=0")) throw new Error("Virtual time capture must track orientation sampling independently.");
+if (!virtualTimeSource.includes("Date.now()-lastOrientationWrite<900") || !virtualTimeSource.includes("Date.now()-lastMotionWrite<900")) throw new Error("Motion and orientation sampling must each have independent throttling.");
+console.log("Validated independent motion and orientation sensor sampling.");
