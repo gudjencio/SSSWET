@@ -208,6 +208,7 @@
   let initialized = false;
   let knownOutputIds = new Set();
   let spokenMessageIds = new Set();
+  let spokenOutputIds = new Set();
   let currentData = null;
   let requestBusy = false;
   let speechQueue = [];
@@ -275,8 +276,11 @@
           speak(["Hmm…","Mhmm…","Let me think…"][Math.floor(Math.random()*3)],speakerTurn++);
           lastThinkingSound = Date.now();
         } else if (outputs.length && active.length) {
-          const item = outputs.find(entry => entry.summary && String(entry.summary).trim());
-          if (item) speak(roleName(item.role) + ". " + item.summary,speakerTurn++);
+          const item = outputs.find(entry => entry.summary && String(entry.summary).trim() && !spokenOutputIds.has([entry.task_id,entry.agent_id,entry.created_at].join("|")));
+          if (item) {
+            spokenOutputIds.add([item.task_id,item.agent_id,item.created_at].join("|"));
+            speak(roleName(item.role) + ". " + item.summary,speakerTurn++);
+          }
         }
       }
       scheduleBotConversation();
@@ -369,6 +373,7 @@
     }
     if (speakNew && voiceEnabled && fresh.length) {
       const item=fresh[fresh.length-1];
+      spokenOutputIds.add([item.task_id,item.agent_id,item.created_at].join("|"));
       speak(roleName(item.role) + ". " + item.summary,speakerTurn++);
     }
   }
@@ -418,6 +423,7 @@
       if(!response.ok) throw new Error("HTTP "+response.status);
       const data=await response.json();
       currentData=data;
+      window.SSSWET_LIVE_RESEARCH_DATA=data;
       window.dispatchEvent(new CustomEvent("ssswet-bot-data",{detail:data}));
       renderStage(data);
       renderFeed(data,true);
