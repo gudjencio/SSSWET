@@ -54,3 +54,19 @@ Browser speech synthesis provides the actual audio output. SSSWET does not claim
 Voice is optional and depends on browser speech-synthesis support. Text remains available for every public explanation. Visitor-facing speech should remain respectful, concise and easy to interrupt.
 
 The personality layer does not collect a visitor voice recording and does not require a visitor to disclose personal information.
+
+
+## Distinct research voices
+
+Each of the eight agents has a stable conversational approach that reflects the work they are responsible for:
+
+- **Mira Solène — General research:** warm synthesis and clear explanations of the wider picture.
+- **Elias Varenne — Independent verification:** source checking, scepticism and separation of evidence from assumptions.
+- **Nadia El-Karim — Medical research:** cautious health language and clear distinctions between laboratory, preclinical and clinical evidence.
+- **Theo Marchand — Materials science:** measurable properties, engineering trade-offs, durability and failure modes.
+- **Asha Okafor — Data analysis:** data quality, patterns, uncertainty and limits of inference.
+- **Jun Park — Systems engineering:** dependencies, interfaces, operational constraints and system-level failure modes.
+- **Amara Diallo — Ethics review:** human consequences, consent, fairness, environmental effects and accountability.
+- **Leon Wu — Future studies:** imaginative scenario exploration, with speculation explicitly labelled.
+
+These styles affect presentation and explanation only. They do not change the underlying research record, evidence classification, safety requirements or scientific conclusions. When a suitable role is known, the live room uses that role's voice profile and speaking cadence rather than assigning a random persona.
