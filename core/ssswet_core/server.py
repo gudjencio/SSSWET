@@ -314,6 +314,14 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     "runs": store.campaign_watch_run_history(limit=200),
                 })
             elif path == "/api/knowledge-graph":
+            elif path == "/api/research-observatory":
+                from .research_observatory import ResearchKnowledgeObservatory
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["200"])[0])
+                    self._json(ResearchKnowledgeObservatory().build(store, limit=limit))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
                 self._json(store.knowledge_graph(limit=500))
             elif path == "/api/research-gaps":
                 from .research_gaps import ResearchGapAnalyzer
