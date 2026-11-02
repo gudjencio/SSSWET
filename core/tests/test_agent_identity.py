@@ -112,3 +112,43 @@ def test_memory_search_matches_accented_and_unaccented_terms(tmp_path):
     assert results
     assert results[0]["memory_id"] == saved["memory_id"]
     assert "efficacite" in results[0]["matched_terms"]
+
+
+def test_memory_review_state_is_visible_in_retrieval_and_append_only(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "memory-review.sqlite3")
+    registry = AgentIdentityRegistry(store)
+    memory = registry.remember(agent_id="mira-review", role="general_researcher",
+        content="A coating retained adhesion after thermal cycling.",
+        source_reference="doi:10.example/coating-test")
+    initial = registry.search_memories("mira-review", "coating adhesion thermal cycling")[0]
+    assert initial["source_review_status"] == "unreviewed"
+    event = registry.record_memory_review(memory_id=memory["memory_id"],
+        status="recheck_required", rationale="A newer standard may change the test method.",
+        reviewer_id="elias", evidence_reference="standard:revision-notice")
+    found = registry.search_team_memories("coating adhesion thermal cycling")[0]
+    assert found["source_review_status"] == "recheck_required"
+    assert found["source_review_reference"] == "standard:revision-notice"
+    assert found["source_reviewed_by"] == "elias"
+    with pytest.raises(Exception, match="append-only"):
+        with store._connect() as connection:
+            connection.execute("UPDATE agent_memory_review_events SET rationale='erased' WHERE event_id=?", (event["event_id"],))
+
+
+def test_memory_review_transitions_require_existing_memory_and_preserve_history(tmp_path):
+    registry = AgentIdentityRegistry(SQLiteResearchStore(tmp_path / "memory-review-flow.sqlite3"))
+    memory = registry.remember(agent_id="asha-review", role="data_analyst",
+        content="Sensor calibration drift was measured.", source_reference="dataset:calibration-1")
+    with pytest.raises(ValueError, match="does not exist"):
+        registry.record_memory_review(memory_id="missing", status="revalidated",
+            rationale="Checked again.", reviewer_id="asha", evidence_reference="audit:1")
+    registry.record_memory_review(memory_id=memory["memory_id"], status="recheck_required",
+        rationale="Calibration protocol has changed.", reviewer_id="jun", evidence_reference="protocol:v2")
+    registry.record_memory_review(memory_id=memory["memory_id"], status="revalidated",
+        rationale="The original measurements were re-evaluated against the new protocol.",
+        reviewer_id="asha", evidence_reference="audit:recheck-2")
+    with pytest.raises(ValueError, match="invalid"):
+        registry.record_memory_review(memory_id=memory["memory_id"], status="revalidated",
+            rationale="Duplicate transition.", reviewer_id="asha", evidence_reference="audit:3")
+    result = registry.search_memories("asha-review", "sensor calibration drift")[0]
+    assert result["source_review_status"] == "revalidated"
+    assert result["source_review_reference"] == "audit:recheck-2"
