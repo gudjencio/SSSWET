@@ -120,8 +120,8 @@ const paymentConfig = fs.readFileSync(new URL("./donation-config.js", `file://${
 new Function(donationSourceLatest);
 const catalogueBlock = donationSourceLatest.slice(donationSourceLatest.indexOf("const technologies = {"), donationSourceLatest.indexOf("window.SSSWET_TECHNOLOGIES"));
 const catalogueEntries = [...catalogueBlock.matchAll(/^    ([A-Za-z_$][\w$]*): \{/gm)].map(match => match[1]);
-if (catalogueEntries.length !== 100 || new Set(catalogueEntries).size !== 100) {
-  throw new Error(`Expected exactly 100 unique public technology catalogue entries; found ${catalogueEntries.length}.`);
+if (catalogueEntries.length !== 106 || new Set(catalogueEntries).size !== 106) {
+  throw new Error(`Expected exactly 106 unique public technology catalogue entries; found ${catalogueEntries.length}.`);
 }
 if (!donationSourceLatest.includes("grid.replaceChildren()") || !donationSourceLatest.includes("updateCatalogueCount()")) {
   throw new Error("The public catalogue must render the complete canonical list and count rendered cards.");
