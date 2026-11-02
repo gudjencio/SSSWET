@@ -157,3 +157,41 @@ def test_pipeline_runs_independent_peer_review_searches(tmp_path):
     assert all(item["sender_agent_id"] != item["recipient_agent_id"] for item in messages)
     assert all("not approval or verification" in item["content"] for item in responses)
     assert all(item["review_state"] == "awaiting_review" for item in requests)
+
+
+class SourcedProvider:
+    name = "sourced-test-provider"
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        return ProviderResult(
+            summary="A provisional note grounded in a traceable bibliographic record.",
+            evidence=("A source record was located for independent inspection.",),
+            uncertainty=0.8,
+            source_ids=("https://doi.org/10.1000/example-record",),
+        )
+
+
+def test_pipeline_persists_source_linked_agent_notes_and_observed_peer_review(tmp_path):
+    from ssswet_core.agent_identity import AgentIdentityRegistry
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    store = SQLiteResearchStore(tmp_path / "agent-memory-pipeline.sqlite3")
+    pipeline = ResearchPipeline(provider=SourcedProvider(), store=store)
+    task_id, steps = pipeline.start(
+        "Study a harmless mathematical optimization problem", "math"
+    )
+
+    registry = AgentIdentityRegistry(store)
+    researcher_notes = registry.memories("ssswet:general_researcher")
+    verifier_notes = registry.memories("ssswet:independent_verifier")
+    overview = registry.overview()
+
+    assert len(steps) == 2
+    assert len(researcher_notes) == 1
+    assert len(verifier_notes) == 1
+    assert all(item["source_reference"].startswith(f"task:{task_id};sources:") for item in researcher_notes + verifier_notes)
+    assert all("https://doi.org/10.1000/example-record" in item["content"] for item in researcher_notes + verifier_notes)
+
+    records = {item["agent_id"]: item for item in overview["persistent_agent_records"]}
+    assert records["ssswet:independent_verifier"]["collaboration_history"][0]["observable_event"] == "peer_review"
+    assert records["ssswet:independent_verifier"]["collaboration_history"][0]["other_agent_id"] == "ssswet:general_researcher"
