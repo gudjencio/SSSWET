@@ -9,7 +9,10 @@ The project is exploratory. Public descriptions are intentionally high-level and
 
 ## Research catalogue
 
-The platform maintains 106 research programmes across eight translated categories. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md), the [protective systems and exoskeleton portfolio](docs/PROTECTIVE_SYSTEMS_AND_EXOSKELETON_PORTFOLIO.md), and the [protective system technical specification framework](docs/PROTECTIVE_SYSTEM_TECHNICAL_SPECIFICATION_FRAMEWORK.md).
+The latest expansion adds ten curated programmes, including [Virtual Time Travel Mapping](docs/VIRTUAL_TIME_TRAVEL_MAPPING.md). This is a local-first research concept for consented 3D spatial capture, replay of recorded observations, and explicitly uncertain modelling of unrecorded past or future scenarios. It does not recover unrecorded history or predict the future with certainty.
+
+
+The platform maintains 510 research programmes across eight translated categories, including ten newly added research programmes. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md), the [protective systems and exoskeleton portfolio](docs/PROTECTIVE_SYSTEMS_AND_EXOSKELETON_PORTFOLIO.md), and the [protective system technical specification framework](docs/PROTECTIVE_SYSTEM_TECHNICAL_SPECIFICATION_FRAMEWORK.md).
 
 The cellular programme now includes dedicated draft workstreams covering cellular recovery, tissue and organ preservation, neural preservation and post-mortem biological limits. These remain research proposals and do not claim that human resurrection is currently possible.
 
