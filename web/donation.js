@@ -739,12 +739,14 @@
     const item = technologies[key] || window.SSSWET_TECHNOLOGIES?.[key];
     if (!item) return;
     selectedTechnology = key;
-    const language = copy() === translations.fr ? "fr" : "en";
-    title.textContent = item[language][0];
-    description.textContent = item[language][1];
+    const selectedLanguage = (document.getElementById("language")?.value || document.documentElement.lang || "en").toLowerCase().split("-")[0];
+    const language = item[selectedLanguage] ? selectedLanguage : (selectedLanguage === "fr" ? "fr" : "en");
+    const localized = item[language] || item.en;
+    title.textContent = localized[0];
+    description.textContent = localized[1];
     const record = portfolio[key] || {};
     const detail = document.getElementById("technology-dialog-progress");
-    if (detail) { const labels=portfolioLabels[language]; const stages={planning:labels.planning,literature_review:labels.literature,feasibility:labels.feasibility,prototype:labels.prototype,validation:labels.validation,available:labels.available}; const money=value=>new Intl.NumberFormat(language,{style:"currency",currency:"EUR"}).format(value); const goal=Number.isFinite(record.funding_goal_eur)&&record.funding_goal_eur>0?money(record.funding_goal_eur):labels.notSet; const total=Number.isFinite(record.confirmed_contributions_eur)&&record.confirmed_contributions_eur>=0?money(record.confirmed_contributions_eur):labels.unknown; detail.textContent=labels.stage+": "+(stages[record.stage]||labels.unknown)+" · "+labels.confirmed+": "+total+" · "+labels.goal+": "+goal; }
+    if (detail) { const labels=portfolioLabels[language==="fr"?"fr":"en"]; const stages={planning:labels.planning,literature_review:labels.literature,feasibility:labels.feasibility,prototype:labels.prototype,validation:labels.validation,available:labels.available}; const money=value=>new Intl.NumberFormat(language,{style:"currency",currency:"EUR"}).format(value); const goal=Number.isFinite(record.funding_goal_eur)&&record.funding_goal_eur>0?money(record.funding_goal_eur):labels.notSet; const total=Number.isFinite(record.confirmed_contributions_eur)&&record.confirmed_contributions_eur>=0?money(record.confirmed_contributions_eur):labels.unknown; detail.textContent=labels.stage+": "+(stages[record.stage]||labels.unknown)+" · "+labels.confirmed+": "+total+" · "+labels.goal+": "+goal; }
     amountInput.value = "1";
     updateAmounts();
     if (typeof modal.showModal === "function") modal.showModal();
