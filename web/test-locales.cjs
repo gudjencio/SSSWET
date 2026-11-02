@@ -259,3 +259,20 @@ new Function(desktopShell);
 const packageConfig = JSON.parse(fs.readFileSync(new URL("../package.json", `file://${__filename}`), "utf8"));
 if (!packageConfig.build?.win || !packageConfig.build?.mac || !packageConfig.build?.linux) throw new Error("Cross-platform desktop build targets are incomplete.");
 console.log("Validated mobile installation, desktop download controls, PWA manifest and desktop package configuration.");
+
+const versionCenterSource = fs.readFileSync(new URL("./version-center.js", `file://${__filename}`), "utf8");
+new Function(versionCenterSource);
+if (!pageSource.includes('id="version-center"') ||
+    !pageSource.includes('id="version-center-status"') ||
+    !pageSource.includes('id="version-center-history"')) {
+  throw new Error("The official version centre interface is incomplete.");
+}
+if (!versionCenterSource.includes("/releases?per_page=8") ||
+    !versionCenterSource.includes("SHA256SUMS") ||
+    !versionCenterSource.includes("cache: \"no-store\"")) {
+  throw new Error("The version centre must retrieve current releases and expose integrity information.");
+}
+if (!serviceWorkerCache.includes('"./version-center.js"')) {
+  throw new Error("The version centre script must be cached for installed applications.");
+}
+console.log("Validated official release centre, release history and checksum information.");
