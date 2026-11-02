@@ -1,55 +1,26 @@
 (() => {
   "use strict";
+
   const copy = {
-    en: {
-      button:"Report", title:"Suggest a project improvement",
-      intro:"Choose a useful improvement or correction. Reports enter the project review queue; nothing is changed automatically.",
-      category:"Improvement area", titleLabel:"Short title", detail:"What should be improved?",
-      send:"Send report", cancel:"Cancel", sending:"Sending…",
-      success:"Thank you. Your suggestion was added to the project review queue.",
-      unavailable:"Report submission is not configured yet. Please try again later.",
-      error:"The report could not be sent. Please try again later.",
-      placeholder:"Describe the improvement and, if possible, the expected result.",
-      options:[
-        ["bug","Bug or display correction"],["translation","Translation and language quality"],
-        ["accessibility","Accessibility and inclusive design"],["performance","Performance and loading speed"],
-        ["security","Security and privacy"],["documentation","Documentation and guidance"],
-        ["research-quality","Scientific rigour and source traceability"],["reliability","Reliability and data integrity"],
-        ["usability","Interface clarity and ease of use"],["new-feature","Useful new feature"],
-        ["compatibility","Browser and device compatibility"],["other","Other useful improvement"]
-      ]
-    },
-    fr: {
-      button:"Signaler", title:"Proposer une amélioration du projet",
-      intro:"Choisissez une amélioration utile ou une correction. Les signalements rejoignent la file d’examen du projet ; aucune modification n’est appliquée automatiquement.",
-      category:"Domaine d’amélioration", titleLabel:"Titre court", detail:"Que faudrait-il améliorer ?",
-      send:"Envoyer le signalement", cancel:"Annuler", sending:"Envoi…",
-      success:"Merci. Votre suggestion a été ajoutée à la file d’examen du projet.",
-      unavailable:"L’envoi des signalements n’est pas encore configuré. Réessayez plus tard.",
-      error:"Le signalement n’a pas pu être envoyé. Réessayez plus tard.",
-      placeholder:"Décrivez l’amélioration et, si possible, le résultat attendu.",
-      options:[
-        ["bug","Bug ou correction d’affichage"],["translation","Traductions et qualité linguistique"],
-        ["accessibility","Accessibilité et conception inclusive"],["performance","Performances et vitesse de chargement"],
-        ["security","Sécurité et confidentialité"],["documentation","Documentation et guides"],
-        ["research-quality","Rigueur scientifique et traçabilité des sources"],["reliability","Fiabilité et intégrité des données"],
-        ["usability","Clarté et facilité d’utilisation"],["new-feature","Nouvelle fonctionnalité utile"],
-        ["compatibility","Compatibilité navigateurs et appareils"],["other","Autre amélioration utile"]
-      ]
-    }
+    en:{button:"Report",title:"Suggest a project improvement",intro:"Choose a useful improvement or correction. Reports enter the project review queue; nothing is changed automatically.",category:"Improvement area",titleLabel:"Short title",detail:"What should be improved?",send:"Send report",cancel:"Cancel",sending:"Sending…",success:"Thank you. Your suggestion was added to the project review queue.",unavailable:"Report submission is not configured yet. Please try again later.",error:"The report could not be sent. Please try again later.",placeholder:"Describe the improvement and, if possible, the expected result.",options:[["bug","Bug or display correction"],["translation","Translation and language quality"],["accessibility","Accessibility and inclusive design"],["performance","Performance and loading speed"],["security","Security and privacy"],["documentation","Documentation and guidance"],["research-quality","Scientific rigour and source traceability"],["reliability","Reliability and data integrity"],["usability","Interface clarity and ease of use"],["new-feature","Useful new feature"],["compatibility","Browser and device compatibility"],["other","Other useful improvement"]]},
+    fr:{button:"Signaler",title:"Proposer une amélioration du projet",intro:"Choisissez une amélioration utile ou une correction. Les signalements rejoignent la file d’examen du projet ; aucune modification n’est appliquée automatiquement.",category:"Domaine d’amélioration",titleLabel:"Titre court",detail:"Que faudrait-il améliorer ?",send:"Envoyer le signalement",cancel:"Annuler",sending:"Envoi…",success:"Merci. Votre suggestion a été ajoutée à la file d’examen du projet.",unavailable:"L’envoi des signalements n’est pas encore configuré. Réessayez plus tard.",error:"Le signalement n’a pas pu être envoyé. Réessayez plus tard.",placeholder:"Décrivez l’amélioration et, si possible, le résultat attendu.",options:[["bug","Bug ou correction d’affichage"],["translation","Traductions et qualité linguistique"],["accessibility","Accessibilité et conception inclusive"],["performance","Performances et vitesse de chargement"],["security","Sécurité et confidentialité"],["documentation","Documentation et guides"],["research-quality","Rigueur scientifique et traçabilité des sources"],["reliability","Fiabilité et intégrité des données"],["usability","Clarté et facilité d’utilisation"],["new-feature","Nouvelle fonctionnalité utile"],["compatibility","Compatibilité navigateurs et appareils"],["other","Autre amélioration utile"]]},
+    es:{button:"Informar",title:"Proponer una mejora del proyecto",intro:"Elige una mejora útil o una corrección. Los informes se añaden a la cola de revisión; no se modifica nada automáticamente.",category:"Área de mejora",titleLabel:"Título breve",detail:"¿Qué se debería mejorar?",send:"Enviar informe",cancel:"Cancelar",sending:"Enviando…",success:"Gracias. Tu sugerencia se ha añadido a la cola de revisión.",unavailable:"El envío de informes aún no está configurado. Inténtalo más tarde.",error:"No se pudo enviar el informe. Inténtalo de nuevo.",placeholder:"Describe la mejora y, si es posible, el resultado esperado.",options:[["bug","Error o corrección visual"],["translation","Traducción y calidad lingüística"],["accessibility","Accesibilidad y diseño inclusivo"],["performance","Rendimiento y velocidad de carga"],["security","Seguridad y privacidad"],["documentation","Documentación y guías"],["research-quality","Rigor científico y trazabilidad de fuentes"],["reliability","Fiabilidad e integridad de datos"],["usability","Claridad y facilidad de uso"],["new-feature","Nueva función útil"],["compatibility","Compatibilidad con navegadores y dispositivos"],["other","Otra mejora útil"]]},
+    de:{button:"Melden",title:"Projektverbesserung vorschlagen",intro:"Wähle eine sinnvolle Verbesserung oder Korrektur. Meldungen werden geprüft; Änderungen erfolgen nicht automatisch.",category:"Verbesserungsbereich",titleLabel:"Kurzer Titel",detail:"Was sollte verbessert werden?",send:"Meldung senden",cancel:"Abbrechen",sending:"Wird gesendet…",success:"Vielen Dank. Dein Vorschlag wurde zur Prüfung eingereicht.",unavailable:"Das Melden ist noch nicht eingerichtet. Bitte später erneut versuchen.",error:"Die Meldung konnte nicht gesendet werden. Bitte erneut versuchen.",placeholder:"Beschreibe die Verbesserung und möglichst das gewünschte Ergebnis.",options:[["bug","Fehler oder Darstellungsproblem"],["translation","Übersetzung und Sprachqualität"],["accessibility","Barrierefreiheit und inklusives Design"],["performance","Leistung und Ladegeschwindigkeit"],["security","Sicherheit und Datenschutz"],["documentation","Dokumentation und Anleitungen"],["research-quality","Wissenschaftliche Sorgfalt und Quellenprüfung"],["reliability","Zuverlässigkeit und Datenintegrität"],["usability","Übersichtlichkeit und Bedienbarkeit"],["new-feature","Nützliche neue Funktion"],["compatibility","Browser- und Gerätekompatibilität"],["other","Sonstige sinnvolle Verbesserung"]]},
+    it:{button:"Segnala",title:"Suggerisci un miglioramento del progetto",intro:"Scegli un miglioramento utile o una correzione. Le segnalazioni vengono esaminate; nessuna modifica viene applicata automaticamente.",category:"Area di miglioramento",titleLabel:"Titolo breve",detail:"Che cosa dovrebbe essere migliorato?",send:"Invia segnalazione",cancel:"Annulla",sending:"Invio…",success:"Grazie. Il suggerimento è stato aggiunto alla coda di revisione.",unavailable:"L’invio delle segnalazioni non è ancora configurato. Riprova più tardi.",error:"Impossibile inviare la segnalazione. Riprova.",placeholder:"Descrivi il miglioramento e, se possibile, il risultato atteso.",options:[["bug","Errore o problema di visualizzazione"],["translation","Traduzione e qualità linguistica"],["accessibility","Accessibilità e design inclusivo"],["performance","Prestazioni e velocità di caricamento"],["security","Sicurezza e privacy"],["documentation","Documentazione e guide"],["research-quality","Rigore scientifico e tracciabilità delle fonti"],["reliability","Affidabilità e integrità dei dati"],["usability","Chiarezza e facilità d’uso"],["new-feature","Nuova funzione utile"],["compatibility","Compatibilità con browser e dispositivi"],["other","Altro miglioramento utile"]]},
+    pt:{button:"Denunciar",title:"Sugerir uma melhoria do projeto",intro:"Escolha uma melhoria útil ou correção. Os relatos entram na fila de análise; nenhuma alteração é aplicada automaticamente.",category:"Área de melhoria",titleLabel:"Título curto",detail:"O que deve ser melhorado?",send:"Enviar relato",cancel:"Cancelar",sending:"Enviando…",success:"Obrigado. Sua sugestão foi adicionada à fila de análise.",unavailable:"O envio de relatos ainda não está configurado. Tente novamente mais tarde.",error:"Não foi possível enviar o relato. Tente novamente.",placeholder:"Descreva a melhoria e, se possível, o resultado esperado.",options:[["bug","Erro ou problema de exibição"],["translation","Tradução e qualidade linguística"],["accessibility","Acessibilidade e design inclusivo"],["performance","Desempenho e velocidade de carregamento"],["security","Segurança e privacidade"],["documentation","Documentação e orientações"],["research-quality","Rigor científico e rastreabilidade das fontes"],["reliability","Confiabilidade e integridade dos dados"],["usability","Clareza e facilidade de uso"],["new-feature","Novo recurso útil"],["compatibility","Compatibilidade com navegadores e dispositivos"],["other","Outra melhoria útil"]]},
+    nl:{button:"Melden",title:"Een projectverbetering voorstellen",intro:"Kies een nuttige verbetering of correctie. Meldingen worden beoordeeld; er worden niet automatisch wijzigingen aangebracht.",category:"Verbetergebied",titleLabel:"Korte titel",detail:"Wat moet worden verbeterd?",send:"Melding verzenden",cancel:"Annuleren",sending:"Verzenden…",success:"Bedankt. Je voorstel is aan de beoordelingswachtrij toegevoegd.",unavailable:"Meldingen versturen is nog niet ingesteld. Probeer het later opnieuw.",error:"De melding kon niet worden verzonden. Probeer het opnieuw.",placeholder:"Beschrijf de verbetering en indien mogelijk het gewenste resultaat.",options:[["bug","Fout of weergaveprobleem"],["translation","Vertaling en taalkwaliteit"],["accessibility","Toegankelijkheid en inclusief ontwerp"],["performance","Prestaties en laadsnelheid"],["security","Beveiliging en privacy"],["documentation","Documentatie en handleidingen"],["research-quality","Wetenschappelijke zorgvuldigheid en bronvermelding"],["reliability","Betrouwbaarheid en gegevensintegriteit"],["usability","Duidelijkheid en gebruiksgemak"],["new-feature","Nuttige nieuwe functie"],["compatibility","Compatibiliteit met browsers en apparaten"],["other","Andere nuttige verbetering"]]},
+    ru:{button:"Сообщить",title:"Предложить улучшение проекта",intro:"Выберите полезное улучшение или исправление. Сообщения поступают на рассмотрение; изменения автоматически не применяются.",category:"Область улучшения",titleLabel:"Краткий заголовок",detail:"Что следует улучшить?",send:"Отправить сообщение",cancel:"Отмена",sending:"Отправка…",success:"Спасибо. Предложение добавлено в очередь на рассмотрение.",unavailable:"Отправка сообщений пока не настроена. Повторите попытку позже.",error:"Не удалось отправить сообщение. Попробуйте ещё раз.",placeholder:"Опишите улучшение и, по возможности, ожидаемый результат.",options:[["bug","Ошибка или проблема отображения"],["translation","Перевод и качество языка"],["accessibility","Доступность и инклюзивный дизайн"],["performance","Производительность и скорость загрузки"],["security","Безопасность и конфиденциальность"],["documentation","Документация и инструкции"],["research-quality","Научная строгость и проверяемость источников"],["reliability","Надёжность и целостность данных"],["usability","Понятность и удобство интерфейса"],["new-feature","Полезная новая функция"],["compatibility","Совместимость с браузерами и устройствами"],["other","Другое полезное улучшение"]]},
+    uk:{button:"Повідомити",title:"Запропонувати покращення проєкту",intro:"Оберіть корисне покращення або виправлення. Повідомлення надходять на розгляд; зміни автоматично не застосовуються.",category:"Напрям покращення",titleLabel:"Коротка назва",detail:"Що варто покращити?",send:"Надіслати повідомлення",cancel:"Скасувати",sending:"Надсилання…",success:"Дякуємо. Пропозицію додано до черги на розгляд.",unavailable:"Надсилання повідомлень ще не налаштовано. Спробуйте пізніше.",error:"Не вдалося надіслати повідомлення. Спробуйте ще раз.",placeholder:"Опишіть покращення та, якщо можливо, очікуваний результат.",options:[["bug","Помилка або проблема відображення"],["translation","Переклад і мовна якість"],["accessibility","Доступність та інклюзивний дизайн"],["performance","Продуктивність і швидкість завантаження"],["security","Безпека та конфіденційність"],["documentation","Документація та інструкції"],["research-quality","Наукова обґрунтованість і простежуваність джерел"],["reliability","Надійність і цілісність даних"],["usability","Зрозумілість і зручність інтерфейсу"],["new-feature","Корисна нова функція"],["compatibility","Сумісність із браузерами та пристроями"],["other","Інше корисне покращення"]]},
+    ar:{button:"إبلاغ",title:"اقتراح تحسين للمشروع",intro:"اختر تحسينًا مفيدًا أو تصحيحًا. تُضاف البلاغات إلى قائمة المراجعة ولا تُطبّق أي تغييرات تلقائيًا.",category:"مجال التحسين",titleLabel:"عنوان مختصر",detail:"ما الذي ينبغي تحسينه؟",send:"إرسال البلاغ",cancel:"إلغاء",sending:"جارٍ الإرسال…",success:"شكرًا لك. أُضيف اقتراحك إلى قائمة مراجعة المشروع.",unavailable:"لم يتم إعداد إرسال البلاغات بعد. يرجى المحاولة لاحقًا.",error:"تعذّر إرسال البلاغ. يرجى المحاولة مجددًا.",placeholder:"صف التحسين والنتيجة المتوقعة إن أمكن.",options:[["bug","خلل أو مشكلة في العرض"],["translation","الترجمة وجودة اللغة"],["accessibility","إمكانية الوصول والتصميم الشامل"],["performance","الأداء وسرعة التحميل"],["security","الأمان والخصوصية"],["documentation","التوثيق والإرشادات"],["research-quality","الدقة العلمية وإمكانية تتبع المصادر"],["reliability","الموثوقية وسلامة البيانات"],["usability","وضوح الواجهة وسهولة الاستخدام"],["new-feature","ميزة جديدة مفيدة"],["compatibility","التوافق مع المتصفحات والأجهزة"],["other","تحسين مفيد آخر"]]},
+    he:{button:"דיווח",title:"הצעת שיפור לפרויקט",intro:"בחרו שיפור מועיל או תיקון. הדיווחים מועברים לבדיקה; שינויים אינם מתבצעים באופן אוטומטי.",category:"תחום השיפור",titleLabel:"כותרת קצרה",detail:"מה כדאי לשפר?",send:"שליחת דיווח",cancel:"ביטול",sending:"שולח…",success:"תודה. ההצעה נוספה לתור הבדיקה של הפרויקט.",unavailable:"שליחת דיווחים עדיין אינה מוגדרת. נסו שוב מאוחר יותר.",error:"לא ניתן לשלוח את הדיווח. נסו שוב.",placeholder:"תארו את השיפור ואם אפשר גם את התוצאה הרצויה.",options:[["bug","תקלה או בעיית תצוגה"],["translation","תרגום ואיכות שפה"],["accessibility","נגישות ועיצוב מכליל"],["performance","ביצועים ומהירות טעינה"],["security","אבטחה ופרטיות"],["documentation","תיעוד והנחיות"],["research-quality","קפדנות מדעית ומעקב אחר מקורות"],["reliability","אמינות ושלמות נתונים"],["usability","בהירות הממשק וקלות השימוש"],["new-feature","תכונה חדשה ומועילה"],["compatibility","תאימות לדפדפנים ולמכשירים"],["other","שיפור מועיל אחר"]]},
+    ja:{button:"報告",title:"プロジェクトの改善を提案",intro:"役立つ改善案または修正点を選んでください。報告は確認待ちリストに追加され、自動的に変更が適用されることはありません。",category:"改善分野",titleLabel:"短いタイトル",detail:"何を改善すべきですか？",send:"報告を送信",cancel:"キャンセル",sending:"送信中…",success:"ありがとうございます。提案がプロジェクトの確認待ちリストに追加されました。",unavailable:"報告機能はまだ設定されていません。後でもう一度お試しください。",error:"報告を送信できませんでした。もう一度お試しください。",placeholder:"改善案と、可能であれば期待する結果を記入してください。",options:[["bug","不具合・表示の修正"],["translation","翻訳と言語品質"],["accessibility","アクセシビリティとインクルーシブデザイン"],["performance","性能と読み込み速度"],["security","セキュリティとプライバシー"],["documentation","ドキュメントとガイド"],["research-quality","科学的厳密性と情報源の追跡可能性"],["reliability","信頼性とデータ整合性"],["usability","分かりやすさと使いやすさ"],["new-feature","役立つ新機能"],["compatibility","ブラウザー・端末との互換性"],["other","その他の有用な改善"]]},
+    ko:{button:"신고",title:"프로젝트 개선 제안",intro:"유용한 개선 사항이나 수정 사항을 선택하세요. 제안은 검토 대기열에 추가되며 변경 사항이 자동으로 적용되지는 않습니다.",category:"개선 분야",titleLabel:"짧은 제목",detail:"무엇을 개선해야 하나요?",send:"신고 보내기",cancel:"취소",sending:"전송 중…",success:"감사합니다. 제안이 프로젝트 검토 대기열에 추가되었습니다.",unavailable:"신고 제출 기능이 아직 설정되지 않았습니다. 나중에 다시 시도하세요.",error:"신고를 보내지 못했습니다. 다시 시도하세요.",placeholder:"개선 사항과 가능하면 기대하는 결과를 설명해 주세요.",options:[["bug","오류 또는 화면 표시 수정"],["translation","번역 및 언어 품질"],["accessibility","접근성 및 포용적 디자인"],["performance","성능 및 로딩 속도"],["security","보안 및 개인정보 보호"],["documentation","문서 및 안내"],["research-quality","과학적 엄밀성 및 출처 추적성"],["reliability","신뢰성 및 데이터 무결성"],["usability","인터페이스의 명확성과 사용 편의성"],["new-feature","유용한 새 기능"],["compatibility","브라우저 및 기기 호환성"],["other","기타 유용한 개선 사항"]]},
+    zh:{button:"报告",title:"提出项目改进建议",intro:"请选择一项有用的改进或修正。报告将进入项目审核队列，不会自动应用任何更改。",category:"改进领域",titleLabel:"简短标题",detail:"需要改进什么？",send:"发送报告",cancel:"取消",sending:"正在发送…",success:"谢谢！您的建议已加入项目审核队列。",unavailable:"报告提交功能尚未配置，请稍后重试。",error:"报告发送失败，请重试。",placeholder:"请描述改进内容，并尽可能说明预期结果。",options:[["bug","错误或显示问题"],["translation","翻译与语言质量"],["accessibility","无障碍与包容性设计"],["performance","性能与加载速度"],["security","安全与隐私"],["documentation","文档与使用指南"],["research-quality","科学严谨性与来源可追溯性"],["reliability","可靠性与数据完整性"],["usability","界面清晰度与易用性"],["new-feature","实用的新功能"],["compatibility","浏览器与设备兼容性"],["other","其他有用的改进"]]},
+    hi:{button:"रिपोर्ट करें",title:"परियोजना में सुधार सुझाएँ",intro:"कोई उपयोगी सुधार या त्रुटि-सुधार चुनें। रिपोर्ट समीक्षा कतार में जोड़ी जाएगी; कोई बदलाव अपने-आप लागू नहीं होगा।",category:"सुधार का क्षेत्र",titleLabel:"संक्षिप्त शीर्षक",detail:"किस चीज़ में सुधार होना चाहिए?",send:"रिपोर्ट भेजें",cancel:"रद्द करें",sending:"भेजा जा रहा है…",success:"धन्यवाद। आपका सुझाव परियोजना की समीक्षा कतार में जोड़ दिया गया है।",unavailable:"रिपोर्ट भेजने की सुविधा अभी कॉन्फ़िगर नहीं है। बाद में फिर प्रयास करें।",error:"रिपोर्ट नहीं भेजी जा सकी। कृपया फिर प्रयास करें।",placeholder:"सुधार का वर्णन करें और संभव हो तो अपेक्षित परिणाम भी बताएँ।",options:[["bug","त्रुटि या प्रदर्शन संबंधी समस्या"],["translation","अनुवाद और भाषा की गुणवत्ता"],["accessibility","सुलभता और समावेशी डिज़ाइन"],["performance","प्रदर्शन और लोड होने की गति"],["security","सुरक्षा और गोपनीयता"],["documentation","दस्तावेज़ और मार्गदर्शिका"],["research-quality","वैज्ञानिक कठोरता और स्रोतों की पहचान"],["reliability","विश्वसनीयता और डेटा अखंडता"],["usability","इंटरफ़ेस की स्पष्टता और उपयोग में आसानी"],["new-feature","उपयोगी नई सुविधा"],["compatibility","ब्राउज़र और उपकरण संगतता"],["other","अन्य उपयोगी सुधार"]]}
   };
-  const buttonLabels = {
-    en:"Report", fr:"Signaler", es:"Informar", de:"Melden", it:"Segnala",
-    pt:"Denunciar", nl:"Melden", ru:"Сообщить", uk:"Повідомити", ar:"إبلاغ",
-    he:"דיווח", ja:"報告", ko:"신고", zh:"报告", hi:"रिपोर्ट करें"
-  };
-  const language = () => String(
-    document.documentElement.dataset.language ||
-    document.getElementById("language")?.value ||
-    document.documentElement.lang || "en"
-  ).toLowerCase().split("-")[0];
+
+  const language = () => String(document.documentElement.lang || document.getElementById("language")?.value || "en").toLowerCase().split("-")[0];
   const text = () => copy[language()] || copy.en;
-  const buttonLabel = () => buttonLabels[language()] || "Report";
   const style = document.createElement("style");
   style.textContent = `
     .report-project-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:11px 18px;border:1px solid rgba(255,92,92,.55);border-radius:14px;color:#fff;background:linear-gradient(115deg,#9f242b,#65171d);font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.24)}
@@ -65,8 +36,10 @@
     .ssswet-report-actions button{border:1px solid #555;border-radius:9px;padding:10px 15px;background:#242630;color:white;cursor:pointer}
     .ssswet-report-actions button[type=submit]{background:#a8242d;border-color:#a8242d}
     .ssswet-report-status{min-height:1.4em;font-size:13px}
+    [dir="rtl"] .ssswet-report-dialog{text-align:right}
   `;
   document.head.append(style);
+
   function init(){
     const slot=document.querySelector(".repair-project-slot");
     if(!slot || document.getElementById("ssswet-report-button")) return;
@@ -74,7 +47,7 @@
     button.type="button";button.id="ssswet-report-button";button.className="report-project-button";
     const dialog=document.createElement("dialog");dialog.className="ssswet-report-dialog";dialog.id="ssswet-report-dialog";
     const form=document.createElement("form");
-    const heading=document.createElement("h2"), intro=document.createElement("p");
+    const heading=document.createElement("h2"),intro=document.createElement("p");
     const categoryLabel=document.createElement("label"),category=document.createElement("select");
     const titleLabel=document.createElement("label"),title=document.createElement("input");
     const detailLabel=document.createElement("label"),detail=document.createElement("textarea");
@@ -89,8 +62,10 @@
     detailLabel.append(document.createTextNode(""),detail);
     actions.append(cancel,submit);form.append(heading,intro,categoryLabel,titleLabel,detailLabel,status,actions);dialog.append(form);
     slot.append(button,dialog);
+
     function localize(){
-      const t=text();button.textContent=buttonLabel();button.setAttribute("aria-label",buttonLabel());
+      const t=text();
+      button.textContent=t.button;button.setAttribute("aria-label",t.button);
       heading.textContent=t.title;intro.textContent=t.intro;
       categoryLabel.firstChild.textContent=t.category;titleLabel.firstChild.textContent=t.titleLabel;
       detailLabel.firstChild.textContent=t.detail;title.placeholder=t.titleLabel;detail.placeholder=t.placeholder;
@@ -98,7 +73,9 @@
       const previous=category.value;category.replaceChildren();
       t.options.forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;category.append(option);});
       if(previous)category.value=previous;
+      const rtl=["ar","he"].includes(language());dialog.dir=rtl?"rtl":"ltr";
     }
+
     button.addEventListener("click",()=>{localize();status.textContent="";dialog.showModal();});
     cancel.addEventListener("click",()=>dialog.close());
     form.addEventListener("submit",async event=>{
@@ -107,7 +84,7 @@
         if(typeof window.ssswetApiFetch!=="function") throw new Error("unavailable");
         const response=await window.ssswetApiFetch("/api/project-reports",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({category:category.value,title:title.value.trim(),description:detail.value.trim(),language:language(),page:location.pathname})});
         const result=await response.json();
-        if(!response.ok) throw new Error(result.error||"submission failed");
+        if(!response.ok){const error=new Error(result.error||"submission failed");error.status=response.status;throw error;}
         status.textContent=t.success;form.reset();localize();
       }catch(error){status.textContent=error.message==="unavailable"||error.status===503?t.unavailable:t.error;}
       finally{submit.disabled=false;submit.textContent=text().send;}
