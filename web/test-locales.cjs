@@ -428,7 +428,7 @@ for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja
 for (const control of ["vt-start","vt-stop","vt-locate","vt-time","vt-model","vt-delete","vt-export"]) {
   if (!virtualHtml.includes('id="' + control + '"')) throw new Error("Virtual Time Travel control missing: " + control);
 }
-if (!virtualHtml.includes("map provider") || !virtualScript.includes("modelPast")) throw new Error("Virtual Time Travel disclosure or model distinction is missing.");
+if (!virtualScript.includes("map provider") || !virtualScript.includes("modelPast")) throw new Error("Virtual Time Travel disclosure or model distinction is missing.");
 console.log("Validated Virtual Time Travel scripts, controls and 15 interface locales.");
 
 const voiceSource = fs.readFileSync(__dirname + "/bot-live-room.js", "utf8");
