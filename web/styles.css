@@ -1435,3 +1435,69 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
  .bot-thought-bubble.thought-1 { top:12%; right:3%; }
  .bot-thought-bubble.thought-2 { bottom:18%; width:42%; }
 }
+
+
+/* Compact, centered research room: balanced spacing on desktop and mobile. */
+.app-shell { width:min(1160px,100%) !important; padding:14px clamp(10px,2vw,22px) 20px !important; }
+.bot-command-hero { width:100%; max-width:1040px; margin:8px auto 18px !important; padding:10px clamp(10px,1.5vw,16px) 14px !important; border-radius:18px; }
+.bot-command-layout { width:100%; max-width:100%; margin:0 auto; gap:12px !important; }
+.bot-command-main { width:100%; max-width:100%; margin:0 auto; }
+.bot-command-visual {
+  width:min(100%,960px) !important; max-width:960px; height:300px !important; min-height:300px !important;
+  margin:0 auto; padding:42px 12px 44px !important; display:flex; align-items:center; justify-content:center;
+  border-radius:16px !important; overflow:hidden;
+}
+.bot-stage-agents {
+  width:min(100%,760px) !important; max-width:760px; min-height:0 !important; height:auto;
+  margin:0 auto; padding:0 4px; grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  align-content:center; justify-content:center; gap:8px !important;
+}
+.bot-stage-agent { min-height:76px !important; padding:7px 5px !important; border-radius:11px !important; }
+.bot-stage-agent-content { gap:5px !important; }
+.bot-stage-agent .agent-avatar { width:42px !important; height:42px !important; flex-basis:42px !important; border-radius:13px !important; }
+.bot-stage-agent .agent-robot-head { top:8px !important; width:26px !important; height:20px !important; }
+.bot-stage-agent .agent-robot-head i { top:8px !important; left:7px !important; width:4px !important; height:4px !important; }
+.bot-stage-agent .agent-robot-head i+i { left:16px !important; }
+.bot-stage-agent .agent-robot-body { top:30px !important; width:23px !important; height:13px !important; }
+.bot-stage-agent strong { font-size:8px !important; padding:0 !important; }
+.bot-stage-agent small { font-size:6px !important; }
+.bot-stage-caption { bottom:7px !important; font-size:7px !important; padding:4px 8px !important; }
+.bot-thought-bubble {
+  width:min(180px,22%) !important; max-height:48px !important; padding:6px 8px !important;
+  font-size:8px !important; line-height:1.3 !important; border-radius:9px !important;
+}
+.bot-thought-bubble.thought-0 { top:5% !important; left:2% !important; }
+.bot-thought-bubble.thought-1 { top:5% !important; right:2% !important; }
+.bot-thought-bubble.thought-2 { bottom:16% !important; width:min(200px,25%) !important; }
+.ssswet-equations { bottom:7px !important; width:min(300px,42%) !important; padding:4px 8px !important; }
+.ssswet-equations-label { font-size:7px !important; }
+.ssswet-equation { min-height:15px !important; font-size:11px !important; }
+.bot-command-current { max-width:760px !important; margin:8px auto 6px !important; padding:8px 12px !important; font-size:10px !important; }
+.bot-command-main .bot-control-metrics { max-width:760px !important; margin:0 auto !important; gap:7px !important; }
+.bot-command-main .bot-control-metric { padding:8px 10px !important; }
+.bot-command-main .bot-control-metric strong { font-size:18px !important; }
+.bot-command-main .bot-control-metric span { font-size:9px !important; }
+.bot-command-side,.bot-conversation { max-width:960px; margin:12px auto 0 !important; padding:12px !important; border-radius:14px !important; }
+.bot-conversation-feed { max-height:240px !important; }
+.bot-conversation-message { padding:8px !important; gap:8px !important; }
+.bot-conversation-message p { margin:3px 0 !important; font-size:10px !important; line-height:1.35 !important; }
+.bot-visitor-questions { margin-top:8px !important; gap:6px !important; }
+.bot-visitor-questions button { padding:7px 10px !important; font-size:10px !important; }
+@media(max-width:700px) {
+ .app-shell { padding:10px 8px 16px !important; }
+ .bot-command-hero { padding:8px !important; margin:5px auto 12px !important; }
+ .bot-command-visual { height:300px !important; min-height:300px !important; padding:40px 7px 40px !important; }
+ .bot-stage-agents { grid-template-columns:repeat(2,minmax(0,1fr)) !important; max-width:420px !important; gap:6px !important; }
+ .bot-stage-agent { min-height:72px !important; }
+ .bot-thought-bubble { width:32% !important; max-height:44px !important; font-size:7px !important; }
+ .bot-thought-bubble.thought-0 { top:3% !important; left:2% !important; }
+ .bot-thought-bubble.thought-1 { top:3% !important; right:2% !important; }
+ .bot-thought-bubble.thought-2 { bottom:15% !important; width:38% !important; }
+ .ssswet-equations { width:48% !important; bottom:5px !important; }
+ .ssswet-equation { font-size:9px !important; }
+ .bot-command-main .bot-control-metrics { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+ .bot-side-heading { display:none !important; }
+ .bot-command-side,.bot-conversation { padding:9px !important; }
+ .bot-visitor-questions { display:flex !important; flex-wrap:wrap; }
+ .bot-visitor-questions button { flex:1 1 100%; }
+}
