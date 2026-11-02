@@ -195,3 +195,58 @@ def test_pipeline_persists_source_linked_agent_notes_and_observed_peer_review(tm
     records = {item["agent_id"]: item for item in overview["persistent_agent_records"]}
     assert records["ssswet:independent_verifier"]["collaboration_history"][0]["observable_event"] == "peer_review"
     assert records["ssswet:independent_verifier"]["collaboration_history"][0]["other_agent_id"] == "ssswet:general_researcher"
+
+
+class ContinuityProvider:
+    name = "continuity-test-provider"
+
+    def __init__(self):
+        self.objectives = []
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        self.objectives.append((objective, strategy))
+        return ProviderResult(
+            summary="A bounded continuity test note for a harmless research topic.",
+            evidence=("A traceable source lead for test purposes.",),
+            uncertainty=0.7,
+            source_ids=("https://doi.org/10.1000/continuity-test",),
+        )
+
+
+def test_agent_reuses_its_own_prior_source_linked_notes_on_later_tasks(tmp_path):
+    from ssswet_core.agent_identity import AgentIdentityRegistry
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    store = SQLiteResearchStore(tmp_path / "continuity.sqlite3")
+    provider = ContinuityProvider()
+    pipeline = ResearchPipeline(provider=provider, store=store)
+
+    first_task_id, _ = pipeline.start(
+        "Study a harmless mathematical optimization problem", "math"
+    )
+    first_run_calls = len(provider.objectives)
+    second_task_id, _ = pipeline.start(
+        "Compare two harmless numerical optimization methods", "math"
+    )
+
+    second_run_objectives = [
+        objective for objective, _ in provider.objectives[first_run_calls:]
+    ]
+    assert second_task_id != first_task_id
+    assert second_run_objectives
+    assert all("AGENT CONTINUITY NOTES" in objective for objective in second_run_objectives)
+    assert all(f"task:{first_task_id};sources:" in objective for objective in second_run_objectives)
+    assert all(f"task:{second_task_id};sources:" not in objective for objective in second_run_objectives)
+
+    registry = AgentIdentityRegistry(store)
+    mathematician_notes = registry.memories("ssswet:general_researcher:mathematician")
+    verifier_notes = registry.memories("ssswet:independent_verifier")
+    assert len(mathematician_notes) == 2
+    assert len(verifier_notes) == 2
+
+
+def test_specialist_roles_do_not_share_a_single_memory_stream():
+    mathematician = ResearchPipeline._identity_for_role("mathematician")
+    physicist = ResearchPipeline._identity_for_role("physicist")
+    assert mathematician[0] == physicist[0] == "general_researcher"
+    assert mathematician[1] != physicist[1]
