@@ -1759,3 +1759,18 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 /* Service worker update notice */
 .ssswet-update-banner{position:fixed;z-index:10000;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,calc(100% - 28px));display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 15px;border:1px solid #4a4a4a;border-radius:14px;background:rgba(12,12,12,.97);box-shadow:0 14px 45px rgba(0,0,0,.55);color:#eee;font-size:12px;line-height:1.5;backdrop-filter:blur(14px)}
 .ssswet-update-banner[hidden]{display:none!important}.ssswet-update-banner button{flex:0 0 auto;border:1px solid #777;border-radius:999px;padding:9px 13px;background:#eee;color:#111;font:inherit;font-weight:700;cursor:pointer}.ssswet-update-banner button:disabled{opacity:.6;cursor:wait}@media(max-width:420px){.ssswet-update-banner{align-items:stretch;flex-direction:column}.ssswet-update-banner button{width:100%}}
+
+
+/* One-hundred-programme catalogue and localized taxonomy */
+.technology-catalogue-controls{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:12px;margin:18px 0 22px}
+.technology-catalogue-controls label{display:grid;gap:7px;color:var(--muted,#aaa);font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.technology-catalogue-controls input,.technology-catalogue-controls select{width:100%;min-width:0;border:1px solid rgba(255,255,255,.14);border-radius:11px;background:rgba(255,255,255,.045);color:var(--text,#eee);padding:12px 13px;font:inherit;font-size:13px}
+.technology-catalogue-controls select option{background:#111;color:#eee}
+.technology-catalogue-note{color:var(--muted,#aaa);font-size:12px}
+.technology-category-group{grid-column:1/-1;margin:18px 0 10px;padding:17px;border:1px solid rgba(255,255,255,.075);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.025),rgba(0,0,0,.12))}
+.technology-category-heading{margin:0 0 13px;color:var(--text,#eee);font-size:16px;letter-spacing:.015em}
+.technology-subcategory-group{margin:12px 0 17px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)}
+.technology-subcategory-heading{margin:0 0 10px;color:var(--muted,#b8b8b8);font-size:12px;font-weight:600}
+.technology-category-tag{display:inline-block;margin-bottom:8px;color:#c7a878;font-size:9px;letter-spacing:.06em;text-transform:uppercase}
+.technology-card[hidden],.technology-subcategory-group[hidden],.technology-category-group[hidden]{display:none!important}
+@media(max-width:680px){.technology-catalogue-controls{grid-template-columns:1fr}.technology-category-group{padding:13px;margin:12px 0}.technology-grid{grid-template-columns:1fr}}
