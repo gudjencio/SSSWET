@@ -5,7 +5,7 @@ window.SSSWET_DONATION_LINKS = {
 };
 
 /* Load small public UI modules without requiring another HTML edit. */
-["research-equations.js"].forEach(src => {
+["research-equations.js", "report-project.js"].forEach(src => {
   if (document.querySelector('script[src="' + src + '"]')) return;
   const script = document.createElement("script");
   script.src = src;
