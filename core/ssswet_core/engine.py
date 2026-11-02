@@ -9,6 +9,7 @@ from .safety import SafetyGate
 from .strategies import StrategySelector
 from .verification import VerificationEngine
 from .pricing_evidence import build_agent_pricing_estimate
+from .technology_dossier import TechnologyDossierRegistry
 
 
 @dataclass
@@ -29,6 +30,7 @@ class SSSWETEngine:
 
     def __init__(self, store: SQLiteResearchStore | None = None) -> None:
         self.store = store
+        self.technology_dossiers = TechnologyDossierRegistry(store) if store else None
         self.orchestrator = ResearchOrchestrator()
         self.memory = KnowledgeMemory()
         if self.store:
@@ -119,6 +121,21 @@ class SSSWETEngine:
                 parent_task_id or review_task.id,
             ))
         return conflicts
+
+    def create_technology_dossier(self, **dossier_inputs) -> dict:
+        if self.technology_dossiers is None:
+            raise RuntimeError("A persistent research store is required for technology dossiers")
+        return self.technology_dossiers.create(**dossier_inputs)
+
+    def record_technology_event(self, **event_inputs) -> dict:
+        if self.technology_dossiers is None:
+            raise RuntimeError("A persistent research store is required for technology dossiers")
+        return self.technology_dossiers.append_event(**event_inputs)
+
+    def get_technology_dossier(self, technology_id: str) -> dict:
+        if self.technology_dossiers is None:
+            raise RuntimeError("A persistent research store is required for technology dossiers")
+        return self.technology_dossiers.get(technology_id)
 
     def estimate_technology_costs(self, **pricing_inputs) -> dict:
         """Validate agent-submitted cost evidence through the independent pricing gate."""
