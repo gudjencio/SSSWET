@@ -248,3 +248,14 @@ if (!/const CACHE = "ssswet-web-v[0-9]+"/.test(serviceWorkerCache)) {
   throw new Error("The mobile layout must be delivered through a versioned service-worker cache.");
 }
 console.log("Validated the PayPal monthly subscription flow, variable quantity configuration and mobile social navigation.");
+
+const platformSource = fs.readFileSync(new URL("./platform-downloads.js", `file://${__filename}`), "utf8");
+new Function(platformSource);
+const manifest = JSON.parse(fs.readFileSync(new URL("./manifest.json", `file://${__filename}`), "utf8"));
+if (!manifest.icons?.some(icon => icon.src === "./icons/ssswet-icon.svg")) throw new Error("Installable application icon is missing.");
+if (!pageSource.includes('id="platform-downloads"') || !pageSource.includes('id="ssswet-install-app"') || !pageSource.includes('id="ssswet-desktop-download"') || !pageSource.includes('id="ssswet-mobile-download"')) throw new Error("Mobile and desktop application download controls are incomplete.");
+const desktopShell = fs.readFileSync(new URL("../desktop/main.cjs", `file://${__filename}`), "utf8");
+new Function(desktopShell);
+const packageConfig = JSON.parse(fs.readFileSync(new URL("../package.json", `file://${__filename}`), "utf8"));
+if (!packageConfig.build?.win || !packageConfig.build?.mac || !packageConfig.build?.linux) throw new Error("Cross-platform desktop build targets are incomplete.");
+console.log("Validated mobile installation, desktop download controls, PWA manifest and desktop package configuration.");
