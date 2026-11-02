@@ -69,10 +69,27 @@ function reliableGpsEvents(){
  return accepted;
 }
 function geoFeatures(){
- const gps=reliableGpsEvents(),features=[],zones=new Map();
- gps.forEach(e=>{const key=e.coords.latitude.toFixed(3)+":"+e.coords.longitude.toFixed(3);if(!zones.has(key))zones.set(key,e.coords)});
+ const gps=reliableGpsEvents(),features=[],zones=new Map(),segments=[],markers=[];
+ let segment=[];
+ const flushSegment=()=>{if(segment.length>1)segments.push(segment);segment=[]};
+ gps.forEach((event,index)=>{
+  const coord=[event.coords.longitude,event.coords.latitude];
+  const previous=gps[index-1];
+  if(previous){
+   const elapsed=event.timestamp-previous.timestamp;
+   const distance=distanceMeters(previous.coords,event.coords);
+   if(elapsed<=0||elapsed>15*60*1000||distance>5000||distance/Math.max(elapsed/1000,1)>70)flushSegment();
+  }
+  segment.push(coord);
+  const zoneKey=event.coords.latitude.toFixed(3)+":"+event.coords.longitude.toFixed(3);
+  if(!zones.has(zoneKey))zones.set(zoneKey,event.coords);
+  const duplicate=markers.some(marker=>event.timestamp-marker.timestamp<=5*60*1000&&distanceMeters(marker.coords,event.coords)<20);
+  if(!duplicate)markers.push(event);
+ });
+ flushSegment();
+ segments.forEach(coordinates=>features.push({type:"Feature",geometry:{type:"LineString",coordinates},properties:{kind:"recorded-track"}}));
  zones.forEach(center=>{const ring=[];for(let step=0;step<=36;step++){const point=destination(center,step*Math.PI/18,40);ring.push([point.longitude,point.latitude])}features.push({type:"Feature",geometry:{type:"Polygon",coordinates:[ring]},properties:{kind:"visited-zone"}})});
- gps.forEach(e=>features.push({type:"Feature",geometry:{type:"Point",coordinates:[e.coords.longitude,e.coords.latitude]},properties:{kind:e.kind,timestamp:e.timestamp}}));
+ markers.forEach(event=>features.push({type:"Feature",geometry:{type:"Point",coordinates:[event.coords.longitude,event.coords.latitude]},properties:{kind:event.kind,timestamp:event.timestamp,accuracy:event.accuracy??null}}));
  return {type:"FeatureCollection",features};
 }
 function updateMap(){if(!map||!map.isStyleLoaded())return;const source=map.getSource("vt-observations");if(source)source.setData(geoFeatures());}
@@ -92,6 +109,7 @@ function initMap(){
    try{map.addSource("vt-terrain",{type:"raster-dem",url:"https://demotiles.maplibre.org/terrain-tiles/tiles.json",tileSize:256});map.setTerrain({source:"vt-terrain",exaggeration:1.75});map.addLayer({id:"vt-terrain-hillshade",type:"hillshade",source:"vt-terrain",paint:{"hillshade-exaggeration":0.42,"hillshade-shadow-color":"#172330","hillshade-highlight-color":"#d5e2eb","hillshade-illumination-direction":335}})}catch(_){/* Terrain relief is optional; the vector map remains usable if unavailable. */}
    map.addSource("vt-observations",{type:"geojson",data:geoFeatures()});
    map.addLayer({id:"vt-scanned-zones",type:"fill",source:"vt-observations",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#63b6e8","fill-opacity":0.13}});
+   map.addLayer({id:"vt-recorded-track",type:"line",source:"vt-observations",filter:["==",["geometry-type"],"LineString"],paint:{"line-color":"#7dd3fc","line-width":["interpolate",["linear"],["zoom"],4,1.4,14,3.2],"line-opacity":0.82,"line-blur":0.15}});
    map.addLayer({id:"vt-observation-points",type:"circle",source:"vt-observations",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":5,"circle-color":"#8fd5ff","circle-stroke-width":2,"circle-stroke-color":"#07111b"}});
    map.addSource("vt-scenario",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
    map.addLayer({id:"vt-scenario-line",type:"line",source:"vt-scenario",paint:{"line-color":"#f1c47a","line-width":3,"line-dasharray":[2,2]}});
