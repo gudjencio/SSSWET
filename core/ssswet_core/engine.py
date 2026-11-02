@@ -17,6 +17,7 @@ from .research_opportunity import evaluate_research_opportunity, rank_research_o
 from .protective_system_scoring import calculate_protective_system_score, rank_protective_systems
 from .technology_progression import evaluate_progression, persistence_status
 from .agent_identity import AgentIdentityRegistry
+from .review_assignment import IndependentReviewerSelector, ReviewerCandidate
 
 
 @dataclass
@@ -39,6 +40,7 @@ class SSSWETEngine:
         self.store = store
         self.technology_dossiers = TechnologyDossierRegistry(store) if store else None
         self.agent_identities = AgentIdentityRegistry(store) if store else None
+        self.independent_reviewer_selector = IndependentReviewerSelector()
         self.technology_dependencies = TechnologyDependencyGraph(store) if store else None
         self.orchestrator = ResearchOrchestrator()
         self.memory = KnowledgeMemory()
@@ -131,6 +133,12 @@ class SSSWETEngine:
                 parent_task_id or review_task.id,
             ))
         return conflicts
+
+    def propose_independent_reviewers(
+        self, candidates: list[ReviewerCandidate], **selection_constraints
+    ) -> dict:
+        """Propose a diverse reviewer panel without executing assignments."""
+        return self.independent_reviewer_selector.propose(candidates, **selection_constraints)
 
     def compare_contextual_claims(self, claims: list[ClaimContext]):
         """Compare structured claims without conflating different contexts."""
