@@ -26,7 +26,7 @@ def run(command,check=True,cwd=ROOT):
     return subprocess.run(command,cwd=cwd,text=True,capture_output=True,check=check)
 
 def allowed(path):
-    path=path.strip().replace("\\\\","/")
+    path=path.strip().replace("\\","/")
     parts=Path(path).parts
     if path.startswith("/") or ".." in parts:
         return False
