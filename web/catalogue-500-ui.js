@@ -17,7 +17,7 @@
     const count = document.getElementById("technology-catalogue-count");
     const note = document.querySelector(".technology-catalogue-note");
     const heading = document.getElementById("platform-downloads-title");
-    const countText = isFr ? "500 programmes de recherche" : "500 research programmes";
+    const countText = isFr ? "500 programmes de recherche enregistrés · 100 thèmes de contribution" : "500 registered research programmes · 100 contribution themes";
     const noteText = isFr ? "500 programmes de recherche, organisés en huit domaines et avec des filtres traduits." : "500 research programmes, organised into eight domains with translated filters.";
     const headingText = isFr ? "Emportez SSSWET partout" : "Take SSSWET with you";
     if (count && count.textContent !== countText) count.textContent = countText;
