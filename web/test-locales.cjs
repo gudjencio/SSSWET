@@ -276,3 +276,18 @@ if (!serviceWorkerCache.includes('"./version-center.js"')) {
   throw new Error("The version centre script must be cached for installed applications.");
 }
 console.log("Validated official release centre, release history and checksum information.");
+
+
+const updateManagerSource = fs.readFileSync(new URL("./service-worker-updates.js", `file://${__filename}`), "utf8");
+new Function(updateManagerSource);
+if (!pageSource.includes('id="ssswet-update-banner"') ||
+    !pageSource.includes('id="ssswet-update-action"') ||
+    !pageSource.includes('src="service-worker-updates.js"')) {
+  throw new Error("The application update notice is incomplete.");
+}
+if (!serviceWorkerCache.includes('"./service-worker-updates.js"') ||
+    !serviceWorkerCache.includes('SSSWET_SKIP_WAITING') ||
+    serviceWorkerCache.includes("self.skipWaiting();")) {
+  throw new Error("Application updates must be cached and activated only after user confirmation.");
+}
+console.log("Validated the user-controlled service worker update flow.");
