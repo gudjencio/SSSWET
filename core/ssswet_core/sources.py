@@ -84,3 +84,56 @@ class SourceQualityAssessor:
             tier=tier,
             factors=tuple(factors),
         )
+
+
+def analyze_source_independence(records: list[dict]) -> dict:
+    """Compare declared source provenance without inferring independence from silence."""
+    normalized = []
+    seen = set()
+    for record in records:
+        source_id = str(record.get("source_id", "")).strip()
+        if not source_id or source_id in seen:
+            continue
+        seen.add(source_id)
+        normalized.append(record)
+
+    pairs = []
+    for index, left in enumerate(normalized):
+        for right in normalized[index + 1:]:
+            signals = []
+            contextual = []
+            left_doi = str(left.get("doi", "")).casefold().replace("https://doi.org/", "").strip()
+            right_doi = str(right.get("doi", "")).casefold().replace("https://doi.org/", "").strip()
+            if left_doi and left_doi == right_doi:
+                signals.append("same_doi")
+            if left.get("provenance_group") and left.get("provenance_group") == right.get("provenance_group"):
+                signals.append("same_provenance_group")
+            if set(left.get("dataset_ids", [])) & set(right.get("dataset_ids", [])):
+                signals.append("shared_dataset")
+            if (right["source_id"] in left.get("related_source_ids", [])
+                    or left["source_id"] in right.get("related_source_ids", [])):
+                signals.append("declared_related_source")
+            if set(left.get("authors", [])) & set(right.get("authors", [])):
+                contextual.append("shared_author")
+            if set(left.get("institutions", [])) & set(right.get("institutions", [])):
+                contextual.append("shared_institution")
+            pairs.append({
+                "source_ids": [left["source_id"], right["source_id"]],
+                "dependency_signals": sorted(signals),
+                "contextual_overlaps": sorted(contextual),
+                "independence_status": (
+                    "possible_dependency_requires_review" if signals
+                    else "not_established"
+                ),
+            })
+    return {
+        "source_count": len(normalized),
+        "pair_count": len(pairs),
+        "pairs": pairs,
+        "independent_source_count": None,
+        "independence_established": False,
+        "warning": (
+            "Shared provenance signals warrant review; shared authors or institutions are contextual "
+            "overlaps only. Absence of recorded overlap does not establish independence."
+        ),
+    }
