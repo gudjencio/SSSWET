@@ -1,9 +1,8 @@
-const CACHE = "ssswet-web-v130";
-const ASSETS = ["./", "./index.html", "./styles.css", "./bot-control-center.js", "./bot-live-room.js", "./locales.js", "./api-config.js", "./app.js", "./donation-config.js", "./payment-enhancement.js", "./research-equations.js", "./product-purchase-config.js", "./donation.js", "./interface-localization.js", "./evidence-center.js", "./evidence-center.css", "./parameter-sensitivity.js", "./parameter-sensitivity.css", "./lab-statistics.js", "./evidence-graph.js", "./evidence-graph.css", "./lab-discrepancies.js", "./lab-discrepancies.css", "./research-journal.js", "./research-journal.css", "./technology-feasibility.js", "./technology-feasibility.css", "./mobile-repair.css", "./repair-project.js", "./report-project.js", "./manifest.json", "./platform-downloads.js", "./version-center.js", "./icons/ssswet-icon.svg"];
+const CACHE = "ssswet-web-v131";
+const ASSETS = ["./", "./index.html", "./styles.css", "./bot-control-center.js", "./bot-live-room.js", "./locales.js", "./api-config.js", "./app.js", "./donation-config.js", "./payment-enhancement.js", "./research-equations.js", "./product-purchase-config.js", "./donation.js", "./interface-localization.js", "./evidence-center.js", "./evidence-center.css", "./parameter-sensitivity.js", "./parameter-sensitivity.css", "./lab-statistics.js", "./evidence-graph.js", "./evidence-graph.css", "./lab-discrepancies.js", "./lab-discrepancies.css", "./research-journal.js", "./research-journal.css", "./technology-feasibility.js", "./technology-feasibility.css", "./mobile-repair.css", "./repair-project.js", "./report-project.js", "./manifest.json", "./platform-downloads.js", "./version-center.js", "./service-worker-updates.js", "./icons/ssswet-icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));
-  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
@@ -14,4 +13,8 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SSSWET_SKIP_WAITING") self.skipWaiting();
 });
