@@ -69,7 +69,7 @@ function reliableGpsEvents(){
  return accepted;
 }
 function geoFeatures(){
- const gps=reliableGpsEvents(),features=[],zones=new Map(),segments=[],markers=[];
+ const gps=reliableGpsEvents(),features=[],zones=new Map(),segments=[],markers=[],markerBuckets=new Map();
  let segment=[];
  const flushSegment=()=>{if(segment.length>1)segments.push(segment);segment=[]};
  gps.forEach((event,index)=>{
@@ -83,8 +83,13 @@ function geoFeatures(){
   segment.push(coord);
   const zoneKey=event.coords.latitude.toFixed(3)+":"+event.coords.longitude.toFixed(3);
   if(!zones.has(zoneKey))zones.set(zoneKey,event.coords);
-  const duplicate=markers.some(marker=>event.timestamp-marker.timestamp<=5*60*1000&&distanceMeters(marker.coords,event.coords)<20);
-  if(!duplicate)markers.push(event);
+  const latCell=Math.floor(event.coords.latitude/0.00018),lonScale=Math.max(Math.cos(event.coords.latitude*Math.PI/180),0.1),lonCell=Math.floor(event.coords.longitude/(0.00018/lonScale));
+  let duplicate=false;
+  for(let dy=-1;dy<=1&&!duplicate;dy++)for(let dx=-1;dx<=1&&!duplicate;dx++){
+   const bucket=markerBuckets.get((latCell+dy)+":"+(lonCell+dx))||[];
+   duplicate=bucket.some(marker=>event.timestamp-marker.timestamp<=5*60*1000&&distanceMeters(marker.coords,event.coords)<20);
+  }
+  if(!duplicate){markers.push(event);const key=latCell+":"+lonCell;if(!markerBuckets.has(key))markerBuckets.set(key,[]);markerBuckets.get(key).push(event);}
  });
  flushSegment();
  segments.forEach(coordinates=>features.push({type:"Feature",geometry:{type:"LineString",coordinates},properties:{kind:"recorded-track"}}));
