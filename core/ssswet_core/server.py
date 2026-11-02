@@ -458,6 +458,16 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     self._json(ResearchIntegrityRegister(store).report(dossier_id=dossier_id, limit=limit))
                 except ValueError as exc:
                     self._json({"error": str(exc)}, 400)
+            elif path == "/api/third-review-brief":
+                from .third_review_brief import ThirdReviewBriefService
+                params = parse_qs(parsed.query)
+                dossier_id = params.get("dossier_id", [""])[0]
+                try:
+                    self._json(ThirdReviewBriefService(store).build(dossier_id))
+                except ValueError as exc:
+                    message = str(exc)
+                    status = 404 if message == "unknown evidence dossier" else 400
+                    self._json({"error": message}, status)
             elif path == "/api/scientific-review-board":
                 from .scientific_review_board import ScientificReviewBoard
                 params = parse_qs(parsed.query)
