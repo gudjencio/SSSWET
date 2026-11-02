@@ -250,3 +250,65 @@ def test_specialist_roles_do_not_share_a_single_memory_stream():
     physicist = ResearchPipeline._identity_for_role("physicist")
     assert mathematician[0] == physicist[0] == "general_researcher"
     assert mathematician[1] != physicist[1]
+
+
+
+def test_peer_review_synthesis_preserves_uncertainty_and_source_provenance():
+    from ssswet_core.review_protocol import build_review_synthesis
+
+    synthesis = build_review_synthesis([
+        {
+            "reviewer_role": "independent_verifier",
+            "evidence": ["A publication record was found."],
+            "source_ids": ["https://doi.org/10.1000/example-a"],
+            "uncertainty": 0.8,
+        },
+        {
+            "reviewer_role": "ethics_reviewer",
+            "evidence": [],
+            "source_ids": ["https://doi.org/10.1000/example-b"],
+            "uncertainty": 0.4,
+        },
+    ])
+
+    assert synthesis.review_count == 2
+    assert synthesis.evidence_lead_count == 1
+    assert synthesis.source_ids == (
+        "https://doi.org/10.1000/example-a",
+        "https://doi.org/10.1000/example-b",
+    )
+    assert synthesis.uncertainty_levels == ("high", "moderate")
+    assert synthesis.outcome == "provisional_review_complete"
+    public_text = synthesis.to_public_text()
+    assert "does not establish that any claim is true" in public_text
+    assert "full source documents" in public_text
+
+
+def test_peer_review_synthesis_does_not_promote_empty_reviews():
+    from ssswet_core.review_protocol import build_review_synthesis
+
+    synthesis = build_review_synthesis([
+        {"reviewer_role": "independent_verifier", "evidence": [], "source_ids": [], "uncertainty": 1.0}
+    ])
+
+    assert synthesis.outcome == "insufficient_evidence_leads"
+    assert synthesis.source_ids == ()
+    assert "No traceable source identifiers" in synthesis.unresolved_questions[0]
+
+
+def test_pipeline_persists_structured_peer_review_synthesis(tmp_path):
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    store = SQLiteResearchStore(tmp_path / "peer-synthesis.sqlite3")
+    pipeline = ResearchPipeline(provider=SourcedProvider(), store=store)
+    task_id, steps = pipeline.start(
+        "Study a harmless mathematical optimization problem", "math"
+    )
+
+    messages = store.recent_agent_messages(task_id=task_id)
+    syntheses = [item for item in messages if item["message_type"] == "peer_review_synthesis"]
+    assert len(steps) == 2
+    assert len(syntheses) == 1
+    assert "Review passes recorded: 2" in syntheses[0]["content"]
+    assert "https://doi.org/10.1000/example-record" in syntheses[0]["content"]
+    assert "does not establish that any claim is true" in syntheses[0]["content"]
