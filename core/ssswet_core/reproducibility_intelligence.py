@@ -29,6 +29,92 @@ class ReproducibilityIntelligence:
     def _pair_key(item: dict) -> frozenset:
         return frozenset((item.get("left_run_id"), item.get("right_run_id")))
 
+    @staticmethod
+    def _parameter_sensitivity(runs: list[dict]) -> dict:
+        """Describe one-parameter numeric contrasts under matched recorded conditions."""
+        contrasts = []
+        eligible_records = [
+            run for run in runs
+            if _verify_fingerprint(run, "record_hash")
+            and isinstance(run.get("parameters"), dict)
+            and isinstance(run.get("outputs"), dict)
+        ]
+        for index, left in enumerate(eligible_records):
+            for right in eligible_records[index + 1:]:
+                if not (
+                    left.get("campaign_id")
+                    and left.get("campaign_id") == right.get("campaign_id")
+                    and left.get("provenance_group")
+                    and left.get("provenance_group") == right.get("provenance_group")
+                    and left.get("kind") == right.get("kind")
+                    and left.get("method") == right.get("method")
+                    and left.get("environment") == right.get("environment")
+                    and left.get("code_or_model_reference") == right.get("code_or_model_reference")
+                ):
+                    continue
+                left_params, right_params = left["parameters"], right["parameters"]
+                if set(left_params) != set(right_params):
+                    continue
+                changed = [
+                    key for key in sorted(left_params)
+                    if left_params[key] != right_params[key]
+                ]
+                if len(changed) != 1:
+                    continue
+                parameter = changed[0]
+                left_value, right_value = left_params[parameter], right_params[parameter]
+                if (
+                    isinstance(left_value, bool) or isinstance(right_value, bool)
+                    or not isinstance(left_value, (int, float))
+                    or not isinstance(right_value, (int, float))
+                    or not isfinite(float(left_value)) or not isfinite(float(right_value))
+                ):
+                    continue
+                output_changes = []
+                for key in sorted(set(left["outputs"]) & set(right["outputs"])):
+                    a, b = left["outputs"][key], right["outputs"][key]
+                    if (
+                        isinstance(a, bool) or isinstance(b, bool)
+                        or not isinstance(a, (int, float))
+                        or not isinstance(b, (int, float))
+                        or not isfinite(float(a)) or not isfinite(float(b))
+                    ):
+                        continue
+                    delta = float(b) - float(a)
+                    output_changes.append({
+                        "output": key,
+                        "left_value": float(a),
+                        "right_value": float(b),
+                        "absolute_change": delta,
+                        "relative_change_percent": (delta / abs(float(a)) * 100) if float(a) != 0 else None,
+                    })
+                if output_changes:
+                    contrasts.append({
+                        "left_run_id": left.get("run_id", ""),
+                        "right_run_id": right.get("run_id", ""),
+                        "parameter": parameter,
+                        "left_parameter_value": float(left_value),
+                        "right_parameter_value": float(right_value),
+                        "output_changes": output_changes,
+                    })
+        return {
+            "status": "candidate_contrasts_recorded" if contrasts else "insufficient_comparable_parameter_variation",
+            "contrast_count": len(contrasts),
+            "contrasts": contrasts[:100],
+            "conditions": [
+                "matching campaign and provenance group",
+                "matching execution kind, method, environment and code/model reference",
+                "exactly one changed numeric parameter",
+                "valid run fingerprints and at least one shared numeric output",
+            ],
+            "interpretation": (
+                "Descriptive one-parameter contrasts only. They do not establish causality, "
+                "a general sensitivity function, statistical significance or scientific validity."
+            ),
+            "causal_effect_established": False,
+            "scientific_validity_established": False,
+        }
+
     def build(self, limit: int = 200) -> dict:
         if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 500:
             raise ValueError("limit must be an integer between 1 and 500")
@@ -167,10 +253,7 @@ class ReproducibilityIntelligence:
                 "index_maximum": 100,
                 "index_components": dict(self.COMPONENTS),
                 "comparisons": pair_details,
-                "parameter_sensitivity": {
-                    "status": "not_assessed",
-                    "reason": "The current run schema does not define a normalized parameter-sweep design or sensitivity model. Parameter differences alone cannot establish sensitivity.",
-                },
+                "parameter_sensitivity": self._parameter_sensitivity(protocol_runs),
                 "requires_human_review": True,
                 "scientific_validity_established": False,
             })
