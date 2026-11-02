@@ -559,67 +559,81 @@
     set("payment-reminder-confirm-label", labels.confirmation); set("payment-reminder-save-label", labels.save);
   }
   let selectedTechnology = null;
-  let currency = "EUR";
+  let currency = "USD";
   let minimumLocal = 1;
   let usdToLocalRate = 1;
   let rateReady = false;
+  let exchangeRateDate = "";
+  const uiLanguage = () => (document.documentElement.lang || document.getElementById("language")?.value || "en").toLowerCase().split("-")[0];
+  const regionByLanguage = { ja:"JP", fr:"FR", de:"DE", es:"ES", it:"IT", pt:"PT", nl:"NL", ko:"KR", zh:"CN", hi:"IN", en:"US" };
+  const regionByTimezone = { "Asia/Tokyo":"JP", "Europe/Paris":"FR", "Europe/Berlin":"DE", "Europe/London":"GB", "America/New_York":"US", "America/Los_Angeles":"US", "America/Toronto":"CA", "Asia/Seoul":"KR", "Asia/Shanghai":"CN", "Asia/Kolkata":"IN", "Australia/Sydney":"AU", "Pacific/Auckland":"NZ" };
   const portfolioLabels = {
     en: { stage:"Research stage", goal:"Funding goal", confirmed:"Confirmed contributions", availability:"Availability", prototypeLabel:"Prototype status", unknown:"Not published", notSet:"Not set", planning:"Research planning", literature:"Literature review", feasibility:"Feasibility study", prototype:"Prototype development", validation:"Testing and validation", available:"Available for separate purchase", prototypeYes:"Prototype recorded", prototypeNo:"No prototype recorded", unavailable:"Not available", updated:"Last updated", progress:"Funding progress", manual:"Public figures are updated manually after payment confirmation. PayPal.Me does not synchronize payments with this website." },
     fr: { stage:"Étape de recherche", goal:"Objectif de financement", confirmed:"Contributions confirmées", availability:"Disponibilité", prototypeLabel:"Statut du prototype", unknown:"Non publié", notSet:"Non défini", planning:"Planification de la recherche", literature:"Revue de la littérature", feasibility:"Étude de faisabilité", prototype:"Développement d’un prototype", validation:"Essais et validation", available:"Disponible à l’achat séparément", prototypeYes:"Prototype déclaré", prototypeNo:"Aucun prototype déclaré", unavailable:"Non disponible", updated:"Dernière mise à jour", progress:"Progression du financement", manual:"Les chiffres publics sont actualisés manuellement après confirmation des paiements. PayPal.Me ne synchronise pas les paiements avec ce site." }
   };
 
   function localeRegion() {
-    try { return new Intl.Locale(navigator.language || "en").region || ""; } catch (_) { return ""; }
+    try {
+      const explicit = new Intl.Locale(navigator.language || "en").region || "";
+      if (explicit) return explicit;
+    } catch (_) {}
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    if (regionByTimezone[timezone]) return regionByTimezone[timezone];
+    return regionByLanguage[uiLanguage()] || "";
   }
-  function formatMoney(value) {
-    try { return new Intl.NumberFormat(navigator.language || "en", { style:"currency", currency, minimumFractionDigits: currency === "JPY" || currency === "KRW" ? 0 : 2, maximumFractionDigits: currency === "JPY" || currency === "KRW" ? 0 : 2 }).format(value); }
-    catch (_) { return value.toFixed(2) + " " + currency; }
+  function formatLocal(value) {
+    const language = uiLanguage();
+    const formatLocale = language === "ja" ? "ja-JP" : language === "fr" ? "fr-FR" : (navigator.language || "en");
+    try { return new Intl.NumberFormat(formatLocale, { style:"currency", currency, minimumFractionDigits: currency === "JPY" || currency === "KRW" ? 0 : 2, maximumFractionDigits: currency === "JPY" || currency === "KRW" ? 0 : 2 }).format(value); }
+    catch (_) { return value.toFixed(currency === "JPY" || currency === "KRW" ? 0 : 2) + " " + currency; }
   }
-  let usdToEurRate = null;
-  let exchangeRateDate = "";
   function formatUsd(value, french) {
-    if (french) return new Intl.NumberFormat("fr-FR", {minimumFractionDigits:2,maximumFractionDigits:2}).format(value) + (Math.abs(value - 1) < 0.000001 ? " dollar américain" : " dollars américains");
-    return new Intl.NumberFormat("en-US", {style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
-  }
-  function formatEur(value) {
-    return new Intl.NumberFormat("fr-FR", {style:"currency",currency:"EUR",minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
+    const language = uiLanguage();
+    const formatLocale = language === "ja" ? "ja-JP" : french ? "fr-FR" : "en-US";
+    return new Intl.NumberFormat(formatLocale, {style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
   }
   function updateAmounts() {
     const amount = Number(amountInput.value);
     const valid = Number.isFinite(amount) && amount >= 1 && amount <= 100000;
     const french = copy() === translations.fr;
-    const monthlyEur = valid && Number.isFinite(usdToEurRate) ? " · ≈ " + formatEur(amount * usdToEurRate) : valid && french ? " · équivalent en euros indisponible" : "";
-    const annualEur = valid && Number.isFinite(usdToEurRate) ? " · ≈ " + formatEur(amount * 12 * usdToEurRate) : valid && french ? " · équivalent en euros indisponible" : "";
-    perOutput.textContent = valid ? formatUsd(amount,french) + (french ? " / mois" : " / month") + monthlyEur : "—";
-    totalOutput.textContent = valid ? formatUsd(amount*12,french) + (french ? " / an" : " / year") + annualEur : "—";
-    currencyLabel.textContent = french ? "Dollars américains / mois · équivalent en euros" : "USD / month";
+    const japanese = uiLanguage() === "ja";
+    const monthlyLocal = valid && Number.isFinite(usdToLocalRate) ? " · ≈ " + formatLocal(amount * usdToLocalRate) : valid && currency !== "USD" ? (japanese ? " · 現地通貨換算を取得できません" : french ? " · conversion locale indisponible" : " · local conversion unavailable") : "";
+    const annualLocal = valid && Number.isFinite(usdToLocalRate) ? " · ≈ " + formatLocal(amount * 12 * usdToLocalRate) : valid && currency !== "USD" ? (japanese ? " · 現地通貨換算を取得できません" : french ? " · conversion locale indisponible" : " · local conversion unavailable") : "";
+    perOutput.textContent = valid ? formatUsd(amount,french) + (japanese ? " / 月" : french ? " / mois" : " / month") + monthlyLocal : "—";
+    totalOutput.textContent = valid ? formatUsd(amount*12,french) + (japanese ? " / 年" : french ? " / an" : " / year") + annualLocal : "—";
+    currencyLabel.textContent = japanese ? "米ドル / 月 · 現地通貨換算" : french ? "Dollars américains / mois · équivalent en devise locale" : "USD / month · local currency equivalent";
     const configured = Boolean(paymentLinks.PAYPAL_CLIENT_ID && paymentLinks.PAYPAL_SUBSCRIPTION_PLAN_ID);
     paymentStatus.textContent = !valid ? copy().invalid : configured ? copy().paymentReady : copy().paymentMissing;
   }
-  async function loadEuroExchangeRate() {
-    try {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 12000);
-      let response;
+  async function loadLocalExchangeRate() {
+    if (currency === "USD") {
+      usdToLocalRate = 1;
+      exchangeRateDate = new Date().toISOString().slice(0,10);
+    } else {
       try {
-        response = await fetch("https://api.frankfurter.dev/v2/rate/usd/eur", {
-          cache:"no-store", headers:{Accept:"application/json"}, signal:controller.signal
-        });
-      } finally {
-        window.clearTimeout(timeout);
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 12000);
+        let response;
+        try {
+          response = await fetch("https://api.frankfurter.dev/v2/rate/usd/" + encodeURIComponent(currency.toLowerCase()), {
+            cache:"no-store", headers:{Accept:"application/json"}, signal:controller.signal
+          });
+        } finally {
+          window.clearTimeout(timeout);
+        }
+        if (!response.ok) throw new Error("Exchange-rate service returned HTTP " + response.status);
+        const data = await response.json();
+        const rate = Number(data && data.rate);
+        if (!Number.isFinite(rate) || rate <= 0 || data.base?.toUpperCase() !== "USD" || data.quote?.toUpperCase() !== currency) {
+          throw new Error("Invalid USD/" + currency + " exchange-rate response");
+        }
+        usdToLocalRate = rate;
+        exchangeRateDate = typeof data.date === "string" ? data.date : "";
+      } catch (error) {
+        usdToLocalRate = null;
+        exchangeRateDate = "";
+        console.warn("[SSSWET] USD/" + currency + " conversion unavailable:", error);
       }
-      if (!response.ok) throw new Error("Exchange-rate service returned HTTP " + response.status);
-      const data = await response.json();
-      const rate = Number(data && data.rate);
-      if (!Number.isFinite(rate) || rate <= 0 || data.base?.toUpperCase() !== "USD" || data.quote?.toUpperCase() !== "EUR") {
-        throw new Error("Invalid USD/EUR exchange-rate response");
-      }
-      usdToEurRate = rate;
-      exchangeRateDate = typeof data.date === "string" ? data.date : "";
-    } catch (error) {
-      usdToEurRate = null;
-      exchangeRateDate = "";
-      console.warn("[SSSWET] USD/EUR conversion unavailable:", error);
     }
     updateAmounts();
     updateCurrencyNote();
@@ -627,14 +641,16 @@
   function updateCurrencyNote() {
     if (!currencyNote) return;
     const french = copy() === translations.fr;
-    if (french) {
-      currencyNote.textContent = copy().currencyNote
-        + (usdToEurRate && exchangeRateDate
-          ? " Taux de référence du " + new Intl.DateTimeFormat("fr-FR").format(new Date(exchangeRateDate + "T12:00:00Z")) + "."
-          : usdToEurRate ? "" : " La conversion en euros est temporairement indisponible ; aucun taux n’est inventé.");
-    } else {
-      currencyNote.textContent = copy().currencyNote;
-    }
+    const japanese = uiLanguage() === "ja";
+    const dateText = exchangeRateDate ? new Intl.DateTimeFormat(japanese ? "ja-JP" : french ? "fr-FR" : "en", {dateStyle:"medium"}).format(new Date(exchangeRateDate + "T12:00:00Z")) : "";
+    const currencyName = new Intl.DisplayNames([japanese ? "ja-JP" : french ? "fr-FR" : "en"], {type:"currency"}).of(currency);
+    const fallback = japanese
+      ? "支払額は米ドルで請求されます。現地通貨の金額は参考換算であり、実際の請求通貨ではありません。"
+      : french
+        ? "Le paiement reste facturé en dollars américains. L’équivalent local est indicatif et ne modifie pas la devise réellement débitée."
+        : "Payment remains charged in US dollars. The local-currency equivalent is indicative and does not change the actual billing currency.";
+    const unavailable = japanese ? "為替換算を取得できません。推定レートは表示しません。" : french ? "La conversion est temporairement indisponible ; aucun taux n’est inventé." : "Currency conversion is temporarily unavailable; no rate is guessed.";
+    currencyNote.textContent = fallback + (usdToLocalRate === null ? " " + unavailable : dateText ? " " + (japanese ? "参考レート：" : french ? "Taux de référence du " : "Reference rate dated ") + dateText + " · " + currencyName + "." : "");
   }
 
   function chooseCurrency() {
@@ -642,7 +658,9 @@
     amountInput.max = "100000";
     amountInput.step = "0.01";
     amountInput.value = String(Math.max(1, Math.round((Number(amountInput.value) || 1) * 100) / 100));
-    currencyLabel.textContent = copy() === translations.fr ? "Dollars américains / mois · équivalent en euros" : "USD / month";
+    const region = localeRegion();
+    currency = currencyByRegion[region] || "USD";
+    usdToLocalRate = currency === "USD" ? 1 : null;
     updateCurrencyNote();
     updateAmounts();
   }
@@ -789,7 +807,7 @@
   renderPortfolio();
   populateTechnologySelectors();
   chooseCurrency();
-  loadEuroExchangeRate();
+  loadLocalExchangeRate();
   window.addEventListener("languagechange", () => window.location.reload());
   document.getElementById("language")?.addEventListener("change", () => {
     const language = copy() === translations.fr ? "fr" : "en";
