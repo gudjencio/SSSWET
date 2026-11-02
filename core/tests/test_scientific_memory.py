@@ -70,3 +70,36 @@ def test_scientific_memory_lexical_search_is_explainable(tmp_path):
     assert result["versions"][0]["retrieval_method"] == "lexical_overlap"
     assert result["versions"][0]["matched_terms"] == ["speed", "wave"]
     assert result["scientific_validity_established"] is False
+
+
+def test_lineage_returns_complete_immutable_chain_for_selected_version(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "lineage.sqlite3")
+    service = ScientificMemoryService(store)
+    service.add_version(ScientificMemoryVersion.create(
+        "v1", "relativity", "Relativity", "Initial hypothesis",
+        source_ids=("source-a",),
+    ))
+    service.revise(
+        "v1", "v2", statement="Hypothesis narrowed after review",
+        status="contested", review_note="A counterexample requires qualification.",
+    )
+    service.revise(
+        "v2", "v3", statement="Revised hypothesis with explicit limits",
+        status="candidate", review_note="Scope narrowed to match the available evidence.",
+    )
+
+    lineage = service.lineage("v2")
+    assert lineage is not None
+    assert lineage["predecessors"][0]["version_id"] == "v1"
+    assert lineage["selected_version"]["statement"] == "Hypothesis narrowed after review"
+    assert lineage["successors"][0]["version_id"] == "v3"
+    assert lineage["current_version_id"] == "v3"
+    assert lineage["is_current"] is False
+    assert lineage["version_count"] == 3
+    assert lineage["revision_chain_is_complete"] is True
+    assert lineage["scientific_validity_established"] is False
+
+
+def test_lineage_returns_none_for_unknown_version(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "missing-lineage.sqlite3")
+    assert ScientificMemoryService(store).lineage("unknown") is None
