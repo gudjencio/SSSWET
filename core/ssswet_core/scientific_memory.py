@@ -106,6 +106,36 @@ class ScientificMemoryService:
             supersedes_version_id=previous_version_id,
         ))
 
+    def lineage(self, version_id: str) -> dict | None:
+        """Explain the complete revision chain without judging scientific truth."""
+        selected = self.store.get_scientific_memory_version(version_id)
+        if selected is None:
+            return None
+        history = self.store.scientific_memory_history_for_key(selected["memory_key"])
+        selected_index = next(
+            (index for index, item in enumerate(history)
+             if item["version_id"] == version_id),
+            None,
+        )
+        if selected_index is None:
+            return None
+        current = history[-1]
+        return {
+            "memory_key": selected["memory_key"],
+            "topic": selected["topic"],
+            "selected_version_id": version_id,
+            "selected_version_number": selected["version_number"],
+            "is_current": version_id == current["version_id"],
+            "predecessors": history[:selected_index],
+            "selected_version": selected,
+            "successors": history[selected_index + 1:],
+            "current_version_id": current["version_id"],
+            "version_count": len(history),
+            "revision_chain_is_complete": True,
+            "scientific_validity_established": False,
+            "automatic_adjudication": False,
+        }
+
     def overview(self, query: str = "", limit: int = 200) -> dict:
         versions = self.store.scientific_memory_history(limit=limit)
         graph = self.store.knowledge_graph(limit=2000)
