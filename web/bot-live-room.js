@@ -16,6 +16,7 @@
       answerWorking:"The engine is currently processing {topic}. {active} agent(s) are reported active. {done} tasks are recorded as complete; {pending} outputs remain pending review.",
       answerDiscoveries:"Most recent recorded research output: {summary} This is a provisional research note, not a verified scientific discovery.",
       answerNone:"No research output has been recorded yet. The engine has not published a new result.",
+      freeQuestionPlaceholder:"Ask about a topic, result or research programme…",freeQuestionSubmit:"Ask",relatedRecords:"Related recorded research notes",noRelatedRecords:"No recorded note matches this question yet.",
       answerVerification:"Research outputs remain unverified until their sources, methods and reasoning receive independent review. The dashboard currently reports {pending} outputs awaiting review. No percentage can establish absolute certainty.",
       role:"Research agent",talking:"Processing",notActive:"Recent contribution",voiceUnavailable:"Speech synthesis is unavailable in this browser."
     },
@@ -29,6 +30,7 @@
       answerWorking:"Le moteur traite actuellement le programme « {topic} ». {active} agent(s) sont signalés actifs. {done} tâches sont enregistrées comme terminées ; {pending} résultats restent à examiner.",
       answerDiscoveries:"Dernier résultat de recherche enregistré : {summary} Il s’agit d’une note de recherche provisoire, et non d’une découverte scientifique vérifiée.",
       answerNone:"Aucun résultat de recherche n’a encore été enregistré. Le moteur n’a pas publié de nouveau résultat.",
+      freeQuestionPlaceholder:"Posez une question sur un sujet, un résultat ou un programme…",freeQuestionSubmit:"Poser la question",relatedRecords:"Notes de recherche enregistrées correspondantes",noRelatedRecords:"Aucune note enregistrée ne correspond encore à cette question.",
       answerVerification:"Les résultats restent non vérifiés tant que leurs sources, méthodes et raisonnements n’ont pas fait l’objet d’un examen indépendant. Le tableau de bord indique actuellement {pending} résultats en attente d’examen. Aucun pourcentage ne peut établir une certitude absolue.",
       role:"Agent de recherche",talking:"En cours de traitement",notActive:"Contribution récente",voiceUnavailable:"La synthèse vocale n’est pas disponible dans ce navigateur."
     },
@@ -453,6 +455,12 @@
       const key=button.dataset.botQuestion;
       button.textContent=key==="working"?c.qWorking:key==="discoveries"?c.qDiscoveries:c.qVerification;
     });
+    const questionInput=$("bot-free-question");
+    const questionLabel=$("bot-free-question-label");
+    const questionSubmit=$("bot-free-question-submit");
+    if(questionInput) questionInput.placeholder=c.freeQuestionPlaceholder||copy.en.freeQuestionPlaceholder;
+    if(questionLabel) questionLabel.textContent=c.freeQuestionPlaceholder||copy.en.freeQuestionPlaceholder;
+    if(questionSubmit) questionSubmit.textContent=c.freeQuestionSubmit||copy.en.freeQuestionSubmit;
   }
 
   function answerQuestion(kind) {
@@ -475,6 +483,52 @@
     const node=$("bot-visitor-answer");
     node.hidden=false; node.textContent=answer;
     if(voiceEnabled) speak(answer,speakerTurn++);
+  }
+
+  function answerFreeQuestion(rawQuestion) {
+    const question=String(rawQuestion||"").trim().slice(0,300);
+    const node=$("bot-visitor-answer");
+    if(!question||!node)return;
+    const stop=new Set(["the","and","for","with","that","this","what","where","when","from","about","into","are","you","your","les","des","une","dans","pour","avec","sur","quoi","comment","quel","quelle","quels","quelles","est","sont","aux"]);
+    const tokens=new Set((question.toLocaleLowerCase().match(/[\\p{L}\\p{N}]{2,}/gu)||[]).filter(token=>!stop.has(token)));
+    const data=currentData||{};
+    const records=[
+      ...(Array.isArray(data.recent_outputs)?data.recent_outputs:[]).map(item=>({...item,record_kind:"research_output",search_text:[item.summary,item.role,item.task_id].join(" ")})),
+      ...(Array.isArray(data.agent_messages)?data.agent_messages:[]).map(item=>({...item,record_kind:"agent_handoff",summary:item.content,role:item.sender_role,search_text:[item.content,item.sender_role,item.task_id,item.recipient_role].join(" ")}))
+    ];
+    const ranked=records.map(item=>{
+      const words=new Set((String(item.search_text||"").toLocaleLowerCase().match(/[\\p{L}\\p{N}]{2,}/gu)||[]).filter(token=>!stop.has(token)));
+      const overlap=[...tokens].filter(token=>words.has(token));
+      const score=tokens.size?overlap.length/tokens.size:0;
+      return {...item,score,matched:overlap};
+    }).filter(item=>item.score>0&&String(item.summary||"").trim())
+      .sort((a,b)=>b.score-a.score||String(b.created_at||"").localeCompare(String(a.created_at||""))).slice(0,3);
+    node.replaceChildren();
+    const heading=document.createElement("strong");
+    heading.textContent=t().relatedRecords||copy.en.relatedRecords;
+    node.append(heading);
+    if(!ranked.length){
+      const empty=document.createElement("p");
+      empty.textContent=t().noRelatedRecords||copy.en.noRelatedRecords;
+      node.append(empty);
+      node.hidden=false;
+      return;
+    }
+    const list=document.createElement("ol");
+    ranked.forEach(item=>{
+      const entry=document.createElement("li");
+      const title=document.createElement("strong");
+      title.textContent=roleName(item.role||item.sender_role)+" · "+(item.task_id||item.record_kind);
+      const summary=document.createElement("p");
+      summary.textContent=String(item.summary).slice(0,900);
+      const meta=document.createElement("small");
+      meta.textContent=(item.record_kind==="agent_handoff"?"Agent hand-off":"Research output")+" · "+(item.created_at||"date not recorded")+" · relevance "+Math.round(item.score*100)+"%";
+      entry.append(title,summary,meta);
+      list.append(entry);
+    });
+    node.append(list);
+    node.hidden=false;
+    if(voiceEnabled)speak((t().relatedRecords||copy.en.relatedRecords)+". "+ranked[0].summary,speakerTurn++);
   }
 
   async function refresh() {
@@ -503,6 +557,11 @@
     } finally { requestBusy=false; }
   }
 
+  $("bot-free-question-form")?.addEventListener("submit",event=>{
+    event.preventDefault();
+    const input=$("bot-free-question");
+    answerFreeQuestion(input?.value||"");
+  });
   $("bot-voice-toggle").addEventListener("click",() => {
     voiceEnabled=!voiceEnabled;
     renderLabels();
