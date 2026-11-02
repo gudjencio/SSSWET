@@ -106,3 +106,7 @@ No update may knowingly reduce documented usefulness, performance, durability, e
 ## Cross-agent research memory
 
 The persistent agent memory layer supports bounded team-wide retrieval for shared research questions. Results preserve agent identity and source provenance, use deterministic ranking, and remain research notes rather than verified conclusions. See [Cross-agent memory retrieval](docs/CROSS_AGENT_MEMORY_RETRIEVAL.md).
+
+## Context-aware claim comparison
+
+- Context-aware claim comparison separates differences in scope, conditions, units and observation dates before flagging review leads. See [Context-aware research claim comparison](docs/CONTEXT_AWARE_CLAIM_COMPARISON.md).
