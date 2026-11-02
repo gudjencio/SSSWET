@@ -15,6 +15,7 @@
 
   let waitingWorker = null;
   let refreshing = false;
+  let hadController = Boolean(navigator.serviceWorker.controller);
 
   function showUpdate(worker) {
     waitingWorker = worker;
@@ -33,7 +34,7 @@
   });
 
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (refreshing) return;
+    if (!hadController || refreshing) return;
     refreshing = true;
     window.location.reload();
   });
