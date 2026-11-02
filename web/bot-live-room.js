@@ -295,7 +295,7 @@
     return preferred[Math.abs(Number(agentIndex)||0)%preferred.length] || preferred[0] || null;
   }
   function prepareSpeechText(value) {
-    return String(value || "").replace(/https?:\\/\\/\\S+/gi,"").replace(/```[\\s\\S]*?```/g," ").replace(/[`*_#>]/g,"").replace(/^\\s*[-•]\\s*/gm,"").replace(/\\s+/g," ").replace(/\\s+([,.;:!?])/g,"$1").trim().slice(0,1800);
+    return String(value || "").replace(new RegExp("https?://[^ ]+","gi")," ").replace(/[*_#>]/g,"").replace(new RegExp("\\s+","g")," ").trim().slice(0,1800);
   }
   function splitSpeech(text) {
     const parts=String(text).match(/[^.!?。！？]+[.!?。！？]?/g)||[text],chunks=[];let current="";
