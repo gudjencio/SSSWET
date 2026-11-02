@@ -30,7 +30,7 @@ class TaskDecomposer:
     )
 
     COMPLEXITY_SIGNALS = (
-        "compare", "comparison", "design", "architecture", "system",
+        "design", "architecture", "system",
         "evaluate", "evaluation", "trade-off", "tradeoff", "optimise",
         "optimize", "integrate", "integration", "multi-disciplinary",
         "multidisciplinary", "feasibility",
