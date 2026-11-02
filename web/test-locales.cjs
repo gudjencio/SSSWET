@@ -57,6 +57,12 @@ for (const [code, locale] of Object.entries(locales)) {
 }
 const appSource = fs.readFileSync(new URL("./app.js", `file://${__filename}`), "utf8");
 const pageSource = fs.readFileSync(new URL("./index.html", `file://${__filename}`), "utf8");
+const interfaceTranslationKeys = [...new Set([...pageSource.matchAll(/data-i18n(?:-aria|-placeholder)?="([^"]+)"/g)].map(match => match[1]))];
+for (const key of interfaceTranslationKeys) {
+  if (typeof locales.fr[key] !== "string" || !locales.fr[key].trim()) {
+    throw new Error(`French interface translation is missing: ${key}`);
+  }
+}
 for (const feature of ["SpeechSynthesisUtterance", "speechSynthesis", "chooseVoice", "speakAsAgent", "speakLongText", "readCurrentFeed", "capitalizeInterfaceText", "MutationObserver"]) {
   if (!appSource.includes(feature)) throw new Error(`Voice or capitalization feature missing: ${feature}`);
 }
