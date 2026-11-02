@@ -148,16 +148,18 @@ class AgentIdentityRegistry:
                 "observable_event": row["event_type"],
                 "recorded_count": row["count"],
             })
+        memory_roles = {row["agent_id"]: row["role"] for row in memories}
+        agent_ids = sorted(set(memory_counts) | set(relation_map))
         return {
             "profiles": [
                 {**self.profile(role), "memory_count": 0, "collaboration_history": []}
                 for role in PROFILES
             ],
             "persistent_agent_records": [
-                {"agent_id": row["agent_id"], "role": row["role"],
-                 "memory_count": memory_counts.get(row["agent_id"], 0),
-                 "collaboration_history": relation_map.get(row["agent_id"], [])}
-                for row in memories
+                {"agent_id": agent_id, "role": memory_roles.get(agent_id, ""),
+                 "memory_count": memory_counts.get(agent_id, 0),
+                 "collaboration_history": relation_map.get(agent_id, [])}
+                for agent_id in agent_ids
             ],
             "relationship_data_is_observational": True,
             "memories_require_source_references": True,
