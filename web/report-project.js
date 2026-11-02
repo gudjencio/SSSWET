@@ -42,7 +42,7 @@
   const text = () => copy[language()] || copy.en;
   const style = document.createElement("style");
   style.textContent = `
-    .report-project-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:11px 18px;border:1px solid rgba(255,92,92,.55);border-radius:14px;color:#fff;background:linear-gradient(115deg,#9f242b,#65171d);font:650 12px inherit;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.24)}
+    .report-project-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:11px 18px;border:1px solid rgba(255,92,92,.55);border-radius:14px;color:#fff;background:linear-gradient(115deg,#9f242b,#65171d);font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.24)}
     .report-project-button:hover{background:linear-gradient(115deg,#bd3038,#7c1d25);transform:translateY(-1px)}
     .repair-project-slot{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
     .ssswet-report-dialog{width:min(560px,calc(100% - 28px));max-height:85vh;overflow:auto;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:#101116;color:#f5f5f7;padding:24px;box-shadow:0 24px 90px #000a}
