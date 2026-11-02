@@ -42,3 +42,10 @@ A missing link indicates an incomplete or unavailable local record, not that the
 The `GET /api/scientific-memory/suggestions` response includes `potentially_outdated_memory`. An alert is emitted when a current memory version links to a graph node that has a recorded `contradicts` edge to another node whose recorded creation time is later than the memory version.
 
 Alerts identify records for human re-examination; they do not establish that a hypothesis is false, do not rank evidence quality, and never revise or archive memory automatically. The response includes the later node, edge note and recorded confidence when available.
+
+
+## Source independence comparison
+
+Use `GET /api/source-independence?source_ids=source-a,source-b` to compare up to 100 registered sources. The report distinguishes explicit dependency signals (shared DOI, dataset, provenance group, or declared source relationship) from contextual overlaps (shared authors or institutions).
+
+A dependency signal triggers review; it does not prove that two reports are dependent. Contextual overlaps are not treated as dependency proof. Most importantly, no recorded overlap does not prove independence, so the API never calculates an independent-source count or upgrades verification status.
