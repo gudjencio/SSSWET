@@ -35,7 +35,7 @@ The previous one-time and manually scheduled instalment interface has been repla
 
 ## Research programme prioritisation
 
-The local dashboard includes a transparent, human-entered assessment workflow for all 32 research programmes. Six weighted criteria cover societal benefit, ecological and animal benefit, evidence maturity, technical feasibility, resource accessibility, and safety and legal readiness. Incomplete assessments remain visible but are excluded from ranking; previous submissions are preserved in append-only local SQLite history. Each entry requires a reviewer label and written rationale, with optional evidence references. Rankings are advisory decision-support indicators only: they do not establish scientific validity, authorize experiments, allocate funding or certify product readiness. See [research programme prioritisation](docs/RESEARCH_PRIORITISATION.md).
+The local dashboard includes a transparent, human-entered assessment workflow for all 40 research programmes. Six weighted criteria cover societal benefit, ecological and animal benefit, evidence maturity, technical feasibility, resource accessibility, and safety and legal readiness. Incomplete assessments remain visible but are excluded from ranking; previous submissions are preserved in append-only local SQLite history. Each entry requires a reviewer label and written rationale, with optional evidence references. Rankings are advisory decision-support indicators only: they do not establish scientific validity, authorize experiments, allocate funding or certify product readiness. See [research programme prioritisation](docs/RESEARCH_PRIORITISATION.md).
 
 ## Reproducibility intelligence
 
@@ -147,7 +147,7 @@ The literature watch compares returned metadata with registered sources and coll
 
 ### Continuous research and success notifications
 
-Autonomous research starts automatically when the local interface is launched with `ssswet-local`. A background worker begins a complete pass across all 32 technology programmes and repeats it every 60 minutes by default. The worker runs alongside the interface, so no separate daemon command is required for normal operation.
+Autonomous research starts automatically when the local interface is launched with `ssswet-local`. A background worker begins a complete pass across all 40 technology programmes and repeats it every 60 minutes by default. The worker runs alongside the interface, so no separate daemon command is required for normal operation.
 
 To change the interval, set `SSSWET_RESEARCH_INTERVAL_MINUTES` before starting the local service, or pass `--research-interval-minutes`. To run the interface without background research, pass `--disable-background-research`.
 
@@ -333,7 +333,7 @@ The local research engine includes an append-only, hash-chained journal for date
 
 ## Technology Feasibility Observatory
 
-The local research engine includes a read-only observatory for all 29 technology programmes. It summarizes explicitly recorded literature, simulations, prototypes, tests and independent reviews, then identifies missing review areas without inventing a feasibility score or authorizing delivery. See [the observatory documentation](docs/TECHNOLOGY_FEASIBILITY_OBSERVATORY.md).
+The local research engine includes a read-only observatory for all 40 technology programmes. It summarizes explicitly recorded literature, simulations, prototypes, tests and independent reviews, then identifies missing review areas without inventing a feasibility score or authorizing delivery. See [the observatory documentation](docs/TECHNOLOGY_FEASIBILITY_OBSERVATORY.md).
 
 
 ## Private Gmail delivery workflow
