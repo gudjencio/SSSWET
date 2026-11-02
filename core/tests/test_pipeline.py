@@ -366,3 +366,40 @@ def test_campaign_pipeline_executes_allocated_agents_concurrently(tmp_path):
     assert len(steps) == 2
     assert len({step.agent_id for step in steps}) == 2
     assert len(coordinator.snapshot()["completed_task_ids"]) == 2
+
+
+def test_decomposer_keeps_simple_questions_lightweight():
+    from ssswet_core.decomposer import TaskDecomposer
+
+    tasks = TaskDecomposer().decompose("Study a harmless mathematical identity", "math")
+    assert len(tasks) == 2
+    assert tasks[0].role == "mathematician"
+    assert tasks[-1].role == "independent_verifier"
+    assert tasks[0].objective != tasks[-1].objective
+
+
+def test_decomposer_adds_complementary_scopes_for_complex_human_systems():
+    from ssswet_core.decomposer import TaskDecomposer
+
+    tasks = TaskDecomposer().decompose(
+        "Design and compare a wearable medical system with energy and material constraints for human use",
+        "engineering",
+    )
+    roles = [task.role for task in tasks]
+    assert roles == [
+        "engineer",
+        "systems_engineer",
+        "ethics_reviewer",
+        "independent_verifier",
+    ]
+    assert len({task.objective for task in tasks}) == len(tasks)
+    assert "resource constraints" in tasks[1].objective
+    assert "human-impact risks" in tasks[2].objective
+    assert tasks[-1].priority > tasks[0].priority
+
+
+def test_decomposer_does_not_add_safety_lens_to_unrelated_simple_question():
+    from ssswet_core.decomposer import TaskDecomposer
+
+    tasks = TaskDecomposer().decompose("Calculate a simple arithmetic mean", "math")
+    assert [task.role for task in tasks] == ["mathematician", "independent_verifier"]
