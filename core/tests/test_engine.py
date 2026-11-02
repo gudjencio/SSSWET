@@ -93,3 +93,34 @@ def test_engine_proposes_independent_reviewers_without_executing_assignment():
     assert result["status"] == "proposed"
     assert result["reviewer_assignment_executed"] is False
     assert result["independence_certified"] is False
+
+
+def test_engine_exposes_persistent_research_decision_lineage(tmp_path):
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    engine = SSSWETEngine(store=SQLiteResearchStore(tmp_path / "engine-decisions.sqlite3"))
+    decision = engine.record_research_decision(
+        subject_id="claim-engine-1",
+        rationale="Initial interpretation pending review.",
+        actor_id="mira",
+        evidence_refs=["doi:10.example/engine"],
+    )
+    engine.transition_research_decision(
+        decision["decision_id"],
+        status="challenged",
+        rationale="Independent review identified a limitation.",
+        actor_id="elias",
+        evidence_refs=["review:engine-1"],
+    )
+    assert engine.get_research_decision(decision["decision_id"])["current_recorded_status"] == "challenged"
+    assert len(engine.research_decision_history("claim-engine-1")) == 2
+
+
+def test_engine_requires_persistent_store_for_decision_lineage():
+    import pytest
+
+    engine = SSSWETEngine()
+    with pytest.raises(RuntimeError, match="persistent research store"):
+        engine.record_research_decision(
+            subject_id="claim", rationale="Proposal.", actor_id="mira"
+        )
