@@ -128,7 +128,7 @@ console.log("Validated the PayPal research-funding route, conditional future pro
 const portfolioConfig = fs.readFileSync(new URL("./donation-config.js", `file://${__filename}`), "utf8");
 const portfolioKeys = portfolioConfig.match(/const ssswetTechnologyKeys = \[([\s\S]*?)\];/);
 if (!portfolioKeys) throw new Error("Research portfolio technology catalogue is missing.");
-for (const key of ["cellular", "longevity", "armor", "jetpack", "translator", "spacetime", "timetravel", "cleanenergy", "energyStorage", "water", "foodSystems", "climate", "biodiversity", "wildlife", "oceans", "reforestation", "agriculture", "circularEconomy", "airQuality", "mobility", "accessibility", "disasterResilience", "publicHealth", "sanitation", "education", "animalHealth", "materials", "carbonMonitoring", "pollinators", "artificialGravity", "medicalNanotechnology", "atmosphericRestoration"]) {
+for (const key of ["cellular", "longevity", "armor", "jetpack", "translator", "spacetime", "timetravel", "cleanenergy", "energyStorage", "water", "foodSystems", "climate", "biodiversity", "wildlife", "oceans", "reforestation", "agriculture", "circularEconomy", "airQuality", "mobility", "accessibility", "disasterResilience", "publicHealth", "sanitation", "education", "animalHealth", "materials", "carbonMonitoring", "pollinators", "artificialGravity", "medicalNanotechnology", "atmosphericRestoration", "neurointerfaces", "quantumNetworks", "fusionEnergy", "spaceLifeSupport", "autonomousLabs", "roboticsExoskeletons", "planetaryMonitoring", "advancedComputing"]) {
   if (!portfolioKeys[1].includes(`"${key}"`)) throw new Error(`Research portfolio is missing ${key}`);
 }
 for (const field of ["funding_goal_eur: null", "confirmed_contributions_eur: null", 'stage: "planning"', 'prototype: false', 'availability: "not_available"']) {
@@ -136,7 +136,7 @@ for (const field of ["funding_goal_eur: null", "confirmed_contributions_eur: nul
 }
 if (!donationSourceLatest.includes("renderPortfolio")) throw new Error("Research progress display is missing.");
 if (!pageSource.includes('id="portfolio-manual-note"') || !pageSource.includes('id="technology-dialog-progress"')) throw new Error("Research portfolio interface is missing.");
-console.log("Validated all 32 research programmes, unpublished unknowns, manual PayPal ledger disclosure and progress interface.");
+console.log("Validated all 40 research programmes, unpublished unknowns, manual PayPal ledger disclosure and progress interface.");
 
 
 const journalSource = fs.readFileSync(new URL('./research-journal.js', `file://${__filename}`), 'utf8');
