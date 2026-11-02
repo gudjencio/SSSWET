@@ -444,3 +444,10 @@ for (const key of ["virtualTimeTravelMap","spatiotemporalDigitalTwin","forensicS
   if (!categoryScript.includes(key)) throw new Error("New research theme missing from the interface: " + key);
 }
 if (!categoryScript.includes("curatedTechnologyCopy") || !categoryScript.includes("spatiotemporalSystems")) throw new Error("New research theme translations or category are missing.");
+
+const newCopySource = fs.readFileSync(__dirname + "/new-technology-copy.js", "utf8");
+new Function(newCopySource);
+for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"]) {
+  if (!newCopySource.includes(locale + ":")) throw new Error("New technology descriptions are missing locale " + locale);
+}
+if (!newCopySource.includes("SSSWET_TECHNOLOGIES")) throw new Error("Curated technology metadata is not exposed to the contribution interface.");
