@@ -262,8 +262,29 @@ class ResearchPipeline:
             self._persist_agent_memories(task.id, results)
             if self.store and len(results) > 1:
                 handoffs = []
-                for index, sender in enumerate(results):
-                    recipient = results[(index + 1) % len(results)]
+                # Route primary research to a designated independent verifier.
+                # Avoid reciprocal reviews of the verifier's own challenge output:
+                # they add latency without strengthening independence.
+                reviewers = [
+                    step for step in results
+                    if step.subtask.role == "independent_verifier"
+                ]
+                primary_steps = [
+                    step for step in results
+                    if step.subtask.role != "independent_verifier"
+                ]
+                if not reviewers:
+                    reviewers = [
+                        step for step in results
+                        if any(step.agent_id != primary.agent_id for primary in primary_steps)
+                    ]
+                for index, sender in enumerate(primary_steps):
+                    recipient = next(
+                        (reviewer for reviewer in reviewers if reviewer.agent_id != sender.agent_id),
+                        None,
+                    )
+                    if recipient is None:
+                        continue
                     summary = sender.result.summary.strip()
                     if not summary:
                         continue
