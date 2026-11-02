@@ -39,6 +39,10 @@ No algorithm can uniquely recover an unrecorded past from incomplete present-day
 - Users must follow local recording, privacy and data-protection laws and obtain consent where required. Avoid recording private conversations or identifiable bystanders without permission.
 - Do not use this prototype as forensic evidence, an emergency dispatch tool, a navigation safety system or a source of legal/medical conclusions.
 
+## Local media storage
+
+The prototype caps locally stored media at 150 MiB per browser database. Once the cap is reached, further media chunks are stopped with a localized notice; location and motion observations can continue. Users can delete local data to free space.
+
 ## Current limitations
 
 - GPS accuracy depends on the device, environment and permissions; the interface displays the reported accuracy rather than claiming exact positioning.
