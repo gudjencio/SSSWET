@@ -270,21 +270,28 @@
       console.warn("[SSSWET] USD/EUR conversion unavailable:", error);
     }
     updateAmounts();
-    if (currencyNote && copy() === translations.fr && usdToEurRate) {
-      currencyNote.textContent = copy().currencyNote + (exchangeRateDate ? " Taux de référence du " + new Intl.DateTimeFormat("fr-FR").format(new Date(exchangeRateDate + "T12:00:00Z")) + "." : "");
-    } else if (currencyNote && copy() === translations.fr && !usdToEurRate) {
-      currencyNote.textContent = copy().currencyNote + " La conversion en euros est temporairement indisponible ; aucun taux n’est inventé.";
+    updateCurrencyNote();
+  }
+  function updateCurrencyNote() {
+    if (!currencyNote) return;
+    const french = copy() === translations.fr;
+    if (french) {
+      currencyNote.textContent = copy().currencyNote
+        + (usdToEurRate && exchangeRateDate
+          ? " Taux de référence du " + new Intl.DateTimeFormat("fr-FR").format(new Date(exchangeRateDate + "T12:00:00Z")) + "."
+          : usdToEurRate ? "" : " La conversion en euros est temporairement indisponible ; aucun taux n’est inventé.");
+    } else {
+      currencyNote.textContent = copy().currencyNote;
     }
   }
+
   function chooseCurrency() {
     amountInput.min = "1";
     amountInput.max = "100000";
     amountInput.step = "0.01";
     amountInput.value = String(Math.max(1, Math.round((Number(amountInput.value) || 1) * 100) / 100));
     currencyLabel.textContent = copy() === translations.fr ? "Dollars américains / mois · équivalent en euros" : "USD / month";
-    currencyNote.textContent = copy() === translations.fr
-      ? "Le montant est facturé en dollars américains. Son équivalent en euros est affiché à titre indicatif selon le taux de change de référence le plus récent. PayPal affichera les conditions avant validation."
-      : "The contribution is charged in US dollars (USD). A live euro equivalent is shown for reference using the current exchange rate. PayPal will display the terms before approval.";
+    updateCurrencyNote();
     updateAmounts();
   }
 
@@ -445,7 +452,7 @@
       const item = technologies[selectedTechnology];
       title.textContent = item[language][0]; description.textContent = item[language][1];
     }
-    currencyNote.textContent = copy().currencyNote;
+    updateCurrencyNote();
     renderPortfolio();
     updateAmounts();
   });
