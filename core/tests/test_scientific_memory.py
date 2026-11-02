@@ -137,13 +137,13 @@ def test_evolution_alert_flags_only_current_memory_challenged_by_later_record(tm
     ))
     store.add_knowledge_node(KnowledgeNode(
         "later-finding", "finding", "Later contradictory finding",
-        created_at="2026-02-01T00:00:00+00:00",
+        created_at="9999-02-01T00:00:00+00:00",
     ))
     store.add_knowledge_edge(KnowledgeEdge(
         "hypothesis-node", "later-finding", "contradicts",
         note="A later observation challenges the earlier model.",
         confidence=0.7,
-        created_at="2026-02-01T00:00:00+00:00",
+        created_at="9999-02-01T00:00:00+00:00",
     ))
     service = ScientificMemoryService(store)
     service.add_version(ScientificMemoryVersion.create(
