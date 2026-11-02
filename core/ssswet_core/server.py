@@ -222,6 +222,18 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                         limit=limit,
                     ),
                 })
+            elif path == "/api/scientific-memory/lineage":
+                from .scientific_memory import ScientificMemoryService
+                params = parse_qs(parsed.query)
+                version_id = params.get("version_id", [""])[0].strip()
+                if not version_id:
+                    self._json({"error": "The version_id parameter is required"}, 400)
+                    return
+                lineage = ScientificMemoryService(store).lineage(version_id)
+                if lineage is None:
+                    self._json({"error": "Scientific memory version not found"}, 404)
+                    return
+                self._json(lineage)
             elif path == "/api/scientific-memory":
                 from .scientific_memory import ScientificMemoryService
                 params = parse_qs(parsed.query)
