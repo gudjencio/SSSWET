@@ -180,7 +180,7 @@
   const copyButton = document.getElementById("donation-copy");
   const translations = {
     en: { eyebrow:"FUTURE TECHNOLOGIES · RESEARCH PRIORITIES", title:"Choose a technology to support", intro:"Explore the research directions and open a contribution window for the technology you want to encourage.", disclaimer:"These are research themes, not claims that the technologies exist or are currently achievable. The project will keep exploring, testing and refining ideas in an ongoing effort to make them possible. Contributions fund research and development; they are not a purchase or a guarantee of results. If a technology becomes feasible and a product is actually developed, a future offer and delivery terms will be communicated separately.", explore:"Explore & contribute", dialogEyebrow:"FUND RESEARCH & DEVELOPMENT", amountLabel:"Monthly contribution amount (USD)", repeatLabel:"Number of separate contributions", perContribution:"Monthly contribution", totalLabel:"Annual equivalent", currencyNote:"Choose a monthly amount in USD. PayPal will display the subscription terms before approval.", paymentMissing:"The PayPal subscription is not configured.", paymentReady:"Choose your monthly amount, then approve the recurring subscription securely with PayPal.", checkout:"Continue to PayPal", copySummary:"Copy research contribution summary", paymentDisclaimer:"This is a recurring monthly contribution. The amount selected is billed monthly through PayPal until the subscriber cancels. Contributions support ongoing research and do not purchase an existing product or guarantee a result. Any future product offer and delivery terms will be communicated separately if a technology is developed and becomes available.", invalid:"Enter a monthly amount between USD 1 and USD 100,000.", copied:"Contribution summary copied.", copyError:"Unable to copy automatically. Please select and copy the summary." },
-    fr: { eyebrow:"TECHNOLOGIES DU FUTUR · PRIORITÉS DE RECHERCHE", title:"Choisissez une technologie à soutenir", intro:"Découvrez les axes de recherche et ouvrez une fenêtre de contribution pour la technologie que vous souhaitez encourager.", disclaimer:"Ces axes ne signifient pas que les technologies existent ou soient réalisables aujourd'hui. Le projet poursuivra continuellement les recherches, les essais et les améliorations pour tenter de les rendre possibles. Les contributions financent la recherche et le développement ; elles ne constituent pas un achat et ne garantissent aucun résultat. Si une technologie devient réalisable et qu'un produit est effectivement développé, une offre et des conditions de livraison seront communiquées séparément.", explore:"Découvrir et contribuer", dialogEyebrow:"FINANCER LA RECHERCHE ET LE DÉVELOPPEMENT", amountLabel:"Montant mensuel (USD · équivalent en euros)", repeatLabel:"Nombre de contributions distinctes", perContribution:"Contribution mensuelle", totalLabel:"Équivalent annuel", currencyNote:"Le montant est facturé en dollars américains (USD). Son équivalent en euros est affiché à titre indicatif selon le taux de change du jour. PayPal affichera les conditions avant validation.", paymentMissing:"L’abonnement PayPal n’est pas configuré.", paymentReady:"Choisissez votre montant mensuel, puis approuvez l’abonnement récurrent en toute sécurité avec PayPal.", checkout:"Continuer vers PayPal", copySummary:"Copier le récapitulatif du financement", paymentDisclaimer:"Il s’agit d’une contribution mensuelle récurrente. Le montant choisi est facturé chaque mois par PayPal jusqu’à l’annulation de l’abonnement. Les contributions financent la recherche en cours et ne constituent pas l’achat d’un produit existant ni une garantie de résultat. Toute future offre de produit et de livraison sera communiquée séparément si une technologie est développée et devient disponible.", invalid:"Saisissez un montant mensuel compris entre 1 et 100 000 dollars américains.", copied:"Récapitulatif copié.", copyError:"Copie automatique impossible. Veuillez sélectionner et copier le récapitulatif." }
+    fr: { eyebrow:"TECHNOLOGIES DU FUTUR · PRIORITÉS DE RECHERCHE", title:"Choisissez une technologie à soutenir", intro:"Découvrez les axes de recherche et ouvrez une fenêtre de contribution pour la technologie que vous souhaitez encourager.", disclaimer:"Ces axes ne signifient pas que les technologies existent ou soient réalisables aujourd'hui. Le projet poursuivra continuellement les recherches, les essais et les améliorations pour tenter de les rendre possibles. Les contributions financent la recherche et le développement ; elles ne constituent pas un achat et ne garantissent aucun résultat. Si une technologie devient réalisable et qu'un produit est effectivement développé, une offre et des conditions de livraison seront communiquées séparément.", explore:"Découvrir et contribuer", dialogEyebrow:"FINANCER LA RECHERCHE ET LE DÉVELOPPEMENT", amountLabel:"Montant mensuel en dollars américains · équivalent en euros", repeatLabel:"Nombre de contributions distinctes", perContribution:"Contribution mensuelle", totalLabel:"Équivalent annuel", currencyNote:"Le montant est facturé en dollars américains (USD). Son équivalent en euros est affiché à titre indicatif selon le taux de change du jour. PayPal affichera les conditions avant validation.", paymentMissing:"L’abonnement PayPal n’est pas configuré.", paymentReady:"Choisissez votre montant mensuel, puis approuvez l’abonnement récurrent en toute sécurité avec PayPal.", checkout:"Continuer vers PayPal", copySummary:"Copier le récapitulatif du financement", paymentDisclaimer:"Il s’agit d’une contribution mensuelle récurrente. Le montant choisi est facturé chaque mois par PayPal jusqu’à l’annulation de l’abonnement. Les contributions financent la recherche en cours et ne constituent pas l’achat d’un produit existant ni une garantie de résultat. Toute future offre de produit et de livraison sera communiquée séparément si une technologie est développée et devient disponible.", invalid:"Saisissez un montant mensuel compris entre 1 et 100 000 dollars américains.", copied:"Récapitulatif copié.", copyError:"Copie automatique impossible. Veuillez sélectionner et copier le récapitulatif." }
   };
   const copy = () => translations[(document.documentElement.lang || "en").startsWith("fr") ? "fr" : "en"];
   function applyPaymentLanguage() {
@@ -224,8 +224,10 @@
     catch (_) { return value.toFixed(2) + " " + currency; }
   }
   let usdToEurRate = null;
+  let exchangeRateDate = "";
   function formatUsd(value, french) {
-    return new Intl.NumberFormat(french ? "fr-FR" : "en-US", {style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
+    if (french) return new Intl.NumberFormat("fr-FR", {minimumFractionDigits:2,maximumFractionDigits:2}).format(value) + " dollars américains";
+    return new Intl.NumberFormat("en-US", {style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
   }
   function formatEur(value) {
     return new Intl.NumberFormat("fr-FR", {style:"currency",currency:"EUR",minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
@@ -234,34 +236,52 @@
     const amount = Number(amountInput.value);
     const valid = Number.isFinite(amount) && amount >= 1 && amount <= 100000;
     const french = copy() === translations.fr;
-    const monthlyEur = valid && Number.isFinite(usdToEurRate) ? " · ≈ " + formatEur(amount * usdToEurRate) : valid && french ? " · conversion EUR en cours…" : "";
-    const annualEur = valid && Number.isFinite(usdToEurRate) ? " · ≈ " + formatEur(amount * 12 * usdToEurRate) : valid && french ? " · conversion EUR en cours…" : "";
+    const monthlyEur = valid && Number.isFinite(usdToEurRate) ? " · ≈ " + formatEur(amount * usdToEurRate) : valid && french ? " · équivalent en euros indisponible" : "";
+    const annualEur = valid && Number.isFinite(usdToEurRate) ? " · ≈ " + formatEur(amount * 12 * usdToEurRate) : valid && french ? " · équivalent en euros indisponible" : "";
     perOutput.textContent = valid ? formatUsd(amount,french) + (french ? " / mois" : " / month") + monthlyEur : "—";
     totalOutput.textContent = valid ? formatUsd(amount*12,french) + (french ? " / an" : " / year") + annualEur : "—";
-    currencyLabel.textContent = french ? "USD / mois · équivalent EUR" : "USD / month";
+    currencyLabel.textContent = french ? "Dollars américains / mois · équivalent en euros" : "USD / month";
     const configured = Boolean(paymentLinks.PAYPAL_CLIENT_ID && paymentLinks.PAYPAL_SUBSCRIPTION_PLAN_ID);
     paymentStatus.textContent = !valid ? copy().invalid : configured ? copy().paymentReady : copy().paymentMissing;
   }
   async function loadEuroExchangeRate() {
     try {
-      const response = await fetch("https://api.frankfurter.app/latest?from=USD&to=EUR", {cache:"no-store"});
-      if (!response.ok) throw new Error("Exchange-rate service unavailable");
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 12000);
+      let response;
+      try {
+        response = await fetch("https://api.frankfurter.dev/v2/rate/usd/eur", {
+          cache:"no-store", headers:{Accept:"application/json"}, signal:controller.signal
+        });
+      } finally {
+        window.clearTimeout(timeout);
+      }
+      if (!response.ok) throw new Error("Exchange-rate service returned HTTP " + response.status);
       const data = await response.json();
-      const rate = Number(data && data.rates && data.rates.EUR);
-      if (!Number.isFinite(rate) || rate <= 0) throw new Error("Invalid USD/EUR rate");
+      const rate = Number(data && data.rate);
+      if (!Number.isFinite(rate) || rate <= 0 || data.base?.toUpperCase() !== "USD" || data.quote?.toUpperCase() !== "EUR") {
+        throw new Error("Invalid USD/EUR exchange-rate response");
+      }
       usdToEurRate = rate;
+      exchangeRateDate = typeof data.date === "string" ? data.date : "";
     } catch (error) {
       usdToEurRate = null;
+      exchangeRateDate = "";
       console.warn("[SSSWET] USD/EUR conversion unavailable:", error);
     }
     updateAmounts();
+    if (currencyNote && copy() === translations.fr && usdToEurRate) {
+      currencyNote.textContent = copy().currencyNote + (exchangeRateDate ? " Taux de référence du " + new Intl.DateTimeFormat("fr-FR").format(new Date(exchangeRateDate + "T12:00:00Z")) + "." : "");
+    } else if (currencyNote && copy() === translations.fr && !usdToEurRate) {
+      currencyNote.textContent = copy().currencyNote + " La conversion en euros est temporairement indisponible ; aucun taux n’est inventé.";
+    }
   }
   function chooseCurrency() {
     amountInput.min = "1";
     amountInput.max = "100000";
     amountInput.step = "0.01";
     amountInput.value = String(Math.max(1, Math.round((Number(amountInput.value) || 1) * 100) / 100));
-    currencyLabel.textContent = copy() === translations.fr ? "USD / mois · équivalent EUR" : "USD / month";
+    currencyLabel.textContent = copy() === translations.fr ? "Dollars américains / mois · équivalent en euros" : "USD / month";
     currencyNote.textContent = copy() === translations.fr
       ? "Le montant est facturé en dollars américains (USD). Son équivalent en euros est affiché à titre indicatif selon le taux de change du jour. PayPal affichera les conditions avant validation."
       : "The contribution is charged in US dollars (USD). A live euro equivalent is shown for reference using the current exchange rate. PayPal will display the terms before approval.";
