@@ -121,7 +121,7 @@ def test_overview_reports_broken_evidence_links_without_promoting_claims(tmp_pat
     item = result["versions"][0]
     assert item["has_missing_links"] is True
     assert item["missing_links"] == {
-        "source_ids": ["source-present", "source-missing"],
+        "source_ids": ["source-missing", "source-present"],
         "experiment_ids": ["experiment-missing"],
         "graph_node_ids": ["node-missing"],
     }
