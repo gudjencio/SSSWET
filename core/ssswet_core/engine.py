@@ -8,6 +8,7 @@ from .orchestrator import ResearchOrchestrator
 from .safety import SafetyGate
 from .strategies import StrategySelector
 from .verification import VerificationEngine
+from .pricing_evidence import build_agent_pricing_estimate
 
 
 @dataclass
@@ -118,6 +119,10 @@ class SSSWETEngine:
                 parent_task_id or review_task.id,
             ))
         return conflicts
+
+    def estimate_technology_costs(self, **pricing_inputs) -> dict:
+        """Validate agent-submitted cost evidence through the independent pricing gate."""
+        return build_agent_pricing_estimate(**pricing_inputs)
 
     def publishable(self, finding: Finding) -> tuple[bool, list[str]]:
         return self.safety.assess(finding)
