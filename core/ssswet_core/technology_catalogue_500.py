@@ -1,4 +1,4 @@
-"""500-entry public technology portfolio registry."""
+"""510-entry public technology portfolio registry (legacy module name retained)."""
 from __future__ import annotations
 
 from .technology_catalogue import TECHNOLOGY_CATALOGUE as CORE_TECHNOLOGY_CATALOGUE
