@@ -26,7 +26,7 @@ function localize(){
  document.documentElement.lang=locale;document.documentElement.dir=["ar","he"].includes(locale)?"rtl":"ltr";document.title=(t().brand||"Virtual Time Travel Mapping")+" · SSSWET";document.querySelectorAll("[data-a]").forEach(node=>{const value=(extraCopy[locale]||extraCopy.en)[node.dataset.a];if(value)node.setAttribute("aria-label",value)});const horizon=$("vt-horizon");if(horizon){const words=extraCopy[locale]||extraCopy.en;horizon.options[0].textContent=words.m1;horizon.options[1].textContent=words.m5;horizon.options[2].textContent=words.m15;}
  document.querySelectorAll("[data-i]").forEach(node=>{const value=t()[node.dataset.i];if(value)node.textContent=value});
  document.querySelectorAll("[data-ph]").forEach(node=>{const value=t()[node.dataset.ph];if(value)node.placeholder=value});
- if(map)map.setRTLTextPlugin?.(null);
+ 
 }
 function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open("ssswet-virtual-time-map",1);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains("events"))d.createObjectStore("events",{keyPath:"id"});if(!d.objectStoreNames.contains("media"))d.createObjectStore("media",{keyPath:"id"});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
 function store(name,mode="readonly"){return db.transaction(name,mode).objectStore(name)}
@@ -88,7 +88,7 @@ async function startScan(){
  if(!window.isSecureContext){setStatus("needPermission");return}
  try{
   await requestOrientationPermission();
-  if(wantCamera||wantMic){if(!navigator.mediaDevices?.getUserMedia)throw new Error("media unavailable");mediaStream=await navigator.mediaDevices.getUserMedia({video:wantCamera?{facingMode:{ideal:"environment"}}:false,audio:wantMic});if(wantCamera){$("vt-preview").srcObject=mediaStream;$("vt-preview").hidden=false}if(window.MediaRecorder){recorder=new MediaRecorder(mediaStream);let clipStart=Date.now();recorder.ondataavailable=async ev=>{if(ev.data&&ev.data.size){const item={id:newId(),timestamp:clipStart,duration:Date.now()-clipStart,mimeType:ev.data.type,blob:ev.data};await put("media",item);media.push(item);refreshStorage();clipStart=Date.now()}};recorder.start(12000)}}
+  if(wantCamera||wantMic){if(!navigator.mediaDevices?.getUserMedia)throw new Error("media unavailable");if(!window.MediaRecorder)throw new Error("media recording unavailable");mediaStream=await navigator.mediaDevices.getUserMedia({video:wantCamera?{facingMode:{ideal:"environment"}}:false,audio:wantMic});if(wantCamera){$("vt-preview").srcObject=mediaStream;$("vt-preview").hidden=false}if(window.MediaRecorder){recorder=new MediaRecorder(mediaStream);let clipStart=Date.now();recorder.ondataavailable=async ev=>{if(ev.data&&ev.data.size){const item={id:newId(),timestamp:clipStart,duration:Date.now()-clipStart,mimeType:ev.data.type,blob:ev.data};await put("media",item);media.push(item);refreshStorage();clipStart=Date.now()}};recorder.start(12000)}}
   scanActive=true;$("vt-start").disabled=true;$("vt-stop").disabled=false;
   if(wantLocation){if(!navigator.geolocation)throw new Error("geolocation unavailable");watchId=navigator.geolocation.watchPosition(onPosition,()=>setStatus("locationDenied"),{enableHighAccuracy:true,maximumAge:1000,timeout:15000})}
   window.addEventListener("deviceorientation",onOrientation);window.addEventListener("devicemotion",onMotion);
