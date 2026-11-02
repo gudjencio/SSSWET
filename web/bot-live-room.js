@@ -228,6 +228,25 @@
   function personaFor(index) {
     return personaProfiles[Math.abs(Number(index) || 0) % personaProfiles.length];
   }
+  function stableSpeakerIndex(role) {
+    const value = String(role || "general_researcher");
+    let hash = 0;
+    for (let i = 0; i < value.length; i++) hash = ((hash * 31) + value.charCodeAt(i)) | 0;
+    return Math.abs(hash) % personaProfiles.length;
+  }
+  function conversationalLead(role, message) {
+    const text = String(message || "").trim();
+    if (!text || /^[“"']/.test(text)) return text;
+    const leads = {
+      general_researcher: ["Here’s how I’m looking at it: ", "The part I find interesting is this: "],
+      independent_verifier: ["I’d like to be careful about one point: ", "Let’s separate what we know from what we still need to check: "],
+      medical_researcher: ["From a health-research perspective, ", "The safety question I’d keep in view is this: "],
+      materials_scientist: ["Looking at the material side, ", "One practical constraint stands out: "]
+    };
+    const choices = leads[role] || ["One thing worth looking at: ", "Here’s my take on the current evidence: "];
+    if (/^(here’s|here is|i think|i’d|i would|let’s|the key|one thing|from a|looking at)/i.test(text)) return text;
+    return choices[stableSpeakerIndex(role) % choices.length] + text.charAt(0).toLowerCase() + text.slice(1);
+  }
 
   function bestVoice(language, agentIndex) {
     if (!speechApi) return null;
@@ -283,7 +302,7 @@
           const id = String(recent.id || recent.created_at || recent.content);
           spokenMessageIds.add(id);
           const role = roleName(recent.sender_role);
-          speak(role + ". " + recent.content, speakerTurn++);
+          speak(role + ". " + conversationalLead(recent.sender_role, recent.content), stableSpeakerIndex(recent.sender_role));
         } else if (active.length && Date.now()-lastThinkingSound > 65000 && Math.random() < 0.18) {
           speak(["Hmm…","Mhmm…"][Math.floor(Math.random()*2)],speakerTurn++);
           lastThinkingSound = Date.now();
@@ -291,7 +310,7 @@
           const item = outputs.find(entry => entry.summary && String(entry.summary).trim() && !spokenOutputIds.has([entry.task_id,entry.agent_id,entry.created_at].join("|")));
           if (item) {
             spokenOutputIds.add([item.task_id,item.agent_id,item.created_at].join("|"));
-            speak(roleName(item.role) + ". " + item.summary,speakerTurn++);
+            speak(roleName(item.role) + ". " + conversationalLead(item.role, item.summary), stableSpeakerIndex(item.role));
           }
         }
       }
