@@ -455,12 +455,23 @@
       const key=button.dataset.botQuestion;
       button.textContent=key==="working"?c.qWorking:key==="discoveries"?c.qDiscoveries:c.qVerification;
     });
+    const questionPrompts={
+      en:"Ask about a topic, result or research programme…",fr:"Posez une question sur un sujet, un résultat ou un programme…",
+      es:"Pregunta sobre un tema, resultado o programa de investigación…",de:"Frage zu einem Thema, Ergebnis oder Forschungsprogramm…",
+      it:"Fai una domanda su un argomento, un risultato o un programma…",pt:"Pergunte sobre um tema, resultado ou programa de investigação…",
+      nl:"Stel een vraag over een onderwerp, resultaat of onderzoeksprogramma…",ru:"Задайте вопрос о теме, результате или исследовательской программе…",
+      uk:"Поставте запитання про тему, результат або дослідницьку програму…",ar:"اطرح سؤالاً حول موضوع أو نتيجة أو برنامج بحثي…",
+      he:"שאלו על נושא, תוצאה או תוכנית מחקר…",ja:"研究テーマ、結果、プログラムについて質問…",
+      ko:"주제, 결과 또는 연구 프로그램에 대해 질문…",zh:"询问研究主题、结果或计划…",hi:"किसी विषय, परिणाम या अनुसंधान कार्यक्रम के बारे में पूछें…"
+    };
+    const askLabels={en:"Ask",fr:"Poser la question",es:"Preguntar",de:"Fragen",it:"Chiedi",pt:"Perguntar",nl:"Vragen",ru:"Спросить",uk:"Запитати",ar:"اسأل",he:"שאלו",ja:"質問する",ko:"질문하기",zh:"提问",hi:"पूछें"};
     const questionInput=$("bot-free-question");
     const questionLabel=$("bot-free-question-label");
     const questionSubmit=$("bot-free-question-submit");
-    if(questionInput) questionInput.placeholder=c.freeQuestionPlaceholder||copy.en.freeQuestionPlaceholder;
-    if(questionLabel) questionLabel.textContent=c.freeQuestionPlaceholder||copy.en.freeQuestionPlaceholder;
-    if(questionSubmit) questionSubmit.textContent=c.freeQuestionSubmit||copy.en.freeQuestionSubmit;
+    const prompt=questionPrompts[lang()]||questionPrompts.en;
+    if(questionInput) questionInput.placeholder=prompt;
+    if(questionLabel) questionLabel.textContent=prompt;
+    if(questionSubmit) questionSubmit.textContent=askLabels[lang()]||askLabels.en;
   }
 
   function answerQuestion(kind) {
