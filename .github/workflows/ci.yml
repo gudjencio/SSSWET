@@ -44,7 +44,10 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('capacitor.config.json', 'utf8')); JSON.parse(require('fs').readFileSync('web/manifest.json', 'utf8'))"
           node --check web/report-project.js
           node --check web/locales.js
+          node --check web/bot-personality.js
+          node --check web/bot-live-room.js
           node web/test-locales.cjs
+          node web/test-bot-personality.cjs
       - name: Run core tests
         working-directory: core
         run: python -m pytest -q
