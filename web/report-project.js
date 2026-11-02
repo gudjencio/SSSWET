@@ -100,8 +100,8 @@
   const text = () => copy[language()] || copy.en;
   const style = document.createElement("style");
   style.textContent = `
-    .report-project-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:11px 18px;border:1px solid rgba(255,92,92,.55);border-radius:14px;color:#fff;background:linear-gradient(115deg,#9f242b,#65171d);font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.24)}
-    .report-project-button:hover{background:linear-gradient(115deg,#bd3038,#7c1d25);transform:translateY(-1px)}
+    .report-project-button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:11px 18px;border:1px solid rgba(210,82,88,.48);border-radius:14px;color:#fff;background:linear-gradient(115deg,#861b23,#4d1118);font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.24)}
+    .report-project-button:hover{background:linear-gradient(115deg,#a12630,#601720);transform:translateY(-1px)}
     .repair-project-slot{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
     .ssswet-report-dialog{width:min(560px,calc(100% - 28px));max-height:85vh;overflow:auto;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:#101116;color:#f5f5f7;padding:24px;box-shadow:0 24px 90px #000a}
     .ssswet-report-dialog::backdrop{background:#000b;backdrop-filter:blur(5px)}
@@ -111,7 +111,7 @@
     .ssswet-report-dialog textarea{min-height:120px;resize:vertical}
     .ssswet-report-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:18px}
     .ssswet-report-actions button{border:1px solid #555;border-radius:9px;padding:10px 15px;background:#242630;color:white;cursor:pointer}
-    .ssswet-report-actions button[type=submit]{background:#a8242d;border-color:#a8242d}
+    .ssswet-report-actions button[type=submit]{background:#871c25;border-color:#871c25}
     .ssswet-report-status{min-height:1.4em;font-size:13px}
     .ssswet-report-history{margin:16px 0}.ssswet-report-history-list{padding-inline-start:22px;display:grid;gap:10px}
     .ssswet-report-history-list a{color:#f0a1a5;text-decoration:underline}.ssswet-report-history-list li{overflow-wrap:anywhere}.ssswet-report-live-status{margin:5px 0;color:#d7d9e2;font-size:12px}.ssswet-report-history-links{margin:4px 0;font-size:12px}
@@ -185,8 +185,8 @@
           const prResponse = await fetch(base+"/pulls/"+Number(prMatch[1]),{headers});
           if (prResponse.ok) {
             const pr = await prResponse.json();
-            if (pr.merged_at || pr.merged) const result={key:"integrated",pr_url:pr.html_url}; liveStatusCache.set(number,result); return result;
-            if (pr.state === "open") const result={key:"proposed",pr_url:pr.html_url}; liveStatusCache.set(number,result); return result;
+            if (pr.merged_at || pr.merged) { const result={key:"integrated",pr_url:pr.html_url}; liveStatusCache.set(number,result); return result; }
+            if (pr.state === "open") { const result={key:"proposed",pr_url:pr.html_url}; liveStatusCache.set(number,result); return result; }
           }
         }
         const issueLabels = (issue.labels||[]).map(label=>String(label.name||"").toLowerCase());
