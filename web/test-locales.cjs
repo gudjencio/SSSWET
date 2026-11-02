@@ -291,3 +291,31 @@ if (!serviceWorkerCache.includes('"./service-worker-updates.js"') ||
   throw new Error("Application updates must be cached and activated only after user confirmation.");
 }
 console.log("Validated the user-controlled service worker update flow.");
+
+
+const taxonomySource = fs.readFileSync(new URL("./technology-categories.js", `file://${__filename}`), "utf8");
+new Function(taxonomySource);
+const taxonomyGroupsMatch = taxonomySource.match(/const groups = (\\{[\\s\\S]*?\\});/);
+const taxonomyTranslationsMatch = taxonomySource.match(/const translations = (\\{[\\s\\S]*?\\});/);
+if (!taxonomyGroupsMatch || !taxonomyTranslationsMatch) throw new Error("Technology taxonomy data is missing.");
+const taxonomyGroups = JSON.parse(taxonomyGroupsMatch[1]);
+const taxonomyTranslations = JSON.parse(taxonomyTranslationsMatch[1]);
+const taxonomyKeys = Object.values(taxonomyGroups).flatMap(group => Object.values(group).flat());
+if (Object.keys(taxonomyGroups).length !== 8 || taxonomyKeys.length !== 100 || new Set(taxonomyKeys).size !== 100) {
+  throw new Error("The technology taxonomy must classify exactly one hundred unique programmes in eight categories.");
+}
+const requiredTaxonomyLocales = ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"];
+for (const locale of requiredTaxonomyLocales) {
+  if (!Array.isArray(taxonomyTranslations[locale]) || taxonomyTranslations[locale].length !== 27) {
+    throw new Error(`Technology category and subcategory translations are incomplete for ${locale}.`);
+  }
+}
+const donationSource = fs.readFileSync(new URL("./donation.js", `file://${__filename}`), "utf8");
+for (const key of taxonomyKeys) {
+  if (!donationSource.includes(key + ": {")) throw new Error(`Technology ${key} is missing from the public catalogue.`);
+}
+if (!pageSource.includes('src="technology-categories.js"') ||
+    !serviceWorkerCache.includes('"./technology-categories.js"')) {
+  throw new Error("The categorized technology catalogue must be loaded and cached.");
+}
+console.log("Validated exactly 100 unique technology programmes, eight categories, and 15 translated taxonomies.");
