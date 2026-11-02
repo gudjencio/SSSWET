@@ -10,7 +10,6 @@ import re
 from datetime import datetime, timezone
 from uuid import uuid4
 
-
 NODE_TYPES = {"memory", "claim", "decision", "experiment", "evidence", "technology_dossier", "hypothesis"}
 RELATIONS = {"supports", "contradicts", "informs", "tests", "supersedes", "documents", "motivates", "depends_on", "derived_from"}
 EDGE_STATES = {"proposed", "reviewed", "withdrawn"}
@@ -46,19 +45,15 @@ class ResearchKnowledgeGraph:
                     FOREIGN KEY(source_id) REFERENCES research_knowledge_nodes(node_id),
                     FOREIGN KEY(target_id) REFERENCES research_knowledge_nodes(node_id)
                 );
-                CREATE INDEX IF NOT EXISTS idx_rkg_edges_source ON research_knowledge_edges(source_id, rowid);
-                CREATE INDEX IF NOT EXISTS idx_rkg_edges_target ON research_knowledge_edges(target_id, rowid);
-                CREATE TRIGGER IF NOT EXISTS rkg_nodes_no_update
-                    BEFORE UPDATE ON research_knowledge_nodes BEGIN
+                CREATE INDEX IF NOT EXISTS idx_rkg_edges_source ON research_knowledge_edges(source_id);
+                CREATE INDEX IF NOT EXISTS idx_rkg_edges_target ON research_knowledge_edges(target_id);
+                CREATE TRIGGER IF NOT EXISTS rkg_nodes_no_update BEFORE UPDATE ON research_knowledge_nodes BEGIN
                     SELECT RAISE(ABORT, 'research knowledge nodes are append-only'); END;
-                CREATE TRIGGER IF NOT EXISTS rkg_nodes_no_delete
-                    BEFORE DELETE ON research_knowledge_nodes BEGIN
+                CREATE TRIGGER IF NOT EXISTS rkg_nodes_no_delete BEFORE DELETE ON research_knowledge_nodes BEGIN
                     SELECT RAISE(ABORT, 'research knowledge nodes are append-only'); END;
-                CREATE TRIGGER IF NOT EXISTS rkg_edges_no_update
-                    BEFORE UPDATE ON research_knowledge_edges BEGIN
+                CREATE TRIGGER IF NOT EXISTS rkg_edges_no_update BEFORE UPDATE ON research_knowledge_edges BEGIN
                     SELECT RAISE(ABORT, 'research knowledge edges are append-only'); END;
-                CREATE TRIGGER IF NOT EXISTS rkg_edges_no_delete
-                    BEFORE DELETE ON research_knowledge_edges BEGIN
+                CREATE TRIGGER IF NOT EXISTS rkg_edges_no_delete BEFORE DELETE ON research_knowledge_edges BEGIN
                     SELECT RAISE(ABORT, 'research knowledge edges are append-only'); END;
             """)
 
@@ -206,8 +201,8 @@ class ResearchKnowledgeGraph:
                 if depth >= max_depth:
                     continue
                 rows = connection.execute(
-                    "SELECT * FROM research_knowledge_edges WHERE source_id=? AND state!='withdrawn' "
-                    "ORDER BY rowid", (current,),
+                    "SELECT * FROM research_knowledge_edges WHERE source_id=? AND state!='withdrawn' ORDER BY rowid",
+                    (current,),
                 ).fetchall()
                 for row in rows:
                     target = row["target_id"]
@@ -217,11 +212,8 @@ class ResearchKnowledgeGraph:
                     next_depth = depth + 1
                     next_path = path + [target]
                     next_relations = relations + [row["relation"]]
-                    results.append({
-                        "node": self.get_node(target), "depth": next_depth,
-                        "path": next_path, "relations": next_relations,
-                        "edge_id": row["edge_id"],
-                    })
+                    results.append({"node": self.get_node(target), "depth": next_depth,
+                                    "path": next_path, "relations": next_relations, "edge_id": row["edge_id"]})
                     if next_depth < max_depth:
                         queue.append((target, next_depth, next_path, next_relations))
                     if len(results) >= limit:
