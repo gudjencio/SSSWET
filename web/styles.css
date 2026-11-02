@@ -1719,3 +1719,32 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 .bot-live-activity ul{list-style:none;display:grid;gap:5px;margin:0;padding:0}
 .bot-live-activity li{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:space-between;font-size:.78rem}
 .bot-live-activity li span{color:var(--gold-muted,#c9ad72)}
+
+
+/* Mobile navigation: keep social links in document flow, clear of primary actions. */
+@media (max-width: 620px) {
+  .app-shell > .social-corner {
+    position: relative !important;
+    inset: auto !important;
+    z-index: 2;
+    align-self: flex-end;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    width: auto;
+    max-width: 100%;
+    margin: 0 0 12px;
+  }
+  .app-shell > .topbar {
+    padding-top: 0 !important;
+  }
+}
+@media (max-width: 360px) {
+  .app-shell > .social-corner {
+    gap: 5px;
+  }
+  .app-shell > .social-corner a {
+    width: 29px;
+    height: 29px;
+    flex-basis: 29px;
+  }
+}
