@@ -436,3 +436,10 @@ new Function(voiceSource);
 new Function(readAloudSource);
 if (!voiceSource.includes("function splitSpeech") || !voiceSource.includes("bestVoice")) throw new Error("Natural speech pacing or voice selection is missing.");
 if (!readAloudSource.includes("Read selected text")) throw new Error("Accessible read-aloud control is missing.");
+
+const categoryScript = fs.readFileSync(__dirname + "/technology-categories.js", "utf8");
+new Function(categoryScript);
+for (const key of ["virtualTimeTravelMap","spatiotemporalDigitalTwin","forensicSceneReconstruction","predictiveSceneSimulation","geospatialSensorFusion","persistent3DMapping","motionTrajectoryReconstruction","privacyPreservingCapture","environmentalEventReplay","uncertaintyAwareWorldModel"]) {
+  if (!categoryScript.includes(key)) throw new Error("New research theme missing from the interface: " + key);
+}
+if (!categoryScript.includes("curatedTechnologyCopy") || !categoryScript.includes("spatiotemporalSystems")) throw new Error("New research theme translations or category are missing.");
