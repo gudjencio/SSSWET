@@ -77,3 +77,11 @@ Camera access is opt-in and begins only after the user explicitly starts a local
 A defensible reconstruction pipeline requires calibrated camera intrinsics, overlapping frames, visual feature matching, camera-pose estimation, scale recovery (for example from depth sensing or surveyed references), georeferencing, confidence metadata, and validation against independent measurements. Where supported, a future depth-sensing integration may provide per-frame depth; devices without depth support will need a separate photogrammetry workflow. The basemap geometry, camera-derived geometry, and unobserved areas must remain visually and semantically distinct. No synthetic fill should be displayed as measured structure.
 
 The interface starts with every sensor permission unchecked. Opening the page loads the map and local timeline only; it does not request camera, microphone, location, or motion access. The user must select sources and press the start control.
+
+## Local candidate keyframe extraction
+
+The prototype can analyse one previously recorded local video after the user selects that clip and explicitly starts analysis. It samples at the selected interval, with a maximum of 60 sample positions per analysis. A lightweight grayscale Laplacian-variance score estimates image sharpness, while normalized frame-to-frame pixel difference estimates visual change. These are screening heuristics, not calibrated image-quality measurements.
+
+Candidate frames are exported individually as JPEG images at the source video dimensions when the browser supports full-resolution canvas export. Candidate images remain in memory during the session and are not automatically written to IndexedDB or uploaded. The extraction process limits exported candidate data to 100 MiB per analysis; the existing local media database remains subject to its separate 150 MiB cap.
+
+This feature is only a preparatory image-selection aid. It does not estimate camera poses, solve lens calibration, recover metric scale, build a point cloud or mesh, or perform photogrammetry. A sharp frame is not necessarily geometrically useful, and a large visual change does not prove that two frames overlap appropriately. Any later reconstruction pipeline will require calibrated capture, overlap checks, pose estimation, scale recovery, georeferencing and independent validation.
