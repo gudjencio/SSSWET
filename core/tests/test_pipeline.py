@@ -194,7 +194,7 @@ def test_pipeline_persists_source_linked_agent_notes_and_observed_peer_review(tm
 
     records = {item["agent_id"]: item for item in overview["persistent_agent_records"]}
     assert records["ssswet:independent_verifier"]["collaboration_history"][0]["observable_event"] == "peer_review"
-    assert records["ssswet:independent_verifier"]["collaboration_history"][0]["other_agent_id"] == "ssswet:general_researcher"
+    assert records["ssswet:independent_verifier"]["collaboration_history"][0]["other_agent_id"] == "ssswet:general_researcher:mathematician"
 
 
 class ContinuityProvider:
