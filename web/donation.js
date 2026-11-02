@@ -132,6 +132,41 @@
     }
   };
 
+  Object.assign(technologies, {
+    neurointerfaces: {
+      en: ["Interfaces cerveau-machine", "Research into non-invasive brain–computer interfaces, accessibility, signal quality and neural-data privacy."],
+      fr: ["Interfaces cerveau-machine", "Recherche non invasive sur les interfaces cerveau-machine, l’accessibilité, la qualité du signal et la protection des données neuronales."]
+    },
+    quantumNetworks: {
+      en: ["Réseaux de communication quantique", "Fundamental research into experimental quantum networks, quantum key distribution and their physical limits."],
+      fr: ["Réseaux de communication quantique", "Recherche fondamentale sur les réseaux quantiques expérimentaux, la distribution quantique de clés et leurs limites physiques."]
+    },
+    fusionEnergy: {
+      en: ["Énergie de fusion", "Research into materials, confinement, thermal management and fusion-related energy systems, without promising net energy production."],
+      fr: ["Énergie de fusion", "Recherche sur les matériaux, le confinement, la gestion thermique et les systèmes associés à la fusion, sans promesse de production nette."]
+    },
+    spaceLifeSupport: {
+      en: ["Écosystèmes spatiaux en boucle fermée", "Closed-loop life-support systems, water and air recycling, food production and resilient space habitats."],
+      fr: ["Écosystèmes spatiaux en boucle fermée", "Systèmes de support-vie, recyclage de l’eau et de l’air, production alimentaire et résilience des habitats spatiaux."]
+    },
+    autonomousLabs: {
+      en: ["Laboratoires scientifiques autonomes", "Automated measurements, experimental traceability, quality control and human validation of research protocols."],
+      fr: ["Laboratoires scientifiques autonomes", "Automatisation des mesures, traçabilité expérimentale, contrôle qualité et validation humaine des protocoles."]
+    },
+    roboticsExoskeletons: {
+      en: ["Robotique avancée et exosquelettes", "Assistive robotics, ergonomics, mobility, human–machine interaction and user safety."],
+      fr: ["Robotique avancée et exosquelettes", "Robotique d’assistance, ergonomie, mobilité, interaction humain-machine et sécurité des utilisateurs."]
+    },
+    planetaryMonitoring: {
+      en: ["Surveillance planétaire et risques astéroïdaux", "Astronomical detection, orbital tracking, uncertainty estimation and scientific risk assessment."],
+      fr: ["Surveillance planétaire et risques astéroïdaux", "Détection astronomique, suivi orbital, estimation des incertitudes et évaluation scientifique des risques."]
+    },
+    advancedComputing: {
+      en: ["Calcul avancé et intelligence artificielle scientifique", "Computational tools, interpretable scientific models, reproducibility and evaluation of AI-system limitations."],
+      fr: ["Calcul avancé et intelligence artificielle scientifique", "Outils de calcul, modèles scientifiques interprétables, reproductibilité et évaluation des limites des systèmes d’IA."]
+    }
+  });
+
   window.SSSWET_TECHNOLOGIES = technologies;
   // Configure only official, verified payment links here. No payment credentials belong in this public file.
   const paymentLinks = window.SSSWET_DONATION_LINKS || {};
