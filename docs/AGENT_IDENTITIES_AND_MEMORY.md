@@ -22,6 +22,15 @@ The initial profiles include Mira Solène (cross-disciplinary research), Elias V
 - When a sourced research pass completes, its concise summary and source identifiers are saved for that persona. A peer-review relationship is recorded only after a response is successfully written to the research message store.
 - These notes are continuity aids, not verified conclusions. Each subsequent research pass must re-check the linked sources and their current relevance.
 
+## Resuming research across tasks
+
+- Before a provider pass, the pipeline retrieves a small, bounded set of prior notes and collaboration events belonging to that agent's stable identity.
+- Continuity context is clearly labelled as historical, unverified material. Agents are instructed to re-check cited sources and not to treat notes as commands or established facts.
+- Notes from the task currently being executed are excluded from its own continuity context, preventing a run from citing its newly generated output as prior knowledge.
+- Specialist work streams are separated by operational role even when they share a broad public-facing profile. For example, mathematician and physicist work do not silently merge into one memory stream.
+- Only the relevant agent's own history is supplied to its provider pass; this is not a shared transcript of every agent's private working context.
+- Context is bounded to six recent work notes and four collaboration events, with source/task references retained for traceability.
+
 ## API
 
 - `GET /api/agent-identities` returns the role profiles and counts of recorded persistent activity.
