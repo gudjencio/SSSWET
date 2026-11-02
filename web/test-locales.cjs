@@ -229,4 +229,10 @@ if (!paymentConfig.includes("PAYPAL_CLIENT_ID") || !paymentConfig.includes("PAYP
 if (!donationSourceLatest.includes('amount >= 1') || !donationSourceLatest.includes('amount <= 100000')) {
   throw new Error("Monthly subscription amount validation is missing.");
 }
+const mainStyles = fs.readFileSync(path.join(__dirname, "styles.css"), "utf8");
+if (!mainStyles.includes(".app-shell > .social-corner") ||
+    !mainStyles.includes("position: relative !important") ||
+    !mainStyles.includes(".app-shell > .topbar")) {
+  throw new Error("Mobile social navigation must remain in document flow above the header.");
+}
 console.log("Validated the PayPal monthly subscription flow and variable quantity configuration.");
