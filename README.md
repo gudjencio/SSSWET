@@ -17,6 +17,16 @@ Research into protective equipment may cover lawful military, civil-protection, 
 
 The proposed, currently disabled [monthly technology financing model](docs/MONTHLY_TECHNOLOGY_FINANCING.md) documents subscription sequencing, tax transparency, cancellation, refunds and repair safeguards.
 
+## Continuous scientific and engineering improvement
+
+The purpose of the SSSWET research bots is not only to catalogue ideas: they are intended to help advance scientific understanding and develop technologies toward greater usefulness, performance, durability, efficiency, maintainability, safety and evidence quality.
+
+SSSWET applies a formal **non-regression principle**: a successor technology revision must not knowingly reduce a documented capability of the previous revision. Evidence-backed capability floors are checked before a revision can supersede an earlier one. See [Continuous Scientific and Engineering Improvement](docs/TECHNOLOGY_CONTINUOUS_IMPROVEMENT.md).
+
+The project also adopts a **persistence principle**. A failed experiment, blocked hypothesis or unsuccessful prototype is not treated as a reason to abandon the underlying research objective. Instead, the result should identify the limiting mechanism, preserve the negative result, revise the hypothesis or design, seek independent review, and continue through a safer or better-supported research route.
+
+Persistence does not override safety, ethics, biosafety, human-subject protections, environmental protections, applicable law or scientific evidence. The project must never make a technology less safe merely to preserve a performance score, and it must never hide a regression or fabricate an improvement.
+
 ## Applications
 
 Install SSSWET on supported mobile devices from the website, or download the Windows, macOS and Linux desktop builds from [official releases](https://github.com/gudjencio/SSSWET/releases). Mobile installation and package availability are explained in [Application distribution](docs/APP_DISTRIBUTION.md).
@@ -36,6 +46,10 @@ The project may change its public descriptions and availability as research, rev
 - Distinguish hypotheses, simulations, observations and independently reviewed findings.
 - Preserve uncertainty and limitations in public claims.
 - Do not present speculative concepts as established capabilities.
+- Seek measurable improvement rather than merely a new version number.
+- Prevent documented capability regressions between successive revisions.
+- Treat negative results as reusable scientific knowledge.
+- Continue research after setbacks through safer, better-supported and independently reviewed routes.
 - Require appropriate human, scientific, safety and legal review before real-world use.
 - Protect personal information, credentials and confidential material from publication.
 - Record declared risks and uncertainties without inventing probability, impact or safety conclusions; see [Research Risk & Uncertainty Register](docs/RESEARCH_RISK_UNCERTAINTY_REGISTER.md).
