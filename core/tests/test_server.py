@@ -928,3 +928,49 @@ def test_local_server_can_start_without_private_dashboard_token(monkeypatch, tmp
     ])
     monkeypatch.delenv("SSSWET_ADMIN_TOKEN", raising=False)
     server_module.main()
+
+
+def test_scientific_memory_lineage_endpoint_returns_revision_chain(tmp_path):
+    import json
+    import threading
+    from urllib.error import HTTPError
+    from urllib.parse import urlencode
+    from urllib.request import urlopen
+    from http.server import ThreadingHTTPServer
+
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.scientific_memory import ScientificMemoryService, ScientificMemoryVersion
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "scientific-memory-lineage-api.sqlite3")
+    service = ScientificMemoryService(store)
+    service.add_version(ScientificMemoryVersion.create(
+        "api-v1", "api-topic", "API topic", "First recorded statement",
+    ))
+    service.revise(
+        "api-v1", "api-v2", statement="Second recorded statement",
+        review_note="Updated after a source-method comparison.",
+    )
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    try:
+        query = urlencode({"version_id": "api-v1"})
+        with urlopen(base + "/api/scientific-memory/lineage?" + query) as response:
+            payload = json.loads(response.read())
+        assert payload["selected_version"]["version_id"] == "api-v1"
+        assert payload["successors"][0]["version_id"] == "api-v2"
+        assert payload["current_version_id"] == "api-v2"
+        assert payload["scientific_validity_established"] is False
+
+        with urlopen(base + "/api/scientific-memory/lineage") as response:
+            raise AssertionError("A missing version_id must be rejected")
+    except HTTPError as error:
+        assert error.code == 400
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
