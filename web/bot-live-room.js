@@ -229,33 +229,52 @@
   let speakerTurn = 0;
   const speechApi = window.speechSynthesis || null;
 
-  const personaProfiles = [
-    {tempo:0.96,pitch:1.02},{tempo:0.93,pitch:0.96},{tempo:0.99,pitch:1.04},
-    {tempo:0.95,pitch:0.99},{tempo:0.97,pitch:0.94},{tempo:0.92,pitch:1.01}
-  ];
-  function personaFor(index) {
-    return personaProfiles[Math.abs(Number(index) || 0) % personaProfiles.length];
+  const personaProfiles = {
+    general_researcher:{tempo:0.98,pitch:1.04},
+    independent_verifier:{tempo:0.92,pitch:0.94},
+    medical_researcher:{tempo:0.94,pitch:1.02},
+    materials_scientist:{tempo:0.91,pitch:0.98},
+    data_analyst:{tempo:0.95,pitch:0.92},
+    systems_engineer:{tempo:0.90,pitch:0.96},
+    ethics_reviewer:{tempo:0.93,pitch:1.00},
+    futures_analyst:{tempo:0.99,pitch:1.06}
+  };
+  function personaFor(roleOrIndex) {
+    if (typeof roleOrIndex === "string" && personaProfiles[roleOrIndex]) return personaProfiles[roleOrIndex];
+    const roles = Object.keys(personaProfiles);
+    return personaProfiles[roles[Math.abs(Number(roleOrIndex) || 0) % roles.length]];
   }
   function stableSpeakerIndex(role) {
+    const roles = Object.keys(personaProfiles);
+    const index = roles.indexOf(String(role || "general_researcher"));
+    if (index >= 0) return index;
     const value = String(role || "general_researcher");
     let hash = 0;
     for (let i = 0; i < value.length; i++) hash = ((hash * 31) + value.charCodeAt(i)) | 0;
-    return Math.abs(hash) % personaProfiles.length;
+    return Math.abs(hash) % roles.length;
   }
   function conversationalLead(role, message) {
     const text = String(message || "").trim();
     if (!text || /^[“"']/.test(text)) return text;
     const french = String(document.documentElement.lang || "en").toLowerCase().startsWith("fr");
     const leads = french ? {
-      general_researcher: ["Voilà comment je vois les choses : ", "Ce qui me semble particulièrement intéressant, c’est ceci : "],
-      independent_verifier: ["Je voudrais attirer votre attention sur un point : ", "Séparons ce que nous savons de ce qu’il reste à vérifier : "],
-      medical_researcher: ["Du point de vue de la recherche en santé, ", "La question de sécurité à garder à l’esprit est la suivante : "],
-      materials_scientist: ["Du côté des matériaux, ", "Une contrainte pratique ressort déjà : "]
+      general_researcher: ["Voilà comment je relie les éléments : ", "Ce qui me semble intéressant dans l’ensemble : "],
+      independent_verifier: ["Je vais distinguer les faits des hypothèses : ", "Avant de conclure, vérifions les sources : "],
+      medical_researcher: ["Du point de vue de la recherche en santé, ", "Gardons d’abord cette précaution médicale à l’esprit : "],
+      materials_scientist: ["Du côté des matériaux et de leur résistance, ", "Regardons les contraintes mesurables : "],
+      data_analyst: ["Les données disponibles suggèrent prudemment ceci : ", "Vérifions d’abord la qualité et les limites des données : "],
+      systems_engineer: ["À l’échelle du système complet, ", "Il faut aussi examiner les dépendances et les défaillances possibles : "],
+      ethics_reviewer: ["Je voudrais aussi examiner les conséquences humaines : ", "Un point de responsabilité mérite notre attention : "],
+      futures_analyst: ["En explorant un scénario possible — pas une prédiction —, ", "Imaginons cette piste tout en la gardant au stade spéculatif : "]
     } : {
-      general_researcher: ["Here’s how I’m looking at it: ", "The part I find interesting is this: "],
-      independent_verifier: ["I’d like to be careful about one point: ", "Let’s separate what we know from what we still need to check: "],
-      medical_researcher: ["From a health-research perspective, ", "The safety question I’d keep in view is this: "],
-      materials_scientist: ["Looking at the material side, ", "One practical constraint stands out: "]
+      general_researcher: ["Here is how I connect the pieces: ", "What interests me in the wider picture is this: "],
+      independent_verifier: ["Let me separate evidence from assumptions: ", "Before drawing a conclusion, let's check the sources: "],
+      medical_researcher: ["From a health-research perspective, ", "Let's keep this medical safeguard in view: "],
+      materials_scientist: ["Looking at material properties and durability, ", "Let's focus on measurable constraints: "],
+      data_analyst: ["The available data cautiously suggest this: ", "Let's first check data quality and limitations: "],
+      systems_engineer: ["At the level of the complete system, ", "We also need to examine dependencies and failure modes: "],
+      ethics_reviewer: ["I'd also like to consider the human consequences: ", "An accountability question deserves attention: "],
+      futures_analyst: ["In one possible scenario—not a prediction—, ", "Let's explore this idea while keeping it clearly speculative: "]
     };
     const choices = leads[role] || (french
       ? ["Un point mérite qu’on s’y arrête : ", "Voici ce que les éléments disponibles m’inspirent : "]
@@ -287,7 +306,7 @@
     utterance.lang = language;
     const voice = bestVoice(language,item.agentIndex || 0);
     if (voice) { utterance.voice = voice; utterance.lang = voice.lang || language; }
-    const persona = personaFor(item.agentIndex);
+    const persona = personaFor(item.role || item.agentIndex);
     utterance.rate = persona.tempo;
     utterance.pitch = persona.pitch;
     utterance.volume = 1;
@@ -301,7 +320,7 @@
     if (!voiceEnabled || !speechApi || typeof SpeechSynthesisUtterance === "undefined") return;
     const text = String(message || "").trim();
     if (!text) return;
-    speechQueue.push({text,agentIndex});
+    speechQueue.push({text,agentIndex,role:typeof agentIndex === "string" ? agentIndex : null});
     drainSpeechQueue();
   }
 
@@ -318,7 +337,7 @@
           const id = String(recent.id || recent.created_at || recent.content);
           spokenMessageIds.add(id);
           const role = roleName(recent.sender_role);
-          speak(role + ". " + conversationalLead(recent.sender_role, recent.content), stableSpeakerIndex(recent.sender_role));
+          speak(role + ". " + conversationalLead(recent.sender_role, recent.content), recent.sender_role);
         } else if (active.length && Date.now()-lastThinkingSound > 65000 && Math.random() < 0.18) {
           speak(["Hmm…","Mhmm…"][Math.floor(Math.random()*2)],speakerTurn++);
           lastThinkingSound = Date.now();
@@ -326,7 +345,7 @@
           const item = outputs.find(entry => entry.summary && String(entry.summary).trim() && !spokenOutputIds.has([entry.task_id,entry.agent_id,entry.created_at].join("|")));
           if (item) {
             spokenOutputIds.add([item.task_id,item.agent_id,item.created_at].join("|"));
-            speak(roleName(item.role) + ". " + conversationalLead(item.role, item.summary), stableSpeakerIndex(item.role));
+            speak(roleName(item.role) + ". " + conversationalLead(item.role, item.summary), item.role);
           }
         }
       }
@@ -539,7 +558,7 @@
     });
     node.append(list);
     node.hidden=false;
-    if(voiceEnabled)speak((t().relatedRecords||copy.en.relatedRecords)+". "+ranked[0].summary,speakerTurn++);
+    if(voiceEnabled){ const role=ranked[0].role||"general_researcher"; speak(conversationalLead(role,(t().relatedRecords||copy.en.relatedRecords)+". "+ranked[0].summary),role); }
   }
 
   async function refresh() {
