@@ -65,15 +65,24 @@ def test_missing_safety_gate_blocks_ranking():
 
 
 def test_observed_and_verified_scores_require_sources():
+    with pytest.raises(ValueError, match="require source references"):
+        DimensionScore(4.5, (), "verified")
+
+    with pytest.raises(ValueError, match="require source references"):
+        DimensionScore(4.5, (), "observed")
+
+    # Target values may be recorded without sources, but cannot qualify a
+    # candidate for evidence-gated ranking.
     dimensions = complete_dimensions()
-    dimensions["safety"] = DimensionScore(4.5, (), "verified")
-    with pytest.raises(ValueError):
-        calculate_protective_system_score(
-            "lifeline-rescue",
-            revision="compact-r1",
-            dimensions=dimensions,
-            gates=complete_gates(),
-        )
+    dimensions["safety"] = DimensionScore(4.5, (), "target")
+    result = calculate_protective_system_score(
+        "lifeline-rescue",
+        revision="compact-r1",
+        dimensions=dimensions,
+        gates=complete_gates(),
+    )
+    assert result.readiness == "not_ready"
+    assert result.weighted_score is None
 
 
 def test_out_of_range_score_is_rejected():
