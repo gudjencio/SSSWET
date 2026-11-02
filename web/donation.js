@@ -168,14 +168,22 @@
   });
 
   window.SSSWET_TECHNOLOGIES = technologies;
+  const catalogueCountLabels = {
+    en: "research programmes", fr: "programmes de recherche", es: "programas de investigación",
+    de: "Forschungsprogramme", it: "programmi di ricerca", pt: "programas de pesquisa",
+    nl: "onderzoeksprogramma's", ru: "исследовательских программ", uk: "дослідницьких програм",
+    ar: "برنامجًا بحثيًا", he: "תוכניות מחקר", ja: "件の研究プログラム", ko: "개 연구 프로그램",
+    zh: "项研究计划", hi: "अनुसंधान कार्यक्रम"
+  };
   function updateCatalogueCount() {
     const element = document.getElementById("technology-catalogue-count");
     if (!element) return;
-    const total = Object.keys(technologies).length;
-    const french = (document.documentElement.lang || "en").startsWith("fr");
-    element.textContent = total + (french ? " programmes de recherche" : " research programmes");
+    const grid = document.getElementById("technology-grid");
+    const total = grid ? grid.querySelectorAll(".technology-card").length : Object.keys(technologies).length;
+    const lang = (document.documentElement.lang || document.getElementById("language")?.value || "en").toLowerCase().split("-")[0];
+    element.textContent = total + " " + (catalogueCountLabels[lang] || catalogueCountLabels.en);
+    element.dataset.catalogueCount = String(total);
   }
-  updateCatalogueCount();
   // Configure only official, verified payment links here. No payment credentials belong in this public file.
   const paymentLinks = window.SSSWET_DONATION_LINKS || {};
   const portfolio = window.SSSWET_RESEARCH_PORTFOLIO || {};
@@ -192,8 +200,9 @@
   const modal = document.getElementById("technology-dialog");
   const grid = document.getElementById("technology-grid");
   if (!modal || !grid) return;
+  // Rebuild the cards from the single catalogue source to prevent stale or partial HTML lists.
+  grid.replaceChildren();
   Object.entries(technologies).forEach(([key, item], index) => {
-    if (grid.querySelector('[data-tech="' + key + '"]')) return;
     const card = document.createElement("article");
     card.className = "technology-card";
     const number = document.createElement("span");
@@ -210,6 +219,9 @@
     card.append(number, heading, summary, button);
     grid.append(card);
   });
+  updateCatalogueCount();
+  document.getElementById("language")?.addEventListener("change", updateCatalogueCount);
+  window.addEventListener("ssswet-language-changed", updateCatalogueCount);
 
   const title = document.getElementById("technology-dialog-title");
   const description = document.getElementById("technology-dialog-description");
