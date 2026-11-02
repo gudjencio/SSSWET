@@ -31,7 +31,9 @@ A matching output is not treated as independent verification. The comparison wor
 
 ## Parameter sensitivity
 
-The current run schema does not define normalized parameter sweeps or sensitivity models. The service therefore reports parameter sensitivity as `not_assessed`; it does not infer sensitivity from arbitrary differences in parameters or outputs. A future sensitivity module will require explicit parameter ranges, units, controlled designs, repeated measurements and uncertainty metadata.
+The report now identifies **candidate one-parameter contrasts** when two recorded runs meet all of these conditions: valid run fingerprints; the same campaign and provenance group; the same execution kind, method, environment and code/model reference; exactly one changed numeric parameter; and at least one shared numeric output.
+
+For each eligible pair, the response records the parameter values and descriptive output changes. It does not estimate a general sensitivity function, infer causality, perform statistical inference, or establish scientific validity. Pairs with multiple changed parameters or mismatched execution conditions are excluded from this descriptive comparison. Explicit parameter ranges, units, controlled designs, repeated measurements and uncertainty metadata remain important for a formal sensitivity study.
 
 ## Limits and safeguards
 
