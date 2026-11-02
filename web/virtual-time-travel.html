@@ -11,7 +11,7 @@
 </head>
 <body>
 <header class="vt-header">
-  <a class="vt-brand" href="./index.html"><span class="vt-mark">SSSWET</span><span data-i="brand">Virtual Time Travel Mapping</span></a>
+  <a class="vt-brand" href="./index.html"><span class="vt-mark" data-i="acronym">SSSWET</span><span data-i="brand">Virtual Time Travel Mapping</span></a>
   <div class="vt-header-actions"><label class="vt-language"><span class="sr-only" data-i="language">Language</span><select id="vt-language" aria-label="Language"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="nl">Nederlands</option><option value="ru">Русский</option><option value="uk">Українська</option><option value="ar">العربية</option><option value="he">עברית</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option><option value="hi">हिन्दी</option></select></label><a class="vt-back" href="./index.html" data-i="back">Back to SSSWET</a></div>
 </header>
 <main class="vt-shell">
@@ -19,7 +19,13 @@
   <section class="vt-map-section" aria-label="3D map" data-a="mapSectionAria">
     <div class="vt-map-heading"><div><h2 data-i="mapTitle">Your persistent 3D map</h2><p data-i="mapHelp">Explore the map. Start a scan only when you are ready and have permission to record.</p></div><button id="vt-locate" class="secondary" type="button" data-i="locate">Locate me</button></div>
     <div id="vt-map" role="application" aria-label="Interactive 3D map" data-a="mapAria"></div>
-    <div class="vt-map-meta"><span id="vt-coordinates" data-i="noLocation">Location not shared</span><span data-i="mapAttribution">Map data © OpenStreetMap contributors · OpenFreeMap</span><span data-x="mapLegend">Shaded areas are approximate scanned zones.</span></div>
+    <div class="vt-map-meta"><span id="vt-coordinates" data-i="noLocation">Location not shared</span><span data-i="mapAttribution">Map data © OpenStreetMap contributors · OpenFreeMap · Terrain relief © MapLibre demo tiles</span><span data-x="mapLegend">Shaded areas are approximate scanned zones.</span></div>
+  <section class="vt-panel vt-timeline"><div class="vt-panel-heading"><div><h2 data-i="timelineTitle">Recorded timeline</h2><p data-i="timelineIntro">Rewind and advance through the observations captured in this browser.</p></div><span id="vt-timeline-range">—</span></div>
+    <input id="vt-time" type="range" min="0" max="0" value="0" step="1" aria-label="Recorded observation timeline" data-a="timelineAria">
+    <div class="vt-actions"><button id="vt-prev" class="secondary" type="button" data-i="previous">Previous</button><button id="vt-play" class="primary" type="button" data-i="play">Play recorded timeline</button><button id="vt-next" class="secondary" type="button" data-i="next">Next</button></div>
+    <div id="vt-selected" class="vt-selected" aria-live="polite" data-i="noObservations">No observations recorded yet.</div>
+    <video id="vt-playback" controls playsinline hidden></video>
+  </section>
   </section>
   <section class="vt-grid">
     <article class="vt-panel"><h2 data-i="captureTitle">Capture a new visit</h2><p data-i="captureIntro">All capture is optional. Nothing is uploaded to SSSWET servers; observations and media stay in this browser's local storage.</p>
@@ -39,12 +45,6 @@
       <button id="vt-add-event" type="button" class="secondary" data-i="addEvent">Save observation</button>
       <div id="vt-event-feedback" class="vt-feedback" role="status" aria-live="polite"></div>
     </article>
-  </section>
-  <section class="vt-panel vt-timeline"><div class="vt-panel-heading"><div><h2 data-i="timelineTitle">Recorded timeline</h2><p data-i="timelineIntro">Rewind and advance through the observations captured in this browser.</p></div><span id="vt-timeline-range">—</span></div>
-    <input id="vt-time" type="range" min="0" max="0" value="0" step="1" aria-label="Recorded observation timeline" data-a="timelineAria">
-    <div class="vt-actions"><button id="vt-prev" class="secondary" type="button" data-i="previous">Previous</button><button id="vt-play" class="primary" type="button" data-i="play">Play recorded timeline</button><button id="vt-next" class="secondary" type="button" data-i="next">Next</button></div>
-    <div id="vt-selected" class="vt-selected" aria-live="polite" data-i="noObservations">No observations recorded yet.</div>
-    <video id="vt-playback" controls playsinline hidden></video>
   </section>
   <section class="vt-grid">
     <article class="vt-panel"><h2 data-i="modelTitle">Explore an unrecorded interval</h2><p data-i="modelIntro">The model can extend a measured trajectory as a scenario. It cannot turn missing data into historical facts or guarantee future outcomes.</p>
