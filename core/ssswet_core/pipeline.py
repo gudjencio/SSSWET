@@ -78,7 +78,10 @@ class ResearchPipeline:
         ]
         for item in memories:
             sections.append(
-                f"- Prior work note [{item['source_reference']}]: {item['content'][:900]}"
+                f"- Prior work note [{item['source_reference']}] "
+                f"(retrieval score {item.get('retrieval_score', 'recent-history')}; "
+                f"matched terms: {', '.join(item.get('matched_terms', [])) or 'recent-history'}): "
+                f"{item['content'][:900]}"
             )
         for item in collaborations:
             sections.append(
