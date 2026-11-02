@@ -88,10 +88,6 @@ def create_campaign(
         ):
             raise ValueError(f"{key} must contain non-empty text entries")
         normalized[key] = tuple(value.strip() for value in values)
-    if not normalized["success_criteria"] or not normalized["failure_criteria"]:
-        raise ValueError("Campaigns require explicit success and failure criteria")
-    if not normalized["safety_gates"]:
-        raise ValueError("Campaigns require at least one safety gate")
     return ResearchCampaign(
         campaign_id.strip(), title.strip(), objective.strip(), domain.strip(),
         "draft", tuple(milestones), hypothesis.strip(), **normalized,
