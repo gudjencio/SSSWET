@@ -49,3 +49,38 @@ def test_board_review_events_cannot_be_updated_or_deleted(tmp_path):
     with pytest.raises(Exception):
         with store._connect() as connection:
             connection.execute("DELETE FROM scientific_review_events WHERE review_id=?", (review["review_id"],))
+
+
+
+def test_report_exposes_competing_positions_without_adjudicating(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "board.sqlite3")
+    EvidenceDossierService(store).assemble("dossier-positions", "Evidence dossier", "A recorded result.")
+    board = ScientificReviewBoard(store)
+    common = {
+        "dossier_id": "dossier-positions",
+        "conflict_status": "none_declared",
+        "methods_assessment": "The method is documented but not independently reproduced.",
+        "limitations": "The available evidence is limited to one recorded dataset.",
+        "evidence_refs": ["source-10"],
+    }
+    board.submit(
+        reviewer_id="reviewer-a", verdict="supports",
+        rationale="The reported pattern is consistent with the cited source.",
+        **common,
+    )
+    board.submit(
+        reviewer_id="reviewer-b", verdict="challenges",
+        rationale="The uncertainty range overlaps the alternative explanation.",
+        **common,
+    )
+    summary = board.report("dossier-positions")["summaries"][0]
+    assert summary["adjudication_required_for_resolution"] is True
+    positions = {item["position"]: item for item in summary["competing_positions"]}
+    assert set(positions) == {"supports", "challenges"}
+    assert positions["supports"]["reviewer_labels"] == ["reviewer-a"]
+    assert positions["challenges"]["rationales"] == [
+        "The uncertainty range overlaps the alternative explanation."
+    ]
+    assert positions["supports"]["evidence_refs"] == ["source-10"]
+    assert summary["consensus_declared"] is False
+    assert summary["scientific_validity_established"] is False
