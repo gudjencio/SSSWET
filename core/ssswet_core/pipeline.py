@@ -35,6 +35,58 @@ class ResearchPipeline:
         self.store = store
         self.campaign_coordinator = campaign_coordinator
 
+    @staticmethod
+    def _identity_for_role(role: str) -> tuple[str, str]:
+        """Map operational roles to stable public personas without losing the original role."""
+        from .agent_identity import PROFILES
+        identity_role = role if role in PROFILES else "general_researcher"
+        return identity_role, f"ssswet:{identity_role}"
+
+    def _persist_agent_memories(self, task_id: str, steps: list[PipelineStep]) -> None:
+        """Save concise work notes only when the provider supplies source identifiers."""
+        if not self.store:
+            return
+        from .agent_identity import AgentIdentityRegistry
+        registry = AgentIdentityRegistry(self.store)
+        for step in steps:
+            source_ids = tuple(dict.fromkeys(
+                str(item).strip() for item in step.result.source_ids if str(item).strip()
+            ))
+            if not source_ids:
+                continue
+            identity_role, identity_id = self._identity_for_role(step.subtask.role)
+            summary = step.result.summary.strip()[:1200]
+            if not summary:
+                continue
+            source_list = ", ".join(source_ids[:12])
+            registry.remember(
+                agent_id=identity_id,
+                role=identity_role,
+                content=(
+                    f"Operational role: {step.subtask.role}. "
+                    f"Provisional research note: {summary} "
+                    f"Source identifiers: {source_list}"
+                )[:2000],
+                source_reference=f"task:{task_id};sources:{source_list}"[:300],
+            )
+
+    def _record_peer_review_relationship(
+        self, task_id: str, message_id: int, sender: PipelineStep, reviewer: PipelineStep
+    ) -> None:
+        """Record a completed, observable handoff; never infer personal feelings."""
+        if not self.store:
+            return
+        from .agent_identity import AgentIdentityRegistry
+        reviewer_role, reviewer_id = self._identity_for_role(reviewer.subtask.role)
+        sender_role, sender_id = self._identity_for_role(sender.subtask.role)
+        AgentIdentityRegistry(self.store).record_collaboration(
+            agent_id=reviewer_id,
+            other_agent_id=sender_id,
+            event_type="peer_review",
+            evidence_reference=f"task:{task_id};handoff:{message_id}",
+            note="An independent literature-search response was recorded; this does not imply approval.",
+        )
+
     def start_in_campaign(
         self,
         objective: str,
@@ -138,6 +190,7 @@ class ResearchPipeline:
                     task.id,
                 ))
             if self.store:
+                self._persist_agent_memories(task.id, results)
                 self.store.save_run(task, self.engine.orchestrator.events[event_start:], results)
             return task.id, results
         except Exception:
@@ -210,6 +263,7 @@ class ResearchPipeline:
                         })
 
             results.extend(completed_steps[index] for index in sorted(completed_steps))
+            self._persist_agent_memories(task.id, results)
 
             # Share outputs, then let each recipient run one independent literature
             # check on a teammate's work. A review is a research lead, never approval.
@@ -290,6 +344,7 @@ class ResearchPipeline:
                                 message_type="peer_review_response",
                                 content=response[:4000],
                             )
+                            self._record_peer_review_relationship(task.id, message_id, sender, reviewer)
                             self.engine.orchestrator.events.append(ResearchEvent(
                                 "peer_review_completed",
                                 "A teammate's output received an independent literature-search review; no approval was implied.",
