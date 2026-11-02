@@ -28,3 +28,8 @@ Official downloads are linked from the SSSWET website. Do not distribute unsigne
 ## Shared application source
 
 The mobile and desktop wrappers package the public `web/` interface. They do not include or grant access to unpublished research materials or private services beyond the public API configured by the website. The online platform remains available without installing an application.
+
+
+## Version centre
+
+The public website reads the official GitHub Releases feed at runtime. It displays the most recent published release, previous releases, attached installers and the SHA-256 checksum file when present. If no release has been published, the interface states that explicitly; it does not imply that a build artifact or installer is already available. Release notes are linked to GitHub, and release assets are served from the official repository.
