@@ -47,6 +47,18 @@
     </article>
   </section>
   <section class="vt-grid">
+    <article class="vt-panel vt-keyframes">
+      <h2 data-i="keyframeTitle">Candidate keyframes</h2>
+      <p data-i="keyframeIntro">Analyse one locally recorded video. Frames are scored for sharpness and visual change; nothing is uploaded or saved automatically.</p>
+      <label><span data-i="keyframeClip">Recorded video</span><select id="vt-keyframe-clip"><option value="">No video selected</option></select></label>
+      <label><span data-i="keyframeInterval">Sampling interval</span><select id="vt-keyframe-interval"><option value="1">1 second</option><option value="2">2 seconds</option><option value="3">3 seconds</option></select></label>
+      <button id="vt-keyframe-analyze" class="secondary" type="button" disabled data-i="keyframeAnalyze">Analyse candidate frames</button>
+      <div id="vt-keyframe-status" class="vt-feedback" role="status" aria-live="polite" data-i="keyframeNoClips">Record a video clip first.</div>
+      <div id="vt-keyframe-results" class="vt-keyframe-results"></div>
+      <p class="vt-small" data-i="keyframeDisclaimer">This is a local image-selection aid, not photogrammetry or a validated 3D reconstruction. Exported frames retain the source video resolution when supported by the browser.</p>
+    </article>
+  </section>
+  <section class="vt-grid">
     <article class="vt-panel"><h2 data-i="modelTitle">Explore an unrecorded interval</h2><p data-i="modelIntro">The model can extend a measured trajectory as a scenario. It cannot turn missing data into historical facts or guarantee future outcomes.</p>
       <label><span data-i="scenario">Scenario</span><select id="vt-scenario"><option value="past" data-i="past">Earlier interval not recorded</option><option value="future" data-i="future">Possible future scenario</option></select></label>
       <label><span data-i="horizon">Time horizon</span><select id="vt-horizon"><option value="60">1 minute</option><option value="300" selected>5 minutes</option><option value="900">15 minutes</option></select></label>
