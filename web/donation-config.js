@@ -19,7 +19,7 @@ const ssswetTechnologyKeys = [
   "cleanenergy","energyStorage","water","foodSystems","climate","biodiversity","wildlife",
   "oceans","reforestation","agriculture","circularEconomy","airQuality","mobility","accessibility",
   "disasterResilience","publicHealth","sanitation","education","animalHealth","materials",
-  "carbonMonitoring","pollinators","artificialGravity","medicalNanotechnology","atmosphericRestoration"
+  "carbonMonitoring","pollinators","artificialGravity","medicalNanotechnology","atmosphericRestoration","neurointerfaces","quantumNetworks","fusionEnergy","spaceLifeSupport","autonomousLabs","roboticsExoskeletons","planetaryMonitoring","advancedComputing"
 ];
 window.SSSWET_RESEARCH_PORTFOLIO = Object.fromEntries(
   ssswetTechnologyKeys.map(key => [key, {
