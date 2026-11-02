@@ -1213,3 +1213,192 @@ a { color: #9fdcf0; }
   background: rgba(75, 94, 67, .18);
 }
 .bot-review-response > div > strong { color: #d4dec9; }
+
+
+/* Calm, centered command room: one brand mark and a spacious agent stage. */
+.app-shell {
+  width: min(1480px, 100%);
+  padding: 24px clamp(16px, 3vw, 42px) 30px;
+  align-items: stretch;
+}
+.topbar {
+  justify-content: center;
+  min-height: 42px;
+  position: relative;
+  margin-bottom: 14px;
+}
+.topbar .brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.brand-mark {
+  font-size: 17px;
+  letter-spacing: .2em;
+}
+.brand-subtitle { display: none !important; }
+.language-control { position: absolute; right: 0; }
+html[dir="rtl"] .language-control { right: auto; left: 0; }
+
+/* Remove repeated title blocks while preserving their accessible live regions. */
+.bot-command-heading > div,
+.bot-side-heading > .bot-side-icon,
+.bot-side-heading > div,
+.bot-conversation-heading > div,
+.bot-control-note,
+.hero {
+  display: none !important;
+}
+.bot-command-heading {
+  justify-content: center;
+  margin: 0 0 18px;
+}
+.bot-live-pill {
+  max-width: min(100%, 560px);
+  justify-content: center;
+  text-align: center;
+  padding: 10px 18px;
+  font-size: 12px;
+}
+.bot-command-hero {
+  width: 100%;
+  margin: 8px auto 32px;
+  padding: clamp(16px, 2.2vw, 30px);
+  border: 1px solid rgba(190,166,119,.14);
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 50% 34%, rgba(155,125,75,.07), transparent 58%), #070808;
+  box-shadow: 0 24px 80px rgba(0,0,0,.34);
+}
+.bot-command-hero::before { display: none; }
+.bot-command-layout {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+.bot-command-main {
+  width: 100%;
+  max-width: none;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.bot-command-visual {
+  width: 100%;
+  height: clamp(520px, 58vw, 720px);
+  min-height: 500px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 50%, rgba(155,125,75,.075), transparent 54%), #050606 !important;
+  border: 1px solid rgba(190,166,119,.16);
+}
+.bot-command-core {
+  width: clamp(104px, 11vw, 146px);
+  height: clamp(104px, 11vw, 146px);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(166,142,96,.14), #090a09 72%);
+  border-color: rgba(190,166,119,.2);
+  box-shadow: 0 0 60px rgba(150,125,80,.09), inset 0 0 26px rgba(190,166,119,.06);
+}
+.bot-core-label { display: none !important; }
+.bot-stage-agent { width: 132px; gap: 10px; }
+.bot-stage-agent .agent-avatar {
+  width: 86px;
+  height: 86px;
+  flex-basis: 86px;
+  border-radius: 25px;
+}
+.bot-stage-agent .agent-robot-head { top: 17px; width: 43px; height: 32px; border-radius: 11px; }
+.bot-stage-agent .agent-robot-head i { top: 13px; left: 11px; width: 6px; height: 6px; }
+.bot-stage-agent .agent-robot-head i+i { left: 26px; }
+.bot-stage-agent .agent-robot-body { top: 53px; width: 35px; height: 19px; }
+.bot-stage-agent strong { font-size: 11px; padding: 7px 12px; }
+.bot-stage-agent small { font-size: 9px; }
+.bot-stage-caption { bottom: 20px; }
+.bot-command-current {
+  max-width: 980px;
+  margin: 18px auto 14px;
+  padding: 15px 18px;
+  text-align: center;
+  font-size: 12px;
+  border-color: rgba(190,166,119,.15);
+  background: rgba(12,13,12,.72);
+}
+.bot-command-main .bot-control-metrics {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 0 8px;
+  gap: 10px;
+}
+.bot-command-main .bot-control-metric {
+  padding: 13px 14px;
+  text-align: center;
+  border-color: rgba(190,166,119,.13);
+  background: rgba(14,15,14,.8);
+}
+.bot-command-main .bot-control-metric strong { font-size: 23px; }
+.bot-command-main .bot-control-metric span { font-size: 10px; }
+.bot-command-side {
+  width: 100%;
+  padding: 20px;
+  border: 1px solid rgba(190,166,119,.13);
+  border-radius: 18px;
+  background: rgba(10,11,10,.72);
+}
+.bot-side-heading {
+  justify-content: flex-end;
+  border: 0;
+  padding: 0;
+}
+.bot-side-heading .refresh-button { margin-left: 0; }
+.bot-control-agents {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+.bot-control-agent { padding: 12px; }
+.bot-control-task-section { margin-top: 18px; padding-top: 16px; }
+.bot-control-tasks { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.bot-conversation {
+  margin-top: 22px;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(190,166,119,.13);
+  background: rgba(10,11,10,.72);
+}
+.bot-conversation-heading {
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+.bot-conversation-feed { max-height: 440px; }
+.bot-visitor-questions {
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+.bot-visitor-questions > span { display: none; }
+.bot-visitor-questions button { padding: 11px 16px; }
+.footer { margin-top: 20px; padding-top: 12px; }
+.footer-note { max-width: 760px; }
+
+/* Keep the large stage usable on narrow screens without compressing agents. */
+@media (max-width: 700px) {
+  .app-shell { padding: 16px 12px 24px; }
+  .topbar { min-height: 40px; }
+  .brand-mark { font-size: 15px; }
+  .bot-command-hero { padding: 12px; margin-top: 6px; }
+  .bot-command-visual { height: clamp(480px, 118vw, 620px); min-height: 480px; }
+  .bot-stage-agent { width: 108px; }
+  .bot-stage-agent .agent-avatar { width: 70px; height: 70px; flex-basis: 70px; }
+  .bot-stage-agent .agent-robot-head { top: 14px; width: 36px; height: 27px; }
+  .bot-stage-agent .agent-robot-head i { top: 11px; left: 9px; width: 5px; height: 5px; }
+  .bot-stage-agent .agent-robot-head i+i { left: 22px; }
+  .bot-stage-agent .agent-robot-body { top: 44px; width: 30px; height: 17px; }
+  .bot-stage-agent strong { font-size: 10px; }
+  .bot-command-side,.bot-conversation { padding: 14px; }
+  .bot-command-main .bot-control-metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .bot-visitor-questions { display: grid; grid-template-columns: 1fr; }
+  .language-control { right: 0; }
+  html[dir="rtl"] .language-control { right: auto; left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bot-stage-agent .agent-avatar { animation: none !important; }
+}
