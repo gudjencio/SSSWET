@@ -16,6 +16,10 @@ Voluntary support for research is separate from any future purchase. A contribut
 
 Personal and fulfilment information must never be placed in public repositories, source files, research records, public issues or public contribution summaries. If such information is ever required for a lawful transaction, it must be collected through a separate, appropriately protected process.
 
+## Proposed monthly financing model
+
+The project has documented a proposed [monthly technology financing policy](MONTHLY_TECHNOLOGY_FINANCING.md). It is not active: no product checkout, subscription for technology purchases, product price or delivery promise is currently enabled. Any future launch must pass the safeguards and reviews described there.
+
 ## No current product promise
 
 No future technology, price, release date, delivery schedule or performance level is promised by this document. Any future activity remains subject to the requirements that apply to the specific product and destination.
