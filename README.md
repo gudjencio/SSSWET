@@ -109,18 +109,20 @@ The persistent agent memory layer supports bounded team-wide retrieval for share
 
 ## Context-aware claim comparison
 
-- Context-aware claim comparison separates differences in scope, conditions, units and observation dates before flagging review leads. See [Context-aware research claim comparison](docs/CONTEXT_AWARE_CLAIM_COMPARISON.md).
+Context-aware claim comparison separates differences in scope, conditions, units and observation dates before flagging review leads. See [Context-aware research claim comparison](docs/CONTEXT_AWARE_CLAIM_COMPARISON.md).
 
 ## Independent reviewer selection
 
 SSSWET can prepare auditable reviewer-panel proposals that exclude prior reviewers and declared conflicts, avoid repeated campaigns, and flag shared evidence sources for disclosure. Proposals do not execute assignments or certify independence. See [Independent reviewer selection safeguards](docs/INDEPENDENT_REVIEWER_SELECTION.md).
 
-
 ## Research decision lineage
 
 The persistent research decision ledger preserves decision rationales, evidence references, reviewer identifiers and constrained review-state changes. Corrections create new linked decisions rather than overwriting earlier records, so abandoned interpretations and negative findings remain traceable. Recorded statuses are review history, not scientific truth or certification. See [Research decision lineage](docs/RESEARCH_DECISION_LINEAGE.md).
 
-
 ## Agent memory evidence review
 
 Agent memories now carry explicit, append-only source-review states. Researchers can flag a note for reassessment, record a referenced recheck, or mark it superseded or withdrawn. Search results expose the latest review status and reviewer provenance; unreviewed notes remain visibly unreviewed. These workflow annotations do not establish scientific truth or infer staleness from age. See [Agent memory evidence review](docs/AGENT_MEMORY_EVIDENCE_REVIEW.md).
+
+## Research knowledge graph
+
+The research knowledge graph connects individual memories, claims, decisions, experiments, evidence, technology dossiers and hypotheses through explicit, provenance-linked relationships. Bounded impact tracing helps identify downstream artefacts that may need review when upstream evidence or interpretations change. It complements the technology dependency graph rather than replacing it. See [Research Knowledge Graph](docs/RESEARCH_KNOWLEDGE_GRAPH.md).
