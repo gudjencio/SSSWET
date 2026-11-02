@@ -448,6 +448,6 @@ if (!categoryScript.includes("curatedTechnologyCopy") || !categoryScript.include
 const newCopySource = fs.readFileSync(__dirname + "/new-technology-copy.js", "utf8");
 new Function(newCopySource);
 for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"]) {
-  if (!newCopySource.includes(locale + ":")) throw new Error("New technology descriptions are missing locale " + locale);
+  if (!newCopySource.includes("\"" + locale + "\":")) throw new Error("New technology descriptions are missing locale " + locale);
 }
 if (!newCopySource.includes("SSSWET_TECHNOLOGIES")) throw new Error("Curated technology metadata is not exposed to the contribution interface.");
