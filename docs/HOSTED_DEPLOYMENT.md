@@ -22,7 +22,7 @@ A successful deployment is confirmed only when Render reports the service health
 
 ## Public improvement reports
 
-The public interface includes a **Report / Signaler** menu. Submissions are validated by the hosted API and opened as GitHub issues in the SSSWET repository. The intake endpoint never edits repository files or applies a suggestion automatically.
+The public interface includes a localized **Report** control (shown as **Signaler** in French) with a multilingual improvement menu. Submissions are validated by the hosted API and opened as GitHub issues in the SSSWET repository. The intake endpoint never edits repository files or applies a suggestion automatically.
 
 To enable submissions on Render, create a fine-grained GitHub personal access token restricted to `gudjencio/SSSWET` with **Issues: Read and write** permission. Add it to the Render web service as the secret environment variable `SSSWET_GITHUB_TOKEN`. Never place this token in the public website, repository files, browser storage or client-side configuration. Redeploy the service after setting the variable.
 
