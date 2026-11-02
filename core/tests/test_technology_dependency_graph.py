@@ -99,3 +99,26 @@ def test_rejected_relations_remain_in_history_but_are_not_supported(tmp_path):
                           actor_id="reviewer", source_refs=["source:negative"])
     assert graph.graph()["rejected_count"] == 1
     assert graph.graph(include_unverified=False)["relation_count"] == 0
+
+
+def test_engine_exposes_persistent_dependency_graph(tmp_path):
+    from ssswet_core.engine import SSSWETEngine
+
+    engine = SSSWETEngine(SQLiteResearchStore(tmp_path / "engine-graph.sqlite3"))
+    engine.register_technology_catalogue()
+    relation = engine.technology_dependencies.add_relation(
+        prerequisite_id="energyStorage",
+        dependent_id="plasmaPropulsion",
+        relation_type="prerequisite",
+        rationale="Illustrative proposal for testing the graph API.",
+        actor_id="test-agent",
+    )
+    assert relation["state"] == "proposed"
+    assert engine.technology_dependencies.dependencies_for("plasmaPropulsion")[0]["prerequisite_id"] == "energyStorage"
+
+
+def test_engine_without_store_has_no_dependency_graph():
+    from ssswet_core.engine import SSSWETEngine
+
+    engine = SSSWETEngine()
+    assert engine.technology_dependencies is None
