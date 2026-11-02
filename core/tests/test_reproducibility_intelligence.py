@@ -103,3 +103,37 @@ def test_independent_match_requires_verified_declaration_and_separate_provenance
     protocol = ReproducibilityIntelligence(store).build()["protocols"][0]
     assert protocol["status"] == "independent_match_evidence_recorded"
     assert protocol["reproducibility_evidence_index"] == 100
+
+
+def test_parameter_sensitivity_reports_only_matched_one_parameter_contrasts():
+    left = _run("sweep-a", "campaign-a", "sweep-origin")
+    right = _run("sweep-b", "campaign-a", "sweep-origin")
+    right["parameters"] = {"seed": 2}
+    right["outputs"] = {"value": 84}
+    canonical = json.dumps(right, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    right["record_hash"] = hashlib.sha256(canonical.encode()).hexdigest()
+
+    protocol = ReproducibilityIntelligence(FakeStore([left, right], [])).build()["protocols"][0]
+    sensitivity = protocol["parameter_sensitivity"]
+    assert sensitivity["status"] == "candidate_contrasts_recorded"
+    assert sensitivity["contrast_count"] == 1
+    assert sensitivity["contrasts"][0]["parameter"] == "seed"
+    assert sensitivity["contrasts"][0]["output_changes"][0]["absolute_change"] == 42.0
+    assert sensitivity["causal_effect_established"] is False
+    assert sensitivity["scientific_validity_established"] is False
+
+
+def test_parameter_sensitivity_ignores_multiple_changes_and_mismatched_conditions():
+    left = _run("sweep-a", "campaign-a", "sweep-origin")
+    multi_change = _run("sweep-b", "campaign-a", "sweep-origin")
+    multi_change["parameters"] = {"seed": 2, "temperature": 20}
+    changed_environment = _run("sweep-c", "campaign-a", "sweep-origin")
+    changed_environment["environment"] = {"python": "different"}
+    for item in (multi_change, changed_environment):
+        canonical = json.dumps(item, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+        item["record_hash"] = hashlib.sha256(canonical.encode()).hexdigest()
+
+    protocol = ReproducibilityIntelligence(FakeStore([left, multi_change, changed_environment], [])).build()["protocols"][0]
+    sensitivity = protocol["parameter_sensitivity"]
+    assert sensitivity["status"] == "insufficient_comparable_parameter_variation"
+    assert sensitivity["contrast_count"] == 0
