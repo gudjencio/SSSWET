@@ -19,7 +19,7 @@
     const heading = document.getElementById("platform-downloads-title");
     const countText = isFr ? "500 programmes de recherche" : "500 research programmes";
     const noteText = isFr ? "500 programmes de recherche, organisés en huit domaines et avec des filtres traduits." : "500 research programmes, organised into eight domains with translated filters.";
-    const headingText = isFr ? "Emportez ETDESS partout" : "Take SSSWET with you";
+    const headingText = isFr ? "Emportez SSSWET partout" : "Take SSSWET with you";
     if (count && count.textContent !== countText) count.textContent = countText;
     if (note && note.textContent !== noteText) note.textContent = noteText;
     if (heading && heading.textContent !== headingText) heading.textContent = headingText;
