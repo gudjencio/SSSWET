@@ -61,7 +61,7 @@ def test_impact_is_bounded_and_excludes_withdrawn_edges(tmp_path):
     graph.link(source_id="decision", target_id="experiment", relation="motivates", actor_id="jun", rationale="Decision motivates experiment.", evidence_refs=["source:d-e"])
     withdrawn = graph.link(source_id="evidence", target_id="experiment", relation="documents", actor_id="mira", rationale="Withdrawn association.", evidence_refs=["source:e-x"], state="withdrawn")
     impact = graph.impact("evidence", max_depth=3, limit=2)
-    assert [item["node"]["node_id"] for item in impact] == ["claim", "experiment"]
+    assert [item["node"]["node_id"] for item in impact] == ["claim", "decision"]
     assert all(item["edge_id"] != withdrawn["edge_id"] for item in impact)
 
 
