@@ -18,6 +18,7 @@ from .protective_system_scoring import calculate_protective_system_score, rank_p
 from .technology_progression import evaluate_progression, persistence_status
 from .agent_identity import AgentIdentityRegistry
 from .review_assignment import IndependentReviewerSelector, ReviewerCandidate
+from .research_decision_ledger import ResearchDecisionLedger
 
 
 @dataclass
@@ -40,6 +41,7 @@ class SSSWETEngine:
         self.store = store
         self.technology_dossiers = TechnologyDossierRegistry(store) if store else None
         self.agent_identities = AgentIdentityRegistry(store) if store else None
+        self.research_decisions = ResearchDecisionLedger(store) if store else None
         self.independent_reviewer_selector = IndependentReviewerSelector()
         self.technology_dependencies = TechnologyDependencyGraph(store) if store else None
         self.orchestrator = ResearchOrchestrator()
@@ -178,6 +180,28 @@ class SSSWETEngine:
             opportunities, self.technology_dependencies.graph()
         )
 
+
+    def record_research_decision(self, **decision_inputs) -> dict:
+        """Record a source-linked decision without overwriting its history."""
+        if self.research_decisions is None:
+            raise RuntimeError("A persistent research store is required for decision lineage")
+        return self.research_decisions.record(**decision_inputs)
+
+    def transition_research_decision(self, decision_id: str, **transition_inputs) -> dict:
+        """Append a constrained review-state transition to an existing decision."""
+        if self.research_decisions is None:
+            raise RuntimeError("A persistent research store is required for decision lineage")
+        return self.research_decisions.transition(decision_id, **transition_inputs)
+
+    def get_research_decision(self, decision_id: str) -> dict:
+        if self.research_decisions is None:
+            raise RuntimeError("A persistent research store is required for decision lineage")
+        return self.research_decisions.get(decision_id)
+
+    def research_decision_history(self, subject_id: str, *, limit: int = 100) -> list[dict]:
+        if self.research_decisions is None:
+            raise RuntimeError("A persistent research store is required for decision lineage")
+        return self.research_decisions.history(subject_id, limit=limit)
 
     def search_team_memories(self, query: str, *, limit: int = 12, agent_ids: list[str] | None = None) -> list[dict]:
         """Retrieve bounded, source-linked memories across the research team."""
