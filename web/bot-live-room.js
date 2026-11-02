@@ -191,6 +191,8 @@
   };
 
   const lang = () => (document.documentElement.lang || "en").toLowerCase().split("-")[0];
+  const phaseCopy = {"en":{"searching":"Searching scholarly publications","reviewing":"Independently reviewing a teammate’s output","thinking":"Thinking and analysing"},"fr":{"searching":"Recherche de publications scientifiques","reviewing":"Examen indépendant du travail d’un autre agent","thinking":"Réflexion et analyse"},"es":{"searching":"Buscando publicaciones científicas","reviewing":"Revisión independiente del trabajo de otro agente","thinking":"Pensando y analizando"},"de":{"searching":"Suche nach wissenschaftlichen Veröffentlichungen","reviewing":"Unabhängige Prüfung der Arbeit eines anderen Agenten","thinking":"Denkt nach und analysiert"},"it":{"searching":"Ricerca di pubblicazioni scientifiche","reviewing":"Revisione indipendente del lavoro di un altro agente","thinking":"Riflessione e analisi"},"pt":{"searching":"A pesquisar publicações científicas","reviewing":"A rever de forma independente o trabalho de outro agente","thinking":"A refletir e analisar"},"nl":{"searching":"Zoeken naar wetenschappelijke publicaties","reviewing":"Onafhankelijke beoordeling van het werk van een andere agent","thinking":"Denkt na en analyseert"},"ru":{"searching":"Поиск научных публикаций","reviewing":"Независимая проверка работы другого агента","thinking":"Размышление и анализ"},"uk":{"searching":"Пошук наукових публікацій","reviewing":"Незалежна перевірка роботи іншого агента","thinking":"Міркування й аналіз"},"ar":{"searching":"البحث عن منشورات علمية","reviewing":"مراجعة مستقلة لعمل وكيل آخر","thinking":"التفكير والتحليل"},"he":{"searching":"חיפוש פרסומים מדעיים","reviewing":"בדיקה עצמאית של עבודת סוכן אחר","thinking":"חשיבה וניתוח"},"ja":{"searching":"学術論文を検索中","reviewing":"他のエージェントの成果を独立して確認中","thinking":"思考・分析中"},"ko":{"searching":"학술 논문 검색 중","reviewing":"다른 에이전트의 결과를 독립적으로 검토 중","thinking":"생각하고 분석하는 중"},"zh":{"searching":"正在检索学术文献","reviewing":"正在独立审查另一智能体的成果","thinking":"正在思考和分析"},"hi":{"searching":"वैज्ञानिक प्रकाशनों की खोज","reviewing":"दूसरे एजेंट के काम की स्वतंत्र समीक्षा","thinking":"विचार और विश्लेषण"}};
+  const phaseLabel = phase => {const c=phaseCopy[lang()]||phaseCopy.en;return phase==="literature_search"?c.searching:phase==="independent_review"?c.reviewing:c.thinking;};
   const t = () => copy[lang()] || copy.en;
   const esc = (value) => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const pretty = (value) => String(value || "—").replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[_-]+/g," ");
@@ -208,6 +210,7 @@
   let initialized = false;
   let knownOutputIds = new Set();
   let spokenMessageIds = new Set();
+  let spokenActivityKeys = new Set();
   let spokenOutputIds = new Set();
   let currentData = null;
   let requestBusy = false;
@@ -308,7 +311,8 @@
       id: agent.id || agent.agent_id,
       role: agent.role || "",
       active: isActive,
-      review: !isActive && String(agent.role || "").includes("verif")
+      review: !isActive && String(agent.role || "").includes("verif"),
+      phase: agent.phase || ""
     })));
     if (stage.dataset.renderSignature === signature) return;
     stage.dataset.renderSignature = signature;
@@ -316,7 +320,7 @@
       const role = roleName(agent.role);
       const activeClass = isActive ? "is-active" : (String(agent.role||"").includes("verif") ? "is-review" : "");
       const id = agent.id || agent.agent_id;
-      return '<article class="bot-stage-agent '+activeClass+'"><div class="bot-stage-agent-content">'+avatar(index)+'<div class="bot-stage-agent-label"><strong>'+esc(role)+'</strong><small>'+esc(id)+'</small></div></div></article>';
+      return '<article class="bot-stage-agent '+activeClass+'"><div class="bot-stage-agent-content">'+avatar(index)+'<div class="bot-stage-agent-label"><strong>'+esc(role)+'</strong><small>'+esc(id)+'</small><small class="bot-agent-phase">'+esc(isActive?phaseLabel(agent.phase):t().notActive)+'</small></div></div></article>';
     }).join("");
   }
 
@@ -332,7 +336,8 @@
     } else {
       fresh.forEach(item => knownOutputIds.add([item.task_id,item.agent_id,item.created_at].join("|")));
     }
-    const activeCount = Array.isArray(data.active_agents) ? data.active_agents.length : 0;
+    const activeAgents = Array.isArray(data.active_agents) ? data.active_agents : [];
+    const activeCount = activeAgents.length;
     const thinking = {
       en:"Research agents are working",fr:"Les agents travaillent en ce moment",es:"Los agentes están trabajando",
       de:"Die Forschungsagenten arbeiten",it:"Gli agenti stanno lavorando",pt:"Os agentes estão a trabalhar",
@@ -370,7 +375,14 @@
       return '<article class="bot-conversation-message"><div class="message-avatar" aria-hidden="true">'+(index+1)+'</div><div><strong>'+esc(roleName(item.role))+' · '+esc(item.agent_id || t().role)+'</strong><p>'+esc(item.summary)+'</p><small>'+esc(t().provisional)+' · '+esc(detail)+' · '+esc(time(item.created_at))+'</small></div></article>';
     }));
     if (!valid.length && !handoffCards.length) messages.push('<p class="bot-conversation-empty">'+esc(t().empty)+'</p>');
-    if (activeCount) messages.push('<div class="bot-thinking" style="--agent-count:'+Math.max(1,activeCount)+'"><span>'+esc(thinking)+' · '+activeCount+'</span><i></i><i></i><i></i></div>');
+    if (activeCount) {
+      const liveLines = activeAgents.slice(0,6).map(agent => '<li><strong>'+esc(roleName(agent.role))+'</strong><span>'+esc(phaseLabel(agent.phase))+'</span></li>').join("");
+      messages.push('<div class="bot-thinking bot-live-activity" style="--agent-count:'+Math.max(1,activeCount)+'"><strong>'+esc(thinking)+' · '+activeCount+'</strong><ul>'+liveLines+'</ul><i></i><i></i><i></i></div>');
+      if (speakNew && voiceEnabled) activeAgents.forEach(agent => {
+        const key=[agent.id,agent.task_id,agent.phase||"thinking"].join("|");
+        if (!spokenActivityKeys.has(key)) { spokenActivityKeys.add(key); speak(roleName(agent.role)+". "+phaseLabel(agent.phase),speakerTurn++); }
+      });
+    }
     feed.innerHTML = messages.join("");
     const visual = $("bot-command-visual");
     if (visual) {
