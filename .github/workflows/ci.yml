@@ -53,6 +53,7 @@ jobs:
           node web/test-locales.cjs
           node web/test-keyframe-continuity.cjs
           node web/test-keyframe-correspondence.cjs
+          node web/test-keyframe-spatial-distribution.cjs
           node web/test-bot-personality.cjs
       - name: Run core tests
         working-directory: core
