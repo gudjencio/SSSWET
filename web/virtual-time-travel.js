@@ -148,7 +148,7 @@ function onPosition(pos){
 function requestOrientationPermission(){const tasks=[];for(const type of ["DeviceOrientationEvent","DeviceMotionEvent"]){const C=window[type];if(C&&typeof C.requestPermission==="function")tasks.push(C.requestPermission().catch(()=> "denied"))}return Promise.all(tasks)}
 function onOrientation(e){if(!scanActive||Date.now()-lastOrientationWrite<900)return;lastOrientationWrite=Date.now();saveEvent("orientation",{alpha:e.alpha,beta:e.beta,gamma:e.gamma,absolute:e.absolute}).catch(()=>{})}
 function onMotion(e){if(!scanActive||Date.now()-lastMotionWrite<900)return;lastMotionWrite=Date.now();const a=e.accelerationIncludingGravity||e.acceleration;if(a)saveEvent("motion",{x:a.x,y:a.y,z:a.z,interval:e.interval}).catch(()=>{})}
-async async function startScan(){
+async function startScan(){
  const wantLocation=$("vt-consent-location").checked,wantCamera=$("vt-consent-camera").checked,wantMic=$("vt-consent-mic").checked;
  if(!wantLocation&&!wantCamera&&!wantMic){setStatus("needPermission");return}
  if(!window.isSecureContext){setStatus("needPermission");return}
