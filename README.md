@@ -91,7 +91,7 @@ SSSWET is an evolving research initiative. Public summaries are informational an
 
 ## Language availability
 
-The public interface offers **290 selectable language entries**, including 100 newly added language options. Each option has a language code and a native-language label. Interface translations are not equally complete: the principal interface is fully translated in the currently maintained core locales, selected additional sections have further translations, and untranslated strings use the English fallback. Language availability must not be mistaken for a complete professional translation. Contributions from qualified native speakers are welcome, especially for scientific, medical, safety and accessibility terminology.
+The public interface offers **300 selectable language entries**, including 110 newly added language options. Each option has a language code and a native-language label. Interface translations are not equally complete: the principal interface is fully translated in the currently maintained core locales, selected additional sections have further translations, and untranslated strings use the English fallback. Language availability must not be mistaken for a complete professional translation. Contributions from qualified native speakers are welcome, especially for scientific, medical, safety and accessibility terminology.
 
 ## Continuous improvement and regression monitoring
 
