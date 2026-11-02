@@ -10,7 +10,17 @@
     document.body.appendChild(script);
   };
 
+  const loadStylesheet = (href, marker) => {
+    if (document.querySelector(`link[${marker}]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.setAttribute(marker, "true");
+    document.head.appendChild(link);
+  };
+
   const loadInterfaceEnhancements = () => {
+    loadStylesheet("language-center.css", "data-ssswet-language-center");
     loadScript("ui-enhancements.js", "data-ssswet-ui-enhancements");
     loadScript("platform-routing.js", "data-ssswet-platform-routing");
     loadScript("catalogue-500-ui.js", "data-ssswet-catalogue-500-ui");
