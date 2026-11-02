@@ -286,41 +286,42 @@
   function bestVoice(language, agentIndex) {
     if (!speechApi) return null;
     const base = String(language || "en").toLowerCase().split("-")[0];
-    const voices = speechApi.getVoices().filter(voice => String(voice.lang || "").toLowerCase().split("-")[0] === base);
-    if (!voices.length) return null;
-    const quality = /natural|neural|online|premium|enhanced|google|microsoft|siri/i;
-    const preferred = voices.slice().sort((a,b) =>
-      Number(quality.test(b.name || "")) - Number(quality.test(a.name || "")) ||
-      Number(!b.localService) - Number(!a.localService)
-    );
-    return preferred[Math.abs(agentIndex) % preferred.length] || null;
+    const all = speechApi.getVoices();
+    if (!all.length) return null;
+    const matching = all.filter(voice => String(voice.lang || "").toLowerCase().split("-")[0] === base);
+    const pool = matching.length ? matching : (all.filter(voice => voice.default).length ? all.filter(voice => voice.default) : all);
+    const quality = /natural|neural|online|premium|enhanced|google|microsoft|siri|aria|jenny/i;
+    const preferred = pool.slice().sort((a,b) => Number(quality.test(b.name || ""))-Number(quality.test(a.name || "")) || Number(b.default)-Number(a.default));
+    return preferred[Math.abs(Number(agentIndex)||0)%preferred.length] || preferred[0] || null;
   }
-
+  function prepareSpeechText(value) {
+    return String(value || "").replace(/https?:\\/\\/\\S+/gi,"").replace(/```[\\s\\S]*?```/g," ").replace(/[`*_#>]/g,"").replace(/^\\s*[-•]\\s*/gm,"").replace(/\\s+/g," ").replace(/\\s+([,.;:!?])/g,"$1").trim().slice(0,1800);
+  }
+  function splitSpeech(text) {
+    const parts=String(text).match(/[^.!?。！？]+[.!?。！？]?/g)||[text],chunks=[];let current="";
+    parts.forEach(part=>{const next=(current+" "+part).trim();if(next.length>260&&current){chunks.push(current);current=part.trim()}else current=next});
+    if(current)chunks.push(current);return chunks;
+  }
   function drainSpeechQueue() {
-    if (!voiceEnabled || speechBusy || !speechApi || !speechQueue.length) return;
-    const item = speechQueue.shift();
-    if (!item || !String(item.text || "").trim()) { drainSpeechQueue(); return; }
-    speechBusy = true;
-    const utterance = new SpeechSynthesisUtterance(String(item.text).replace(/\\s+/g," ").trim().slice(0,1100));
-    const language = document.documentElement.lang || "en";
-    utterance.lang = language;
-    const voice = bestVoice(language,item.agentIndex || 0);
-    if (voice) { utterance.voice = voice; utterance.lang = voice.lang || language; }
-    const persona = personaFor(item.role || item.agentIndex);
-    utterance.rate = persona.tempo;
-    utterance.pitch = persona.pitch;
-    utterance.volume = 1;
-    const finish = () => { speechBusy = false; window.setTimeout(drainSpeechQueue,220); };
-    utterance.onend = finish;
-    utterance.onerror = finish;
-    speechApi.speak(utterance);
+    if(!voiceEnabled||speechBusy||!speechApi||!speechQueue.length)return;
+    const item=speechQueue.shift();if(!item||!String(item.text||"").trim()){drainSpeechQueue();return}
+    const chunks=splitSpeech(prepareSpeechText(item.text));if(!chunks.length){drainSpeechQueue();return}
+    speechBusy=true;let index=0;const language=document.getElementById("language")?.value||document.documentElement.lang||"en";
+    const persona=personaFor(item.role||item.agentIndex),voiceIndex=stableSpeakerIndex(item.role||item.agentIndex);
+    const speakNext=()=>{
+      if(!voiceEnabled){speechBusy=false;return}
+      if(index>=chunks.length){speechBusy=false;window.setTimeout(drainSpeechQueue,320);return}
+      const utterance=new SpeechSynthesisUtterance(chunks[index++]);utterance.lang=language;
+      const voice=bestVoice(language,voiceIndex);if(voice){utterance.voice=voice;utterance.lang=voice.lang||language}
+      utterance.rate=Math.min(1.04,Math.max(.88,persona.tempo));utterance.pitch=Math.min(1.08,Math.max(.92,persona.pitch));utterance.volume=.96;
+      utterance.onend=()=>window.setTimeout(speakNext,150);utterance.onerror=()=>window.setTimeout(speakNext,150);speechApi.speak(utterance);
+    };speakNext();
   }
-
   function speak(message, agentIndex = 0) {
     if (!voiceEnabled || !speechApi || typeof SpeechSynthesisUtterance === "undefined") return;
     const text = String(message || "").trim();
     if (!text) return;
-    speechQueue.push({text,agentIndex,role:typeof agentIndex === "string" ? agentIndex : null});
+    speechQueue.push({text:prepareSpeechText(text),agentIndex:typeof agentIndex === "number" ? agentIndex : stableSpeakerIndex(agentIndex),role:typeof agentIndex === "string" ? agentIndex : null});
     drainSpeechQueue();
   }
 
@@ -469,6 +470,7 @@
     $("bot-questions-label").textContent=c.questions;
     $("bot-voice-toggle").textContent=voiceEnabled?c.voiceOn:c.voiceOff;
     $("bot-voice-toggle").setAttribute("aria-pressed",voiceEnabled?"true":"false");
+    $("bot-voice-toggle").setAttribute("aria-label",voiceEnabled?(lang()==="fr"?"Désactiver la lecture vocale":"Turn voice reading off"):(lang()==="fr"?"Activer la lecture vocale":"Turn voice reading on"));
     const buttons = [...document.querySelectorAll("[data-bot-question]")];
     buttons.forEach(button => {
       const key=button.dataset.botQuestion;
@@ -631,6 +633,7 @@
   });
   document.addEventListener("visibilitychange",() => {if(!document.hidden)refresh();});
   window.addEventListener("resize",() => {if(currentData)renderStage(currentData);});
+  speechApi?.addEventListener?.("voiceschanged", () => { if (speechQueue.length) drainSpeechQueue(); });
   renderLabels();
   refresh();
   window.setInterval(refresh,3000);
