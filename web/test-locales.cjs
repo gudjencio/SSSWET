@@ -59,6 +59,7 @@ const appSource = fs.readFileSync(new URL("./app.js", `file://${__filename}`), "
 const pageSource = fs.readFileSync(new URL("./index.html", `file://${__filename}`), "utf8");
 const appSource = fs.readFileSync(new URL("./app.js", `file://${__filename}`), "utf8");
 if (!/fr:\s*\["SSSWET"/.test(appSource)) throw new Error("French branding must display SSSWET, not ETDESS");
+if (!appSource.includes('timeZone === "Europe/Paris"')) throw new Error("French locale should be detected from the metropolitan France time zone");
 const interfaceTranslationKeys = [...new Set([...pageSource.matchAll(/data-i18n(?:-aria|-placeholder)?="([^"]+)"/g)].map(match => match[1]))];
 for (const key of interfaceTranslationKeys) {
   if (typeof locales.fr[key] !== "string" || !locales.fr[key].trim()) {
