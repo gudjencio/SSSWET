@@ -235,4 +235,8 @@ if (!mainStyles.includes(".app-shell > .social-corner") ||
     !mainStyles.includes(".app-shell > .topbar")) {
   throw new Error("Mobile social navigation must remain in document flow above the header.");
 }
-console.log("Validated the PayPal monthly subscription flow and variable quantity configuration.");
+const serviceWorker = fs.readFileSync(new URL("./sw.js", `file://${__filename}`), "utf8");
+if (!/const CACHE = "ssswet-web-v\\d+"/.test(serviceWorker)) {
+  throw new Error("The mobile layout must be delivered through a versioned service-worker cache.");
+}
+console.log("Validated the PayPal monthly subscription flow, variable quantity configuration and mobile social navigation.");
