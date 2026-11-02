@@ -226,7 +226,7 @@
   let usdToEurRate = null;
   let exchangeRateDate = "";
   function formatUsd(value, french) {
-    if (french) return new Intl.NumberFormat("fr-FR", {minimumFractionDigits:2,maximumFractionDigits:2}).format(value) + " dollars américains";
+    if (french) return new Intl.NumberFormat("fr-FR", {minimumFractionDigits:2,maximumFractionDigits:2}).format(value) + (Math.abs(value - 1) < 0.000001 ? " dollar américain" : " dollars américains");
     return new Intl.NumberFormat("en-US", {style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2}).format(value);
   }
   function formatEur(value) {
