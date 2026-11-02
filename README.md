@@ -9,7 +9,7 @@ The project is exploratory. Public descriptions are intentionally high-level and
 
 ## Research catalogue
 
-The platform maintains 100 research programmes across eight translated categories. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md) and read about the [research-agent identities and persistent memory](docs/AGENT_IDENTITIES_AND_MEMORY.md).
+The platform maintains 100 research programmes across eight translated categories. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md) and read about the [research-agent identities and persistent memory](docs/AGENT_IDENTITIES_AND_MEMORY.md). The proposed, currently disabled [monthly technology financing model](docs/MONTHLY_TECHNOLOGY_FINANCING.md) documents subscription sequencing, tax transparency, cancellation, refunds and repair safeguards.
 
 ## Applications
 
