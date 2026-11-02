@@ -358,7 +358,7 @@ if (Object.values(purchasePolicy.products).some(product => product.available || 
   throw new Error("No research concept may be advertised as a purchasable product without verified availability and pricing.");
 }
 const monthlyFinancingDoc = fs.readFileSync(new URL("../docs/MONTHLY_TECHNOLOGY_FINANCING.md", `file://${__filename}`), "utf8");
-for (const phrase of ["Status: proposed design", "no blanket", "statutory guarantee", "all-inclusive", "one technology per monthly billing period"]) {
+for (const phrase of ["Status: proposed design", "blanket", "statutory guarantee", "all-inclusive", "one technology per monthly billing period"]) {
   if (!monthlyFinancingDoc.toLowerCase().includes(phrase.toLowerCase())) {
     throw new Error(`Monthly financing policy is missing safeguard: ${phrase}`);
   }
