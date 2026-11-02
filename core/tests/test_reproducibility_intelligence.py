@@ -110,6 +110,7 @@ def test_parameter_sensitivity_reports_only_matched_one_parameter_contrasts():
     right = _run("sweep-b", "campaign-a", "sweep-origin")
     right["parameters"] = {"seed": 2}
     right["outputs"] = {"value": 84}
+    right["record_hash"] = ""
     canonical = json.dumps(right, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
     right["record_hash"] = hashlib.sha256(canonical.encode()).hexdigest()
 
@@ -130,6 +131,7 @@ def test_parameter_sensitivity_ignores_multiple_changes_and_mismatched_condition
     changed_environment = _run("sweep-c", "campaign-a", "sweep-origin")
     changed_environment["environment"] = {"python": "different"}
     for item in (multi_change, changed_environment):
+        item["record_hash"] = ""
         canonical = json.dumps(item, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
         item["record_hash"] = hashlib.sha256(canonical.encode()).hexdigest()
 
