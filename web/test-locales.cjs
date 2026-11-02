@@ -179,7 +179,7 @@ for (const field of ["funding_goal_eur: null", "confirmed_contributions_eur: nul
 }
 if (!donationSourceLatest.includes("renderPortfolio")) throw new Error("Research progress display is missing.");
 if (!pageSource.includes('id="portfolio-manual-note"') || !pageSource.includes('id="technology-dialog-progress"')) throw new Error("Research portfolio interface is missing.");
-console.log("Validated all 40 research programmes, unpublished unknowns, manual PayPal ledger disclosure and progress interface.");
+console.log("Validated all 100 research programmes, unpublished unknowns, manual PayPal ledger disclosure and progress interface.");
 
 
 const journalSource = fs.readFileSync(new URL('./research-journal.js', `file://${__filename}`), 'utf8');
