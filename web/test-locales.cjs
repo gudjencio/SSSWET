@@ -310,9 +310,9 @@ for (const locale of requiredTaxonomyLocales) {
     throw new Error(`Technology category and subcategory translations are incomplete for ${locale}.`);
   }
 }
-const donationSource = fs.readFileSync(new URL("./donation.js", `file://${__filename}`), "utf8");
+const catalogueDonationSource = fs.readFileSync(new URL("./donation.js", `file://${__filename}`), "utf8");
 for (const key of taxonomyKeys) {
-  if (!donationSource.includes(key + ": {")) throw new Error(`Technology ${key} is missing from the public catalogue.`);
+  if (!catalogueDonationSource.includes(key + ": {")) throw new Error(`Technology ${key} is missing from the public catalogue.`);
 }
 if (!pageSource.includes('src="technology-categories.js"') ||
     !serviceWorkerCache.includes('"./technology-categories.js"')) {
