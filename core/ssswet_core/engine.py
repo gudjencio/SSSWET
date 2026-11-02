@@ -13,6 +13,8 @@ from .technology_dossier import TechnologyDossierRegistry
 from .technology_catalogue import register_catalogue
 from .technology_dependency_graph import TechnologyDependencyGraph
 from .research_opportunity import evaluate_research_opportunity, rank_research_opportunities
+from .protective_system_scoring import calculate_protective_system_score, rank_protective_systems
+from .technology_progression import evaluate_progression, persistence_status
 
 
 @dataclass
@@ -163,6 +165,29 @@ class SSSWETEngine:
     def estimate_technology_costs(self, **pricing_inputs) -> dict:
         """Validate agent-submitted cost evidence through the independent pricing gate."""
         return build_agent_pricing_estimate(**pricing_inputs)
+
+    def score_protective_system(self, **inputs):
+        """Score a protective or assistive system only through evidence gates."""
+        return calculate_protective_system_score(**inputs)
+
+    @staticmethod
+    def rank_protective_systems(scores):
+        return rank_protective_systems(scores)
+
+    @staticmethod
+    def evaluate_technology_progression(previous, candidate, *, candidate_safety_gate, candidate_legality_gate):
+        """Prevent documented capability regressions between technology revisions."""
+        return evaluate_progression(
+            previous,
+            candidate,
+            candidate_safety_gate=candidate_safety_gate,
+            candidate_legality_gate=candidate_legality_gate,
+        )
+
+    @staticmethod
+    def continue_research(reason: str) -> dict:
+        """Record persistence without bypassing safety, law, ethics, or evidence."""
+        return persistence_status(reason)
 
     def publishable(self, finding: Finding) -> tuple[bool, list[str]]:
         return self.safety.assess(finding)
