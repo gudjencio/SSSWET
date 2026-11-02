@@ -35,9 +35,12 @@
     const raw = String(text || "").trim();
     if (!raw || exact[raw]) return exact[raw] || raw;
     let value = raw;
-    for (const [en, fr] of Object.entries(phrases)) value = value.replace(new RegExp(en.replace(/[.*+?^${}()|[\\]\\]/g,"\\    let value = raw;
-    for (const [en, fr] of Object.entries(words))"),"gi"), fr);
-    for (const [en, fr] of Object.entries(words)) value = value.replace(new RegExp(en.replace(/[.*+?^${}()|[\\]\\]/g,"\\$&"),"gi"), fr);
+    for (const [en, fr] of Object.entries(phrases)) {
+      value = value.replace(new RegExp("\\b" + en + "\\b", "gi"), fr);
+    }
+    for (const [en, fr] of Object.entries(words)) {
+      value = value.replace(new RegExp("\\b" + en + "\\b", "gi"), fr);
+    }
     return value;
   };
   function apply() {
