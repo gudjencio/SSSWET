@@ -628,16 +628,25 @@ TECHNOLOGY_CATALOGUE = [
 def register_catalogue(registry: TechnologyDossierRegistry, actor_id: str = "catalogue") -> dict:
     """Idempotently create a dossier for every catalogue entry."""
     created = []
+    updated_scope = []
     existing = {item["technology_id"] for item in registry.list_dossiers(limit=500)}
     for item in TECHNOLOGY_CATALOGUE:
-        if item["technology_id"] in existing:
-            continue
-        dossier = registry.create(
-            technology_id=item["technology_id"],
-            title=item["title"],
-            domain=item["domain"],
-            actor_id=actor_id,
+        is_new = item["technology_id"] not in existing
+        if is_new:
+            registry.create(
+                technology_id=item["technology_id"],
+                title=item["title"],
+                domain=item["domain"],
+                actor_id=actor_id,
+            )
+        dossier = registry.get(item["technology_id"]) if not is_new else None
+        already_recorded = bool(dossier) and any(
+            event.get("payload", {}).get("catalogue_subcategory") == item["subcategory"]
+            and event.get("payload", {}).get("research_scope") == item.get("research_scope", [])
+            for event in dossier.get("events", [])
         )
+        if already_recorded:
+            continue
         registry.append_event(
             technology_id=item["technology_id"],
             event_type="research_note",
@@ -650,11 +659,16 @@ def register_catalogue(registry: TechnologyDossierRegistry, actor_id: str = "cat
             },
             actor_id=actor_id,
         )
-        created.append(item["technology_id"])
+        if is_new:
+            created.append(item["technology_id"])
+        else:
+            updated_scope.append(item["technology_id"])
     return {
         "catalogue_size": len(TECHNOLOGY_CATALOGUE),
         "created_count": len(created),
         "already_registered_count": len(TECHNOLOGY_CATALOGUE) - len(created),
+        "updated_scope_count": len(updated_scope),
+        "updated_scope_ids": updated_scope,
         "created_ids": created,
         "research_status": "not_assessed",
     }
