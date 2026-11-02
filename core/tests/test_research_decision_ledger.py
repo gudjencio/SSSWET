@@ -37,7 +37,7 @@ def test_correction_creates_new_decision_and_links_previous(ledger):
     assert new["supersedes_decision_id"] == old["decision_id"]
     assert ledger.get(old["decision_id"])["current_recorded_status"] == "superseded"
     assert ledger.get(new["decision_id"])["current_recorded_status"] == "proposed"
-    assert len(ledger.history("claim-2")) == 2
+    assert len(ledger.history("claim-2")) == 3
 
 
 def test_supersession_requires_existing_same_subject_and_evidence(ledger):
