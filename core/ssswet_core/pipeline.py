@@ -170,7 +170,7 @@ class ResearchPipeline:
             active_by_id: dict[str, dict] = {}
             completed_steps: dict[int, PipelineStep] = {}
             indexed_futures = {}
-            worker_count = max(1, min(4, len(subtasks)))
+            worker_count = max(1, min(6, len(subtasks)))
             with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="ssswet-agent") as executor:
                 for index, (subtask, agent) in enumerate(zip(subtasks, agents, strict=True)):
                     active_by_id[agent.id] = {
@@ -178,6 +178,8 @@ class ResearchPipeline:
                         "role": agent.role,
                         "task_id": task.id,
                         "objective": subtask.objective,
+                        "phase": "literature_search",
+                        "activity": "Searching Crossref and OpenAlex scholarly literature",
                     }
                     future = executor.submit(self.provider.investigate, subtask.objective, "initial")
                     indexed_futures[future] = (index, subtask, agent)
@@ -232,52 +234,84 @@ class ResearchPipeline:
                     )
                     handoffs.append((message_id, sender, recipient))
 
-                for message_id, sender, reviewer in handoffs:
-                    original = self.store.agent_message(message_id)
-                    if not original:
-                        continue
-                    review_objective = (
-                        "Independently search for scholarly literature relevant to this research "
-                        "output. Look for evidence that could support, qualify, or challenge it. "
-                        "Do not infer agreement from search results. Original task: "
-                        + task.objective[:900]
-                        + ". Teammate output: "
-                        + str(original["content"])[-3000:]
-                    )
-                    try:
-                        review_result = self.provider.investigate(
-                            review_objective, "independent_peer_review"
+                review_active = {}
+                review_futures = {}
+                review_workers = max(1, min(4, len(handoffs)))
+                with ThreadPoolExecutor(max_workers=review_workers, thread_name_prefix="ssswet-review") as executor:
+                    for message_id, sender, reviewer in handoffs:
+                        original = self.store.agent_message(message_id)
+                        if not original:
+                            continue
+                        review_objective = (
+                            "Independently search for scholarly literature relevant to this research "
+                            "output. Look for evidence that could support, qualify, or challenge it. "
+                            "Do not infer agreement from search results. Original task: "
+                            + task.objective[:900]
+                            + ". Teammate output: "
+                            + str(original["content"])[-3000:]
                         )
-                        evidence_text = " | ".join(review_result.evidence[:4])
-                        response = (
-                            f"Review of handoff #{message_id}. Independent literature-search pass "
-                            f"completed by {reviewer.role}. {review_result.summary[:1800]} "
-                            f"Evidence leads: {evidence_text[:2200] or 'No usable evidence leads returned.'} "
-                            f"Uncertainty: {review_result.uncertainty:.2f}. "
-                            "Assessment remains provisional; this is not approval or verification."
+                        review_active[reviewer.id] = {
+                            "id": reviewer.id,
+                            "role": reviewer.role,
+                            "task_id": task.id,
+                            "objective": "Independently checking a teammate's provisional research output",
+                            "phase": "independent_review",
+                            "activity": "Cross-checking a teammate's output against scholarly literature",
+                        }
+                        future = executor.submit(
+                            self.provider.investigate, review_objective, "independent_peer_review"
                         )
-                        self.store.publish_agent_message(
-                            task_id=task.id,
-                            sender_agent_id=reviewer.id,
-                            sender_role=reviewer.role,
-                            recipient_agent_id=sender.agent_id,
-                            recipient_role=sender.subtask.role,
-                            message_type="peer_review_response",
-                            content=response[:4000],
-                        )
-                        self.engine.orchestrator.events.append(ResearchEvent(
-                            "peer_review_completed",
-                            "A teammate's output received an independent literature-search review; no approval was implied.",
-                            task.id,
-                            reviewer.id,
-                        ))
-                    except Exception as error:
-                        self.engine.orchestrator.events.append(ResearchEvent(
-                            "peer_review_blocked",
-                            f"An independent peer-review search could not complete ({type(error).__name__}); the original output remains unverified.",
-                            task.id,
-                            reviewer.id,
-                        ))
+                        review_futures[future] = (message_id, sender, reviewer)
+                        if progress_callback:
+                            progress_callback({
+                                "phase": "peer_review_working",
+                                "task_id": task.id,
+                                "active_agents": list(review_active.values()),
+                            })
+
+                    for future in as_completed(review_futures):
+                        message_id, sender, reviewer = review_futures[future]
+                        try:
+                            review_result = future.result()
+                            evidence_text = " | ".join(review_result.evidence[:4])
+                            response = (
+                                f"Review of handoff #{message_id}. Independent literature-search pass "
+                                f"completed by {reviewer.role}. {review_result.summary[:1800]} "
+                                f"Evidence leads: {evidence_text[:2200] or 'No usable evidence leads returned.'} "
+                                f"Uncertainty: {review_result.uncertainty:.2f}. "
+                                "Assessment remains provisional; this is not approval or verification."
+                            )
+                            self.store.publish_agent_message(
+                                task_id=task.id,
+                                sender_agent_id=reviewer.id,
+                                sender_role=reviewer.role,
+                                recipient_agent_id=sender.agent_id,
+                                recipient_role=sender.subtask.role,
+                                message_type="peer_review_response",
+                                content=response[:4000],
+                            )
+                            self.engine.orchestrator.events.append(ResearchEvent(
+                                "peer_review_completed",
+                                "A teammate's output received an independent literature-search review; no approval was implied.",
+                                task.id,
+                                reviewer.id,
+                            ))
+                        except Exception as error:
+                            self.engine.orchestrator.events.append(ResearchEvent(
+                                "peer_review_blocked",
+                                f"An independent peer-review search could not complete ({type(error).__name__}); the original output remains unverified.",
+                                task.id,
+                                reviewer.id,
+                            ))
+                        finally:
+                            review_active.pop(reviewer.id, None)
+                            if progress_callback:
+                                progress_callback({
+                                    "phase": "peer_review_progress",
+                                    "task_id": task.id,
+                                    "active_agents": list(review_active.values()),
+                                    "last_agent": {"id": reviewer.id, "role": reviewer.role},
+                                })
 
             # Provider output is not automatically promoted to a verified finding.
             self.engine.orchestrator.complete(task, agents[0].id, accepted=True)
