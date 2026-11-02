@@ -205,7 +205,11 @@
   };
   const roleName = (role) => roleLabels[role]?.[lang()] || roleLabels[role]?.en || pretty(role || t().role);
   const agentNames = { general_researcher:"Mira Solène", independent_verifier:"Elias Varenne", medical_researcher:"Nadia El-Karim", materials_scientist:"Theo Marchand", data_analyst:"Asha Okafor", systems_engineer:"Jun Park", ethics_reviewer:"Amara Diallo", futures_analyst:"Leon Wu" };
-  const agentName = (role) => agentNames[role] || roleName(role);
+  const agentName = (role) => {
+    const profiles = window.SSSWET_AGENT_IDENTITIES?.profiles;
+    const profile = Array.isArray(profiles) ? profiles.find(item => item.role === role) : null;
+    return profile?.name || agentNames[role] || roleName(role);
+  };
   const avatar = (index) => '<span class="agent-avatar agent-avatar-'+((index%3)+1)+'"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span>';
   const time = (value) => { const d=new Date(value); return value && !Number.isNaN(d.getTime()) ? d.toLocaleTimeString(lang(),{hour:"2-digit",minute:"2-digit"}) : ""; };
   let voiceEnabled = Boolean(window.speechSynthesis && typeof SpeechSynthesisUtterance !== "undefined");
