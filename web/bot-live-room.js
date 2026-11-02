@@ -221,6 +221,14 @@
   let speakerTurn = 0;
   const speechApi = window.speechSynthesis || null;
 
+  const personaProfiles = [
+    {tempo:0.96,pitch:1.02},{tempo:0.93,pitch:0.96},{tempo:0.99,pitch:1.04},
+    {tempo:0.95,pitch:0.99},{tempo:0.97,pitch:0.94},{tempo:0.92,pitch:1.01}
+  ];
+  function personaFor(index) {
+    return personaProfiles[Math.abs(Number(index) || 0) % personaProfiles.length];
+  }
+
   function bestVoice(language, agentIndex) {
     if (!speechApi) return null;
     const base = String(language || "en").toLowerCase().split("-")[0];
@@ -244,8 +252,9 @@
     utterance.lang = language;
     const voice = bestVoice(language,item.agentIndex || 0);
     if (voice) { utterance.voice = voice; utterance.lang = voice.lang || language; }
-    utterance.rate = 0.91 + ((item.agentIndex || 0) % 3) * 0.025;
-    utterance.pitch = item.agentIndex % 2 ? 0.96 : 1.02;
+    const persona = personaFor(item.agentIndex);
+    utterance.rate = persona.tempo;
+    utterance.pitch = persona.pitch;
     utterance.volume = 1;
     const finish = () => { speechBusy = false; window.setTimeout(drainSpeechQueue,220); };
     utterance.onend = finish;
