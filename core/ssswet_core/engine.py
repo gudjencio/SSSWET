@@ -19,6 +19,7 @@ from .technology_progression import evaluate_progression, persistence_status
 from .agent_identity import AgentIdentityRegistry
 from .review_assignment import IndependentReviewerSelector, ReviewerCandidate
 from .research_decision_ledger import ResearchDecisionLedger
+from .research_knowledge_graph import ResearchKnowledgeGraph
 
 
 @dataclass
@@ -42,6 +43,7 @@ class SSSWETEngine:
         self.technology_dossiers = TechnologyDossierRegistry(store) if store else None
         self.agent_identities = AgentIdentityRegistry(store) if store else None
         self.research_decisions = ResearchDecisionLedger(store) if store else None
+        self.research_knowledge = ResearchKnowledgeGraph(store) if store else None
         self.independent_reviewer_selector = IndependentReviewerSelector()
         self.technology_dependencies = TechnologyDependencyGraph(store) if store else None
         self.orchestrator = ResearchOrchestrator()
@@ -180,7 +182,6 @@ class SSSWETEngine:
             opportunities, self.technology_dependencies.graph()
         )
 
-
     def record_research_decision(self, **decision_inputs) -> dict:
         """Record a source-linked decision without overwriting its history."""
         if self.research_decisions is None:
@@ -208,13 +209,32 @@ class SSSWETEngine:
         if self.agent_identities is None:
             raise RuntimeError("A persistent research store is required for memory review")
         return self.agent_identities.record_memory_review(**review_inputs)
+
     def search_team_memories(self, query: str, *, limit: int = 12, agent_ids: list[str] | None = None) -> list[dict]:
         """Retrieve bounded, source-linked memories across the research team."""
         if self.agent_identities is None:
             raise RuntimeError("A persistent research store is required for team memory retrieval")
-        return self.agent_identities.search_team_memories(
-            query, limit=limit, agent_ids=agent_ids
-        )
+        return self.agent_identities.search_team_memories(query, limit=limit, agent_ids=agent_ids)
+
+    def add_research_knowledge_node(self, **node_inputs) -> dict:
+        if self.research_knowledge is None:
+            raise RuntimeError("A persistent research store is required for the research knowledge graph")
+        return self.research_knowledge.add_node(**node_inputs)
+
+    def link_research_knowledge(self, **edge_inputs) -> dict:
+        if self.research_knowledge is None:
+            raise RuntimeError("A persistent research store is required for the research knowledge graph")
+        return self.research_knowledge.link(**edge_inputs)
+
+    def get_research_knowledge_node(self, node_id: str) -> dict:
+        if self.research_knowledge is None:
+            raise RuntimeError("A persistent research store is required for the research knowledge graph")
+        return self.research_knowledge.get_node(node_id)
+
+    def research_knowledge_impact(self, node_id: str, *, max_depth: int = 5, limit: int = 100) -> list[dict]:
+        if self.research_knowledge is None:
+            raise RuntimeError("A persistent research store is required for the research knowledge graph")
+        return self.research_knowledge.impact(node_id, max_depth=max_depth, limit=limit)
 
     def estimate_technology_costs(self, **pricing_inputs) -> dict:
         """Validate agent-submitted cost evidence through the independent pricing gate."""
@@ -231,12 +251,7 @@ class SSSWETEngine:
     @staticmethod
     def evaluate_technology_progression(previous, candidate, *, candidate_safety_gate, candidate_legality_gate):
         """Prevent documented capability regressions between technology revisions."""
-        return evaluate_progression(
-            previous,
-            candidate,
-            candidate_safety_gate=candidate_safety_gate,
-            candidate_legality_gate=candidate_legality_gate,
-        )
+        return evaluate_progression(previous, candidate, candidate_safety_gate=candidate_safety_gate, candidate_legality_gate=candidate_legality_gate)
 
     @staticmethod
     def continue_research(reason: str) -> dict:
@@ -248,9 +263,4 @@ class SSSWETEngine:
 
     def snapshot(self) -> EngineSnapshot:
         active = sum(1 for a in self.orchestrator.bot_manager.agents.values() if a.load > 0)
-        return EngineSnapshot(
-            queued_tasks=len(self.orchestrator.tasks),
-            active_agents=active,
-            remembered_items=len(self.memory.export()),
-            events=len(self.orchestrator.events),
-        )
+        return EngineSnapshot(queued_tasks=len(self.orchestrator.tasks), active_agents=active, remembered_items=len(self.memory.export()), events=len(self.orchestrator.events))
