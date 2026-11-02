@@ -168,6 +168,12 @@
   });
 
   window.SSSWET_TECHNOLOGIES = technologies;
+  const catalogueCount = document.getElementById("technology-catalogue-count");
+  if (catalogueCount) {
+    const total = Object.keys(technologies).length;
+    const french = (document.documentElement.lang || "en").startsWith("fr");
+    catalogueCount.textContent = total + (french ? " programmes de recherche" : " research programmes");
+  }
   // Configure only official, verified payment links here. No payment credentials belong in this public file.
   const paymentLinks = window.SSSWET_DONATION_LINKS || {};
   const portfolio = window.SSSWET_RESEARCH_PORTFOLIO || {};
