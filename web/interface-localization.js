@@ -39,6 +39,23 @@
     zh: {"Not assessed":"未评估","Planned":"计划中","In progress":"进行中","Completed":"已完成","Blocked":"已阻止","Superseded":"已取代","Hypothesis":"假设","Literature":"科学文献","Observation":"观察","Independent review":"独立审查","Project update":"项目更新"},
     hi: {"Not assessed":"मूल्यांकन नहीं हुआ","Planned":"नियोजित","In progress":"प्रगति पर","Completed":"पूर्ण","Blocked":"अवरुद्ध","Superseded":"प्रतिस्थापित","Hypothesis":"परिकल्पना","Literature":"वैज्ञानिक साहित्य","Observation":"अवलोकन","Independent review":"स्वतंत्र समीक्षा","Project update":"परियोजना अपडेट"}
   };
+  const scoreLabels = {
+    en:["Not assessed","0 — Very low","1 — Low","2 — Limited","3 — Moderate","4 — Strong","5 — Very strong"],
+    fr:["Non évalué","0 — Très faible","1 — Faible","2 — Limité","3 — Modéré","4 — Élevé","5 — Très élevé"],
+    es:["Sin evaluar","0 — Muy bajo","1 — Bajo","2 — Limitado","3 — Moderado","4 — Alto","5 — Muy alto"],
+    de:["Nicht bewertet","0 — Sehr niedrig","1 — Niedrig","2 — Begrenzt","3 — Mittel","4 — Hoch","5 — Sehr hoch"],
+    it:["Non valutato","0 — Molto basso","1 — Basso","2 — Limitato","3 — Moderato","4 — Alto","5 — Molto alto"],
+    pt:["Não avaliado","0 — Muito baixo","1 — Baixo","2 — Limitado","3 — Moderado","4 — Alto","5 — Muito alto"],
+    nl:["Niet beoordeeld","0 — Zeer laag","1 — Laag","2 — Beperkt","3 — Gemiddeld","4 — Hoog","5 — Zeer hoog"],
+    ru:["Не оценено","0 — Очень низкий","1 — Низкий","2 — Ограниченный","3 — Средний","4 — Высокий","5 — Очень высокий"],
+    uk:["Не оцінено","0 — Дуже низький","1 — Низький","2 — Обмежений","3 — Середній","4 — Високий","5 — Дуже високий"],
+    ar:["غير مُقيّم","0 — منخفض جدًا","1 — منخفض","2 — محدود","3 — متوسط","4 — مرتفع","5 — مرتفع جدًا"],
+    he:["לא הוערך","0 — נמוך מאוד","1 — נמוך","2 — מוגבל","3 — בינוני","4 — גבוה","5 — גבוה מאוד"],
+    ja:["未評価","0 — 非常に低い","1 — 低い","2 — 限定的","3 — 中程度","4 — 高い","5 — 非常に高い"],
+    ko:["평가되지 않음","0 — 매우 낮음","1 — 낮음","2 — 제한적","3 — 보통","4 — 높음","5 — 매우 높음"],
+    zh:["未评估","0 — 非常低","1 — 低","2 — 有限","3 — 中等","4 — 高","5 — 非常高"],
+    hi:["मूल्यांकन नहीं हुआ","0 — बहुत कम","1 — कम","2 — सीमित","3 — मध्यम","4 — उच्च","5 — बहुत उच्च"]
+  };
   function setLabel(form, name, value) {
     const label = form.querySelector('[name="' + name + '"]')?.closest("label");
     if (!label) return;
@@ -70,6 +87,12 @@
       const note = journal.querySelector(".research-journal-note");
       if (note && code === "fr") { const value = "La saisie est limitée à la machine locale. Les entrées ne peuvent être ni modifiées ni supprimées. Une chaîne de hachage détecte les modifications ultérieures, sans établir la validité scientifique."; if (note.textContent !== value) note.textContent = value; }
     }
+    const scores = scoreLabels[code] || scoreLabels.en;
+    priority?.querySelectorAll(".priority-score-grid select").forEach(select => {
+      select.querySelectorAll("option").forEach((option,index) => {
+        if (scores[index] && option.textContent !== scores[index]) option.textContent = scores[index];
+      });
+    });
     const filters = document.getElementById("research-journal-filter");
     const options = optionLabels[code] || {};
     [priority,journal,filters].filter(Boolean).forEach(root=>root.querySelectorAll("option").forEach(option=>{const translated=options[option.textContent.trim()];if(translated)option.textContent=translated;}));
