@@ -43,6 +43,7 @@ jobs:
           node --check web/virtual-time-travel.js
           node --check web/keyframe-continuity.js
           node --check web/keyframe-correspondence.js
+          node --check web/virtual-time-travel-link.js
           node --check desktop/main.cjs
           node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('capacitor.config.json', 'utf8')); JSON.parse(require('fs').readFileSync('web/manifest.json', 'utf8'))"
           node --check web/report-project.js
