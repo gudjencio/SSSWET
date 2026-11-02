@@ -202,6 +202,38 @@ TECHNOLOGY_CATALOGUE = [
         "subcategory": "protectiveEngineering"
     },
     {
+        "technology_id": "modularProtectiveArmor",
+        "title": "Modular Protective Armor Systems",
+        "domain": "protection",
+        "subcategory": "protectiveEngineering",
+        "research_scope": ["Modular, repairable personal protection for defined impact and environmental hazards", "Ergonomics, mobility, thermal burden and long-duration wearability", "Independent testing against applicable protection standards", "Lifecycle cost, maintainability and traceability"],
+        "scientific_limitations": ["Protection depends on hazard, test method, coverage and certified configuration", "No rating is inferred from conceptual design or material names", "Weapon integration and offensive capability are excluded"]
+    },
+    {
+        "technology_id": "blastAndImpactProtection",
+        "title": "Blast and Impact Injury Protection",
+        "domain": "protection",
+        "subcategory": "protectiveEngineering",
+        "research_scope": ["Passive reduction of blunt impact and environmental pressure-related injury", "Head, hearing, eye and joint protection under defined test conditions", "Fit, comfort, mobility and emergency removal", "Validation against recognized protection standards"],
+        "scientific_limitations": ["Protective equipment cannot eliminate all injury risks", "Performance requires independent configuration-specific testing", "Weapon design and offensive applications are excluded"]
+    },
+    {
+        "technology_id": "environmentalProtectionSuit",
+        "title": "Advanced Environmental Protection Suits",
+        "domain": "protection",
+        "subcategory": "protectiveEngineering",
+        "research_scope": ["Thermal insulation and heat-stress management", "Certified particulate and chemical exposure components", "Moisture management, breathable interfaces and emergency doffing", "Compatibility with medical monitoring and rescue equipment"],
+        "scientific_limitations": ["Suit suitability is hazard-specific and requires validated exposure limits", "Protective suits do not replace hazard assessment or safe procedures"]
+    },
+    {
+        "technology_id": "protectivePhysiologicalMonitoring",
+        "title": "Protective Physiological Monitoring",
+        "domain": "protection",
+        "subcategory": "protectiveEngineering",
+        "research_scope": ["Non-diagnostic monitoring of heat strain, fatigue indicators and environmental exposure", "Clear alerts, data minimization and resilient operation", "Human-factors testing to prevent alarm overload", "Privacy, cybersecurity and medical-device boundary assessment"],
+        "scientific_limitations": ["Wearable indicators do not replace clinical assessment", "Sensor accuracy and thresholds require context-specific validation"]
+    },
+    {
         "technology_id": "cleanenergy",
         "title": "Cleanenergy",
         "domain": "energy",
@@ -393,6 +425,22 @@ TECHNOLOGY_CATALOGUE = [
         "title": "Adaptive Exosuits",
         "domain": "life",
         "subcategory": "humanAugmentation"
+    },
+    {
+        "technology_id": "poweredLoadAssistExoskeletons",
+        "title": "Powered Load-Assist Exoskeletons",
+        "domain": "life",
+        "subcategory": "humanAugmentation",
+        "research_scope": ["Ergonomic assistance for lifting, carrying and prolonged standing", "Fail-safe operation, rapid disengagement and safe power-loss behavior", "Fit, fatigue, balance and musculoskeletal risk assessment", "Battery safety, maintenance and lifecycle cost"],
+        "scientific_limitations": ["Poor fit or control can create new injury modes", "Performance requires representative-user testing", "Weapon mounts and offensive functions are excluded"]
+    },
+    {
+        "technology_id": "rescueMobilityExoskeletons",
+        "title": "Rescue and Mobility Exoskeletons",
+        "domain": "life",
+        "subcategory": "humanAugmentation",
+        "research_scope": ["Mobility assistance for rescue, evacuation and accessibility", "Safe support on uneven terrain and during controlled transport", "Emergency stop, manual override and fail-safe recovery", "Training burden and independent safety validation"],
+        "scientific_limitations": ["Systems must not increase risk to wearers or assisted persons", "Autonomous force against people and weapon integration are excluded"]
     },
     {
         "technology_id": "closedLoopNeuroprosthetics",
