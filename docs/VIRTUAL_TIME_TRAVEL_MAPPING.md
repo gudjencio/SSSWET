@@ -88,18 +88,24 @@ After candidate frames are rendered, the browser performs a second local-only sc
 
 A higher score means the adjacent previews are more visually similar under this simple representation; a lower score means the adjacent previews differ more. The score is deliberately presented as a heuristic rather than an overlap measurement. It does not estimate feature correspondence, camera pose, lens geometry, depth, scale, or true geometric overlap. Exposure changes, motion blur, repeated textures and viewpoint changes can all affect the result. A high score can therefore still be useless for reconstruction, while a lower score can occur between genuinely useful frames.
 
-The continuity aid is designed to help a later reconstruction stage reject obviously redundant or abruptly changing candidates before more expensive feature matching. It does not perform photogrammetry, pose estimation, point-cloud generation, mesh generation, georeferencing or independent validation.
+## Local correspondence screening
+
+The prototype now performs an additional local-only screening pass on adjacent candidate previews. Each preview is reduced to a 128×96 luminance image, divided into a regular grid of small normalized intensity patches, and compared against patches in the neighboring frame. A conservative nearest-neighbor plus ratio test counts only distinctive candidate patch matches.
+
+The displayed **local visual correspondences** count is a screening signal for whether two frames contain repeated local intensity patterns. It is not an implementation of a production feature detector such as SIFT/ORB/SURF, and it does not establish feature tracks, epipolar geometry, camera poses, depth, metric scale or 3D overlap. Repeated textures, low texture, blur, exposure changes and viewpoint changes can create false positives or false negatives. The result must therefore be treated as a candidate-ranking aid rather than reconstruction evidence.
+
+The correspondence pass is deliberately bounded to the small preview representation so it can run locally in an ordinary browser without uploading images. It is intended to prepare the dataset for a future calibrated feature-matching and pose-estimation stage.
 
 ## Reconstruction readiness boundary
 
 The current workflow is intentionally staged:
 
 1. **Recorded evidence:** retain the original local video and sensor observations.
-2. **Candidate selection:** screen frames for sharpness, visual change and visual continuity.
-3. **Geometric reconstruction:** future work must establish feature correspondences, calibrated camera poses and depth/scale constraints.
+2. **Candidate selection:** screen frames for sharpness, visual change, visual continuity and local correspondence candidates.
+3. **Geometric reconstruction:** future work must establish robust feature correspondences, calibrated camera poses and depth/scale constraints.
 4. **Spatial registration:** future work must distinguish measured geometry from basemap geometry and establish georeferencing uncertainty.
 5. **Validation:** reconstructed geometry must be compared with independent measurements before being described as validated.
 
 Until stages 3–5 exist and are independently evaluated, the interface must not describe candidate frames or map extrusions as a reconstructed physical scene.
 
-This feature is only a preparatory image-selection aid. A sharp frame is not necessarily geometrically useful, and a large visual change does not prove that two frames overlap appropriately. Any later reconstruction pipeline will require calibrated capture, overlap checks, pose estimation, scale recovery, georeferencing and independent validation.
+This feature is only a preparatory image-selection aid. A sharp frame is not necessarily geometrically useful, and a large visual change or correspondence count does not prove that two frames overlap appropriately. Any later reconstruction pipeline will require calibrated capture, robust feature matching, pose estimation, scale recovery, georeferencing and independent validation.
