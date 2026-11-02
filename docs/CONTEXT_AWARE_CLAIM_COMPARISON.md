@@ -16,3 +16,22 @@ Each result retains source identifiers and reported values. Dates are treated as
 ## Limitations
 
 The comparator does not extract claims from prose, normalize physical units, assess measurement uncertainty, test statistical significance, establish source independence, or resolve disagreements. Missing or differently worded context may prevent relevant claims from being compared. Human reviewers must inspect original sources, methods, dates and conditions before revising a research conclusion.
+## Python API
+
+```python
+from ssswet_core.contradiction import ResearchClaim
+from ssswet_core.context_aware_claim_comparison import ClaimContext
+from ssswet_core.engine import SSSWETEngine
+
+engine = SSSWETEngine()
+review_leads = engine.compare_contextual_claims([
+    ClaimContext(
+        ResearchClaim("coating", "thickness", "120", "source-a"),
+        scope="sample", unit="um", observed_at="2025-01-01",
+    ),
+    ClaimContext(
+        ResearchClaim("coating", "thickness", "105", "source-b"),
+        scope="sample", unit="um", observed_at="2025-02-01",
+    ),
+])
+```
