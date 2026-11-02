@@ -7,13 +7,13 @@ The public interface presents **116 selected contribution themes** grouped into 
 | Category | Subcategories |
 | --- | --- |
 | Space science and exploration | Astrophysics and extreme gravity; propulsion and interstellar travel; space habitats and life support |
-| Civilian protection and resilience | Nuclear-event protection; protective engineering |
+| Civilian protection and resilience | Nuclear-event protection; protective engineering; forensic scene reconstruction |
 | Energy systems | Clean energy generation; energy storage and conversion |
 | Advanced materials | Adaptive and functional materials; structural and high-temperature materials |
 | Life sciences and human systems | Regenerative medicine; human augmentation and assistive systems; animal health and welfare |
-| Environmental stewardship | Ecosystem restoration; climate resilience and monitoring |
-| Robotics and autonomous systems | Autonomous research and field robotics; assistive robotics and mobility |
-| Knowledge and communication | Advanced scientific computing; communication and translation; public knowledge and health |
+| Environmental stewardship | Ecosystem restoration; climate resilience and monitoring; environmental event replay |
+| Robotics and autonomous systems | Autonomous research and field robotics; assistive robotics and mobility; predictive scene simulation; persistent 3D mapping; motion and trajectory reconstruction |
+| Knowledge and communication | Advanced scientific computing; communication and translation; public knowledge and health; spatiotemporal digital twins; geospatial sensor fusion; privacy-preserving spatial capture; uncertainty-aware world models; virtual time travel mapping |
 
 The category and subcategory labels are translated in the interface for English, French, Spanish, German, Italian, Portuguese, Dutch, Russian, Ukrainian, Arabic, Hebrew, Japanese, Korean, Chinese and Hindi.
 
