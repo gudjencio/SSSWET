@@ -30,12 +30,12 @@
   <section class="vt-grid">
     <article class="vt-panel"><h2 data-i="captureTitle">Capture a new visit</h2><p data-i="captureIntro">All capture is optional. Nothing is uploaded to SSSWET servers; observations and media stay in this browser's local storage.</p>
       <div class="vt-consents">
-        <label><input id="vt-consent-location" type="checkbox" checked><span data-i="consentLocation">Record location and movement sensors</span></label>
+        <label><input id="vt-consent-location" type="checkbox"><span data-i="consentLocation">Record location and movement sensors</span></label>
         <label><input id="vt-consent-camera" type="checkbox"><span data-i="consentCamera">Record camera video (optional)</span></label>
         <label><input id="vt-consent-mic" type="checkbox"><span data-i="consentMic">Record microphone audio (optional)</span></label>
       </div>
       <div class="vt-actions"><button id="vt-start" type="button" class="primary" data-i="start">Start local scan</button><button id="vt-stop" type="button" class="secondary" disabled data-i="stop">Stop scan</button></div>
-      <video id="vt-preview" autoplay muted playsinline hidden></video>
+      <video id="vt-preview" autoplay muted playsinline hidden></video><p class="vt-small" data-i="captureNote">Camera capture records local video; it does not yet generate a measured 3D surface.</p>
       <p class="vt-small" data-i="captureNote">Only record places and people when you have the necessary permission. Check local recording and data-protection laws. Avoid capturing private conversations or identifiable bystanders without consent.</p>
       <div class="vt-storage"><span data-i="storage">Saved locally</span><strong id="vt-storage-count">0 observations · 0 media clips</strong></div>
     </article>
