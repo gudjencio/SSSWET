@@ -97,3 +97,18 @@ def test_team_memory_search_validates_bounds_and_agent_filters(tmp_path):
         registry.search_team_memories("materials", limit=0)
     with pytest.raises(ValueError, match="agent_ids"):
         registry.search_team_memories("materials", agent_ids=[])
+
+
+def test_memory_search_matches_accented_and_unaccented_terms(tmp_path):
+    registry = AgentIdentityRegistry(SQLiteResearchStore(tmp_path / "accent-search.sqlite3"))
+    saved = registry.remember(
+        agent_id="bot-accent", role="general_researcher",
+        content="L’efficacité énergétique dépend de mesures répétables et de données fiables.",
+        source_reference="doi:10.example/efficacite",
+    )
+    results = registry.search_memories(
+        "bot-accent", "efficacite energetique donnees fiables", limit=5
+    )
+    assert results
+    assert results[0]["memory_id"] == saved["memory_id"]
+    assert "efficacite" in results[0]["matched_terms"]
