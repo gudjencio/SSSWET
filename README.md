@@ -114,3 +114,8 @@ The persistent agent memory layer supports bounded team-wide retrieval for share
 ## Independent reviewer selection
 
 SSSWET can prepare auditable reviewer-panel proposals that exclude prior reviewers and declared conflicts, avoid repeated campaigns, and flag shared evidence sources for disclosure. Proposals do not execute assignments or certify independence. See [Independent reviewer selection safeguards](docs/INDEPENDENT_REVIEWER_SELECTION.md).
+
+
+## Research decision lineage
+
+The persistent research decision ledger preserves decision rationales, evidence references, reviewer identifiers and constrained review-state changes. Corrections create new linked decisions rather than overwriting earlier records, so abandoned interpretations and negative findings remain traceable. Recorded statuses are review history, not scientific truth or certification. See [Research decision lineage](docs/RESEARCH_DECISION_LINEAGE.md).
