@@ -1,6 +1,6 @@
 # SSSWET technology catalogue
 
-The public catalogue contains **100 research programmes** grouped into eight categories and browsable through translated category, subcategory and search controls.
+The public interface presents **110 selected contribution themes** grouped into eight categories. The scientific registry contains **510 research-programme dossiers**: the original 106 entries, 394 generated research scopes and ten curated additions. These are research records, not 510 validated technologies.
 
 ## Categories and subcategories
 
