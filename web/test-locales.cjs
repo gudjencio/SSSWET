@@ -331,3 +331,36 @@ if (!pageSource.includes('id="bot-free-question-form"') ||
   throw new Error("The source-linked free-form bot question interface is incomplete.");
 }
 console.log("Validated multilingual free-form questions and source-linked research retrieval in the bot room.");
+
+
+const purchasePolicySource = fs.readFileSync(new URL("./product-purchase-config.js", `file://${__filename}`), "utf8");
+const purchasePolicyContext = { window: {} };
+vm.runInNewContext(purchasePolicySource, purchasePolicyContext);
+const purchasePolicy = purchasePolicyContext.window.SSSWET_PRODUCT_PURCHASES;
+if (!purchasePolicy || purchasePolicy.monthly_technology_financing.status !== "proposed_not_enabled" ||
+    purchasePolicy.monthly_technology_financing.enabled !== false) {
+  throw new Error("Future monthly technology checkout must remain disabled until launch reviews are complete.");
+}
+const financingPolicy = purchasePolicy.monthly_technology_financing;
+if (financingPolicy.billing_frequency !== "monthly" ||
+    financingPolicy.maximum_technologies_funded_per_billing_period !== 1 ||
+    financingPolicy.minimum_project_net_margin_usd !== 1 ||
+    !financingPolicy.all_inclusive_price_required_before_checkout ||
+    !financingPolicy.destination_aware_tax_calculation_required ||
+    !financingPolicy.retain_payment_as_donation_only_with_separate_affirmative_consent ||
+    !financingPolicy.refund_and_withdrawal_rights_must_follow_applicable_law ||
+    !financingPolicy.repairs_under_statutory_or_express_warranty_are_free ||
+    !financingPolicy.no_duplicate_recovery_of_repair_costs ||
+    !financingPolicy.verified_server_side_payment_and_webhook_required) {
+  throw new Error("The proposed monthly financing policy is missing required customer safeguards.");
+}
+if (Object.values(purchasePolicy.products).some(product => product.available || product.price_eur !== null)) {
+  throw new Error("No research concept may be advertised as a purchasable product without verified availability and pricing.");
+}
+const monthlyFinancingDoc = fs.readFileSync(new URL("../docs/MONTHLY_TECHNOLOGY_FINANCING.md", `file://${__filename}`), "utf8");
+for (const phrase of ["Status: proposed design", "no blanket", "statutory guarantee", "all-inclusive", "one technology per monthly billing period"]) {
+  if (!monthlyFinancingDoc.toLowerCase().includes(phrase.toLowerCase())) {
+    throw new Error(`Monthly financing policy is missing safeguard: ${phrase}`);
+  }
+}
+console.log("Validated disabled monthly technology financing, tax transparency, refunds, warranty and repair safeguards.");
