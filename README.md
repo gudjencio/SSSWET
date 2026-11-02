@@ -37,6 +37,10 @@ The previous one-time and manually scheduled instalment interface has been repla
 
 The local dashboard includes a transparent, human-entered assessment workflow for all 40 research programmes. Six weighted criteria cover societal benefit, ecological and animal benefit, evidence maturity, technical feasibility, resource accessibility, and safety and legal readiness. Incomplete assessments remain visible but are excluded from ranking; previous submissions are preserved in append-only local SQLite history. Each entry requires a reviewer label and written rationale, with optional evidence references. Rankings are advisory decision-support indicators only: they do not establish scientific validity, authorize experiments, allocate funding or certify product readiness. See [research programme prioritisation](docs/RESEARCH_PRIORITISATION.md).
 
+## Research Knowledge Observatory
+
+The read-only `/api/research-observatory` endpoint consolidates counts and recorded metadata from the technology journal, explicit knowledge graph, digital laboratory and evidence dossiers. It distinguishes stored research activity from scientific validity, technical feasibility and product readiness. See [the Research Knowledge Observatory documentation](docs/RESEARCH_KNOWLEDGE_OBSERVATORY.md).
+
 ## Reproducibility intelligence
 
 The read-only reproducibility intelligence service summarizes recorded comparisons by protocol and exposes a transparent five-part evidence-completeness index. Matching outputs do not count as independent verification unless that verification is explicitly recorded. Missing comparisons produce no score, and parameter sensitivity remains unassessed until normalized sweep metadata exists. The index is not a measure of scientific truth or validity. See [the reproducibility intelligence documentation](docs/REPRODUCIBILITY_INTELLIGENCE.md).
