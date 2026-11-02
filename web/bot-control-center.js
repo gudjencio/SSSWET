@@ -22,6 +22,8 @@
   function renderStaticLabels(){
     const t=labels();
     const researchLabel=$("bot-current-technology-label"); if(researchLabel) researchLabel.textContent=currentResearchLabels[lang()]||currentResearchLabels.en;
+    const researchTitle=$("bot-current-technology-title");
+    if(researchTitle) researchTitle.textContent=researchTitle.dataset.technology?technologyName(researchTitle.dataset.technology):t.noCurrent;
     const title=$("bot-control-title"), caption=$("bot-control-caption"), note=$("bot-control-note");
     const sideTitle=$("bot-control-side-title"), sideCaption=$("bot-control-side-caption"), mainLabel=$("bot-control-main");
     if(title) title.textContent=t.title;
@@ -77,7 +79,7 @@
         metric(data.blocked_tasks||0,t.blocked)
       ].join("");
       const currentTech=worker.current_technology?technologyName(worker.current_technology):t.noCurrent;
-      const researchTitle=$("bot-current-technology-title"); if(researchTitle) researchTitle.textContent=currentTech;
+      const researchTitle=$("bot-current-technology-title"); if(researchTitle){researchTitle.dataset.technology=worker.current_technology||"";researchTitle.textContent=currentTech;}
       const cycleLine=completed?t.cycleDone+": "+time(worker.last_cycle_completed_at):t.updated+": "+time(worker.updated_at);
       current.innerHTML='<strong>'+escape(t.current)+':</strong> '+escape(currentTech)+'<br><span>'+escape(cycleLine)+'</span>';
       const activeCards=active.map((agent,index)=>'<article class="bot-control-agent bot-control-agent-live">'+robot(index)+'<div class="bot-agent-copy"><strong>'+escape(agent.id)+' · '+escape(role(agent.role))+'</strong><span>'+escape(t.thinking)+' · '+escape(technologyName(worker.current_technology))+'</span><small>'+escape(t.task)+': '+escape(agent.task_id||worker.current_task_id||"—")+'</small></div><i class="bot-agent-pulse" aria-hidden="true"></i></article>');
