@@ -1504,3 +1504,7 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 
 /* Keep the equation line clear; the redundant stage caption is omitted. */
 .bot-stage-caption { display:none !important; }
+
+/* Match PayPal's embedded button area to the contribution dialog. */
+.paypal-subscription-container { background:transparent !important; border:0 !important; box-shadow:none !important; overflow:hidden; border-radius:999px; }
+.paypal-subscription-container iframe { background:transparent !important; color-scheme:dark; }
