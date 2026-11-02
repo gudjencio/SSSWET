@@ -50,3 +50,22 @@ def test_unknown_roles_and_unreferenced_memories_are_rejected(tmp_path):
         registry.profile("invented_role")
     with pytest.raises(ValueError, match="source reference"):
         registry.remember(agent_id="bot-1", role="general_researcher", content="A note", source_reference="")
+
+
+def test_memory_search_prioritizes_relevant_source_linked_notes(tmp_path):
+    registry = AgentIdentityRegistry(SQLiteResearchStore(tmp_path / "memory-search.sqlite3"))
+    relevant = registry.remember(
+        agent_id="bot-search", role="general_researcher",
+        content="Black hole observation requires relativistic models and event-horizon imaging.",
+        source_reference="doi:10.example/black-hole-review",
+    )
+    registry.remember(
+        agent_id="bot-search", role="general_researcher",
+        content="Regenerative agriculture can improve soil health and water retention.",
+        source_reference="doi:10.example/agriculture-review",
+    )
+    ranked = registry.search_memories("bot-search", "black hole event horizon observation", limit=5)
+    assert ranked
+    assert ranked[0]["memory_id"] == relevant["memory_id"]
+    assert ranked[0]["retrieval_method"] == "source_linked_lexical_relevance"
+    assert ranked[0]["matched_terms"]
