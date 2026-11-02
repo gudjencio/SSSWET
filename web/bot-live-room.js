@@ -204,7 +204,7 @@
   const roleName = (role) => roleLabels[role]?.[lang()] || roleLabels[role]?.en || pretty(role || t().role);
   const avatar = (index) => '<span class="agent-avatar agent-avatar-'+((index%3)+1)+'"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span>';
   const time = (value) => { const d=new Date(value); return value && !Number.isNaN(d.getTime()) ? d.toLocaleTimeString(lang(),{hour:"2-digit",minute:"2-digit"}) : ""; };
-  let voiceEnabled = false;
+  let voiceEnabled = Boolean(window.speechSynthesis && typeof SpeechSynthesisUtterance !== "undefined");
   let initialized = false;
   let knownOutputIds = new Set();
   let spokenMessageIds = new Set();
@@ -273,7 +273,7 @@
           const role = roleName(recent.sender_role);
           speak(role + ". " + recent.content, speakerTurn++);
         } else if (active.length && Date.now()-lastThinkingSound > 65000 && Math.random() < 0.18) {
-          speak(["Hmm…","Mhmm…","Let me think…"][Math.floor(Math.random()*3)],speakerTurn++);
+          speak(["Hmm…","Mhmm…"][Math.floor(Math.random()*2)],speakerTurn++);
           lastThinkingSound = Date.now();
         } else if (outputs.length && active.length) {
           const item = outputs.find(entry => entry.summary && String(entry.summary).trim() && !spokenOutputIds.has([entry.task_id,entry.agent_id,entry.created_at].join("|")));
