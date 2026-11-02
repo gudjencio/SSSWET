@@ -31,6 +31,13 @@ class ResearchCampaign:
     domain: str
     state: str
     milestones: tuple[CampaignMilestone, ...]
+    hypothesis: str = ""
+    success_criteria: tuple[str, ...] = ()
+    failure_criteria: tuple[str, ...] = ()
+    agent_roles: tuple[str, ...] = ()
+    resource_requirements: tuple[str, ...] = ()
+    source_refs: tuple[str, ...] = ()
+    safety_gates: tuple[str, ...] = ()
     warnings: tuple[str, ...] = (
         "Campaign status tracks workflow progress, not scientific validity.",
         "Simulation results, real observations and verified findings remain distinct.",
@@ -44,6 +51,14 @@ def create_campaign(
     objective: str,
     domain: str,
     milestones: list[CampaignMilestone],
+    *,
+    hypothesis: str = "",
+    success_criteria: tuple[str, ...] = (),
+    failure_criteria: tuple[str, ...] = (),
+    agent_roles: tuple[str, ...] = (),
+    resource_requirements: tuple[str, ...] = (),
+    source_refs: tuple[str, ...] = (),
+    safety_gates: tuple[str, ...] = (),
 ) -> ResearchCampaign:
     values = (campaign_id, title, objective, domain)
     if any(not isinstance(value, str) or not value.strip() for value in values):
@@ -58,9 +73,28 @@ def create_campaign(
             raise ValueError(f"Unsupported milestone state: {item.state}")
         if not item.title.strip() or not item.objective.strip():
             raise ValueError("Every milestone needs a title and objective")
+    if hypothesis and (not isinstance(hypothesis, str) or len(hypothesis) > 4000):
+        raise ValueError("Hypothesis must be text of at most 4000 characters")
+    collections = {
+        "success_criteria": success_criteria, "failure_criteria": failure_criteria,
+        "agent_roles": agent_roles, "resource_requirements": resource_requirements,
+        "source_refs": source_refs, "safety_gates": safety_gates,
+    }
+    normalized = {}
+    for key, values in collections.items():
+        if not isinstance(values, (tuple, list)) or any(
+            not isinstance(value, str) or not value.strip() or len(value) > 1000
+            for value in values
+        ):
+            raise ValueError(f"{key} must contain non-empty text entries")
+        normalized[key] = tuple(value.strip() for value in values)
+    if not normalized["success_criteria"] or not normalized["failure_criteria"]:
+        raise ValueError("Campaigns require explicit success and failure criteria")
+    if not normalized["safety_gates"]:
+        raise ValueError("Campaigns require at least one safety gate")
     return ResearchCampaign(
         campaign_id.strip(), title.strip(), objective.strip(), domain.strip(),
-        "draft", tuple(milestones),
+        "draft", tuple(milestones), hypothesis.strip(), **normalized,
     )
 
 
@@ -80,7 +114,10 @@ def set_campaign_state(campaign: ResearchCampaign, state: str) -> ResearchCampai
         raise ValueError("All milestones must be completed before campaign completion")
     return ResearchCampaign(
         campaign.campaign_id, campaign.title, campaign.objective, campaign.domain,
-        state, campaign.milestones, campaign.warnings,
+        state, campaign.milestones, campaign.hypothesis,
+        campaign.success_criteria, campaign.failure_criteria, campaign.agent_roles,
+        campaign.resource_requirements, campaign.source_refs, campaign.safety_gates,
+        campaign.warnings,
     )
 
 
@@ -106,7 +143,10 @@ def update_milestone(
         raise ValueError(f"Unknown milestone: {milestone_id}")
     return ResearchCampaign(
         campaign.campaign_id, campaign.title, campaign.objective, campaign.domain,
-        campaign.state, tuple(updated), campaign.warnings,
+        campaign.state, tuple(updated), campaign.hypothesis,
+        campaign.success_criteria, campaign.failure_criteria, campaign.agent_roles,
+        campaign.resource_requirements, campaign.source_refs, campaign.safety_gates,
+        campaign.warnings,
     )
 
 
