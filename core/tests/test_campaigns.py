@@ -72,9 +72,11 @@ def test_campaign_preserves_hypothesis_evidence_and_safety_plan():
     assert active.success_criteria == campaign.success_criteria
 
 
-def test_campaign_requires_success_failure_and_safety_criteria():
-    with pytest.raises(ValueError, match="success and failure"):
-        create_campaign(
-            "incomplete", "Incomplete plan", "Objective", "science",
-            [CampaignMilestone("m1", "Review", "Review evidence")],
-        )
+def test_legacy_campaign_can_be_created_without_new_design_metadata():
+    campaign = create_campaign(
+        "legacy", "Legacy plan", "Objective", "science",
+        [CampaignMilestone("m1", "Review", "Review evidence")],
+    )
+    assert campaign.success_criteria == ()
+    assert campaign.failure_criteria == ()
+    assert campaign.safety_gates == ()
