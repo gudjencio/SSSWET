@@ -47,21 +47,28 @@ class ResearchPipeline:
             identity_id += f":{operational_role or 'unspecified'}"
         return identity_role, identity_id
 
-    def _agent_context(self, role: str, current_task_id: str | None = None) -> str:
-        """Build bounded, provenance-labelled continuity context for one agent persona."""
+    def _agent_context(
+        self, role: str, current_task_id: str | None = None, objective: str = ""
+    ) -> str:
+        """Build bounded continuity context ranked by relevance and source provenance."""
         if not self.store:
             return ""
         from .agent_identity import AgentIdentityRegistry
         identity_role, identity_id = self._identity_for_role(role)
         registry = AgentIdentityRegistry(self.store)
         memories = [
-            item for item in registry.memories(identity_id, limit=12)
+            item for item in registry.search_memories(identity_id, objective, limit=12)
             if not current_task_id or f"task:{current_task_id};" not in item["source_reference"]
         ][:6]
+        if not memories:
+            memories = [
+                item for item in registry.memories(identity_id, limit=3)
+                if not current_task_id or f"task:{current_task_id};" not in item["source_reference"]
+            ]
         collaborations = [
-            item for item in registry.collaborations(identity_id, limit=12)
+            item for item in registry.collaborations(identity_id, limit=20)
             if not current_task_id or f"task:{current_task_id};" not in item["evidence_reference"]
-        ][:4]
+        ][:6]
         if not memories and not collaborations:
             return ""
         sections = [
@@ -78,13 +85,13 @@ class ResearchPipeline:
                 f"- Recorded collaboration [{item['evidence_reference']}]: "
                 f"{item['event_type']} with {item['other_agent_id']}. {item['note'][:350]}"
             )
-        return "\\n".join(sections)[:6000]
+        return "\n".join(sections)[:8000]
 
     def _investigate(self, objective: str, strategy: str, role: str, task_id: str | None = None) -> ProviderResult:
         """Run a provider pass with this role's bounded, source-linked prior work."""
-        context = self._agent_context(role, current_task_id=task_id)
+        context = self._agent_context(role, current_task_id=task_id, objective=objective)
         if context:
-            objective = f"{objective}\\n\\n{context}"
+            objective = f"{objective}\n\n{context}"
         return self.provider.investigate(objective, strategy)
 
     def _persist_agent_memories(self, task_id: str, steps: list[PipelineStep]) -> None:
@@ -268,7 +275,7 @@ class ResearchPipeline:
             active_by_id: dict[str, dict] = {}
             completed_steps: dict[int, PipelineStep] = {}
             indexed_futures = {}
-            worker_count = max(1, min(6, len(subtasks)))
+            worker_count = max(1, min(10, len(subtasks)))
             with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="ssswet-agent") as executor:
                 for index, (subtask, agent) in enumerate(zip(subtasks, agents, strict=True)):
                     active_by_id[agent.id] = {
@@ -336,7 +343,7 @@ class ResearchPipeline:
                 review_active = {}
                 review_futures = {}
                 review_records = []
-                review_workers = max(1, min(4, len(handoffs)))
+                review_workers = max(1, min(6, len(handoffs)))
                 with ThreadPoolExecutor(max_workers=review_workers, thread_name_prefix="ssswet-review") as executor:
                     for message_id, sender, reviewer in handoffs:
                         original = self.store.agent_message(message_id)
