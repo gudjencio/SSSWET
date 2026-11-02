@@ -93,6 +93,15 @@ window.SSSWET_LOCALES = {
     offline: "Le moteur local n'est pas connecté. GitHub Pages affiche un aperçu statique ; lancez l'application locale pour accéder aux données en direct.",
     noDiscoveries: "Aucun résultat de recherche n'est encore enregistré.", noActivity: "Aucune activité de recherche n'a encore été enregistrée.",
     noVerified: "Aucune connaissance vérifiée indépendamment n'est encore disponible.",
+    voiceDisable: "Désactiver la lecture vocale", voiceOptions: "Options vocales", voiceRead: "Lire le contenu", voicePause: "Mettre en pause", voiceResume: "Reprendre la lecture", voiceStop: "Arrêter la lecture",
+    extraDiscrepancyTitle: "Examen des divergences", extraSensitivityTitle: "Études de sensibilité aux paramètres", extraSensitivityCaption: "Variations contrôlées · plages documentées · incertitudes · examen humain",
+    extraInteractionTitle: "Interactions entre deux paramètres", extraInteractionCaption: "Propositions factorielles à deux facteurs · paires explicites · examen humain",
+    extraStatisticsTitle: "Statistiques descriptives du laboratoire", extraStatisticsLoading: "Chargement des résultats numériques enregistrés…", extraStatisticsNote: "Résumés descriptifs uniquement. Les valeurs atypiques potentielles sont signalées pour examen et ne sont jamais supprimées automatiquement.",
+    extraEvidenceTitle: "Centre des preuves", extraEvidenceCaption: "Dossiers traçables, examens et limites explicites", extraEvidenceLoading: "Chargement du cycle de vie des éléments de preuve…",
+    extraPriorityTitle: "Priorités des programmes de recherche", extraPriorityCaption: "Évaluation transparente · raisonnement documenté · examen humain",
+    extraAssessmentSummary: "Enregistrer ou actualiser une évaluation", extraFeasibilityTitle: "Observatoire de faisabilité technologique",
+    extraJournalTitle: "Journal de recherche", extraJournalCaption: "Historique append-only du projet · niveaux de preuve · intégrité de la chaîne de hachage",
+    extraJournalFormTitle: "Enregistrer une mise à jour du projet", extraJournalSubmit: "Ajouter une entrée immuable au journal",
     language: "Langue", social: "Réseaux sociaux de SSSWET", contact: "Contact"
   },
   es: {
