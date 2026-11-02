@@ -828,9 +828,11 @@
       const item = technologies[selectedTechnology];
       title.textContent = item[language][0]; description.textContent = item[language][1];
     }
+    applyPaymentLanguage();
     updateCurrencyNote();
     renderPortfolio();
     populateTechnologySelectors();
-    updateAmounts();
+    chooseCurrency();
+    loadLocalExchangeRate();
   });
 })();
