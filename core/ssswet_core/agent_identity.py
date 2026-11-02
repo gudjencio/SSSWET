@@ -201,6 +201,57 @@ class AgentIdentityRegistry:
             ).fetchall()
         return [dict(row) for row in rows]
 
+    def search_memories(self, agent_id: str, query: str, limit: int = 6) -> list[dict]:
+        """Retrieve the most relevant source-linked notes for a new research objective."""
+        agent_id = str(agent_id).strip()
+        query = str(query).strip()
+        if not agent_id or len(agent_id) > 100:
+            raise ValueError("invalid agent_id")
+        if not query:
+            return []
+        if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 100:
+            raise ValueError("limit must be between 1 and 100")
+        stop_words = {
+            "the", "and", "for", "with", "that", "this", "from", "into", "what",
+            "when", "where", "which", "their", "about", "research", "study",
+            "les", "des", "une", "dans", "pour", "avec", "sur", "entre", "dans",
+            "cette", "cela", "comme", "plus", "être", "aux", "qui", "que",
+        }
+        tokens = {
+            token.casefold() for token in re.findall(r"[\\w'-]{2,}", query, flags=re.UNICODE)
+            if token.casefold() not in stop_words
+        }
+        if not tokens:
+            return []
+        with self.store._connect() as connection:
+            rows = connection.execute(
+                "SELECT * FROM agent_identity_memories WHERE agent_id=? "
+                "ORDER BY created_at DESC LIMIT 200",
+                (agent_id,),
+            ).fetchall()
+        ranked = []
+        for row in rows:
+            item = dict(row)
+            searchable = item["content"] + " " + item["source_reference"]
+            note_tokens = {
+                token.casefold() for token in re.findall(r"[\\w'-]{2,}", searchable, flags=re.UNICODE)
+                if token.casefold() not in stop_words
+            }
+            overlap = tokens & note_tokens
+            if not overlap:
+                continue
+            coverage = len(overlap) / len(tokens)
+            precision = len(overlap) / max(1, len(note_tokens))
+            item["retrieval_score"] = round(0.75 * coverage + 0.25 * precision, 4)
+            item["matched_terms"] = sorted(overlap)
+            item["retrieval_method"] = "source_linked_lexical_relevance"
+            ranked.append(item)
+        ranked.sort(
+            key=lambda item: (item["retrieval_score"], item["created_at"], item["memory_id"]),
+            reverse=True,
+        )
+        return ranked[:limit]
+
     def collaborations(self, agent_id: str, limit: int = 20) -> list[dict]:
         """Return recent, source-linked collaboration events for one stable agent ID."""
         agent_id = str(agent_id).strip()
