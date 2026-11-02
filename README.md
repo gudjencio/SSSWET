@@ -11,6 +11,10 @@ The project is exploratory. Public descriptions are intentionally high-level and
 
 Install SSSWET on supported mobile devices from the website, or download the Windows, macOS and Linux desktop builds from [official releases](https://github.com/gudjencio/SSSWET/releases). Mobile installation and package availability are explained in [Application distribution](docs/APP_DISTRIBUTION.md).
 
+## Version and update centre
+
+The website checks the official GitHub Releases feed for published versions, shows release notes and available installers, and links to SHA-256 checksum files when provided. Release availability is determined by published assets; a build workflow alone does not mean that an installer is ready.
+
 ## Public information
 
 This repository contains the public website, general project information and selected software components. Public material is not a complete description of the project's research programme, internal plans, unpublished concepts, implementation roadmap or confidential working material.
