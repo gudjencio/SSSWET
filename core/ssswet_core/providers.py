@@ -338,7 +338,7 @@ class MultiSourceLiteratureProvider:
                 "from Crossref and OpenAlex. Duplicate DOI records are collapsed. "
                 "Metadata is not proof of quality or truth; review full texts, methods and "
                 "independent evidence before drawing conclusions."
-                + (" One source failed: " + "; ".join(failures) if failures else ""),
+                + (" One source failed: " + "; ".join(failures) if failures else "")
             ),
             evidence=tuple(evidence),
             uncertainty=1.0,
