@@ -1,0 +1,54 @@
+/* Centered language control with a compact glass treatment. */
+.topbar {
+  position: relative;
+  justify-content: center;
+  min-height: 58px;
+}
+.brand {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: min(42%, 390px);
+}
+.language-control {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#language {
+  min-width: 170px;
+  max-width: min(48vw, 260px);
+  padding: 11px 42px 11px 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+  box-shadow: 0 12px 40px rgba(0,0,0,.3), inset 0 1px rgba(255,255,255,.08);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: #f4f4f4;
+  font-weight: 650;
+  letter-spacing: .02em;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #aaa 50%), linear-gradient(135deg, #aaa 50%, transparent 50%);
+  background-position: calc(100% - 19px) 50%, calc(100% - 13px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+#language:hover, #language:focus-visible {
+  border-color: rgba(255,255,255,.3);
+  box-shadow: 0 14px 46px rgba(0,0,0,.38), 0 0 0 3px rgba(255,255,255,.035), inset 0 1px rgba(255,255,255,.1);
+}
+@media (max-width: 620px) {
+  .topbar { min-height: 96px; align-items: flex-end; justify-content: center; }
+  .brand { left: 0; top: 0; max-width: 65%; }
+  .language-control { margin-top: 44px; }
+  #language { min-width: 155px; max-width: 58vw; }
+}
+@media (max-width: 420px) {
+  .topbar { min-height: 90px; }
+  .brand { max-width: 62%; }
+  #language { min-width: 145px; padding: 9px 36px 9px 12px; font-size: 12px; }
+}
+html[dir="rtl"] .brand { left: auto; right: 0; }
