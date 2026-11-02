@@ -45,6 +45,14 @@ TECHNOLOGY_OBJECTIVES = [
     ("artificialGravity", "Artificial gravity, inertial management and safe theoretical models"),
     ("medicalNanotechnology", "Medical nanotechnology for diagnostics, monitoring and future therapies"),
     ("atmosphericRestoration", "Atmospheric restoration, pollution reduction and resilient air-quality systems"),
+    ("neurointerfaces", "Non-invasive brain-computer interfaces, accessibility, signal quality and neural-data privacy"),
+    ("quantumNetworks", "Experimental quantum communication networks, quantum key distribution and physical limits"),
+    ("fusionEnergy", "Fusion-energy research, materials, confinement, thermal management and energy-system constraints"),
+    ("spaceLifeSupport", "Closed-loop space life-support, air and water recycling, food production and habitat resilience"),
+    ("autonomousLabs", "Autonomous research laboratories, automated measurement, traceability and human protocol validation"),
+    ("roboticsExoskeletons", "Assistive robotics, exoskeleton ergonomics, mobility and human-machine safety"),
+    ("planetaryMonitoring", "Planetary monitoring, astronomical detection, orbital tracking and asteroid-risk assessment"),
+    ("advancedComputing", "Advanced computing and scientific AI, interpretability, reproducibility and model limitations"),
 ]
 
 
