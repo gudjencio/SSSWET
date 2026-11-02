@@ -69,3 +69,31 @@ def test_memory_search_prioritizes_relevant_source_linked_notes(tmp_path):
     assert ranked[0]["memory_id"] == relevant["memory_id"]
     assert ranked[0]["retrieval_method"] == "source_linked_lexical_relevance"
     assert ranked[0]["matched_terms"]
+
+
+def test_team_memory_search_retrieves_across_agents_without_losing_provenance(tmp_path):
+    registry = AgentIdentityRegistry(SQLiteResearchStore(tmp_path / "team-memory.sqlite3"))
+    mira = registry.remember(
+        agent_id="mira-01", role="general_researcher",
+        content="Thermal protection requires testing heat transfer and insulation ageing.",
+        source_reference="doi:10.example/thermal-protection",
+    )
+    registry.remember(
+        agent_id="asha-01", role="data_analyst",
+        content="Urban water monitoring needs calibrated sensors and uncertainty estimates.",
+        source_reference="doi:10.example/water-monitoring",
+    )
+    results = registry.search_team_memories("thermal protection insulation ageing", limit=5)
+    assert results
+    assert results[0]["memory_id"] == mira["memory_id"]
+    assert results[0]["agent_id"] == "mira-01"
+    assert results[0]["source_reference"] == "doi:10.example/thermal-protection"
+    assert results[0]["retrieval_scope"] == "team"
+
+
+def test_team_memory_search_validates_bounds_and_agent_filters(tmp_path):
+    registry = AgentIdentityRegistry(SQLiteResearchStore(tmp_path / "team-memory-validation.sqlite3"))
+    with pytest.raises(ValueError, match="limit"):
+        registry.search_team_memories("materials", limit=0)
+    with pytest.raises(ValueError, match="agent_ids"):
+        registry.search_team_memories("materials", agent_ids=[])
