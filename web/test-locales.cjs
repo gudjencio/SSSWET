@@ -301,8 +301,8 @@ if (!taxonomyGroupsMatch || !taxonomyTranslationsMatch) throw new Error("Technol
 const taxonomyGroups = JSON.parse(taxonomyGroupsMatch[1]);
 const taxonomyTranslations = JSON.parse(taxonomyTranslationsMatch[1]);
 const taxonomyKeys = Object.values(taxonomyGroups).flatMap(group => Object.values(group).flat());
-if (Object.keys(taxonomyGroups).length !== 8 || taxonomyKeys.length !== 100 || new Set(taxonomyKeys).size !== 100) {
-  throw new Error("The technology taxonomy must classify exactly one hundred unique programmes in eight categories.");
+if (Object.keys(taxonomyGroups).length !== 8 || taxonomyKeys.length !== 106 || new Set(taxonomyKeys).size !== 106) {
+  throw new Error("The technology taxonomy must classify exactly one hundred and six unique programmes in eight categories.");
 }
 const requiredTaxonomyLocales = ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"];
 for (const locale of requiredTaxonomyLocales) {
