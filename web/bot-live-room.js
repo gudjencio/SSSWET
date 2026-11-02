@@ -196,10 +196,10 @@
   const pretty = (value) => String(value || "—").replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[_-]+/g," ");
   const format = (s, values) => s.replace(/\{(\w+)\}/g, (_, k) => String(values[k] ?? ""));
   const roleLabels = {
-    general_researcher:{fr:"Chercheur généraliste",en:"General researcher"},
-    independent_verifier:{fr:"Vérificateur indépendant",en:"Independent verifier"},
-    medical_researcher:{fr:"Chercheur en médecine",en:"Medical researcher"},
-    materials_scientist:{fr:"Spécialiste des matériaux",en:"Materials scientist"}
+    general_researcher:{en:"General researcher",fr:"Chercheur généraliste",es:"Investigador general",de:"Allgemeiner Forscher",it:"Ricercatore generale",pt:"Investigador geral",nl:"Algemeen onderzoeker",ru:"Общий исследователь",uk:"Загальний дослідник",ar:"باحث عام",he:"חוקר כללי",ja:"一般研究員",ko:"일반 연구원",zh:"通用研究员",hi:"सामान्य शोधकर्ता"},
+    independent_verifier:{en:"Independent verifier",fr:"Vérificateur indépendant",es:"Verificador independiente",de:"Unabhängiger Prüfer",it:"Verificatore indipendente",pt:"Verificador independente",nl:"Onafhankelijke verificateur",ru:"Независимый проверяющий",uk:"Незалежний перевіряльник",ar:"مدقق مستقل",he:"בודק עצמאי",ja:"独立検証担当",ko:"독립 검증자",zh:"独立核查员",hi:"स्वतंत्र सत्यापक"},
+    medical_researcher:{en:"Medical researcher",fr:"Chercheur en médecine",es:"Investigador médico",de:"Medizinischer Forscher",it:"Ricercatore medico",pt:"Investigador médico",nl:"Medisch onderzoeker",ru:"Медицинский исследователь",uk:"Медичний дослідник",ar:"باحث طبي",he:"חוקר רפואי",ja:"医学研究員",ko:"의학 연구원",zh:"医学研究员",hi:"चिकित्सा शोधकर्ता"},
+    materials_scientist:{en:"Materials scientist",fr:"Spécialiste des matériaux",es:"Científico de materiales",de:"Materialwissenschaftler",it:"Scienziato dei materiali",pt:"Cientista de materiais",nl:"Materiaalkundige",ru:"Специалист по материалам",uk:"Фахівець із матеріалів",ar:"عالم مواد",he:"מדען חומרים",ja:"材料科学者",ko:"재료 과학자",zh:"材料科学家",hi:"सामग्री वैज्ञानिक"}
   };
   const roleName = (role) => roleLabels[role]?.[lang()] || roleLabels[role]?.en || pretty(role || t().role);
   const avatar = (index) => '<span class="agent-avatar agent-avatar-'+((index%3)+1)+'"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span>';
@@ -288,7 +288,7 @@
       if (!bubbles) {
         bubbles = document.createElement("div");
         bubbles.className = "bot-thought-bubbles";
-        bubbles.setAttribute("aria-label", lang()==="fr" ? "Échanges des agents" : "Agent thought bubbles");
+        bubbles.setAttribute("aria-label", ({fr:"Bulles de réflexion des agents",en:"Agent thought bubbles",es:"Burbujas de pensamiento de los agentes",de:"Gedankenblasen der Agenten",it:"Nuvolette di pensiero degli agenti",pt:"Balões de pensamento dos agentes",nl:"Denkballonnen van de agents",ru:"Облачка мыслей агентов",uk:"Хмаринки думок агентів",ar:"فقاعات أفكار الوكلاء",he:"בועות מחשבה של הסוכנים",ja:"エージェントの思考バブル",ko:"에이전트 생각 말풍선",zh:"智能体思考气泡",hi:"एजेंटों के विचार बुलबुले"})[lang()] || "Agent thought bubbles");
         visual.appendChild(bubbles);
       }
       const thoughts = handoffs.slice(0,2).map(item => item.content).concat(valid.slice(0,2).map(item => item.summary)).filter(Boolean).slice(0,3);
