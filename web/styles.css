@@ -1631,3 +1631,35 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
   .donation-input-wrap { flex-wrap:wrap; }
   .donation-input-wrap input { width:100%; }
 }
+
+
+/* Final alignment and de-duplication pass for the lower page sections. */
+.app-shell { box-sizing:border-box !important; width:min(1160px,100%) !important; margin-inline:auto !important; align-items:center !important; }
+.app-shell > .technology-showcase {
+  display:block;
+  box-sizing:border-box !important;
+  flex:0 1 1040px;
+  width:min(1040px,100%) !important;
+  max-width:1040px !important;
+  align-self:center !important;
+  margin:0 auto 34px !important;
+  position:relative;
+  left:auto !important;
+  right:auto !important;
+  transform:none !important;
+}
+.app-shell > .panel {
+  box-sizing:border-box !important;
+  width:min(1040px,100%) !important;
+  max-width:1040px !important;
+  align-self:center !important;
+  margin-inline:auto !important;
+}
+/* The live room already shows the agent count and the two common research prompts. */
+.panel > .bot-status { display:none !important; }
+.panel > .actions [data-action="discover"],
+.panel > .actions [data-action="working"] { display:none !important; }
+@media(max-width:700px) {
+  .app-shell > .technology-showcase,
+  .app-shell > .panel { width:100% !important; max-width:100% !important; margin-inline:auto !important; }
+}
