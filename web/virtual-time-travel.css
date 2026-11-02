@@ -2,3 +2,7 @@
 /* Keep temporal navigation directly attached to the map it controls. */
 .vt-map-section>.vt-timeline{width:100%}.vt-map-section>.vt-timeline #vt-time{margin:10px 0 8px;min-height:28px;cursor:ew-resize}.vt-map-section>.vt-timeline .vt-panel-heading{padding-bottom:4px}
 @media(max-width:760px){#vt-map{height:clamp(390px,68vh,620px)}.vt-map-section>.vt-timeline{padding:12px 8px}}
+
+/* Keep the timeline focused: the slider and one playback control are the primary navigation. */
+#vt-prev,#vt-next{display:none!important}.vt-timeline .vt-actions{justify-content:flex-end}.vt-timeline #vt-play{min-width:190px}
+.vt-consents label{padding:8px 10px;border:1px solid #25384a;border-radius:10px;background:#0a121c}.vt-consents input{margin-top:1px}
