@@ -166,7 +166,7 @@ async function init(){
  const browserLocales=[...(navigator.languages||[]),navigator.language].filter(Boolean).map(value=>value.toLowerCase());
  const detected=browserLocales.map(value=>value.split("-")[0]).find(value=>languages[value]);
  const parisTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone==="Europe/Paris";
- $("vt-language").value=detected|| (parisTimezone?"fr":"en");
+ $("vt-language").value=(browserLocales.some(value=>value==="fr"||value.startsWith("fr-"))||parisTimezone)?"fr":(detected||"en");
  localize();$("vt-language").addEventListener("change",()=>{localize();refreshTimeline()});db=await openDb();events=await all("events");media=await all("media");mediaBytes=media.reduce((total,item)=>total+(item.blob?.size||0),0);events.sort((a,b)=>a.timestamp-b.timestamp);media.sort((a,b)=>a.timestamp-b.timestamp);refreshStorage();refreshTimeline();initMap();
  $("vt-locate").addEventListener("click",locate);$("vt-start").addEventListener("click",startScan);$("vt-stop").addEventListener("click",stopScan);$("vt-add-event").addEventListener("click",()=>addAnnotation().catch(()=>{}));$("vt-time").addEventListener("input",e=>showEvent(Number(e.target.value)));$("vt-prev").addEventListener("click",()=>showEvent(Number($("vt-time").value)-1));$("vt-next").addEventListener("click",()=>showEvent(Number($("vt-time").value)+1));$("vt-play").addEventListener("click",playTimeline);$("vt-model").addEventListener("click",runModel);$("vt-export").addEventListener("click",exportIndex);$("vt-delete").addEventListener("click",()=>deleteData().catch(()=>{}));window.addEventListener("beforeunload",()=>{if(scanActive)stopScan()});
 }
