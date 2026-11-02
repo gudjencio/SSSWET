@@ -152,11 +152,15 @@ def test_pipeline_runs_independent_peer_review_searches(tmp_path):
     requests = [item for item in messages if item["message_type"] == "peer_review_request"]
     responses = [item for item in messages if item["message_type"] == "peer_review_response"]
     assert len(steps) == 2
-    assert len(requests) == 2
-    assert len(responses) == 2
+    assert len(requests) == 1
+    assert len(responses) == 1
     assert all(item["sender_agent_id"] != item["recipient_agent_id"] for item in messages)
     assert all("not approval or verification" in item["content"] for item in responses)
     assert all(item["review_state"] == "awaiting_review" for item in requests)
+
+    assert requests[0]["sender_role"] == "mathematician"
+    assert requests[0]["recipient_role"] == "independent_verifier"
+    assert responses[0]["sender_role"] == "independent_verifier"
 
 
 class SourcedProvider:
@@ -309,7 +313,7 @@ def test_pipeline_persists_structured_peer_review_synthesis(tmp_path):
     syntheses = [item for item in messages if item["message_type"] == "peer_review_synthesis"]
     assert len(steps) == 2
     assert len(syntheses) == 1
-    assert "Review passes recorded: 2" in syntheses[0]["content"]
+    assert "Review passes recorded: 1" in syntheses[0]["content"]
     assert "https://doi.org/10.1000/example-record" in syntheses[0]["content"]
     assert "does not establish that any claim is true" in syntheses[0]["content"]
 
