@@ -105,3 +105,18 @@
   window.addEventListener("ssswet-language-changed", apply);
   apply();
 })();
+
+/* Load the optional public bot personality after the main interface has initialized. */
+(() => {
+  if (window.__SSSWET_BOT_PERSONALITY_LOADER__) return;
+  window.__SSSWET_BOT_PERSONALITY_LOADER__ = true;
+  const load = () => {
+    if (document.querySelector('script[data-ssswet-bot-personality]')) return;
+    const script = document.createElement("script");
+    script.src = "bot-personality.js";
+    script.async = false;
+    script.dataset.ssswetBotPersonality = "true";
+    document.body.appendChild(script);
+  };
+  if (document.body) load(); else document.addEventListener("DOMContentLoaded", load, {once:true});
+})();
