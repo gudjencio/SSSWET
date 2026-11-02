@@ -429,3 +429,10 @@ for (const control of ["vt-start","vt-stop","vt-locate","vt-time","vt-model","vt
 }
 if (!virtualHtml.includes("map provider") || !virtualScript.includes("modelPast")) throw new Error("Virtual Time Travel disclosure or model distinction is missing.");
 console.log("Validated Virtual Time Travel scripts, controls and 15 interface locales.");
+
+const voiceSource = fs.readFileSync(__dirname + "/bot-live-room.js", "utf8");
+const readAloudSource = fs.readFileSync(__dirname + "/read-aloud.js", "utf8");
+new Function(voiceSource);
+new Function(readAloudSource);
+if (!voiceSource.includes("function splitSpeech") || !voiceSource.includes("bestVoice")) throw new Error("Natural speech pacing or voice selection is missing.");
+if (!readAloudSource.includes("Read selected text")) throw new Error("Accessible read-aloud control is missing.");
