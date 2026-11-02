@@ -138,6 +138,14 @@ if (!reportSource.includes('view:"Voir mes améliorations"') || !reportSource.in
     !reportSource.includes("localStorage") || !reportSource.includes("showHistory()")) {
   throw new Error("The report dialog must offer a localized submitted-improvements history and a close-only action.");
 }
+if (reportSource.includes('catch (_) { const result={key:"received",unavailable:true}; liveStatusCache.set(number,result);')) {
+  throw new Error("Temporary report-status failures must not be cached permanently.");
+}
+if (!reportSource.includes("const cleanTitle=title.value.trim()") ||
+    !reportSource.includes("const cleanDescription=detail.value.trim()") ||
+    !reportSource.includes("if(!cleanTitle || !cleanDescription)")) {
+  throw new Error("Report submission must reject whitespace-only titles and descriptions before sending.");
+}
 if (!reportSource.includes("getLiveReportStatus") || !reportSource.includes("reportStatusCopy") ||
     !reportSource.includes('"/pulls/"+Number(prMatch[1])') ||
     !reportSource.includes('key:"integrated"') || !reportSource.includes('key:"proposed"')) {
