@@ -28,3 +28,23 @@ Thumbs.db
 *.key
 credentials.json
 secrets.json
+
+# Local research and operational data
+.ssswet/
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+*.log
+*.dump
+*.backup
+*.bak
+
+# Private research and operational material
+private/
+confidential/
+unpublished/
+.local/
