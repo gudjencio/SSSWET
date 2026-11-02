@@ -203,6 +203,11 @@ class SSSWETEngine:
             raise RuntimeError("A persistent research store is required for decision lineage")
         return self.research_decisions.history(subject_id, limit=limit)
 
+    def record_agent_memory_review(self, **review_inputs) -> dict:
+        """Append a provenance-linked review state to an agent memory."""
+        if self.agent_identities is None:
+            raise RuntimeError("A persistent research store is required for memory review")
+        return self.agent_identities.record_memory_review(**review_inputs)
     def search_team_memories(self, query: str, *, limit: int = 12, agent_ids: list[str] | None = None) -> list[dict]:
         """Retrieve bounded, source-linked memories across the research team."""
         if self.agent_identities is None:
