@@ -88,3 +88,17 @@ Please do not publish credentials, private data or suspected vulnerabilities in 
 ---
 
 SSSWET is an evolving research initiative. Public summaries are informational and do not constitute technical, medical, legal, investment or product advice.
+
+## Language availability
+
+The public interface offers **290 selectable language entries**, including 100 newly added language options. Each option has a language code and a native-language label. Interface translations are not equally complete: the principal interface is fully translated in the currently maintained core locales, selected additional sections have further translations, and untranslated strings use the English fallback. Language availability must not be mistaken for a complete professional translation. Contributions from qualified native speakers are welcome, especially for scientific, medical, safety and accessibility terminology.
+
+## Continuous improvement and regression monitoring
+
+SSSWET uses two complementary maintenance tracks:
+
+- Daily maintenance reviews reproducible defects, security, accessibility, links, tests and deployment health, and applies low-risk corrections with regression tests.
+- Daily feature development targets three substantial improvements to research workflows, scientific memory, agent coordination, accessibility, reliability, performance or protective technology. Each proposed change must be compared with the previous version and must pass its acceptance tests before it is described as an improvement.
+- An hourly GitHub Actions regression watch runs Python and JavaScript checks and the core test suite. It detects regressions; it does not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
+
+No update may knowingly reduce documented usefulness, performance, durability, efficiency, safety, maintainability, accessibility or evidence quality. Benchmark gains and claims about agent capability require repeatable measurements. Scientific, ethical, privacy, cybersecurity and legal safeguards remain mandatory.
