@@ -237,14 +237,22 @@
   function conversationalLead(role, message) {
     const text = String(message || "").trim();
     if (!text || /^[“"']/.test(text)) return text;
-    const leads = {
+    const french = String(document.documentElement.lang || "en").toLowerCase().startsWith("fr");
+    const leads = french ? {
+      general_researcher: ["Voilà comment je vois les choses : ", "Ce qui me semble particulièrement intéressant, c’est ceci : "],
+      independent_verifier: ["Je voudrais attirer votre attention sur un point : ", "Séparons ce que nous savons de ce qu’il reste à vérifier : "],
+      medical_researcher: ["Du point de vue de la recherche en santé, ", "La question de sécurité à garder à l’esprit est la suivante : "],
+      materials_scientist: ["Du côté des matériaux, ", "Une contrainte pratique ressort déjà : "]
+    } : {
       general_researcher: ["Here’s how I’m looking at it: ", "The part I find interesting is this: "],
       independent_verifier: ["I’d like to be careful about one point: ", "Let’s separate what we know from what we still need to check: "],
       medical_researcher: ["From a health-research perspective, ", "The safety question I’d keep in view is this: "],
       materials_scientist: ["Looking at the material side, ", "One practical constraint stands out: "]
     };
-    const choices = leads[role] || ["One thing worth looking at: ", "Here’s my take on the current evidence: "];
-    if (/^(here’s|here is|i think|i’d|i would|let’s|the key|one thing|from a|looking at)/i.test(text)) return text;
+    const choices = leads[role] || (french
+      ? ["Un point mérite qu’on s’y arrête : ", "Voici ce que les éléments disponibles m’inspirent : "]
+      : ["One thing worth looking at: ", "Here’s my take on the current evidence: "]);
+    if (/^(here’s|here is|i think|i’d|i would|let’s|the key|one thing|from a|looking at|voilà|ce qui|je voudrais|séparons|du point de vue|la question|du côté|un point|voici)/i.test(text)) return text;
     return choices[stableSpeakerIndex(role) % choices.length] + text.charAt(0).toLowerCase() + text.slice(1);
   }
 
