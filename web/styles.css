@@ -1402,3 +1402,36 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 @media (prefers-reduced-motion: reduce) {
   .bot-stage-agent .agent-avatar { animation: none !important; }
 }
+
+
+/* The research display lives inside the agent scene, not in a separate footer panel. */
+.bot-command-heading { display:none !important; }
+.topbar .brand { display:none !important; }
+.bot-command-visual { position:relative; }
+.bot-thought-bubbles {
+  position:absolute; inset:0; z-index:6; pointer-events:none;
+}
+.bot-thought-bubble {
+  position:absolute; width:min(230px,25%); max-height:76px; overflow:hidden;
+  padding:9px 11px; border:1px solid rgba(190,166,119,.22);
+  border-radius:14px 14px 14px 4px; background:rgba(10,12,10,.88);
+  color:rgba(231,224,207,.82); font-size:10px; line-height:1.4;
+  box-shadow:0 8px 28px rgba(0,0,0,.24); backdrop-filter:blur(8px);
+  animation:thought-arrive .45s ease-out both;
+}
+.bot-thought-bubble::after {
+  content:""; position:absolute; left:15px; bottom:-6px; width:10px; height:10px;
+  background:rgba(10,12,10,.88); border-right:1px solid rgba(190,166,119,.22);
+  border-bottom:1px solid rgba(190,166,119,.22); transform:rotate(45deg);
+}
+.bot-thought-bubble.thought-0 { top:13%; left:5%; }
+.bot-thought-bubble.thought-1 { top:19%; right:5%; left:auto; border-radius:14px 14px 4px 14px; }
+.bot-thought-bubble.thought-1::after { left:auto; right:15px; }
+.bot-thought-bubble.thought-2 { bottom:20%; left:50%; transform:translateX(-50%); width:min(260px,32%); }
+@keyframes thought-arrive { from { opacity:0; translate:0 5px; } to { opacity:1; translate:0 0; } }
+@media(max-width:700px) {
+ .bot-thought-bubble { width:34%; padding:7px 8px; font-size:9px; max-height:64px; }
+ .bot-thought-bubble.thought-0 { top:8%; left:3%; }
+ .bot-thought-bubble.thought-1 { top:12%; right:3%; }
+ .bot-thought-bubble.thought-2 { bottom:18%; width:42%; }
+}
