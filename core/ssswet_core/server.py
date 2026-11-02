@@ -266,9 +266,13 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                      "suggestion": "Review the linked contradiction and compare source methods and provenance."}
                     for item in overview["versions"] if item["contested_by_graph"]
                 ]
+                evolution = ScientificMemoryService(store).evolution_alerts(limit=500)
                 self._json({
                     "research_gaps": gaps.get("gaps", []),
                     "contested_memory": contested,
+                    "potentially_outdated_memory": evolution["alerts"],
+                    "evolution_alert_count": evolution["alert_count"],
+                    "evolution_review_required": evolution["review_required"],
                     "automatic_task_creation": False,
                     "scientific_validity_established": False,
                 })
