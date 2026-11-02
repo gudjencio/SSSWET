@@ -103,3 +103,27 @@ def test_lineage_returns_complete_immutable_chain_for_selected_version(tmp_path)
 def test_lineage_returns_none_for_unknown_version(tmp_path):
     store = SQLiteResearchStore(tmp_path / "missing-lineage.sqlite3")
     assert ScientificMemoryService(store).lineage("unknown") is None
+
+
+
+def test_overview_reports_broken_evidence_links_without_promoting_claims(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "integrity.sqlite3")
+    service = ScientificMemoryService(store)
+    service.add_version(ScientificMemoryVersion.create(
+        "v1", "linked-claim", "Linked claim", "A statement with incomplete references",
+        source_ids=("source-present", "source-missing"),
+        experiment_ids=("experiment-missing",),
+        graph_node_ids=("node-present", "node-missing"),
+    ))
+    store.add_knowledge_node(KnowledgeNode("node-present", "finding", "Existing node"))
+
+    result = service.overview()
+    item = result["versions"][0]
+    assert item["has_missing_links"] is True
+    assert item["missing_links"] == {
+        "source_ids": ["source-present", "source-missing"],
+        "experiment_ids": ["experiment-missing"],
+        "graph_node_ids": ["node-missing"],
+    }
+    assert result["versions_with_missing_links"] == 1
+    assert result["scientific_validity_established"] is False
