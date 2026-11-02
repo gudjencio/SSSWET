@@ -55,8 +55,8 @@ def test_supersession_requires_existing_same_subject_and_evidence(ledger):
 
 def test_status_transitions_and_terminal_states_are_enforced(ledger):
     item = ledger.record(subject_id="claim-3", rationale="Proposal.", actor_id="mira")
-    with pytest.raises(ValueError, match="invalid"):
-        ledger.transition(item["decision_id"], status="validated",
+    with pytest.raises(ValueError, match="unsupported"):
+        ledger.transition(item["decision_id"], status="validated,
                           rationale="Not an allowed state.", actor_id="elias")
     ledger.transition(item["decision_id"], status="rejected",
                       rationale="Evidence did not support it.", actor_id="elias")
