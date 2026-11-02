@@ -118,6 +118,26 @@ console.log("Validated localized project branding, automatic voice attempt, comp
 const donationSourceLatest = fs.readFileSync(new URL("./donation.js", `file://${__filename}`), "utf8");
 const paymentConfig = fs.readFileSync(new URL("./donation-config.js", `file://${__filename}`), "utf8");
 new Function(donationSourceLatest);
+const catalogueBlock = donationSourceLatest.slice(donationSourceLatest.indexOf("const technologies = {"), donationSourceLatest.indexOf("window.SSSWET_TECHNOLOGIES"));
+const catalogueEntries = [...catalogueBlock.matchAll(/^    ([A-Za-z_$][\\w$]*): \\{/gm)].map(match => match[1]);
+if (catalogueEntries.length !== 40 || new Set(catalogueEntries).size !== 40) {
+  throw new Error(`Expected exactly 40 unique public technology catalogue entries; found ${catalogueEntries.length}.`);
+}
+if (!donationSourceLatest.includes("grid.replaceChildren()") || !donationSourceLatest.includes("updateCatalogueCount()")) {
+  throw new Error("The public catalogue must render the complete canonical list and count rendered cards.");
+}
+const reportSource = fs.readFileSync(new URL("./report-project.js", `file://${__filename}`), "utf8");
+new Function(reportSource);
+if ((reportSource.match(/button:"/g) || []).length !== 15 || (reportSource.match(/options:\[\[/g) || []).length !== 15) {
+  throw new Error("The report button and its complete improvement menu must be translated in all 15 primary interface languages.");
+}
+if (!reportSource.includes('window.ssswetApiFetch("/api/project-reports"') || !reportSource.includes('dialog.showModal()')) {
+  throw new Error("The report form must open accessibly and submit to the hosted review endpoint.");
+}
+const serviceWorker = fs.readFileSync(new URL("./sw.js", `file://${__filename}`), "utf8");
+if (!serviceWorker.includes('"./report-project.js"') || !serviceWorker.includes('"./donation.js"')) {
+  throw new Error("The offline cache must include the report form and complete technology catalogue.");
+}
 for (const feature of ["timetravel", "Time travel research", "Voyage dans le temps", "PayPal", "PAYPAL_SUBSCRIPTION_PLAN_ID", "monthly contribution", "ongoing effort to make them possible"]) {
   if (!donationSourceLatest.includes(feature)) throw new Error(`Research funding feature missing: ${feature}`);
 }
