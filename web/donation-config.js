@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const minimumNote = document.getElementById("donation-minimum-note");
     if (minimumNote) minimumNote.textContent = language() === "fr"
-      ? "Minimum de contribution : 1 USD. Le montant choisi est transmis à PayPal avant validation."
+      ? "Contribution minimale : 1 dollar américain. Le montant choisi est transmis à PayPal avant validation."
       : "Minimum contribution: USD 1. The selected amount is sent to PayPal for approval.";
   };
 
