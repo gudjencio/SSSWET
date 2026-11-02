@@ -15,22 +15,22 @@
   const copy = {
     en: {
       intro: "Hello, and welcome to SSSWET. I'm {name}, one of the research agents. We work together on difficult scientific and engineering questions while keeping evidence, safety and uncertainty visible. Would you like us to introduce the project and explain what each of us does?",
-      project: "Mmhmm… gladly. SSSWET explores ambitious scientific and engineering possibilities without treating hypotheses as established facts. We compare evidence, test assumptions, record failures and keep improving the work when a safe and lawful path remains. I’m {name}, and I’ll be happy to guide you through it.",
+      project: "SSSWET explores ambitious scientific and engineering possibilities without treating hypotheses as established facts. We compare evidence, test assumptions, record failures and keep improving the work when a safe and lawful path remains. I’m {name}, and I’ll be happy to guide you through it.",
       next: "If you like, I can introduce the rest of the team too.", button: "Introduce yourselves"
     },
     fr: {
       intro: "Bonjour, et bienvenue sur SSSWET. Je suis {name}, l’un des agents de recherche. Nous travaillons ensemble sur des questions scientifiques et d’ingénierie difficiles, tout en gardant visibles les preuves, la sécurité et les incertitudes. Souhaitez-vous que nous vous présentions le projet et le rôle de chacun ?",
-      project: "Mhmm… avec plaisir. SSSWET explore des possibilités scientifiques et technologiques ambitieuses sans prendre les hypothèses pour des faits établis. Nous comparons les preuves, testons les hypothèses, conservons les résultats négatifs et continuons à améliorer le travail lorsqu’une voie sûre et légale reste possible. Je suis {name}, et je peux vous guider tranquillement à travers le projet.",
+      project: "SSSWET explore des possibilités scientifiques et technologiques ambitieuses sans prendre les hypothèses pour des faits établis. Nous comparons les preuves, testons les hypothèses, conservons les résultats négatifs et continuons à améliorer le travail lorsqu’une voie sûre et légale reste possible. Je suis {name}, et je peux vous guider tranquillement à travers le projet.",
       next: "Si vous le souhaitez, je peux aussi vous présenter les autres membres de l’équipe.", button: "Présentez-vous"
     },
     es: {
       intro: "Hola, y bienvenido a SSSWET. Soy {name}, uno de los agentes de investigación. Trabajamos juntos en preguntas científicas y de ingeniería difíciles, manteniendo visibles las pruebas, la seguridad y la incertidumbre. ¿Quieres que te presentemos el proyecto y lo que hace cada uno?",
-      project: "Mmm… encantado. SSSWET explora posibilidades científicas y tecnológicas ambiciosas sin tratar las hipótesis como hechos establecidos. Comparamos evidencias, comprobamos supuestos, conservamos los resultados negativos y seguimos mejorando el trabajo cuando existe una vía segura y legal.",
+      project: "SSSWET explora posibilidades científicas y tecnológicas ambiciosas sin tratar las hipótesis como hechos establecidos. Comparamos evidencias, comprobamos supuestos, conservamos los resultados negativos y seguimos mejorando el trabajo cuando existe una vía segura y legal.",
       next: "Si quieres, también puedo presentarte al resto del equipo.", button: "Presentarse"
     },
     de: {
       intro: "Hallo und willkommen bei SSSWET. Ich bin {name}, einer der Forschungsagenten. Wir arbeiten gemeinsam an schwierigen wissenschaftlichen und technischen Fragen und machen Belege, Sicherheit und Unsicherheiten sichtbar. Möchtest du, dass wir das Projekt und unsere Aufgaben kurz vorstellen?",
-      project: "Mhm… sehr gern. SSSWET untersucht ambitionierte wissenschaftliche und technische Möglichkeiten, ohne Hypothesen als Tatsachen darzustellen. Wir vergleichen Belege, prüfen Annahmen, bewahren negative Ergebnisse und verbessern die Arbeit weiter, wenn ein sicherer und rechtmäßiger Weg offensteht.",
+      project: "SSSWET untersucht ambitionierte wissenschaftliche und technische Möglichkeiten, ohne Hypothesen als Tatsachen darzustellen. Wir vergleichen Belege, prüfen Annahmen, bewahren negative Ergebnisse und verbessern die Arbeit weiter, wenn ein sicherer und rechtmäßiger Weg offensteht.",
       next: "Wenn du möchtest, stelle ich dir auch das restliche Team vor.", button: "Vorstellen"
     }
   };
@@ -61,6 +61,7 @@
     const utterance = new SpeechSynthesisUtterance(String(text || "").replace(/\s+/g, " ").trim());
     utterance.lang = document.documentElement.lang || "en";
     utterance.rate = 0.94;
+    utterance.onend = () => state.setSpeechContext("internal");
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   }
@@ -80,11 +81,18 @@
     feed.scrollTop = feed.scrollHeight;
   }
 
+  function naturalHesitation() {
+    const c = state.getCopy();
+    const language = String(window.SSSWET_CURRENT_LANGUAGE || document.documentElement.lang || "en").split("-")[0];
+    if (Math.random() > 0.3) return "";
+    return language === "fr" ? "Mhmm… " : language === "es" ? "Mmm… " : language === "de" ? "Mhm… " : "Mmhmm… ";
+  }
+
   function presentProject(withVoice) {
     const c = state.getCopy();
     const agent = agents[Math.floor(Math.random() * agents.length)];
     const first = c.intro.replace("{name}", agent.name);
-    const second = c.project.replace("{name}", agent.name);
+    const second = naturalHesitation() + c.project.replace("{name}", agent.name);
     appendVisitorMessage(first, agent);
     appendVisitorMessage(second, agent);
     appendVisitorMessage(c.next, agent);
@@ -105,11 +113,19 @@
     host.appendChild(button);
   }
 
+  function addStyle() {
+    if (document.getElementById("ssswet-bot-personality-style")) return;
+    const style = document.createElement("style");
+    style.id = "ssswet-bot-personality-style";
+    style.textContent = ".bot-personality-message{margin:.7rem 0;padding:.8rem 1rem;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.025)}.bot-personality-message strong{display:block;margin-bottom:.3rem}.bot-personality-message p{margin:0;line-height:1.55}.bot-personality-visitor-facing{border-color:rgba(255,255,255,.18)}";
+    document.head.appendChild(style);
+  }
+
   window.addEventListener("ssswet-language-changed", addPresentationButton);
   document.addEventListener("click", (event) => {
     if (event.target.closest("[data-bot-question], #bot-free-question-submit")) state.setSpeechContext("visitor");
   }, true);
-  document.addEventListener("DOMContentLoaded", addPresentationButton);
+  document.addEventListener("DOMContentLoaded", () => { addStyle(); addPresentationButton(); });
   const observer = new MutationObserver(addPresentationButton);
   if (document.body) observer.observe(document.body, { childList: true, subtree: true });
 })();
