@@ -40,3 +40,26 @@ def test_engine_can_reach_independent_verification():
     )
     assert finding.verification == VerificationState.INDEPENDENTLY_VERIFIED
     assert engine.publishable(finding)[0]
+
+
+def test_engine_exposes_cross_agent_source_linked_memory_search(tmp_path):
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    engine = SSSWETEngine(store=SQLiteResearchStore(tmp_path / "engine-team-memory.sqlite3"))
+    saved = engine.agent_identities.remember(
+        agent_id="mira-01", role="general_researcher",
+        content="Composite materials require fatigue and thermal cycling evidence.",
+        source_reference="doi:10.example/composite-fatigue",
+    )
+    results = engine.search_team_memories("composite materials fatigue thermal", limit=4)
+    assert results
+    assert results[0]["memory_id"] == saved["memory_id"]
+    assert results[0]["source_reference"] == "doi:10.example/composite-fatigue"
+
+
+def test_engine_requires_persistent_store_for_team_memory_search():
+    import pytest
+
+    engine = SSSWETEngine()
+    with pytest.raises(RuntimeError, match="persistent research store"):
+        engine.search_team_memories("materials")
