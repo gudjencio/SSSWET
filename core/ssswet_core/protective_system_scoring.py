@@ -96,11 +96,11 @@ def calculate_protective_system_score(
     dimensions: Mapping[str, object],
     gates: Mapping[str, bool],
 ) -> ProtectiveSystemScore:
-    """Calculate a score only when the evidence and safety gates permit ranking.
+    """Calculate a score only when evidence and safety gates permit ranking.
 
-    Numeric inputs without evidence metadata are treated as targets, not observed
-    performance. A candidate cannot receive a ranking score until every dimension
-    has a documented value and all required gates are true.
+    Numeric inputs without evidence metadata are treated as targets, never as
+    measured performance. Ranking requires every dimension to be observed or
+    independently verified and source-linked.
     """
     if not system_id.strip():
         raise ValueError("system_id is required")
@@ -113,6 +113,13 @@ def calculate_protective_system_score(
     missing_dimensions = [name for name, item in normalised.items() if item.value is None]
     if missing_dimensions:
         reasons.append("missing dimensions: " + ", ".join(missing_dimensions))
+
+    unsupported_dimensions = [
+        name for name, item in normalised.items()
+        if item.value is not None and item.evidence_status not in {"observed", "verified"}
+    ]
+    if unsupported_dimensions:
+        reasons.append("dimensions require observed or verified evidence: " + ", ".join(unsupported_dimensions))
 
     invalid_observation = [
         name for name, item in normalised.items()
