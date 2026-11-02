@@ -1686,7 +1686,4 @@ function classifyDiscovery(group) {
   window.setInterval(refreshStatus, 3000);
   refreshStatus();
   capitalizeInterfaceText(document.body);
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
-  }
 })();
