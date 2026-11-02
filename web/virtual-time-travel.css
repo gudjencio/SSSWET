@@ -23,3 +23,5 @@
 .maplibregl-ctrl-group{border:1px solid rgba(147,190,222,.28)!important;box-shadow:0 5px 22px #0008!important}
 .maplibregl-ctrl-group button{background-color:#101e2b!important}
 @media(max-width:760px){#vt-map{height:clamp(390px,65vh,650px)}.vt-intro h1{font-size:clamp(21px,6vw,29px)}}
+
+.vt-keyframes{grid-column:1/-1}.vt-keyframe-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.vt-keyframe-card{padding:9px;border:1px solid #26384b;border-radius:12px;background:#07111b}.vt-keyframe-card img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px}.vt-keyframe-card p{font-size:10px}
