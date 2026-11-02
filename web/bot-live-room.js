@@ -419,7 +419,7 @@
     const outputs=Array.isArray(data.recent_outputs)?data.recent_outputs:[];
     const latest=outputs.find(item=>item.summary && String(item.summary).trim());
     const values={
-      topic: pretty(worker.current_objective || worker.current_technology || "—"),
+      topic: $("bot-current-technology-title")?.textContent?.trim() || pretty(worker.current_technology || "—"),
       active:(data.active_agents||[]).length,
       done:data.completed_tasks||0,
       pending:data.pending_review_outputs||0,
