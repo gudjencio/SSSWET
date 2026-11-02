@@ -252,6 +252,45 @@ class AgentIdentityRegistry:
         )
         return ranked[:limit]
 
+    def search_team_memories(
+        self, query: str, limit: int = 12, agent_ids: list[str] | None = None,
+    ) -> list[dict]:
+        """Search source-linked memories across agents with deterministic ranking.
+
+        Retrieval is bounded per agent by search_memories(), preserves each
+        record's provenance, and never merges conflicting notes into one claim.
+        """
+        query = str(query).strip()
+        if not query:
+            return []
+        if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 100:
+            raise ValueError("limit must be between 1 and 100")
+        if agent_ids is not None:
+            if not isinstance(agent_ids, list) or not agent_ids:
+                raise ValueError("agent_ids must be a non-empty list when supplied")
+            selected = list(dict.fromkeys(str(value).strip() for value in agent_ids))
+            if any(not value or len(value) > 100 for value in selected):
+                raise ValueError("each agent_id must contain 1 to 100 characters")
+        else:
+            with self.store._connect() as connection:
+                rows = connection.execute(
+                    "SELECT DISTINCT agent_id FROM agent_identity_memories ORDER BY agent_id"
+                ).fetchall()
+            selected = [row["agent_id"] for row in rows]
+
+        combined = []
+        for agent_id in selected:
+            for item in self.search_memories(agent_id, query, limit=limit):
+                combined.append({**item, "retrieval_scope": "team"})
+        combined.sort(
+            key=lambda item: (
+                item["retrieval_score"], item["created_at"],
+                item["agent_id"], item["memory_id"],
+            ),
+            reverse=True,
+        )
+        return combined[:limit]
+
     def collaborations(self, agent_id: str, limit: int = 20) -> list[dict]:
         """Return recent, source-linked collaboration events for one stable agent ID."""
         agent_id = str(agent_id).strip()
