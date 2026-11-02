@@ -129,7 +129,7 @@ if (!donationSourceLatest.includes("grid.replaceChildren()") || !donationSourceL
 const reportSource = fs.readFileSync(new URL("./report-project.js", `file://${__filename}`), "utf8");
 new Function(reportSource);
 if ((reportSource.match(/button:"/g) || []).length !== 25 || (reportSource.match(/options:\[\[/g) || []).length !== 25) {
-  throw new Error("The report button and its complete improvement menu must be translated in all 15 primary interface languages.");
+  throw new Error("The report button and its complete improvement menu must be translated in all 25 supported report languages.");
 }
 if (!reportSource.includes('window.ssswetApiFetch("/api/project-reports"') || !reportSource.includes('dialog.showModal()')) {
   throw new Error("The report form must open accessibly and submit to the hosted review endpoint.");
