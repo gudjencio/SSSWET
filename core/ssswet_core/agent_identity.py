@@ -218,7 +218,7 @@ class AgentIdentityRegistry:
             "cette", "cela", "comme", "plus", "être", "aux", "qui", "que",
         }
         tokens = {
-            token.casefold() for token in re.findall(r"[\\w'-]{2,}", query, flags=re.UNICODE)
+            token.casefold() for token in re.findall(r"[\w'-]{2,}", query, flags=re.UNICODE)
             if token.casefold() not in stop_words
         }
         if not tokens:
@@ -234,7 +234,7 @@ class AgentIdentityRegistry:
             item = dict(row)
             searchable = item["content"] + " " + item["source_reference"]
             note_tokens = {
-                token.casefold() for token in re.findall(r"[\\w'-]{2,}", searchable, flags=re.UNICODE)
+                token.casefold() for token in re.findall(r"[\w'-]{2,}", searchable, flags=re.UNICODE)
                 if token.casefold() not in stop_words
             }
             overlap = tokens & note_tokens
