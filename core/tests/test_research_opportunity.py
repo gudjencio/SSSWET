@@ -79,3 +79,25 @@ def test_duplicate_programmes_are_rejected():
     item = {"programme_id": "same", "inputs": inputs()}
     with pytest.raises(ValueError, match="unique"):
         rank_research_opportunities([item, item], graph())
+
+
+def test_engine_exposes_dependency_aware_opportunity_scoring(tmp_path):
+    from ssswet_core.engine import SSSWETEngine
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    engine = SSSWETEngine(SQLiteResearchStore(tmp_path / "opportunity.sqlite3"))
+    engine.register_technology_catalogue()
+    result = engine.evaluate_research_opportunity(
+        "energyStorage",
+        inputs(dependency_review_complete=True),
+    )
+    # A complete review with an empty recorded graph is a measured zero-link result.
+    assert result["rank_eligible"] is True
+    assert result["downstream_programmes_unlocked"] == 0
+
+
+def test_engine_requires_persistent_graph_for_opportunity_scoring():
+    from ssswet_core.engine import SSSWETEngine
+
+    with pytest.raises(RuntimeError, match="persistent research store"):
+        SSSWETEngine().evaluate_research_opportunity("energy", inputs())
