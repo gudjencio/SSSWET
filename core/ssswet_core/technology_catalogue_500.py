@@ -3,18 +3,19 @@ from __future__ import annotations
 
 from .technology_catalogue import TECHNOLOGY_CATALOGUE as CORE_TECHNOLOGY_CATALOGUE
 from .technology_catalogue_expansion import TECHNOLOGY_CATALOGUE_EXPANSION
+from .technology_catalogue_additions import ADDITIONAL_TECHNOLOGIES
 from .technology_dossier import TechnologyDossierRegistry
 
-TECHNOLOGY_CATALOGUE = [*CORE_TECHNOLOGY_CATALOGUE, *TECHNOLOGY_CATALOGUE_EXPANSION]
-if len(TECHNOLOGY_CATALOGUE) != 500:
-    raise RuntimeError(f"SSSWET technology catalogue must contain 500 entries; found {len(TECHNOLOGY_CATALOGUE)}")
+TECHNOLOGY_CATALOGUE = [*CORE_TECHNOLOGY_CATALOGUE, *TECHNOLOGY_CATALOGUE_EXPANSION, *ADDITIONAL_TECHNOLOGIES]
+if len(TECHNOLOGY_CATALOGUE) != 510:
+    raise RuntimeError(f"SSSWET technology catalogue must contain 510 entries; found {len(TECHNOLOGY_CATALOGUE)}")
 
 
 def register_catalogue(registry: TechnologyDossierRegistry, actor_id: str = "catalogue") -> dict:
-    """Idempotently register all 500 research programmes as unvalidated dossiers."""
+    """Idempotently register all 510 research programmes as unvalidated dossiers."""
     created = []
     updated_scope = []
-    existing = {item["technology_id"] for item in registry.list_dossiers(limit=500)}
+    existing = {item["technology_id"] for item in registry.list_dossiers(limit=1000)}
     for item in TECHNOLOGY_CATALOGUE:
         is_new = item["technology_id"] not in existing
         if is_new:
@@ -43,4 +44,4 @@ def register_catalogue(registry: TechnologyDossierRegistry, actor_id: str = "cat
             created.append(item["technology_id"])
         else:
             updated_scope.append(item["technology_id"])
-    return {"catalogue_size": 500, "created_count": len(created), "already_registered_count": 500 - len(created), "updated_scope_count": len(updated_scope), "updated_scope_ids": updated_scope, "created_ids": created, "research_status": "not_assessed"}
+    return {"catalogue_size": 510, "created_count": len(created), "already_registered_count": 510 - len(created), "updated_scope_count": len(updated_scope), "updated_scope_ids": updated_scope, "created_ids": created, "research_status": "not_assessed"}
