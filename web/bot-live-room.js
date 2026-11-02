@@ -614,6 +614,6 @@
   window.addEventListener("resize",() => {if(currentData)renderStage(currentData);});
   renderLabels();
   refresh();
-  window.setInterval(refresh,5000);
+  window.setInterval(refresh,3000);
   scheduleBotConversation();
 })();
