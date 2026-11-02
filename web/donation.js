@@ -167,6 +167,249 @@
     }
   });
 
+  Object.assign(technologies, {
+    blackHoleObservation: {
+      en: ["Black hole observation and physics", "Study black-hole environments through established astrophysical observations, relativistic models and uncertainty-aware interpretation."],
+      fr: ["Observation et physique des trous noirs", "Étude des environnements de trous noirs à partir d’observations astrophysiques, de modèles relativistes et d’interprétations tenant compte des incertitudes."]
+    },
+    blackHoleProbeSystems: {
+      en: ["Black-hole exploration probes", "Conceptual study of remote sensing, autonomous probes and mission constraints near extreme gravitational environments; no survivable close approach is assumed."],
+      fr: ["Sondes d’exploration des trous noirs", "Étude conceptuelle de la télédétection, des sondes autonomes et des contraintes de mission près d’environnements gravitationnels extrêmes ; aucune survie à proximité n’est présumée."]
+    },
+    blackHoleResilientVehicles: {
+      en: ["Black-hole-resilient craft concepts", "Theoretical limits on spacecraft structures, shielding, communication and survivability in strong gravitational fields, including explicit limits imposed by tidal forces and horizons."],
+      fr: ["Concepts d’engins résistants aux trous noirs", "Limites théoriques des structures, protections, communications et de la survivabilité des engins en champs gravitationnels intenses, notamment les forces de marée et les horizons."]
+    },
+    eventHorizonImaging: {
+      en: ["Event-horizon imaging", "Research into interferometry, computational imaging and multi-messenger observations of black-hole environments."],
+      fr: ["Imagerie des horizons des événements", "Recherche sur l’interférométrie, l’imagerie computationnelle et les observations multimessagers des environnements de trous noirs."]
+    },
+    gravitationalWaveNavigation: {
+      en: ["Gravitational-wave astronomy and navigation", "Explore gravitational-wave detection, source localization and possible future navigation applications within known physical limits."],
+      fr: ["Astronomie et navigation par ondes gravitationnelles", "Étude de la détection des ondes gravitationnelles, de la localisation des sources et d’éventuelles applications futures à la navigation, dans les limites physiques connues."]
+    },
+    relativisticSpacecraft: {
+      en: ["Relativistic spacecraft systems", "Model long-duration relativistic missions, radiation exposure, propulsion constraints, time dilation and mission communication limits."],
+      fr: ["Systèmes de véhicules spatiaux relativistes", "Modélisation de missions relativistes de longue durée, de l’exposition aux rayonnements, des contraintes de propulsion, de la dilatation du temps et des communications."]
+    },
+    deepSpaceRadiationShelters: {
+      en: ["Deep-space radiation shelters", "Assess habitat layouts, passive shielding concepts, storm shelters and exposure monitoring for crewed deep-space missions."],
+      fr: ["Abris contre les rayonnements de l’espace profond", "Évaluation de l’aménagement des habitats, des protections passives, des abris de tempête solaire et du suivi de l’exposition lors de missions habitées dans l’espace profond."]
+    },
+    cosmicRayShielding: {
+      en: ["Cosmic-ray exposure mitigation", "Study realistic exposure measurement, shielding trade-offs and operational risk reduction for space missions."],
+      fr: ["Réduction de l’exposition aux rayons cosmiques", "Étude de la mesure de l’exposition, des compromis de blindage et de la réduction des risques opérationnels lors des missions spatiales."]
+    },
+    nuclearBlastResilience: {
+      en: ["Nuclear-blast protection and resilience", "Civilian life-safety research on blast effects, structural resilience, shelter performance, emergency planning and protection standards. No weapon design or optimization."],
+      fr: ["Protection et résistance aux explosions nucléaires", "Recherche de protection civile portant sur les effets de souffle, la résilience des structures, les abris, la planification d’urgence et les normes de protection. Aucune conception ni optimisation d’arme."]
+    },
+    radiationProtection: {
+      en: ["Radiation protection and shielding", "Research into radiation measurement, shielding materials, exposure reduction, protective equipment and validated safety thresholds."],
+      fr: ["Protection et blindage contre les rayonnements", "Recherche sur la mesure des rayonnements, les matériaux de blindage, la réduction de l’exposition, les équipements de protection et les seuils de sécurité validés."]
+    },
+    radiationDosimetryNetworks: {
+      en: ["Distributed radiation dosimetry", "Develop monitoring concepts for calibrated sensors, exposure mapping, uncertainty reporting and emergency information sharing."],
+      fr: ["Réseaux distribués de dosimétrie", "Développement de concepts de surveillance par capteurs étalonnés, cartographie des expositions, déclaration des incertitudes et partage d’informations d’urgence."]
+    },
+    nuclearFalloutDecontamination: {
+      en: ["Radioactive fallout detection and decontamination", "Civil protection research into contamination mapping, safe decontamination workflows, waste handling and public-health safeguards."],
+      fr: ["Détection et décontamination des retombées radioactives", "Recherche en protection civile sur la cartographie de la contamination, les procédures sûres de décontamination, la gestion des déchets et les garanties sanitaires."]
+    },
+    electromagneticPulseResilience: {
+      en: ["Electromagnetic-pulse resilience", "Assess civilian infrastructure resilience, equipment hardening standards, backup systems and continuity planning against electromagnetic disturbances."],
+      fr: ["Résilience aux impulsions électromagnétiques", "Évaluation de la résilience des infrastructures civiles, des normes de protection des équipements, des systèmes de secours et de la continuité d’activité face aux perturbations électromagnétiques."]
+    },
+    extremeThermalProtection: {
+      en: ["Extreme-heat and thermal-shock protection", "Study thermal insulation, fire-resistant materials, heat transfer and safe evacuation environments under extreme heat exposure."],
+      fr: ["Protection contre les chaleurs extrêmes et chocs thermiques", "Étude de l’isolation thermique, des matériaux résistants au feu, des transferts de chaleur et des environnements d’évacuation sûrs en cas d’exposition thermique extrême."]
+    },
+    antimatterResearch: {
+      en: ["Antimatter physics and containment research", "Fundamental study of antimatter production, measurement, storage limits and fundamental physics; no practical energy or propulsion system is implied."],
+      fr: ["Physique de l’antimatière et recherche sur son confinement", "Étude fondamentale de la production, de la mesure, des limites de stockage de l’antimatière et de la physique fondamentale ; aucun système énergétique ou propulsif pratique n’est présumé."]
+    },
+    beamedEnergyPropulsion: {
+      en: ["Beamed-energy propulsion concepts", "Evaluate high-level feasibility of externally powered propulsion, beam safety, pointing constraints and energy-transfer efficiency."],
+      fr: ["Concepts de propulsion par énergie dirigée", "Évaluation générale de la faisabilité d’une propulsion alimentée à distance, de la sécurité des faisceaux, des contraintes de pointage et du rendement du transfert d’énergie."]
+    },
+    solarSailNavigation: {
+      en: ["Advanced solar-sail navigation", "Research trajectory planning, sail materials, attitude control and mission design using solar or externally supplied photon pressure."],
+      fr: ["Navigation avancée par voiles solaires", "Recherche sur la planification des trajectoires, les matériaux de voile, le contrôle d’attitude et les missions utilisant la pression photonique solaire ou externe."]
+    },
+    plasmaPropulsion: {
+      en: ["Advanced plasma propulsion", "Study electric and plasma propulsion performance, power requirements, erosion, thermal management and mission suitability."],
+      fr: ["Propulsion avancée par plasma", "Étude des performances de la propulsion électrique et plasma, des besoins énergétiques, de l’érosion, de la gestion thermique et de l’adéquation aux missions."]
+    },
+    interstellarProbeArchitecture: {
+      en: ["Interstellar probe architecture", "Explore mission architectures, autonomy, communication delay, radiation, reliability and realistic propulsion constraints for interstellar precursor concepts."],
+      fr: ["Architecture de sondes interstellaires", "Étude d’architectures de mission, d’autonomie, de délais de communication, de rayonnements, de fiabilité et de contraintes réalistes de propulsion pour des sondes précurseurs interstellaires."]
+    },
+    cryogenicHibernation: {
+      en: ["Cryogenic preservation and torpor research", "Investigate biological limits, cryobiology, reversible preservation research, ethical constraints and the distinction between current medicine and speculative suspended animation."],
+      fr: ["Recherche sur la conservation cryogénique et la torpeur", "Étude des limites biologiques, de la cryobiologie, de la conservation réversible, des contraintes éthiques et de la distinction entre médecine actuelle et animation suspendue spéculative."]
+    },
+    orbitalManufacturing: {
+      en: ["Orbital manufacturing systems", "Study in-space manufacturing, quality assurance, material processing, maintenance and the economics of orbital production."],
+      fr: ["Systèmes de fabrication en orbite", "Étude de la fabrication en orbite, de l’assurance qualité, du traitement des matériaux, de la maintenance et de l’économie de la production spatiale."]
+    },
+    lunarResourceSystems: {
+      en: ["Lunar resource utilization", "Assess lunar geology, in-situ resource utilization, environmental protection, energy needs and sustainable mission logistics."],
+      fr: ["Utilisation des ressources lunaires", "Évaluation de la géologie lunaire, de l’utilisation des ressources in situ, de la protection environnementale, des besoins énergétiques et de la logistique durable des missions."]
+    },
+    marsTerraformingAssessment: {
+      en: ["Planetary habitability and terraforming assessment", "Scientific assessment of planetary environments, planetary protection, atmospheric constraints and ethical limits; no practical terraforming capability is claimed."],
+      fr: ["Évaluation de l’habitabilité planétaire et de la terraformation", "Évaluation scientifique des environnements planétaires, de la protection planétaire, des contraintes atmosphériques et des limites éthiques ; aucune capacité pratique de terraformation n’est revendiquée."]
+    },
+    metamaterials: {
+      en: ["Advanced metamaterials", "Research into engineered material responses, wave interaction, sensing, manufacturability and experimentally verified performance boundaries."],
+      fr: ["Métamatériaux avancés", "Recherche sur les réponses des matériaux architecturés, l’interaction avec les ondes, la détection, la fabricabilité et les limites de performances vérifiées expérimentalement."]
+    },
+    selfHealingMaterials: {
+      en: ["Self-healing materials", "Study reversible damage responses, fatigue, repair mechanisms, durability and lifecycle impacts in structural materials."],
+      fr: ["Matériaux autoréparants", "Étude des réponses réversibles aux dommages, de la fatigue, des mécanismes de réparation, de la durabilité et des impacts sur le cycle de vie des matériaux structurels."]
+    },
+    aerogelSystems: {
+      en: ["Advanced aerogel systems", "Explore lightweight porous materials for insulation, filtration, sensing and space applications, including mechanical fragility and scale-up."],
+      fr: ["Systèmes avancés d’aérogel", "Étude des matériaux poreux légers pour l’isolation, la filtration, la détection et les applications spatiales, y compris leur fragilité mécanique et leur changement d’échelle."]
+    },
+    ultraHighTemperatureMaterials: {
+      en: ["Ultra-high-temperature materials", "Evaluate ceramics, composites, oxidation, thermal cycling and test methods for extreme-temperature environments."],
+      fr: ["Matériaux à très haute température", "Évaluation des céramiques, composites, de l’oxydation, des cycles thermiques et des méthodes d’essai pour les environnements à très haute température."]
+    },
+    smartAdaptiveMaterials: {
+      en: ["Smart and adaptive materials", "Study materials that respond to temperature, stress, light or fields, with emphasis on repeatability, failure modes and safe applications."],
+      fr: ["Matériaux intelligents et adaptatifs", "Étude de matériaux réagissant à la température, aux contraintes, à la lumière ou aux champs, avec une attention portée à la répétabilité, aux défaillances et aux usages sûrs."]
+    },
+    transparentCeramics: {
+      en: ["Transparent structural ceramics", "Research transparent ceramic materials, optical performance, impact behaviour, manufacturing and protective-use limits."],
+      fr: ["Céramiques structurelles transparentes", "Recherche sur les céramiques transparentes, leurs performances optiques, leur comportement aux impacts, leur fabrication et les limites de leurs usages protecteurs."]
+    },
+    impactAbsorbingMaterials: {
+      en: ["Advanced impact-absorbing materials", "Assess energy absorption, cushioning, protective structures, repeated loading and validated injury-reduction metrics."],
+      fr: ["Matériaux avancés absorbant les impacts", "Évaluation de l’absorption d’énergie, de l’amortissement, des structures protectrices, des charges répétées et des mesures validées de réduction des blessures."]
+    },
+    superconductingGrid: {
+      en: ["High-temperature superconducting grids", "Research superconducting power transmission, cryogenic requirements, fault protection, materials supply and grid integration."],
+      fr: ["Réseaux supraconducteurs à haute température", "Recherche sur le transport électrique supraconducteur, les besoins cryogéniques, la protection contre les défauts, l’approvisionnement en matériaux et l’intégration au réseau."]
+    },
+    ambientEnergyHarvesting: {
+      en: ["Ambient energy harvesting", "Evaluate low-power energy harvesting from vibration, heat, light and radio-frequency environments with realistic efficiency accounting."],
+      fr: ["Récupération de l’énergie ambiante", "Évaluation de la récupération de faibles puissances à partir des vibrations, de la chaleur, de la lumière et des radiofréquences avec un bilan réaliste des rendements."]
+    },
+    spaceSolarPower: {
+      en: ["Space-based solar power systems", "Study orbital solar collection, power transmission safety, conversion efficiency, orbital debris and comparative lifecycle impacts."],
+      fr: ["Systèmes solaires spatiaux", "Étude de la collecte solaire en orbite, de la sécurité du transfert d’énergie, du rendement de conversion, des débris orbitaux et des impacts comparés sur le cycle de vie."]
+    },
+    zeroCarbonIndustrialHeat: {
+      en: ["Low-carbon industrial heat", "Research electrification, thermal storage, high-temperature heat pumps and low-carbon process heat for industrial applications."],
+      fr: ["Chaleur industrielle bas carbone", "Recherche sur l’électrification, le stockage thermique, les pompes à chaleur haute température et la chaleur de procédé bas carbone pour l’industrie."]
+    },
+    thermoelectricSystems: {
+      en: ["Advanced thermoelectric systems", "Investigate thermoelectric materials, waste-heat recovery, device reliability and practical system-level efficiency."],
+      fr: ["Systèmes thermoélectriques avancés", "Étude des matériaux thermoélectriques, de la récupération de chaleur fatale, de la fiabilité des dispositifs et du rendement pratique à l’échelle du système."]
+    },
+    gridScaleThermalStorage: {
+      en: ["Grid-scale thermal energy storage", "Assess sensible, latent and thermochemical storage for resilient energy systems, including safety and lifecycle performance."],
+      fr: ["Stockage thermique à l’échelle des réseaux", "Évaluation du stockage sensible, latent et thermochimique pour des systèmes énergétiques résilients, y compris la sécurité et les performances sur le cycle de vie."]
+    },
+    organRegeneration: {
+      en: ["Organ regeneration research", "Explore regenerative medicine, tissue engineering, vascularization, immune compatibility and rigorous preclinical evidence requirements."],
+      fr: ["Recherche sur la régénération des organes", "Étude de la médecine régénérative, de l’ingénierie tissulaire, de la vascularisation, de la compatibilité immunitaire et des exigences de preuves précliniques."]
+    },
+    syntheticBiologyBiosafety: {
+      en: ["Synthetic biology and biosafety", "Research responsible synthetic biology, containment, risk assessment, ecological safeguards and transparent oversight."],
+      fr: ["Biologie synthétique et biosécurité", "Recherche sur la biologie synthétique responsable, le confinement, l’évaluation des risques, les garanties écologiques et la supervision transparente."]
+    },
+    precisionGeneTherapies: {
+      en: ["Precision gene-therapy research", "Assess gene-therapy evidence, delivery limitations, off-target risks, long-term monitoring and equitable access under qualified oversight."],
+      fr: ["Recherche sur les thérapies géniques de précision", "Évaluation des preuves en thérapie génique, des limites d’administration, des risques hors cible, du suivi à long terme et de l’accès équitable sous supervision qualifiée."]
+    },
+    bioelectronicMedicine: {
+      en: ["Bioelectronic medicine", "Study interfaces between electrical systems and physiology, measurement quality, clinical evidence and device safety."],
+      fr: ["Médecine bioélectronique", "Étude des interfaces entre systèmes électriques et physiologie, de la qualité des mesures, des preuves cliniques et de la sécurité des dispositifs."]
+    },
+    artificialOrgans: {
+      en: ["Next-generation artificial organs", "Research biocompatibility, reliability, sensing, power, maintenance and clinical translation requirements for artificial organ systems."],
+      fr: ["Organes artificiels de nouvelle génération", "Recherche sur la biocompatibilité, la fiabilité, la détection, l’alimentation, la maintenance et les exigences de transfert clinique des systèmes d’organes artificiels."]
+    },
+    medicalDigitalTwins: {
+      en: ["Medical digital twins", "Explore validated patient-specific modelling, privacy, uncertainty communication and clinical decision-support evaluation."],
+      fr: ["Jumeaux numériques médicaux", "Étude de la modélisation personnalisée validée, de la confidentialité, de la communication des incertitudes et de l’évaluation de l’aide à la décision clinique."]
+    },
+    swarmRobotics: {
+      en: ["Cooperative swarm robotics", "Study distributed coordination, fault tolerance, human oversight and safe applications in inspection, rescue and environmental monitoring."],
+      fr: ["Robotique coopérative en essaim", "Étude de la coordination distribuée, de la tolérance aux pannes, de la supervision humaine et des usages sûrs en inspection, sauvetage et surveillance environnementale."]
+    },
+    embodiedAI: {
+      en: ["Embodied artificial intelligence", "Research grounded perception and action, robust evaluation, human interaction, transparency and safety in physical environments."],
+      fr: ["Intelligence artificielle incarnée", "Recherche sur la perception et l’action en environnement réel, l’évaluation robuste, l’interaction humaine, la transparence et la sécurité."]
+    },
+    neuromorphicComputing: {
+      en: ["Neuromorphic computing", "Explore brain-inspired computing architectures, energy use, learning behaviour, reproducibility and application-specific limits."],
+      fr: ["Calcul neuromorphique", "Étude d’architectures informatiques inspirées du cerveau, de leur consommation énergétique, de leur apprentissage, de leur reproductibilité et de leurs limites selon les applications."]
+    },
+    quantumSensing: {
+      en: ["Quantum sensing technologies", "Assess quantum-enhanced measurement concepts, calibration, noise, environmental robustness and realistic performance advantages."],
+      fr: ["Technologies de détection quantique", "Évaluation des concepts de mesure améliorée par le quantique, de l’étalonnage, du bruit, de la robustesse environnementale et des avantages réels de performance."]
+    },
+    autonomousDisasterRobots: {
+      en: ["Autonomous disaster-response robotics", "Develop safety-centred research for search, mapping and logistics robots with human supervision and reliable fail-safe behaviour."],
+      fr: ["Robotique autonome d’intervention en catastrophe", "Développement de recherches centrées sur la sécurité pour des robots de recherche, cartographie et logistique, sous supervision humaine et avec des comportements de repli fiables."]
+    },
+    carbonRemoval: {
+      en: ["Carbon removal measurement and verification", "Study durable carbon removal pathways, lifecycle accounting, monitoring, permanence and independent verification."],
+      fr: ["Mesure et vérification de l’élimination du carbone", "Étude des voies durables d’élimination du carbone, du bilan de cycle de vie, du suivi, de la permanence et de la vérification indépendante."]
+    },
+    oceanAlkalinityMonitoring: {
+      en: ["Ocean alkalinity and carbon monitoring", "Research ocean chemistry observation, ecosystem safeguards, measurement uncertainty and independent assessment of proposed interventions."],
+      fr: ["Surveillance de l’alcalinité océanique et du carbone", "Recherche sur l’observation de la chimie océanique, les garanties écosystémiques, l’incertitude des mesures et l’évaluation indépendante des interventions proposées."]
+    },
+    geoengineeringAssessment: {
+      en: ["Climate intervention risk assessment", "Independent assessment of proposed climate interventions, governance, reversibility, distributional effects and environmental monitoring; not an implementation programme."],
+      fr: ["Évaluation des risques des interventions climatiques", "Évaluation indépendante des interventions climatiques proposées, de leur gouvernance, réversibilité, effets distributifs et surveillance environnementale ; ce programme ne vise pas leur mise en œuvre."]
+    },
+    wildfirePrediction: {
+      en: ["Wildfire prediction and early warning", "Combine environmental observations, forecasting uncertainty, community alerts and decision-support evaluation for wildfire risk reduction."],
+      fr: ["Prévision des incendies et alerte précoce", "Combinaison d’observations environnementales, d’incertitudes de prévision, d’alertes communautaires et d’évaluation d’outils d’aide à la décision pour réduire les risques d’incendie."]
+    },
+    ecosystemDigitalTwins: {
+      en: ["Ecosystem digital twins", "Build transparent ecosystem models integrating observations, uncertainty, scenario testing and community-accessible conservation planning."],
+      fr: ["Jumeaux numériques des écosystèmes", "Construction de modèles écosystémiques transparents intégrant observations, incertitudes, scénarios et planification de la conservation accessible aux communautés."]
+    },
+    photonicComputing: {
+      en: ["Photonic computing systems", "Research optical information processing, energy efficiency, device integration, noise and benchmark reproducibility."],
+      fr: ["Systèmes de calcul photonique", "Recherche sur le traitement optique de l’information, l’efficacité énergétique, l’intégration des dispositifs, le bruit et la reproductibilité des évaluations."]
+    },
+    faultTolerantQuantumComputing: {
+      en: ["Fault-tolerant quantum computing", "Study error correction, coherence limits, hardware scaling, resource estimates and independently reproducible benchmarks."],
+      fr: ["Calcul quantique tolérant aux erreurs", "Étude de la correction d’erreurs, des limites de cohérence, du changement d’échelle matériel, des estimations de ressources et de bancs d’essai reproductibles."]
+    },
+    distributedScientificComputing: {
+      en: ["Distributed scientific computing", "Improve reproducible distributed workflows, secure collaboration, data provenance and efficient use of heterogeneous computing resources."],
+      fr: ["Calcul scientifique distribué", "Amélioration des flux de calcul distribué reproductibles, de la collaboration sécurisée, de la provenance des données et de l’utilisation efficace de ressources hétérogènes."]
+    },
+    interstellarCommunication: {
+      en: ["Interstellar communication research", "Explore signal detection, encoding constraints, long-delay protocols, astronomical interference and uncertainty in searches for technosignatures."],
+      fr: ["Recherche sur les communications interstellaires", "Étude de la détection de signaux, des contraintes de codage, des protocoles à long délai, des interférences astronomiques et des incertitudes dans la recherche de technosignatures."]
+    },
+    sensoryAugmentation: {
+      en: ["Human sensory augmentation", "Research assistive sensory interfaces, perceptual limits, accessibility, informed consent and long-term human factors."],
+      fr: ["Augmentation sensorielle humaine", "Recherche sur les interfaces sensorielles d’assistance, les limites perceptives, l’accessibilité, le consentement éclairé et les facteurs humains à long terme."]
+    },
+    adaptiveExosuits: {
+      en: ["Adaptive soft exosuits", "Study wearable assistance, comfort, mobility, control, user diversity and independently assessed safety."],
+      fr: ["Exocombinaisons souples adaptatives", "Étude de l’assistance portable, du confort, de la mobilité, du contrôle, de la diversité des utilisateurs et de la sécurité évaluée indépendamment."]
+    },
+    closedLoopNeuroprosthetics: {
+      en: ["Closed-loop neuroprosthetics", "Research bidirectional neural interfaces, adaptive control, biocompatibility, privacy and clinical validation requirements."],
+      fr: ["Neuroprothèses en boucle fermée", "Recherche sur les interfaces neuronales bidirectionnelles, le contrôle adaptatif, la biocompatibilité, la confidentialité et les exigences de validation clinique."]
+    },
+    universalTranslationSystems: {
+      en: ["Universal translation systems", "Explore multilingual speech and text translation, low-resource languages, context preservation, accessibility and transparent uncertainty."],
+      fr: ["Systèmes de traduction universelle", "Étude de la traduction multilingue de la parole et du texte, des langues peu dotées, de la préservation du contexte, de l’accessibilité et de l’incertitude transparente."]
+    }
+  });
+
   window.SSSWET_TECHNOLOGIES = technologies;
   const catalogueCountLabels = {
     en: "research programmes", fr: "programmes de recherche", es: "programas de investigación",
