@@ -56,5 +56,5 @@ certification, clinical validation or implementation recommendation.
 
 - Memory retrieval examines a bounded recent window and ranks notes by transparent term overlap with the current objective. The score is a retrieval aid, not a confidence or truth score.
 - Each selected note retains its source reference and matched terms. The provider is instructed to re-check source material rather than trust historical summaries.
-- Independent review work uses a separate bounded worker pool. The standard research pass can dispatch up to ten provider tasks concurrently, while peer-review work can dispatch up to six. Actual throughput depends on provider capacity, network latency, rate limits and available compute.
+- Independent review work uses a separate bounded worker pool. The standard research pass can dispatch up to ten provider tasks concurrently, while peer-review work can dispatch up to six. Live bot activity panels refresh every three seconds while the page is visible. Actual throughput depends on provider capacity, network latency, rate limits and available compute.
 - Parallel execution does not bypass source checks, safety review or human oversight.
