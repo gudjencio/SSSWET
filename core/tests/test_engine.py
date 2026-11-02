@@ -77,3 +77,19 @@ def test_engine_exposes_context_aware_claim_comparison():
     result = engine.compare_contextual_claims(claims)
     assert len(result) == 1
     assert result[0].classification == "potential_conflict"
+
+
+def test_engine_proposes_independent_reviewers_without_executing_assignment():
+    from ssswet_core.review_assignment import ReviewerCandidate
+
+    engine = SSSWETEngine()
+    result = engine.propose_independent_reviewers(
+        [
+            ReviewerCandidate("reviewer-a", "independent_verifier", "campaign-a"),
+            ReviewerCandidate("reviewer-b", "data_analyst", "campaign-b"),
+        ],
+        required_count=2,
+    )
+    assert result["status"] == "proposed"
+    assert result["reviewer_assignment_executed"] is False
+    assert result["independence_certified"] is False
