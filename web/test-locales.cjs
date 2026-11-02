@@ -138,6 +138,14 @@ if (!reportSource.includes('view:"Voir mes améliorations"') || !reportSource.in
     !reportSource.includes("localStorage") || !reportSource.includes("showHistory()")) {
   throw new Error("The report dialog must offer a localized submitted-improvements history and a close-only action.");
 }
+if (!reportSource.includes("getLiveReportStatus") || !reportSource.includes("reportStatusCopy") ||
+    !reportSource.includes('"/pulls/"+Number(prMatch[1])') ||
+    !reportSource.includes('key:"integrated"') || !reportSource.includes('key:"proposed"')) {
+  throw new Error("The submitted-improvements dashboard must retrieve and distinguish live issue and pull-request states.");
+}
+for (const language of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi","id","tr","pl","bn","sw","vi","fa","ur","ta","te"]) {
+  if (!reportSource.includes(language+":{received:")) throw new Error("Missing localized live report status for "+language);
+}
 if (!reportSource.includes('new MutationObserver') || !reportSource.includes('repair-project-slot')) {
   throw new Error("The report control must attach when the repair control is added dynamically.");
 }
