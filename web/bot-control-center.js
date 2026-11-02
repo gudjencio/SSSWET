@@ -122,5 +122,5 @@
   window.addEventListener("ssswet-engine-connection",event=>{if(!event.detail?.connected){statusNode.dataset.state="offline";statusNode.textContent=labels().statusOffline;}});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)load();});
   load();
-  window.setInterval(()=>{if(!document.hidden)load();},5000);
+  window.setInterval(()=>{if(!document.hidden)load();},3000);
 })();
