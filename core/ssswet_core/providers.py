@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 import re
 from typing import Protocol
@@ -295,7 +296,11 @@ class MultiSourceLiteratureProvider:
         )
 
     def investigate(self, objective: str, strategy: str) -> ProviderResult:
-        results = [provider.investigate(objective, strategy) for provider in self.providers]
+        # Query independent scholarly indexes concurrently so one slow source does not
+        # delay the other. Both results are still merged and deduplicated below.
+        with ThreadPoolExecutor(max_workers=len(self.providers), thread_name_prefix="ssswet-source") as executor:
+            futures = [executor.submit(provider.investigate, objective, strategy) for provider in self.providers]
+            results = [future.result() for future in futures]
         evidence: list[str] = []
         source_ids: list[str] = []
         seen: set[str] = set()
