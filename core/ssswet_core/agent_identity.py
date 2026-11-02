@@ -102,6 +102,16 @@ class AgentIdentityRegistry:
                 CREATE TRIGGER IF NOT EXISTS agent_identity_memories_no_delete
                     BEFORE DELETE ON agent_identity_memories
                     BEGIN SELECT RAISE(ABORT, 'agent identity memories are append-only'); END;
+                CREATE TABLE IF NOT EXISTS agent_memory_review_events (
+                    event_id TEXT PRIMARY KEY, memory_id TEXT NOT NULL REFERENCES agent_identity_memories(memory_id),
+                    status TEXT NOT NULL, rationale TEXT NOT NULL, reviewer_id TEXT NOT NULL,
+                    evidence_reference TEXT NOT NULL, created_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_agent_memory_reviews ON agent_memory_review_events(memory_id, created_at);
+                CREATE TRIGGER IF NOT EXISTS agent_memory_review_events_no_update BEFORE UPDATE ON agent_memory_review_events
+                    BEGIN SELECT RAISE(ABORT, 'agent memory review events are append-only'); END;
+                CREATE TRIGGER IF NOT EXISTS agent_memory_review_events_no_delete BEFORE DELETE ON agent_memory_review_events
+                    BEGIN SELECT RAISE(ABORT, 'agent memory review events are append-only'); END;
                 CREATE TABLE IF NOT EXISTS agent_relationship_events (
                     event_id TEXT PRIMARY KEY,
                     agent_id TEXT NOT NULL,
@@ -202,6 +212,52 @@ class AgentIdentityRegistry:
             ).fetchall()
         return [dict(row) for row in rows]
 
+    def record_memory_review(self, *, memory_id: str, status: str, rationale: str, reviewer_id: str, evidence_reference: str) -> dict:
+        """Append a source-linked review state without rewriting the memory."""
+        memory_id, reviewer_id = str(memory_id).strip(), str(reviewer_id).strip()
+        rationale, evidence_reference = str(rationale).strip(), str(evidence_reference).strip()
+        allowed = {"recheck_required", "revalidated", "superseded", "withdrawn"}
+        if not memory_id or len(memory_id) > 100: raise ValueError("invalid memory_id")
+        if status not in allowed: raise ValueError("unsupported memory review status")
+        if not reviewer_id or len(reviewer_id) > 100: raise ValueError("reviewer_id must contain 1 to 100 characters")
+        if not rationale or len(rationale) > 1000: raise ValueError("rationale must contain 1 to 1000 characters")
+        if not evidence_reference or len(evidence_reference) > 500: raise ValueError("a review evidence reference is required")
+        transitions = {
+            "unreviewed": {"recheck_required", "revalidated", "superseded", "withdrawn"},
+            "recheck_required": {"revalidated", "superseded", "withdrawn"},
+            "revalidated": {"recheck_required", "superseded", "withdrawn"},
+            "superseded": set(), "withdrawn": set(),
+        }
+        with self.store._connect() as connection:
+            memory = connection.execute("SELECT memory_id FROM agent_identity_memories WHERE memory_id=?", (memory_id,)).fetchone()
+            if memory is None: raise ValueError("memory does not exist")
+            previous = connection.execute("SELECT status FROM agent_memory_review_events WHERE memory_id=? ORDER BY rowid DESC LIMIT 1", (memory_id,)).fetchone()
+            current = previous["status"] if previous else "unreviewed"
+            if status not in transitions[current]: raise ValueError("invalid memory review status transition")
+            record = {
+                "event_id": str(uuid4()), "memory_id": memory_id, "status": status,
+                "rationale": rationale, "reviewer_id": reviewer_id,
+                "evidence_reference": evidence_reference,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
+            connection.execute("INSERT INTO agent_memory_review_events VALUES (?, ?, ?, ?, ?, ?, ?)", tuple(record.values()))
+        return record
+
+    def _attach_review_state(self, items: list[dict]) -> list[dict]:
+        if not items: return items
+        ids = [item["memory_id"] for item in items]
+        placeholders = ",".join("?" for _ in ids)
+        with self.store._connect() as connection:
+            rows = connection.execute(f"SELECT * FROM agent_memory_review_events WHERE memory_id IN ({placeholders}) ORDER BY rowid", ids).fetchall()
+        latest = {row["memory_id"]: dict(row) for row in rows}
+        for item in items:
+            review = latest.get(item["memory_id"])
+            item["source_review_status"] = review["status"] if review else "unreviewed"
+            item["source_review_rationale"] = review["rationale"] if review else None
+            item["source_review_reference"] = review["evidence_reference"] if review else None
+            item["source_reviewed_by"] = review["reviewer_id"] if review else None
+            item["source_reviewed_at"] = review["created_at"] if review else None
+        return items
     def search_memories(self, agent_id: str, query: str, limit: int = 6) -> list[dict]:
         """Retrieve the most relevant source-linked notes for a new research objective."""
         agent_id = str(agent_id).strip()
@@ -256,7 +312,7 @@ class AgentIdentityRegistry:
             key=lambda item: (item["retrieval_score"], item["created_at"], item["memory_id"]),
             reverse=True,
         )
-        return ranked[:limit]
+        return self._attach_review_state(ranked[:limit])
 
     def search_team_memories(
         self, query: str, limit: int = 12, agent_ids: list[str] | None = None,
