@@ -12,6 +12,7 @@ from .pricing_evidence import build_agent_pricing_estimate
 from .technology_dossier import TechnologyDossierRegistry
 from .technology_catalogue import register_catalogue
 from .technology_dependency_graph import TechnologyDependencyGraph
+from .research_opportunity import evaluate_research_opportunity, rank_research_opportunities
 
 
 @dataclass
@@ -144,6 +145,20 @@ class SSSWETEngine:
         if self.technology_dossiers is None:
             raise RuntimeError("A persistent research store is required for technology dossiers")
         return self.technology_dossiers.get(technology_id)
+
+    def evaluate_research_opportunity(self, programme_id: str, inputs: dict) -> dict:
+        if self.technology_dependencies is None:
+            raise RuntimeError("A persistent research store is required for dependency-aware prioritisation")
+        return evaluate_research_opportunity(
+            programme_id, inputs, self.technology_dependencies.graph()
+        )
+
+    def rank_research_opportunities(self, opportunities: list[dict]) -> dict:
+        if self.technology_dependencies is None:
+            raise RuntimeError("A persistent research store is required for dependency-aware prioritisation")
+        return rank_research_opportunities(
+            opportunities, self.technology_dependencies.graph()
+        )
 
     def estimate_technology_costs(self, **pricing_inputs) -> dict:
         """Validate agent-submitted cost evidence through the independent pricing gate."""
