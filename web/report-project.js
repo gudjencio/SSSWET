@@ -29,6 +29,44 @@
     te:{button:"నివేదించండి",title:"ప్రాజెక్ట్ మెరుగుదలను సూచించండి",intro:"ఉపయోగకరమైన మెరుగుదల లేదా సవరణను ఎంచుకోండి. నివేదికలు సమీక్ష క్యూలో చేరతాయి; మార్పులు స్వయంచాలకంగా అమలు కావు.",category:"మెరుగుదల విభాగం",titleLabel:"చిన్న శీర్షిక",detail:"ఏది మెరుగుపరచాలి?",send:"నివేదిక పంపండి",cancel:"రద్దు చేయండి",sending:"పంపుతోంది…",success:"ధన్యవాదాలు. మీ సూచన ప్రాజెక్ట్ సమీక్ష క్యూలో చేర్చబడింది.",unavailable:"నివేదిక సమర్పణ ఇంకా కాన్ఫిగర్ కాలేదు. తర్వాత మళ్లీ ప్రయత్నించండి.",error:"నివేదికను పంపలేకపోయాం. మళ్లీ ప్రయత్నించండి.",placeholder:"మెరుగుదలను, సాధ్యమైతే ఆశించిన ఫలితాన్ని వివరించండి.",options:[["bug","లోపం లేదా ప్రదర్శన సమస్య"],["translation","అనువాదం మరియు భాషా నాణ్యత"],["accessibility","ప్రాప్యత మరియు సమగ్ర రూపకల్పన"],["performance","పనితీరు మరియు లోడింగ్ వేగం"],["security","భద్రత మరియు గోప్యత"],["documentation","పత్రాలు మరియు మార్గదర్శకాలు"],["research-quality","శాస్త్రీయ కట్టుదిట్టత మరియు మూలాల అనుసరణ"],["reliability","విశ్వసనీయత మరియు డేటా సమగ్రత"],["usability","ఇంటర్‌ఫేస్ స్పష్టత మరియు వాడుక సౌలభ్యం"],["new-feature","ఉపయోగకరమైన కొత్త ఫీచర్"],["compatibility","బ్రౌజర్ మరియు పరికర అనుకూలత"],["other","ఇతర ఉపయోగకరమైన మెరుగుదల"]]}
   };
 
+  const actionLabels = {
+    en:{view:"View my improvements",close:"Close",empty:"No reports have been submitted from this browser yet.",history:"Your submitted improvements"},
+    fr:{view:"Voir mes améliorations",close:"Fermer",empty:"Aucun signalement n’a encore été envoyé depuis ce navigateur.",history:"Vos améliorations signalées"},
+    es:{view:"Ver mis mejoras",close:"Cerrar",empty:"Todavía no se han enviado informes desde este navegador.",history:"Mis mejoras enviadas"},
+    de:{view:"Meine Verbesserungen ansehen",close:"Schließen",empty:"Über diesen Browser wurden noch keine Meldungen gesendet.",history:"Meine eingereichten Verbesserungen"},
+    it:{view:"Visualizza i miei miglioramenti",close:"Chiudi",empty:"Da questo browser non è ancora stata inviata alcuna segnalazione.",history:"I miei miglioramenti inviati"},
+    pt:{view:"Ver minhas melhorias",close:"Fechar",empty:"Nenhum relato foi enviado por este navegador ainda.",history:"Minhas melhorias enviadas"},
+    nl:{view:"Mijn verbeteringen bekijken",close:"Sluiten",empty:"Er zijn nog geen meldingen verzonden vanuit deze browser.",history:"Mijn ingediende verbeteringen"},
+    ru:{view:"Мои предложения",close:"Закрыть",empty:"Из этого браузера ещё не отправлялись сообщения.",history:"Мои отправленные предложения"},
+    uk:{view:"Переглянути мої покращення",close:"Закрити",empty:"З цього браузера ще не надсилалися повідомлення.",history:"Мої надіслані пропозиції"},
+    ar:{view:"عرض تحسيناتي",close:"إغلاق",empty:"لم يتم إرسال أي بلاغ من هذا المتصفح بعد.",history:"التحسينات التي أرسلتها"},
+    he:{view:"הצגת השיפורים שלי",close:"סגירה",empty:"עדיין לא נשלחו דיווחים מדפדפן זה.",history:"השיפורים ששלחתי"},
+    ja:{view:"自分の改善提案を見る",close:"閉じる",empty:"このブラウザーからの報告はまだありません。",history:"送信した改善提案"},
+    ko:{view:"내 개선 제안 보기",close:"닫기",empty:"이 브라우저에서 제출한 신고가 아직 없습니다.",history:"내가 제출한 개선 제안"},
+    zh:{view:"查看我的改进",close:"关闭",empty:"尚未通过此浏览器提交报告。",history:"我提交的改进建议"},
+    hi:{view:"मेरे सुधार देखें",close:"बंद करें",empty:"इस ब्राउज़र से अभी तक कोई रिपोर्ट नहीं भेजी गई है।",history:"मेरे भेजे गए सुधार"},
+    id:{view:"Lihat peningkatan saya",close:"Tutup",empty:"Belum ada laporan yang dikirim dari browser ini.",history:"Peningkatan yang saya kirim"},
+    tr:{view:"İyileştirmelerimi gör",close:"Kapat",empty:"Bu tarayıcıdan henüz bildirim gönderilmedi.",history:"Gönderdiğim iyileştirmeler"},
+    pl:{view:"Zobacz moje ulepszenia",close:"Zamknij",empty:"Z tej przeglądarki nie wysłano jeszcze żadnego zgłoszenia.",history:"Wysłane przeze mnie ulepszenia"},
+    bn:{view:"আমার উন্নতিগুলো দেখুন",close:"বন্ধ করুন",empty:"এই ব্রাউজার থেকে এখনও কোনো প্রতিবেদন পাঠানো হয়নি।",history:"আমার পাঠানো উন্নতিগুলো"},
+    sw:{view:"Tazama maboresho yangu",close:"Funga",empty:"Hakuna ripoti iliyotumwa kutoka kwenye kivinjari hiki bado.",history:"Maboresho niliyotuma"},
+    vi:{view:"Xem cải tiến của tôi",close:"Đóng",empty:"Chưa có báo cáo nào được gửi từ trình duyệt này.",history:"Các cải tiến tôi đã gửi"},
+    fa:{view:"مشاهدهٔ بهبودهای من",close:"بستن",empty:"هنوز گزارشی از این مرورگر ارسال نشده است.",history:"بهبودهای ارسال‌شدهٔ من"},
+    ur:{view:"میری تجاویز دیکھیں",close:"بند کریں",empty:"اس براؤزر سے ابھی تک کوئی رپورٹ نہیں بھیجی گئی۔",history:"میری بھیجی گئی تجاویز"},
+    ta:{view:"எனது மேம்பாடுகளைக் காண்க",close:"மூடு",empty:"இந்த உலாவியில் இருந்து இன்னும் அறிக்கை எதுவும் அனுப்பப்படவில்லை.",history:"நான் அனுப்பிய மேம்பாடுகள்"},
+    te:{view:"నా మెరుగుదలలను చూడండి",close:"మూసివేయండి",empty:"ఈ బ్రౌజర్ నుండి ఇంకా నివేదికలు పంపలేదు.",history:"నేను పంపిన మెరుగుదలలు"}
+  };
+  const reportStorageKey = "ssswet:submitted-improvements:v1";
+  function readSubmittedReports() {
+    try { const value=JSON.parse(localStorage.getItem(reportStorageKey)||"[]"); return Array.isArray(value)?value:[]; }
+    catch (_) { return []; }
+  }
+  function saveSubmittedReport(report) {
+    const reports=readSubmittedReports();
+    reports.unshift(report);
+    try { localStorage.setItem(reportStorageKey,JSON.stringify(reports.slice(0,100))); } catch (_) {}
+  }
+
   const language = () => String(document.documentElement.lang || document.getElementById("language")?.value || "en").toLowerCase().split("-")[0];
   const text = () => copy[language()] || copy.en;
   const style = document.createElement("style");
@@ -46,13 +84,16 @@
     .ssswet-report-actions button{border:1px solid #555;border-radius:9px;padding:10px 15px;background:#242630;color:white;cursor:pointer}
     .ssswet-report-actions button[type=submit]{background:#a8242d;border-color:#a8242d}
     .ssswet-report-status{min-height:1.4em;font-size:13px}
+    .ssswet-report-history{margin:16px 0}.ssswet-report-history-list{padding-inline-start:22px;display:grid;gap:10px}
+    .ssswet-report-history-list a{color:#f0a1a5;text-decoration:underline}.ssswet-report-history-list li{overflow-wrap:anywhere}
     [dir="rtl"] .ssswet-report-dialog{text-align:right}
   `;
   document.head.append(style);
 
   function init(){
+    if(document.getElementById("ssswet-report-button")) return;
     const slot=document.querySelector(".repair-project-slot");
-    if(!slot || document.getElementById("ssswet-report-button")) return;
+    if(!slot) return;
     const button=document.createElement("button");
     button.type="button";button.id="ssswet-report-button";button.className="report-project-button";
     const dialog=document.createElement("dialog");dialog.className="ssswet-report-dialog";dialog.id="ssswet-report-dialog";
@@ -62,6 +103,9 @@
     const titleLabel=document.createElement("label"),title=document.createElement("input");
     const detailLabel=document.createElement("label"),detail=document.createElement("textarea");
     const status=document.createElement("p");status.className="ssswet-report-status";status.setAttribute("role","status");status.setAttribute("aria-live","polite");
+    const history=document.createElement("section");history.className="ssswet-report-history";history.hidden=true;
+    const historyHeading=document.createElement("h3");const historyList=document.createElement("ul");historyList.className="ssswet-report-history-list";
+    history.append(historyHeading,historyList);
     const actions=document.createElement("div");actions.className="ssswet-report-actions";
     const cancel=document.createElement("button");cancel.type="button";
     const submit=document.createElement("button");submit.type="submit";
@@ -70,7 +114,7 @@
     categoryLabel.append(document.createTextNode(""),category);
     titleLabel.append(document.createTextNode(""),title);
     detailLabel.append(document.createTextNode(""),detail);
-    actions.append(cancel,submit);form.append(heading,intro,categoryLabel,titleLabel,detailLabel,status,actions);dialog.append(form);
+    actions.append(cancel,submit);form.append(heading,intro,categoryLabel,titleLabel,detailLabel,status,history,actions);dialog.append(form);
     slot.append(button,dialog);
 
     function localize(){
@@ -79,15 +123,36 @@
       heading.textContent=t.title;intro.textContent=t.intro;
       categoryLabel.firstChild.textContent=t.category;titleLabel.firstChild.textContent=t.titleLabel;
       detailLabel.firstChild.textContent=t.detail;title.placeholder=t.titleLabel;detail.placeholder=t.placeholder;
-      cancel.textContent=t.cancel;submit.textContent=t.send;
+      const a=actionLabels[language()]||actionLabels.en;
+      cancel.textContent=a.close;
+      if(submit.dataset.mode==="history") submit.textContent=a.view;
+      else submit.textContent=t.send;
+      historyHeading.textContent=a.history;
       const previous=category.value;category.replaceChildren();
       t.options.forEach(([value,label])=>{const option=document.createElement("option");option.value=value;option.textContent=label;category.append(option);});
       if(previous)category.value=previous;
       const rtl=["ar","he"].includes(language());dialog.dir=rtl?"rtl":"ltr";
     }
 
-    button.addEventListener("click",()=>{localize();status.textContent="";dialog.showModal();});
+    function showHistory(){
+      const a=actionLabels[language()]||actionLabels.en;
+      historyList.replaceChildren();
+      const reports=readSubmittedReports();
+      if(!reports.length){const empty=document.createElement("li");empty.textContent=a.empty;historyList.append(empty);}
+      reports.forEach(report=>{
+        const item=document.createElement("li");
+        const label=document.createElement("span");label.textContent=report.title+" · "+(report.category||"");
+        item.append(label);
+        if(report.issue_url){const link=document.createElement("a");link.href=report.issue_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="GitHub";item.append(" ",link);}
+        historyList.append(item);
+      });
+      categoryLabel.hidden=true;titleLabel.hidden=true;detailLabel.hidden=true;intro.hidden=true;history.hidden=false;
+      submit.dataset.mode="history";submit.type="button";submit.textContent=a.view;
+      status.textContent="";
+    }
+    button.addEventListener("click",()=>{localize();status.textContent="";history.hidden=true;categoryLabel.hidden=false;titleLabel.hidden=false;detailLabel.hidden=false;intro.hidden=false;submit.dataset.mode="";submit.type="submit";submit.textContent=text().send;dialog.showModal();});
     cancel.addEventListener("click",()=>dialog.close());
+    submit.addEventListener("click",()=>{if(submit.dataset.mode==="history")showHistory();});
     form.addEventListener("submit",async event=>{
       event.preventDefault();const t=text();submit.disabled=true;submit.textContent=t.sending;status.textContent="";
       try{
@@ -95,13 +160,25 @@
         const response=await window.ssswetApiFetch("/api/project-reports",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({category:category.value,title:title.value.trim(),description:detail.value.trim(),language:language(),page:location.pathname})});
         const result=await response.json();
         if(!response.ok){const error=new Error(result.error||"submission failed");error.status=response.status;throw error;}
+        saveSubmittedReport({title:title.value.trim(),category:category.value,issue_url:result.issue_url||"",issue_number:result.issue_number||null,submitted_at:new Date().toISOString()});
         status.textContent=t.success;form.reset();localize();
+        categoryLabel.hidden=true;titleLabel.hidden=true;detailLabel.hidden=true;intro.hidden=true;history.hidden=true;
+        submit.dataset.mode="history";submit.type="button";submit.textContent=(actionLabels[language()]||actionLabels.en).view;
       }catch(error){status.textContent=error.message==="unavailable"||error.status===503?t.unavailable:t.error;}
-      finally{submit.disabled=false;submit.textContent=text().send;}
+      finally{submit.disabled=false;if(submit.dataset.mode!=="history")submit.textContent=text().send;}
     });
     document.getElementById("language")?.addEventListener("change",localize);
     window.addEventListener("ssswet-language-changed",localize);
     localize();
   }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+  function waitForRepairSlot(){
+    init();
+    if(document.getElementById("ssswet-report-button")) return;
+    const observer=new MutationObserver(()=>{
+      if(document.querySelector(".repair-project-slot")){observer.disconnect();init();}
+    });
+    observer.observe(document.documentElement,{childList:true,subtree:true});
+    window.addEventListener("ssswet-language-changed",init,{once:true});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",waitForRepairSlot,{once:true});else waitForRepairSlot();
 })();
