@@ -21,7 +21,7 @@
       return note;
     })();
     minimumNote.textContent = document.documentElement.lang?.startsWith("fr")
-      ? "Minimum de contribution : 1 USD ou l’équivalent affiché."
+      ? "Contribution minimale : 1 dollar américain ou l’équivalent affiché."
       : "Minimum contribution: USD 1 or the displayed equivalent.";
 
     if (checkout.dataset.dynamicPaymentInstalled === "true") return;
@@ -33,7 +33,7 @@
       const value = Number(amount.value);
       if (!Number.isFinite(value) || value < MIN_CONTRIBUTION) {
         status.textContent = document.documentElement.lang?.startsWith("fr")
-          ? "Le montant minimum est de 1 USD ou son équivalent affiché."
+          ? "Le montant minimum est de 1 dollar américain ou son équivalent affiché."
           : "The minimum contribution is USD 1 or the displayed equivalent.";
         return;
       }
