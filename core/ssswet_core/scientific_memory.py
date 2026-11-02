@@ -139,6 +139,11 @@ class ScientificMemoryService:
     def overview(self, query: str = "", limit: int = 200) -> dict:
         versions = self.store.scientific_memory_history(limit=limit)
         graph = self.store.knowledge_graph(limit=2000)
+        graph_node_ids = {node["node_id"] for node in graph["nodes"]}
+        source_ids = {source["source_id"] for source in self.store._all_source_records()}
+        experiment_ids = {
+            item["experiment_id"] for item in self.store.experiment_overview(limit=500)
+        }
         contradiction_nodes = set()
         for edge in graph["edges"]:
             if edge["relation"] == "contradicts":
@@ -150,12 +155,22 @@ class ScientificMemoryService:
         for item in versions:
             linked = set(item.get("graph_node_ids", []))
             contested_links = sorted(linked & contradiction_nodes)
+            missing_sources = sorted(set(item.get("source_ids", [])) - source_ids)
+            missing_experiments = sorted(set(item.get("experiment_ids", [])) - experiment_ids)
+            missing_graph_nodes = sorted(linked - graph_node_ids)
+            missing_links = {
+                "source_ids": missing_sources,
+                "experiment_ids": missing_experiments,
+                "graph_node_ids": missing_graph_nodes,
+            }
             item = {
                 **item,
                 "is_current": latest_by_key.get(item["memory_key"]) == item["version_id"],
                 "contested_by_graph": bool(contested_links),
                 "contested_graph_node_ids": contested_links,
                 "potentially_outdated": latest_by_key.get(item["memory_key"]) != item["version_id"],
+                "missing_links": missing_links,
+                "has_missing_links": any(missing_links.values()),
                 "scientific_validity_established": False,
             }
             enriched.append(item)
@@ -183,6 +198,12 @@ class ScientificMemoryService:
             "total_versions": len(enriched),
             "current_versions": sum(1 for item in enriched if item["is_current"]),
             "contested_versions": sum(1 for item in enriched if item["contested_by_graph"]),
+            "versions_with_missing_links": sum(1 for item in enriched if item["has_missing_links"]),
+            "missing_link_counts": {
+                "source_ids": sum(len(item["missing_links"]["source_ids"]) for item in enriched),
+                "experiment_ids": sum(len(item["missing_links"]["experiment_ids"]) for item in enriched),
+                "graph_node_ids": sum(len(item["missing_links"]["graph_node_ids"]) for item in enriched),
+            },
             "retrieval_method": "lexical_overlap" if query.strip() else "chronological",
             "scientific_validity_established": False,
             "automatic_adjudication": False,
