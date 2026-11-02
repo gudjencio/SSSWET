@@ -204,6 +204,8 @@
     materials_scientist:{en:"Materials scientist",fr:"Spécialiste des matériaux",es:"Científico de materiales",de:"Materialwissenschaftler",it:"Scienziato dei materiali",pt:"Cientista de materiais",nl:"Materiaalkundige",ru:"Специалист по материалам",uk:"Фахівець із матеріалів",ar:"عالم مواد",he:"מדען חומרים",ja:"材料科学者",ko:"재료 과학자",zh:"材料科学家",hi:"सामग्री वैज्ञानिक"}
   };
   const roleName = (role) => roleLabels[role]?.[lang()] || roleLabels[role]?.en || pretty(role || t().role);
+  const agentNames = { general_researcher:"Mira Solène", independent_verifier:"Elias Varenne", medical_researcher:"Nadia El-Karim", materials_scientist:"Theo Marchand", data_analyst:"Asha Okafor", systems_engineer:"Jun Park", ethics_reviewer:"Amara Diallo", futures_analyst:"Leon Wu" };
+  const agentName = (role) => agentNames[role] || roleName(role);
   const avatar = (index) => '<span class="agent-avatar agent-avatar-'+((index%3)+1)+'"><span class="agent-robot-head"><i></i><i></i></span><span class="agent-robot-body"></span></span>';
   const time = (value) => { const d=new Date(value); return value && !Number.isNaN(d.getTime()) ? d.toLocaleTimeString(lang(),{hour:"2-digit",minute:"2-digit"}) : ""; };
   let voiceEnabled = Boolean(window.speechSynthesis && typeof SpeechSynthesisUtterance !== "undefined");
@@ -354,7 +356,7 @@
     if (stage.dataset.renderSignature === signature) return;
     stage.dataset.renderSignature = signature;
     stage.innerHTML = selected.map((agent,index) => {
-      const role = roleName(agent.role);
+      const role = agentName(agent.role);
       const activeClass = isActive ? "is-active" : (String(agent.role||"").includes("verif") ? "is-review" : "");
       const id = agent.id || agent.agent_id;
       return '<article class="bot-stage-agent '+activeClass+'"><div class="bot-stage-agent-content">'+avatar(index)+'<div class="bot-stage-agent-label"><strong>'+esc(role)+'</strong><small>'+esc(id)+'</small><small class="bot-agent-phase">'+esc(isActive?phaseLabel(agent.phase):t().notActive)+'</small></div></div></article>';
@@ -480,6 +482,15 @@
       const data=await response.json();
       currentData=data;
       window.SSSWET_LIVE_RESEARCH_DATA=data;
+      if (!window.SSSWET_AGENT_IDENTITIES_LOADED) {
+        try {
+          const identityResponse = await window.ssswetApiFetch('/api/agent-identities');
+          if (identityResponse.ok) {
+            window.SSSWET_AGENT_IDENTITIES = await identityResponse.json();
+            window.SSSWET_AGENT_IDENTITIES_LOADED = true;
+          }
+        } catch (_) { /* Stable local role names remain available offline. */ }
+      }
       window.dispatchEvent(new CustomEvent("ssswet-bot-data",{detail:data}));
       renderStage(data);
       renderFeed(data,true);
