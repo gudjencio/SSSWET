@@ -174,11 +174,14 @@
   function preferredLanguage() {
     const candidates = Array.isArray(navigator.languages) && navigator.languages.length
       ? navigator.languages : [navigator.language || "en"];
-    for (const candidate of candidates) {
-      const code = String(candidate).toLowerCase().replace("_", "-").split("-")[0];
-      if (locales[code]) return code;
-    }
-    return "en";
+    const supported = candidates.map(candidate =>
+      String(candidate).toLowerCase().replace("_", "-").split("-")[0]
+    ).filter(code => locales[code]);
+    if (supported.includes("fr")) return "fr";
+    try {
+      if (Intl.DateTimeFormat().resolvedOptions().timeZone === "Europe/Paris" && locales.fr) return "fr";
+    } catch (_) {}
+    return supported[0] || "en";
   }
   function currentLanguage() { return languageSelect.value || "en"; }
   function translationSource(code) {
