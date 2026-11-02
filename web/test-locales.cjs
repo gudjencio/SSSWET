@@ -319,7 +319,7 @@ if (!pageSource.includes('src="technology-categories.js"') ||
     !serviceWorkerCache.includes('"./technology-categories.js"')) {
   throw new Error("The categorized technology catalogue must be loaded and cached.");
 }
-console.log("Validated exactly 100 unique technology programmes, eight categories, and 15 translated taxonomies.");
+console.log("Validated exactly 116 unique technology themes, eight categories, and 15 translated taxonomies.");
 
 
 const botRoomSource = fs.readFileSync(new URL("./bot-live-room.js", `file://${__filename}`), "utf8");
