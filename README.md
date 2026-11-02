@@ -9,7 +9,13 @@ The project is exploratory. Public descriptions are intentionally high-level and
 
 ## Research catalogue
 
-The platform maintains 100 research programmes across eight translated categories. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md) and read about the [research-agent identities and persistent memory](docs/AGENT_IDENTITIES_AND_MEMORY.md). The proposed, currently disabled [monthly technology financing model](docs/MONTHLY_TECHNOLOGY_FINANCING.md) documents subscription sequencing, tax transparency, cancellation, refunds and repair safeguards.
+The platform maintains 106 research programmes across eight translated categories. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md), the [protective systems and exoskeleton portfolio](docs/PROTECTIVE_SYSTEMS_AND_EXOSKELETON_PORTFOLIO.md), and the [protective system technical specification framework](docs/PROTECTIVE_SYSTEM_TECHNICAL_SPECIFICATION_FRAMEWORK.md).
+
+The cellular programme now includes dedicated draft workstreams covering cellular recovery, tissue and organ preservation, neural preservation and post-mortem biological limits. These remain research proposals and do not claim that human resurrection is currently possible.
+
+Research into protective equipment may cover lawful military, civil-protection, emergency-response and occupational applications. The public scope is non-offensive: protection, injury prevention, mobility assistance, environmental resilience, rescue and medical support. Weapons, weapon integration, targeting and offensive autonomy are outside the project scope.
+
+The proposed, currently disabled [monthly technology financing model](docs/MONTHLY_TECHNOLOGY_FINANCING.md) documents subscription sequencing, tax transparency, cancellation, refunds and repair safeguards.
 
 ## Applications
 
@@ -33,6 +39,8 @@ The project may change its public descriptions and availability as research, rev
 - Require appropriate human, scientific, safety and legal review before real-world use.
 - Protect personal information, credentials and confidential material from publication.
 - Record declared risks and uncertainties without inventing probability, impact or safety conclusions; see [Research Risk & Uncertainty Register](docs/RESEARCH_RISK_UNCERTAINTY_REGISTER.md).
+- For protective systems, distinguish design targets from observed and independently verified performance.
+- Do not describe equipment as certified, bulletproof, blast-proof, chemical-proof, radiation-proof or military-grade without configuration-specific independent evidence.
 
 ## Contributions
 
