@@ -197,6 +197,8 @@ if (!pageSource.includes('id="research-journal-form"') || !pageSource.includes('
 if (!journalSource.includes('/api/research-journal') || !journalSource.includes('chain_intact')) throw new Error('Research journal API or integrity display is missing.');
 console.log('Validated the append-only research journal interface.');
 
+const temporalSource=fs.readFileSync(new URL('./virtual-time-travel.js', `file://${__filename}`),'utf8');
+new vm.Script(temporalSource);
 const temporalHtml=fs.readFileSync(new URL('./virtual-time-travel.html', `file://${__filename}`),'utf8');
 for(const id of ['vt-keyframe-clip','vt-keyframe-interval','vt-keyframe-analyze','vt-keyframe-results'])if(!temporalHtml.includes('id="'+id+'"'))throw new Error('Missing local keyframe control: '+id);
 const feasibilitySource=fs.readFileSync(new URL('./technology-feasibility.js', `file://${__filename}`),'utf8');
