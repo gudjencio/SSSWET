@@ -33,7 +33,7 @@ function localize(){
  const lang=$("vt-language").value;locale=languages[lang]?lang:"en";
  document.documentElement.lang=locale;document.documentElement.dir=["ar","he"].includes(locale)?"rtl":"ltr";document.title=(t().brand||"Virtual Time Travel Mapping")+" · "+(t().acronym||"SSSWET");$("vt-language").setAttribute("aria-label",t().language);const description=document.querySelector('meta[name="description"]');if(description)description.content=t().intro;document.querySelectorAll("[data-a]").forEach(node=>{const value=(extraCopy[locale]||extraCopy.en)[node.dataset.a];if(value)node.setAttribute("aria-label",value)});const horizon=$("vt-horizon");if(horizon){const words=extraCopy[locale]||extraCopy.en;horizon.options[0].textContent=words.m1;horizon.options[1].textContent=words.m5;horizon.options[2].textContent=words.m15;}
  document.querySelectorAll("[data-i]").forEach(node=>{const value=t()[node.dataset.i];if(value)node.textContent=value});
- document.querySelectorAll("[data-ph]").forEach(node=>{const value=t()[node.dataset.ph];if(value)node.placeholder=value});refreshStorage();document.querySelectorAll("[data-x]").forEach(node=>{const value=(extraCopy[locale]||extraCopy.en)[node.dataset.x];if(value)node.textContent=value});localizeMapControls();
+ document.querySelectorAll("[data-ph]").forEach(node=>{const value=t()[node.dataset.ph];if(value)node.placeholder=value});refreshStorage();document.querySelectorAll("[data-x]").forEach(node=>{const value=(extraCopy[locale]||extraCopy.en)[node.dataset.x];if(value)node.textContent=value});localizeMapControls();if(keyframeCandidates.length)renderKeyframeCandidates();
  
 }
 function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open("ssswet-virtual-time-map",1);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains("events"))d.createObjectStore("events",{keyPath:"id"});if(!d.objectStoreNames.contains("media"))d.createObjectStore("media",{keyPath:"id"});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
@@ -198,6 +198,7 @@ function refreshKeyframeClips(){
 }
 function seekVideo(video,time){
  return new Promise((resolve,reject)=>{
+  if(Math.abs(video.currentTime-time)<0.001&&video.readyState>=2){resolve();return}
   const timer=window.setTimeout(()=>{cleanup();reject(new Error("Video seek timed out"))},6000);
   const cleanup=()=>{window.clearTimeout(timer);video.removeEventListener("seeked",done);video.removeEventListener("error",fail)};
   const done=()=>{cleanup();resolve()},fail=()=>{cleanup();reject(new Error("Video seek failed"))};
@@ -232,7 +233,7 @@ async function analyzeKeyframes(){
  let url=null,video=null;
  try{
   url=URL.createObjectURL(clip.blob);video=document.createElement("video");video.preload="auto";video.muted=true;video.playsInline=true;video.src=url;
-  const loaded=new Promise((resolve,reject)=>{video.addEventListener("loadedmetadata",resolve,{once:true});video.addEventListener("error",reject,{once:true})});video.load();await loaded;
+  const loaded=new Promise((resolve,reject)=>{video.addEventListener("loadedmetadata",resolve,{once:true});video.addEventListener("error",reject,{once:true})});video.load();await loaded;await new Promise(resolve=>{if(video.readyState>=2)resolve();else video.addEventListener("loadeddata",resolve,{once:true})});
   const duration=Number(video.duration);if(!Number.isFinite(duration)||duration<=0||!video.videoWidth||!video.videoHeight)throw new Error("Selected clip has no readable video stream");
   const count=Math.min(60,Math.max(1,Math.ceil(duration/interval))),step=Math.max(interval,duration/Math.max(1,count-1));
   const scoreCanvas=document.createElement("canvas");scoreCanvas.width=160;scoreCanvas.height=90;
