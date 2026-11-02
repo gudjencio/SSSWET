@@ -335,6 +335,7 @@ class ResearchPipeline:
 
                 review_active = {}
                 review_futures = {}
+                review_records = []
                 review_workers = max(1, min(4, len(handoffs)))
                 with ThreadPoolExecutor(max_workers=review_workers, thread_name_prefix="ssswet-review") as executor:
                     for message_id, sender, reviewer in handoffs:
@@ -390,6 +391,14 @@ class ResearchPipeline:
                                 message_type="peer_review_response",
                                 content=response[:4000],
                             )
+                            review_records.append({
+                                "reviewer_role": reviewer.subtask.role,
+                                "reviewed_role": sender.subtask.role,
+                                "summary": review_result.summary,
+                                "evidence": list(review_result.evidence),
+                                "source_ids": list(review_result.source_ids),
+                                "uncertainty": review_result.uncertainty,
+                            })
                             self._record_peer_review_relationship(task.id, message_id, sender, reviewer)
                             self.engine.orchestrator.events.append(ResearchEvent(
                                 "peer_review_completed",
@@ -413,6 +422,26 @@ class ResearchPipeline:
                                     "active_agents": list(review_active.values()),
                                     "last_agent": {"id": reviewer.agent_id, "role": reviewer.subtask.role},
                                 })
+
+                if review_records:
+                    from .review_protocol import build_review_synthesis
+                    synthesis = build_review_synthesis(review_records)
+                    synthesis_text = synthesis.to_public_text()
+                    self.store.publish_agent_message(
+                        task_id=task.id,
+                        sender_agent_id="ssswet:review_protocol",
+                        sender_role="independent_review_synthesis",
+                        recipient_agent_id=agents[0].id,
+                        recipient_role=agents[0].role,
+                        message_type="peer_review_synthesis",
+                        content=synthesis_text[:6000],
+                    )
+                    self.engine.orchestrator.events.append(ResearchEvent(
+                        "peer_review_synthesis_created",
+                        "A structured synthesis recorded evidence leads, uncertainty and unresolved questions without certifying findings.",
+                        task.id,
+                        agents[0].id,
+                    ))
 
             # Provider output is not automatically promoted to a verified finding.
             self.engine.orchestrator.complete(task, agents[0].id, accepted=True)
