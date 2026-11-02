@@ -28,8 +28,8 @@ def test_engine_can_register_full_catalogue(tmp_path):
 
     engine = SSSWETEngine(SQLiteResearchStore(tmp_path / "engine-catalogue.sqlite3"))
     result = engine.register_technology_catalogue(actor_id="catalogue-bot")
-    assert result["catalogue_size"] == 500
-    assert result["created_count"] == 500
+    assert result["catalogue_size"] == 510
+    assert result["created_count"] == 510
     assert engine.get_technology_dossier("education")["domain"] == "society"
 
 
