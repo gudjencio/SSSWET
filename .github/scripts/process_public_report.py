@@ -22,8 +22,8 @@ def request_json(url,payload=None,openai=False):
 def comment(message):
     request_json(f"{API}/repos/{REPO}/issues/{ISSUE_NUMBER}/comments",{"body":message})
 
-def run(command,check=True):
-    return subprocess.run(command,cwd=ROOT,text=True,capture_output=True,check=check)
+def run(command,check=True,cwd=ROOT):
+    return subprocess.run(command,cwd=cwd,text=True,capture_output=True,check=check)
 
 def allowed(path):
     path=path.strip().replace("\\","/")
@@ -76,7 +76,7 @@ def main():
     patch_file=ROOT/".ssswet-report.patch"; patch_file.write_text(patch+"\n",encoding="utf-8")
     try:
         run(["git","apply","--check",str(patch_file)]); run(["git","apply",str(patch_file)])
-        run(["python","-m","pytest","-q"])
+        run(["python","-m","pytest","-q"],cwd=ROOT/"core")
         for js in (ROOT/"web").glob("*.js"): run(["node","--check",str(js)])
         run(["node","web/test-locales.cjs"])
     except subprocess.CalledProcessError as exc:
