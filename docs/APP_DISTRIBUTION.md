@@ -33,3 +33,8 @@ The mobile and desktop wrappers package the public `web/` interface. They do not
 ## Version centre
 
 The public website reads the official GitHub Releases feed at runtime. It displays the most recent published release, previous releases, attached installers and the SHA-256 checksum file when present. If no release has been published, the interface states that explicitly; it does not imply that a build artifact or installer is already available. Release notes are linked to GitHub, and release assets are served from the official repository.
+
+
+## Web application updates
+
+The installable web application checks for a newly published service-worker version when it starts and when connectivity returns. When an update is ready, the interface offers a refresh action. The active version remains in use until the user confirms the update; the first installation does not trigger an unnecessary page reload. Offline availability depends on the resources successfully cached by the browser and does not guarantee that hosted research services are reachable.
