@@ -1501,3 +1501,6 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
  .bot-visitor-questions { display:flex !important; flex-wrap:wrap; }
  .bot-visitor-questions button { flex:1 1 100%; }
 }
+
+/* Keep the equation line clear; the redundant stage caption is omitted. */
+.bot-stage-caption { display:none !important; }
