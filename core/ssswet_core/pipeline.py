@@ -27,6 +27,8 @@ class ResearchPipeline:
         provider: ResearchProvider | None = None,
         store: SQLiteResearchStore | None = None,
         campaign_coordinator: CampaignCoordinator | None = None,
+        agent_workers: int = 16,
+        review_workers: int = 12,
     ):
         self.engine = engine or SSSWETEngine()
         self.decomposer = TaskDecomposer()
@@ -34,6 +36,10 @@ class ResearchPipeline:
         self.provider = provider or DeterministicDemoProvider()
         self.store = store
         self.campaign_coordinator = campaign_coordinator
+        # Independent work is intentionally parallel. Bounds prevent unbounded
+        # thread creation while allowing substantially faster multi-agent passes.
+        self.agent_workers = max(1, min(int(agent_workers), 32))
+        self.review_workers = max(1, min(int(review_workers), 32))
 
     @staticmethod
     def _identity_for_role(role: str) -> tuple[str, str]:
@@ -57,18 +63,18 @@ class ResearchPipeline:
         identity_role, identity_id = self._identity_for_role(role)
         registry = AgentIdentityRegistry(self.store)
         memories = [
-            item for item in registry.search_memories(identity_id, objective, limit=12)
+            item for item in registry.search_memories(identity_id, objective, limit=8)
             if not current_task_id or f"task:{current_task_id};" not in item["source_reference"]
-        ][:6]
+        ][:4]
         if not memories:
             memories = [
-                item for item in registry.memories(identity_id, limit=3)
+                item for item in registry.memories(identity_id, limit=2)
                 if not current_task_id or f"task:{current_task_id};" not in item["source_reference"]
             ]
         collaborations = [
-            item for item in registry.collaborations(identity_id, limit=20)
+            item for item in registry.collaborations(identity_id, limit=12)
             if not current_task_id or f"task:{current_task_id};" not in item["evidence_reference"]
-        ][:6]
+        ][:4]
         if not memories and not collaborations:
             return ""
         sections = [
@@ -81,14 +87,14 @@ class ResearchPipeline:
                 f"- Prior work note [{item['source_reference']}] "
                 f"(retrieval score {item.get('retrieval_score', 'recent-history')}; "
                 f"matched terms: {', '.join(item.get('matched_terms', [])) or 'recent-history'}): "
-                f"{item['content'][:900]}"
+                f"{item['content'][:700]}"
             )
         for item in collaborations:
             sections.append(
                 f"- Recorded collaboration [{item['evidence_reference']}]: "
-                f"{item['event_type']} with {item['other_agent_id']}. {item['note'][:350]}"
+                f"{item['event_type']} with {item['other_agent_id']}. {item['note'][:250]}"
             )
-        return "\n".join(sections)[:8000]
+        return "\n".join(sections)[:6000]
 
     def _investigate(self, objective: str, strategy: str, role: str, task_id: str | None = None) -> ProviderResult:
         """Run a provider pass with this role's bounded, source-linked prior work."""
@@ -131,7 +137,6 @@ class ResearchPipeline:
         """Record a completed, observable handoff; never infer personal feelings."""
         if not self.store:
             return
-        from .agent_identity import AgentIdentityRegistry
         reviewer_role, reviewer_id = self._identity_for_role(reviewer.subtask.role)
         sender_role, sender_id = self._identity_for_role(sender.subtask.role)
         AgentIdentityRegistry(self.store).record_collaboration(
@@ -278,7 +283,7 @@ class ResearchPipeline:
             active_by_id: dict[str, dict] = {}
             completed_steps: dict[int, PipelineStep] = {}
             indexed_futures = {}
-            worker_count = max(1, min(10, len(subtasks)))
+            worker_count = max(1, min(self.agent_workers, len(subtasks)))
             with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="ssswet-agent") as executor:
                 for index, (subtask, agent) in enumerate(zip(subtasks, agents, strict=True)):
                     active_by_id[agent.id] = {
@@ -346,7 +351,7 @@ class ResearchPipeline:
                 review_active = {}
                 review_futures = {}
                 review_records = []
-                review_workers = max(1, min(6, len(handoffs)))
+                review_workers = max(1, min(self.review_workers, len(handoffs)))
                 with ThreadPoolExecutor(max_workers=review_workers, thread_name_prefix="ssswet-review") as executor:
                     for message_id, sender, reviewer in handoffs:
                         original = self.store.agent_message(message_id)
