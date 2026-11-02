@@ -119,3 +119,8 @@ SSSWET can prepare auditable reviewer-panel proposals that exclude prior reviewe
 ## Research decision lineage
 
 The persistent research decision ledger preserves decision rationales, evidence references, reviewer identifiers and constrained review-state changes. Corrections create new linked decisions rather than overwriting earlier records, so abandoned interpretations and negative findings remain traceable. Recorded statuses are review history, not scientific truth or certification. See [Research decision lineage](docs/RESEARCH_DECISION_LINEAGE.md).
+
+
+## Agent memory evidence review
+
+Agent memories now carry explicit, append-only source-review states. Researchers can flag a note for reassessment, record a referenced recheck, or mark it superseded or withdrawn. Search results expose the latest review status and reviewer provenance; unreviewed notes remain visibly unreviewed. These workflow annotations do not establish scientific truth or infer staleness from age. See [Agent memory evidence review](docs/AGENT_MEMORY_EVIDENCE_REVIEW.md).
