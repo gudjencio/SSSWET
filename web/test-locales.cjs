@@ -119,7 +119,7 @@ const donationSourceLatest = fs.readFileSync(new URL("./donation.js", `file://${
 const paymentConfig = fs.readFileSync(new URL("./donation-config.js", `file://${__filename}`), "utf8");
 new Function(donationSourceLatest);
 const catalogueBlock = donationSourceLatest.slice(donationSourceLatest.indexOf("const technologies = {"), donationSourceLatest.indexOf("window.SSSWET_TECHNOLOGIES"));
-const catalogueEntries = [...catalogueBlock.matchAll(/^    ([A-Za-z_$][\\w$]*): \\{/gm)].map(match => match[1]);
+const catalogueEntries = [...catalogueBlock.matchAll(/^    ([A-Za-z_$][\w$]*): \{/gm)].map(match => match[1]);
 if (catalogueEntries.length !== 40 || new Set(catalogueEntries).size !== 40) {
   throw new Error(`Expected exactly 40 unique public technology catalogue entries; found ${catalogueEntries.length}.`);
 }
