@@ -250,9 +250,9 @@ class ResearchPipeline:
                             + ". Teammate output: "
                             + str(original["content"])[-3000:]
                         )
-                        review_active[reviewer.id] = {
-                            "id": reviewer.id,
-                            "role": reviewer.role,
+                        review_active[reviewer.agent_id] = {
+                            "id": reviewer.agent_id,
+                            "role": reviewer.subtask.role,
                             "task_id": task.id,
                             "objective": "Independently checking a teammate's provisional research output",
                             "phase": "independent_review",
@@ -276,14 +276,14 @@ class ResearchPipeline:
                             evidence_text = " | ".join(review_result.evidence[:4])
                             response = (
                                 f"Review of handoff #{message_id}. Independent literature-search pass "
-                                f"completed by {reviewer.role}. {review_result.summary[:1800]} "
+                                f"completed by {reviewer.subtask.role}. {review_result.summary[:1800]} "
                                 f"Evidence leads: {evidence_text[:2200] or 'No usable evidence leads returned.'} "
                                 f"Uncertainty: {review_result.uncertainty:.2f}. "
                                 "Assessment remains provisional; this is not approval or verification."
                             )
                             self.store.publish_agent_message(
                                 task_id=task.id,
-                                sender_agent_id=reviewer.id,
+                                sender_agent_id=reviewer.agent_id,
                                 sender_role=reviewer.role,
                                 recipient_agent_id=sender.agent_id,
                                 recipient_role=sender.subtask.role,
@@ -294,23 +294,23 @@ class ResearchPipeline:
                                 "peer_review_completed",
                                 "A teammate's output received an independent literature-search review; no approval was implied.",
                                 task.id,
-                                reviewer.id,
+                                reviewer.agent_id,
                             ))
                         except Exception as error:
                             self.engine.orchestrator.events.append(ResearchEvent(
                                 "peer_review_blocked",
                                 f"An independent peer-review search could not complete ({type(error).__name__}); the original output remains unverified.",
                                 task.id,
-                                reviewer.id,
+                                reviewer.agent_id,
                             ))
                         finally:
-                            review_active.pop(reviewer.id, None)
+                            review_active.pop(reviewer.agent_id, None)
                             if progress_callback:
                                 progress_callback({
                                     "phase": "peer_review_progress",
                                     "task_id": task.id,
                                     "active_agents": list(review_active.values()),
-                                    "last_agent": {"id": reviewer.id, "role": reviewer.role},
+                                    "last_agent": {"id": reviewer.agent_id, "role": reviewer.subtask.role},
                                 })
 
             # Provider output is not automatically promoted to a verified finding.
