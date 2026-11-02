@@ -182,7 +182,7 @@ def test_pipeline_persists_source_linked_agent_notes_and_observed_peer_review(tm
     )
 
     registry = AgentIdentityRegistry(store)
-    researcher_notes = registry.memories("ssswet:general_researcher")
+    researcher_notes = registry.memories("ssswet:general_researcher:mathematician")
     verifier_notes = registry.memories("ssswet:independent_verifier")
     overview = registry.overview()
 
