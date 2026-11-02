@@ -59,3 +59,35 @@ def test_rejects_missing_or_non_string_claim_fields():
         ResearchClaim("water", "state", "liquid", "")
     with pytest.raises(ValueError, match="predicate"):
         ResearchClaim("water", None, "liquid", "source-a")
+
+
+def test_different_scopes_conditions_or_units_are_not_directly_compared():
+    detector = ContradictionDetector()
+    claims = [
+        ResearchClaim("battery", "capacity", "100", "source-a", scope="cell"),
+        ResearchClaim("battery", "capacity", "80", "source-b", scope="pack"),
+        ResearchClaim("battery", "capacity", "100", "source-c", scope="cell", conditions="25 C"),
+        ResearchClaim("battery", "capacity", "100", "source-d", scope="cell", unit="Wh"),
+    ]
+    assert detector.compare(claims) == []
+
+
+def test_different_observation_dates_are_flagged_as_temporal_review_not_resolved_conflict():
+    claims = [
+        ResearchClaim("coating", "measured_thickness", "120", "source-a", unit="um", observed_at="2024-01-01"),
+        ResearchClaim("coating", "measured_thickness", "105", "source-b", unit="um", observed_at="2025-01-01"),
+    ]
+    conflicts = ContradictionDetector().compare(claims)
+    assert len(conflicts) == 1
+    assert conflicts[0].classification == "temporal_difference_needs_review"
+    assert conflicts[0].observed_at_values == ("2024-01-01", "2025-01-01")
+
+
+def test_same_context_disagreement_remains_a_potential_conflict():
+    claims = [
+        ResearchClaim("sensor", "error", "1.2", "source-a", unit="percent", observed_at="2025-01-01"),
+        ResearchClaim("sensor", "error", "2.1", "source-b", unit="percent", observed_at="2025-01-01"),
+    ]
+    conflicts = ContradictionDetector().compare(claims)
+    assert len(conflicts) == 1
+    assert conflicts[0].classification == "potential_conflict"
