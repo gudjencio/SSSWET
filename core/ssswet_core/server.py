@@ -727,7 +727,8 @@ def main() -> None:
             daemon=True,
         )
         worker.start()
-        print(f"Autonomous research: active across all 32 programmes; cycle interval {args.research_interval_minutes:g} minutes.")
+        from .research_daemon import TECHNOLOGY_OBJECTIVES
+        print(f"Autonomous research: active across all {len(TECHNOLOGY_OBJECTIVES)} programmes; cycle interval {args.research_interval_minutes:g} minutes.")
     else:
         print("Autonomous research: disabled by command-line option.")
     try:
