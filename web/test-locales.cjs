@@ -348,7 +348,15 @@ if (financingPolicy.billing_frequency !== "monthly" ||
     !financingPolicy.monthly_payment_maximum.includes("X") ||
     !financingPolicy.bot_estimates_require_sources_and_uncertainty_labels ||
     !financingPolicy.independent_estimate_review_required ||
-    !financingPolicy.human_approval_required_before_publishing_or_charging_X ||
+    financingPolicy.automatic_price_publication_only_when_all_validation_checks_pass !== true ||
+    financingPolicy.incomplete_or_unverifiable_estimate_must_withhold_price !== true ||
+    financingPolicy.uncertainty_reserve_max_percent_of_pretax_baseline !== 10 ||
+    financingPolicy.reserve_above_cap_requires_more_research_not_higher_price !== true ||
+    financingPolicy.collected_reserve_becomes_customer_specific_future_purchase_credit !== true ||
+    financingPolicy.credit_only_from_cleared_collected_reserve !== true ||
+    financingPolicy.credit_ledger_private_auditable_and_nonduplicative !== true ||
+    financingPolicy.statutory_refunds_override_store_credit !== true ||
+    financingPolicy.research_outcome_and_non_delivery_risk_must_be_disclosed !== true ||
     !financingPolicy.minimum_is_monthly_payment_not_guaranteed_net_margin ||
     !financingPolicy.all_applicable_taxes_included_in_displayed_consumer_total ||
     !financingPolicy.repair_and_compensation_costs_must_be_separate_itemized_line_items ||
@@ -368,7 +376,7 @@ if (Object.values(purchasePolicy.products).some(product => product.available || 
   throw new Error("No research concept may be advertised as a purchasable product without verified availability and pricing.");
 }
 const monthlyFinancingDoc = fs.readFileSync(new URL("../docs/MONTHLY_TECHNOLOGY_FINANCING.md", `file://${__filename}`), "utf8");
-for (const phrase of ["Status: proposed design", "blanket", "statutory guarantee", "all-inclusive", "one technology per monthly billing period", "USD 1 minimum to X maximum", "bots must not invent", "Repair or compensation costs are not themselves taxes"]) {
+for (const phrase of ["Status: proposed design", "blanket", "statutory guarantee", "all-inclusive", "one technology per monthly billing period", "USD 1 minimum to X maximum", "uncertainty reserve", "customer-specific discount credit", "never be a promise", "Repair or compensation costs are not themselves taxes"]) {
   if (!monthlyFinancingDoc.toLowerCase().includes(phrase.toLowerCase())) {
     throw new Error(`Monthly financing policy is missing safeguard: ${phrase}`);
   }
