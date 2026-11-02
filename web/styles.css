@@ -1377,7 +1377,7 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 .bot-visitor-questions > span { display: none; }
 .bot-visitor-questions button { padding: 11px 16px; }
 .footer { margin-top: 20px; padding-top: 12px; }
-.footer-note { max-width: 760px; }
+.footer-note { display: none !important; }
 
 /* Keep the large stage usable on narrow screens without compressing agents. */
 @media (max-width: 700px) {
