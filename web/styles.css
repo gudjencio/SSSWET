@@ -1786,3 +1786,50 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 #bot-visitor-answer li small{color:var(--muted,#888);font-size:10px}
 .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:460px){.bot-free-question-form{grid-template-columns:1fr}.bot-free-question-form button{width:100%}}
+
+
+/* Centered language control and unified responsive application header. */
+.app-shell > .topbar {
+  justify-content: center;
+  flex-direction: column;
+  gap: 13px;
+  text-align: center;
+}
+.app-shell > .topbar .brand {
+  width: 100%;
+  text-align: center;
+}
+.app-shell > .topbar .brand-mark { letter-spacing: .2em; }
+.app-shell > .topbar .brand-subtitle {
+  max-width: min(620px, 92vw);
+  margin-inline: auto;
+  line-height: 1.5;
+}
+.app-shell > .topbar .language-control {
+  display: flex;
+  justify-content: center;
+  width: min(320px, 100%);
+  margin: 0 auto;
+}
+.app-shell > .topbar #language {
+  width: 100%;
+  max-width: 320px;
+  min-height: 42px;
+  border: 1px solid rgba(255,255,255,.17);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255,255,255,.085), rgba(255,255,255,.025));
+  color: #f5f5f5;
+  text-align: center;
+  text-align-last: center;
+  box-shadow: 0 8px 28px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.06);
+}
+.app-shell > .topbar #language:focus-visible {
+  outline: 2px solid rgba(255,255,255,.7);
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .app-shell { padding-top: max(18px, env(safe-area-inset-top)); }
+  .app-shell > .topbar { gap: 11px; }
+  .app-shell > .topbar .brand-subtitle { font-size: 10px; }
+  .app-shell > .topbar #language { max-width: 100%; }
+}
