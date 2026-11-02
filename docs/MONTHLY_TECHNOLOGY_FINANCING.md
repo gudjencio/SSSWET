@@ -25,13 +25,15 @@ The proposed customer journey is:
 
 The project owner's intended operating rule is one technology funded per monthly period, including when the customer initially selects only one technology. The actual payment schedule, allocation order and what happens when a technology is fully funded must be shown clearly in the order summary.
 
-## 3. Price, margin and taxes
+## 3. Monthly amount and technology price (USD 1 minimum to X maximum)
 
-- Every offer must display a precise, fixed, all-inclusive consumer price before payment. No checkout may use an unknown, blank or estimated tax amount as a final price.
-- Tax is determined from the actual product or service classification, seller status, customer location, delivery destination and applicable law. There is no single worldwide "maximum tax" rate that can safely be added to every technology.
+- The customer's monthly payment must be at least **USD 1** and may not exceed **X**, where X is the approved, all-inclusive price of the specific technology or the remaining balance due for that technology. The amount charged in any month must be displayed and expressly approved before the billing cycle begins.
+- X is not a universal fixed ceiling. It is calculated separately for each genuinely deliverable technology from a documented estimate of the work and resources required: research and engineering hours, specialist review, materials, prototypes, testing, compute and infrastructure, safety and quality assurance, maintenance, fulfilment and other directly attributable costs.
+- Research bots may prepare estimates, compare scenarios, identify missing cost inputs and explain uncertainty. Their estimates must be source-linked, reproducible where possible, independently checked and labelled with confidence and assumptions. Bots must not invent labour rates, supplier quotes, tax rates or completed work, and must not autonomously publish or charge a price. A responsible human review must approve the final X and its supporting calculation.
+- The published customer price must show the applicable taxes and be **TTC / all-inclusive** for the destination and transaction. Tax is determined from the actual product or service classification, seller status, customer location, delivery destination and applicable law. There is no single worldwide tax rate that can safely be added to every technology.
 - For EU consumer sales, destination-based VAT and the applicable scheme may apply to cross-border transactions. The correct treatment must be reviewed for the seller and each product/service category before launch.
-- Any platform margin, operating charge or project contribution must be disclosed as a price component, not disguised as a statutory tax.
-- The desired minimum net project margin of USD 1 must be treated as a target requiring a confirmed accounting definition (per item, billing period or completed order), not added invisibly to the customer's price.
+- Any platform margin, operating charge or project contribution must be disclosed as a price component, not disguised as a statutory tax. The USD 1 minimum is a minimum monthly payment, not a guaranteed USD 1 net profit or margin.
+- Repair, restoration or compensation amounts may be included in the maximum amount due only when a specific, documented event makes them applicable and they are legally recoverable. They must appear as separate, itemised line items, with their own applicable taxes shown separately. Repair or compensation costs are not themselves taxes and must never be labelled as such. No charge may be imposed for a repair covered by a statutory or express warranty; no duplicate recovery is allowed.
 - Prices, tax rules, currency conversion, payment-provider fees, shipping, customs and import charges must be modelled separately. Where the final landed cost cannot be guaranteed, the offer must state that limitation before the order is placed.
 
 ## 4. Changes of mind, cancellation and refunds
@@ -66,7 +68,7 @@ The project owner's intended operating rule is one technology funded per monthly
 Before any product checkout is activated, the project must have:
 
 - A real product, specification, safety evidence and fulfilment process.
-- A reviewed price list and country-aware tax calculation.
+- A reviewed, bot-assisted and independently checked cost estimate for each technology, human approval of X, and a country-aware calculation of all applicable taxes.
 - Clear all-inclusive prices and the exact recurring amount shown before approval.
 - A separate PayPal plan or supported billing configuration for each valid price model.
 - A secure backend, verified webhooks, refund reconciliation and private order management.
