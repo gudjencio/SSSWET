@@ -56,6 +56,34 @@
     ta:{view:"எனது மேம்பாடுகளைக் காண்க",close:"மூடு",empty:"இந்த உலாவியில் இருந்து இன்னும் அறிக்கை எதுவும் அனுப்பப்படவில்லை.",history:"நான் அனுப்பிய மேம்பாடுகள்"},
     te:{view:"నా మెరుగుదలలను చూడండి",close:"మూసివేయండి",empty:"ఈ బ్రౌజర్ నుండి ఇంకా నివేదికలు పంపలేదు.",history:"నేను పంపిన మెరుగుదలలు"}
   };
+  const reportStatusCopy = {
+    en:{received:"Received · awaiting review",review:"Needs human review",proposed:"Improvement proposed",integrated:"Integrated into the project",closed:"Closed · not integrated",unavailable:"Live status is temporarily unavailable",issue:"Report",proposal:"Proposed change"},
+    fr:{received:"Reçu · en attente d’examen",review:"À examiner par l’équipe",proposed:"Amélioration proposée",integrated:"Intégrée au projet",closed:"Clôturé · non intégré",unavailable:"Statut en direct temporairement indisponible",issue:"Signalement",proposal:"Modification proposée"},
+    es:{received:"Recibido · pendiente de revisión",review:"Requiere revisión humana",proposed:"Mejora propuesta",integrated:"Integrada en el proyecto",closed:"Cerrado · no integrado",unavailable:"Estado en directo no disponible temporalmente",issue:"Informe",proposal:"Cambio propuesto"},
+    de:{received:"Eingegangen · wartet auf Prüfung",review:"Menschliche Prüfung erforderlich",proposed:"Verbesserung vorgeschlagen",integrated:"In das Projekt integriert",closed:"Geschlossen · nicht integriert",unavailable:"Live-Status vorübergehend nicht verfügbar",issue:"Meldung",proposal:"Vorgeschlagene Änderung"},
+    it:{received:"Ricevuta · in attesa di revisione",review:"Richiede revisione umana",proposed:"Miglioramento proposto",integrated:"Integrato nel progetto",closed:"Chiuso · non integrato",unavailable:"Stato in tempo reale temporaneamente non disponibile",issue:"Segnalazione",proposal:"Modifica proposta"},
+    pt:{received:"Recebido · aguardando análise",review:"Requer análise humana",proposed:"Melhoria proposta",integrated:"Integrada ao projeto",closed:"Encerrado · não integrado",unavailable:"Estado ao vivo temporariamente indisponível",issue:"Relato",proposal:"Alteração proposta"},
+    nl:{received:"Ontvangen · wacht op beoordeling",review:"Menselijke beoordeling nodig",proposed:"Verbetering voorgesteld",integrated:"Opgenomen in het project",closed:"Gesloten · niet opgenomen",unavailable:"Live status tijdelijk niet beschikbaar",issue:"Melding",proposal:"Voorgestelde wijziging"},
+    ru:{received:"Получено · ожидает проверки",review:"Требуется проверка человеком",proposed:"Предложено улучшение",integrated:"Включено в проект",closed:"Закрыто · не включено",unavailable:"Текущий статус временно недоступен",issue:"Сообщение",proposal:"Предлагаемое изменение"},
+    uk:{received:"Отримано · очікує перевірки",review:"Потрібна перевірка людиною",proposed:"Запропоновано покращення",integrated:"Додано до проєкту",closed:"Закрито · не додано",unavailable:"Поточний статус тимчасово недоступний",issue:"Повідомлення",proposal:"Запропонована зміна"},
+    ar:{received:"تم الاستلام · بانتظار المراجعة",review:"يتطلب مراجعة بشرية",proposed:"تم اقتراح تحسين",integrated:"تم دمجه في المشروع",closed:"مغلق · لم يتم الدمج",unavailable:"الحالة المباشرة غير متاحة مؤقتًا",issue:"البلاغ",proposal:"التغيير المقترح"},
+    he:{received:"התקבל · ממתין לבדיקה",review:"נדרשת בדיקה אנושית",proposed:"הוצע שיפור",integrated:"שולב בפרויקט",closed:"נסגר · לא שולב",unavailable:"הסטטוס החי אינו זמין זמנית",issue:"דיווח",proposal:"השינוי המוצע"},
+    ja:{received:"受付済み · 審査待ち",review:"担当者による確認が必要",proposed:"改善案を提案済み",integrated:"プロジェクトに統合済み",closed:"終了 · 未統合",unavailable:"現在の状態を一時的に取得できません",issue:"報告",proposal:"提案された変更"},
+    ko:{received:"접수됨 · 검토 대기",review:"담당자 검토 필요",proposed:"개선안 제안됨",integrated:"프로젝트에 반영됨",closed:"종료 · 미반영",unavailable:"실시간 상태를 일시적으로 확인할 수 없습니다",issue:"신고",proposal:"제안된 변경"},
+    zh:{received:"已收到 · 等待审核",review:"需要人工审核",proposed:"已提出改进方案",integrated:"已纳入项目",closed:"已关闭 · 未纳入",unavailable:"暂时无法获取实时状态",issue:"报告",proposal:"拟议更改"},
+    hi:{received:"प्राप्त · समीक्षा की प्रतीक्षा",review:"मानवीय समीक्षा आवश्यक",proposed:"सुधार प्रस्तावित",integrated:"परियोजना में शामिल",closed:"बंद · शामिल नहीं",unavailable:"लाइव स्थिति अस्थायी रूप से उपलब्ध नहीं",issue:"रिपोर्ट",proposal:"प्रस्तावित बदलाव"},
+    id:{received:"Diterima · menunggu peninjauan",review:"Perlu tinjauan manusia",proposed:"Perbaikan diusulkan",integrated:"Diintegrasikan ke proyek",closed:"Ditutup · tidak diintegrasikan",unavailable:"Status langsung sementara tidak tersedia",issue:"Laporan",proposal:"Perubahan yang diusulkan"},
+    tr:{received:"Alındı · inceleme bekliyor",review:"İnsan incelemesi gerekiyor",proposed:"İyileştirme önerildi",integrated:"Projeye eklendi",closed:"Kapatıldı · eklenmedi",unavailable:"Canlı durum geçici olarak kullanılamıyor",issue:"Bildirim",proposal:"Önerilen değişiklik"},
+    pl:{received:"Odebrano · oczekuje na przegląd",review:"Wymaga weryfikacji przez człowieka",proposed:"Zaproponowano ulepszenie",integrated:"Zintegrowano z projektem",closed:"Zamknięto · nie zintegrowano",unavailable:"Status na żywo jest chwilowo niedostępny",issue:"Zgłoszenie",proposal:"Proponowana zmiana"},
+    bn:{received:"গৃহীত · পর্যালোচনার অপেক্ষায়",review:"মানবীয় পর্যালোচনা প্রয়োজন",proposed:"উন্নয়নের প্রস্তাব দেওয়া হয়েছে",integrated:"প্রকল্পে যুক্ত হয়েছে",closed:"বন্ধ · যুক্ত হয়নি",unavailable:"লাইভ অবস্থা সাময়িকভাবে অনুপলব্ধ",issue:"প্রতিবেদন",proposal:"প্রস্তাবিত পরিবর্তন"},
+    sw:{received:"Imepokelewa · inasubiri ukaguzi",review:"Ukaguzi wa binadamu unahitajika",proposed:"Uboreshaji umependekezwa",integrated:"Imejumuishwa kwenye mradi",closed:"Imefungwa · haikujumuishwa",unavailable:"Hali ya moja kwa moja haipatikani kwa muda",issue:"Ripoti",proposal:"Mabadiliko yaliyopendekezwa"},
+    vi:{received:"Đã nhận · đang chờ xem xét",review:"Cần người kiểm duyệt",proposed:"Đã đề xuất cải tiến",integrated:"Đã tích hợp vào dự án",closed:"Đã đóng · chưa tích hợp",unavailable:"Trạng thái trực tiếp tạm thời không khả dụng",issue:"Báo cáo",proposal:"Thay đổi được đề xuất"},
+    fa:{received:"دریافت شد · در انتظار بررسی",review:"نیازمند بررسی انسانی",proposed:"بهبود پیشنهاد شد",integrated:"در پروژه ادغام شد",closed:"بسته شد · ادغام نشد",unavailable:"وضعیت زنده موقتاً در دسترس نیست",issue:"گزارش",proposal:"تغییر پیشنهادی"},
+    ur:{received:"موصول · جائزے کا منتظر",review:"انسانی جائزہ درکار ہے",proposed:"بہتری تجویز کی گئی",integrated:"منصوبے میں شامل",closed:"بند · شامل نہیں کیا گیا",unavailable:"براہِ راست حالت عارضی طور پر دستیاب نہیں",issue:"رپورٹ",proposal:"تجویز کردہ تبدیلی"},
+    ta:{received:"பெறப்பட்டது · மதிப்பாய்வுக்காகக் காத்திருக்கிறது",review:"மனித மதிப்பாய்வு தேவை",proposed:"மேம்பாடு முன்மொழியப்பட்டது",integrated:"திட்டத்தில் இணைக்கப்பட்டது",closed:"மூடப்பட்டது · இணைக்கப்படவில்லை",unavailable:"நேரடி நிலை தற்காலிகமாக கிடைக்கவில்லை",issue:"அறிக்கை",proposal:"முன்மொழியப்பட்ட மாற்றம்"},
+    te:{received:"అందింది · సమీక్ష కోసం వేచి ఉంది",review:"మానవ సమీక్ష అవసరం",proposed:"మెరుగుదల ప్రతిపాదించబడింది",integrated:"ప్రాజెక్ట్‌లో చేర్చబడింది",closed:"మూసివేయబడింది · చేర్చలేదు",unavailable:"ప్రస్తుత స్థితి తాత్కాలికంగా అందుబాటులో లేదు",issue:"నివేదిక",proposal:"ప్రతిపాదిత మార్పు"}
+  };
+
   const reportStorageKey = "ssswet:submitted-improvements:v1";
   function readSubmittedReports() {
     try { const value=JSON.parse(localStorage.getItem(reportStorageKey)||"[]"); return Array.isArray(value)?value:[]; }
@@ -85,7 +113,7 @@
     .ssswet-report-actions button[type=submit]{background:#a8242d;border-color:#a8242d}
     .ssswet-report-status{min-height:1.4em;font-size:13px}
     .ssswet-report-history{margin:16px 0}.ssswet-report-history-list{padding-inline-start:22px;display:grid;gap:10px}
-    .ssswet-report-history-list a{color:#f0a1a5;text-decoration:underline}.ssswet-report-history-list li{overflow-wrap:anywhere}
+    .ssswet-report-history-list a{color:#f0a1a5;text-decoration:underline}.ssswet-report-history-list li{overflow-wrap:anywhere}.ssswet-report-live-status{margin:5px 0;color:#d7d9e2;font-size:12px}.ssswet-report-history-links{margin:4px 0;font-size:12px}
     [dir="rtl"] .ssswet-report-dialog{text-align:right}
   `;
   document.head.append(style);
@@ -134,21 +162,69 @@
       const rtl=["ar","he"].includes(language());dialog.dir=rtl?"rtl":"ltr";
     }
 
-    function showHistory(){
+    async function getLiveReportStatus(report) {
+      const labels = reportStatusCopy[language()] || reportStatusCopy.en;
+      const number = Number(report.issue_number);
+      if (!Number.isSafeInteger(number) || number < 1) return {key:"received"};
+      const base = "https://api.github.com/repos/gudjencio/SSSWET";
+      try {
+        const headers = {Accept:"application/vnd.github+json"};
+        const [issueResponse, commentsResponse] = await Promise.all([
+          fetch(base+"/issues/"+number,{headers}),
+          fetch(base+"/issues/"+number+"/comments?per_page=100",{headers})
+        ]);
+        if (!issueResponse.ok) throw new Error("Issue status unavailable");
+        const issue = await issueResponse.json();
+        const comments = commentsResponse.ok ? await commentsResponse.json() : [];
+        const prMatch = (Array.isArray(comments)?comments:[]).map(comment =>
+          String(comment.body||"").match(/https:\/\/github\\.com\/gudjencio\/SSSWET\/pull\/(\\d+)/i)
+        ).find(Boolean);
+        if (prMatch) {
+          const prResponse = await fetch(base+"/pulls/"+Number(prMatch[1]),{headers});
+          if (prResponse.ok) {
+            const pr = await prResponse.json();
+            if (pr.merged_at || pr.merged) return {key:"integrated",pr_url:pr.html_url};
+            if (pr.state === "open") return {key:"proposed",pr_url:pr.html_url};
+          }
+        }
+        const issueLabels = (issue.labels||[]).map(label=>String(label.name||"").toLowerCase());
+        if (issueLabels.some(label=>label.includes("human-review")||label.includes("needs-review"))) return {key:"review"};
+        if (issue.state === "closed") return {key:"closed"};
+        return {key:"received"};
+      } catch (_) { return {key:"received",unavailable:true}; }
+    }
+
+    async function showHistory(){
       const a=actionLabels[language()]||actionLabels.en;
+      const labels=reportStatusCopy[language()]||reportStatusCopy.en;
       historyList.replaceChildren();
-      const reports=readSubmittedReports();
+      const reports=readSubmittedReports().slice(0,20);
       if(!reports.length){const empty=document.createElement("li");empty.textContent=a.empty;historyList.append(empty);}
-      reports.forEach(report=>{
-        const item=document.createElement("li");
-        const label=document.createElement("span");label.textContent=report.title+" · "+(report.category||"");
-        item.append(label);
-        if(report.issue_url){const link=document.createElement("a");link.href=report.issue_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="GitHub";item.append(" ",link);}
-        historyList.append(item);
-      });
       categoryLabel.hidden=true;titleLabel.hidden=true;detailLabel.hidden=true;intro.hidden=true;history.hidden=false;
       submit.dataset.mode="history";submit.type="button";submit.textContent=a.view;
       status.textContent="";
+      const rows=reports.map(report=>{
+        const item=document.createElement("li");
+        const title=document.createElement("strong");title.textContent=report.title+" · "+(report.category||"");
+        const state=document.createElement("p");state.textContent=labels.received;state.className="ssswet-report-live-status";
+        const links=document.createElement("p");links.className="ssswet-report-history-links";
+        if(report.issue_url && /^https:\/\/github\\.com\/gudjencio\/SSSWET\/issues\/\\d+$/i.test(report.issue_url)){
+          const link=document.createElement("a");link.href=report.issue_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=labels.issue;links.append(link);
+        }
+        item.append(title,state,links);historyList.append(item);
+        return {report,state,links};
+      });
+      const refresh=async row=>{
+        const live=await getLiveReportStatus(row.report);
+        row.state.textContent=labels[live.key]||labels.received;
+        if(live.unavailable) row.state.textContent+=" · "+labels.unavailable;
+        if(live.pr_url && /^https:\/\/github\\.com\/gudjencio\/SSSWET\/pull\/\\d+$/i.test(live.pr_url)){
+          const link=document.createElement("a");link.href=live.pr_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=labels.proposal;
+          if(row.links.childNodes.length) row.links.append(" · ");
+          row.links.append(link);
+        }
+      };
+      await Promise.all(rows.map(refresh));
     }
     button.addEventListener("click",()=>{localize();status.textContent="";history.hidden=true;categoryLabel.hidden=false;titleLabel.hidden=false;detailLabel.hidden=false;intro.hidden=false;submit.dataset.mode="";submit.type="submit";submit.textContent=text().send;dialog.showModal();});
     cancel.addEventListener("click",()=>dialog.close());
