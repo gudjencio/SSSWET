@@ -693,6 +693,20 @@ class SQLiteResearchStore:
         ]
 
 
+    def scientific_memory_history_for_key(self, memory_key: str) -> list[dict]:
+        """Return every immutable version for one memory key, oldest first."""
+        with self._connect() as connection:
+            rows = connection.execute(
+                """SELECT version_number, record_json FROM scientific_memory_versions
+                   WHERE memory_key = ? ORDER BY version_number ASC""",
+                (memory_key,),
+            ).fetchall()
+        return [
+            {"version_number": row["version_number"], **json.loads(row["record_json"])}
+            for row in rows
+        ]
+
+
     def save_literature_watch(self, report: object) -> None:
         """Persist a metadata-watch report without changing research memory."""
         from .literature_watch import report_to_dict
