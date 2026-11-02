@@ -25,7 +25,7 @@ function localize(){
  const lang=$("vt-language").value;locale=languages[lang]?lang:"en";
  document.documentElement.lang=locale;document.documentElement.dir=["ar","he"].includes(locale)?"rtl":"ltr";document.title=(t().brand||"Virtual Time Travel Mapping")+" · SSSWET";document.querySelectorAll("[data-a]").forEach(node=>{const value=(extraCopy[locale]||extraCopy.en)[node.dataset.a];if(value)node.setAttribute("aria-label",value)});const horizon=$("vt-horizon");if(horizon){const words=extraCopy[locale]||extraCopy.en;horizon.options[0].textContent=words.m1;horizon.options[1].textContent=words.m5;horizon.options[2].textContent=words.m15;}
  document.querySelectorAll("[data-i]").forEach(node=>{const value=t()[node.dataset.i];if(value)node.textContent=value});
- document.querySelectorAll("[data-ph]").forEach(node=>{const value=t()[node.dataset.ph];if(value)node.placeholder=value});
+ document.querySelectorAll("[data-ph]").forEach(node=>{const value=t()[node.dataset.ph];if(value)node.placeholder=value});localizeMapControls();
  
 }
 function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open("ssswet-virtual-time-map",1);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains("events"))d.createObjectStore("events",{keyPath:"id"});if(!d.objectStoreNames.contains("media"))d.createObjectStore("media",{keyPath:"id"});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
@@ -56,10 +56,18 @@ function showEvent(index){
  if(clip?.blob){const video=$("vt-playback");if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(clip.blob);video.src=objectUrl;video.hidden=false;}else{$("vt-playback").hidden=true;}
 }
 function geoFeatures(){
- const features=events.filter(e=>e.coords).map(e=>({type:"Feature",geometry:{type:"Point",coordinates:[e.coords.longitude,e.coords.latitude]},properties:{kind:e.kind,timestamp:e.timestamp}}));
+ const gps=events.filter(e=>e.kind==="gps"&&e.coords),features=[],zones=new Map();
+ gps.forEach(e=>{const key=e.coords.latitude.toFixed(3)+":"+e.coords.longitude.toFixed(3);if(!zones.has(key))zones.set(key,e.coords)});
+ zones.forEach(center=>{const ring=[];for(let step=0;step<=36;step++){const point=destination(center,step*Math.PI/18,40);ring.push([point.longitude,point.latitude])}features.push({type:"Feature",geometry:{type:"Polygon",coordinates:[ring]},properties:{kind:"visited-zone"}})});
+ gps.forEach(e=>features.push({type:"Feature",geometry:{type:"Point",coordinates:[e.coords.longitude,e.coords.latitude]},properties:{kind:e.kind,timestamp:e.timestamp}}));
  return {type:"FeatureCollection",features};
 }
 function updateMap(){if(!map||!map.isStyleLoaded())return;const source=map.getSource("vt-observations");if(source)source.setData(geoFeatures());}
+function localizeMapControls(){
+ if(!map?.getContainer)return;const words=extraCopy[locale]||extraCopy.en;
+ map.getContainer().querySelectorAll("button").forEach(button=>{const label=button.getAttribute("aria-label")||"";if(/zoom in/i.test(label))button.setAttribute("aria-label",words.zoomIn);else if(/zoom out/i.test(label))button.setAttribute("aria-label",words.zoomOut);else if(/north/i.test(label))button.setAttribute("aria-label",words.north)});
+ const attribution=map.getContainer().querySelector(".maplibregl-ctrl-attrib-button");if(attribution)attribution.setAttribute("aria-label",words.attribution);
+}
 function initMap(){
  if(!window.maplibregl){setStatus("mapError");return}
  try{
@@ -67,12 +75,14 @@ function initMap(){
   map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),"top-right");
   map.on("load",()=>{
    map.addSource("vt-observations",{type:"geojson",data:geoFeatures()});
-   map.addLayer({id:"vt-observation-points",type:"circle",source:"vt-observations",paint:{"circle-radius":5,"circle-color":"#8fd5ff","circle-stroke-width":2,"circle-stroke-color":"#07111b"}});
+   map.addLayer({id:"vt-scanned-zones",type:"fill",source:"vt-observations",filter:["==",["geometry-type"],"Polygon"],paint:{"fill-color":"#63b6e8","fill-opacity":0.13}});
+   map.addLayer({id:"vt-observation-points",type:"circle",source:"vt-observations",filter:["==",["geometry-type"],"Point"],paint:{"circle-radius":5,"circle-color":"#8fd5ff","circle-stroke-width":2,"circle-stroke-color":"#07111b"}});
    map.addSource("vt-scenario",{type:"geojson",data:{type:"FeatureCollection",features:[]}});
    map.addLayer({id:"vt-scenario-line",type:"line",source:"vt-scenario",paint:{"line-color":"#f1c47a","line-width":3,"line-dasharray":[2,2]}});
    const vectorSource=map.getSource("openmaptiles");
    if(vectorSource&&!map.getLayer("vt-3d-buildings")){try{map.addLayer({id:"vt-3d-buildings",source:"openmaptiles","source-layer":"building",type:"fill-extrusion",minzoom:14,paint:{"fill-extrusion-color":"#536d82","fill-extrusion-height":["coalesce",["get","render_height"],["get","height"],8],"fill-extrusion-base":["coalesce",["get","render_min_height"],0],"fill-extrusion-opacity":0.62}})}catch(_){}}
    updateMap();
+   localizeMapControls();
   });
   map.on("error",()=>{if(!map.isStyleLoaded())setStatus("noMap")});
  }catch(_){setStatus("mapError")}
