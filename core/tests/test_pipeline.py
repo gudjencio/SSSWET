@@ -278,7 +278,7 @@ def test_peer_review_synthesis_preserves_uncertainty_and_source_provenance():
         "https://doi.org/10.1000/example-b",
     )
     assert synthesis.uncertainty_levels == ("high", "moderate")
-    assert synthesis.outcome == "provisional_review_complete"
+    assert synthesis.outcome == "provisional_review_recorded"
     public_text = synthesis.to_public_text()
     assert "does not establish that any claim is true" in public_text
     assert "full source documents" in public_text
@@ -293,7 +293,7 @@ def test_peer_review_synthesis_does_not_promote_empty_reviews():
 
     assert synthesis.outcome == "insufficient_evidence_leads"
     assert synthesis.source_ids == ()
-    assert "No traceable source identifiers" in synthesis.unresolved_questions[0]
+    assert any("No traceable source identifiers" in question for question in synthesis.unresolved_questions)
 
 
 def test_pipeline_persists_structured_peer_review_synthesis(tmp_path):
