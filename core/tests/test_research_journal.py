@@ -66,3 +66,15 @@ def test_journal_validates_limit_and_technology(tmp_path):
         journal.overview(limit=0)
     with pytest.raises(ValueError, match="unknown technology"):
         journal.overview(technology="unknown")
+
+
+def test_journal_accepts_the_eight_additional_research_areas(tmp_path):
+    journal = ResearchJournal(SQLiteResearchStore(tmp_path / "expanded-journal.sqlite3"))
+    technologies = ["neurointerfaces", "quantumNetworks", "fusionEnergy", "spaceLifeSupport", "autonomousLabs", "roboticsExoskeletons", "planetaryMonitoring", "advancedComputing"]
+    for technology in technologies:
+        entry = journal.append(
+            technology=technology, event_type="research_question",
+            title="Initial research question", summary="Define a bounded, evidence-led research question.",
+        )
+        assert entry["technology"] == technology
+    assert journal.verify_chain()["chain_intact"] is True
