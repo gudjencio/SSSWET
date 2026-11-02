@@ -1505,7 +1505,7 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 /* Keep the equation line clear; the redundant stage caption is omitted. */
 .bot-stage-caption { display:none !important; }
 
-/* Match PayPal's embedded button area to the contribution dialog. */
+/* White payment frame with a clearly visible PayPal-branded button. */
 .paypal-subscription-container {
   width:min(100%, 430px) !important;
   min-height:86px !important;
@@ -1523,7 +1523,7 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 }
 .paypal-subscription-container iframe {
   max-width:100% !important;
-  background:#ffffff !important;
+  background:transparent !important;
   color-scheme:light !important;
 }
 
