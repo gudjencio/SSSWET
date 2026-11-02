@@ -84,6 +84,7 @@
     te:{received:"అందింది · సమీక్ష కోసం వేచి ఉంది",review:"మానవ సమీక్ష అవసరం",proposed:"మెరుగుదల ప్రతిపాదించబడింది",integrated:"ప్రాజెక్ట్‌లో చేర్చబడింది",closed:"మూసివేయబడింది · చేర్చలేదు",unavailable:"ప్రస్తుత స్థితి తాత్కాలికంగా అందుబాటులో లేదు",issue:"నివేదిక",proposal:"ప్రతిపాదిత మార్పు"}
   };
 
+  const liveStatusCache = new Map();
   const reportStorageKey = "ssswet:submitted-improvements:v1";
   function readSubmittedReports() {
     try { const value=JSON.parse(localStorage.getItem(reportStorageKey)||"[]"); return Array.isArray(value)?value:[]; }
@@ -166,6 +167,7 @@
       const labels = reportStatusCopy[language()] || reportStatusCopy.en;
       const number = Number(report.issue_number);
       if (!Number.isSafeInteger(number) || number < 1) return {key:"received"};
+      if (liveStatusCache.has(number)) return liveStatusCache.get(number);
       const base = "https://api.github.com/repos/gudjencio/SSSWET";
       try {
         const headers = {Accept:"application/vnd.github+json"};
@@ -183,15 +185,15 @@
           const prResponse = await fetch(base+"/pulls/"+Number(prMatch[1]),{headers});
           if (prResponse.ok) {
             const pr = await prResponse.json();
-            if (pr.merged_at || pr.merged) return {key:"integrated",pr_url:pr.html_url};
-            if (pr.state === "open") return {key:"proposed",pr_url:pr.html_url};
+            if (pr.merged_at || pr.merged) const result={key:"integrated",pr_url:pr.html_url}; liveStatusCache.set(number,result); return result;
+            if (pr.state === "open") const result={key:"proposed",pr_url:pr.html_url}; liveStatusCache.set(number,result); return result;
           }
         }
         const issueLabels = (issue.labels||[]).map(label=>String(label.name||"").toLowerCase());
-        if (issueLabels.some(label=>label.includes("human-review")||label.includes("needs-review"))) return {key:"review"};
-        if (issue.state === "closed") return {key:"closed"};
-        return {key:"received"};
-      } catch (_) { return {key:"received",unavailable:true}; }
+        if (issueLabels.some(label=>label.includes("human-review")||label.includes("needs-review"))) { const result={key:"review"}; liveStatusCache.set(number,result); return result; }
+        if (issue.state === "closed") { const result={key:"closed"}; liveStatusCache.set(number,result); return result; }
+        const result = {key:"received"}; liveStatusCache.set(number,result); return result;
+      } catch (_) { const result={key:"received",unavailable:true}; liveStatusCache.set(number,result); return result; }
     }
 
     async function showHistory(){
