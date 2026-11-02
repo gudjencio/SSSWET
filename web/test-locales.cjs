@@ -134,6 +134,13 @@ if ((reportSource.match(/button:"/g) || []).length !== 25 || (reportSource.match
 if (!reportSource.includes('window.ssswetApiFetch("/api/project-reports"') || !reportSource.includes('dialog.showModal()')) {
   throw new Error("The report form must open accessibly and submit to the hosted review endpoint.");
 }
+if (!reportSource.includes('view:"Voir mes améliorations"') || !reportSource.includes('close:"Fermer"') ||
+    !reportSource.includes("localStorage") || !reportSource.includes("showHistory()")) {
+  throw new Error("The report dialog must offer a localized submitted-improvements history and a close-only action.");
+}
+if (!reportSource.includes('new MutationObserver') || !reportSource.includes('repair-project-slot')) {
+  throw new Error("The report control must attach when the repair control is added dynamically.");
+}
 const serviceWorker = fs.readFileSync(new URL("./sw.js", `file://${__filename}`), "utf8");
 if (!serviceWorker.includes('"./report-project.js"') || !serviceWorker.includes('"./donation.js"')) {
   throw new Error("The offline cache must include the report form and complete technology catalogue.");
