@@ -10,6 +10,7 @@ from .strategies import StrategySelector
 from .verification import VerificationEngine
 from .pricing_evidence import build_agent_pricing_estimate
 from .technology_dossier import TechnologyDossierRegistry
+from .technology_catalogue import register_catalogue
 
 
 @dataclass
@@ -121,6 +122,11 @@ class SSSWETEngine:
                 parent_task_id or review_task.id,
             ))
         return conflicts
+
+    def register_technology_catalogue(self, actor_id: str = "catalogue") -> dict:
+        if self.technology_dossiers is None:
+            raise RuntimeError("A persistent research store is required for technology dossiers")
+        return register_catalogue(self.technology_dossiers, actor_id=actor_id)
 
     def create_technology_dossier(self, **dossier_inputs) -> dict:
         if self.technology_dossiers is None:
