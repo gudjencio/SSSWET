@@ -1711,3 +1711,11 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
   .bot-current-technology strong { font-size:13px; }
   .bot-thought-bubble.thought-0,.bot-thought-bubble.thought-1 { top:22% !important; }
 }
+
+/* Live agent phase announcements */
+.bot-agent-phase{display:block;color:var(--gold-muted,#c9ad72);font-size:.72rem;line-height:1.35;margin-top:3px}
+.bot-live-activity{display:block;text-align:left;padding:10px 12px;border:1px solid rgba(201,173,114,.18);border-radius:12px;background:rgba(201,173,114,.045)}
+.bot-live-activity>strong{display:block;margin-bottom:6px}
+.bot-live-activity ul{list-style:none;display:grid;gap:5px;margin:0;padding:0}
+.bot-live-activity li{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:space-between;font-size:.78rem}
+.bot-live-activity li span{color:var(--gold-muted,#c9ad72)}
