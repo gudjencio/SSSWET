@@ -1748,25 +1748,3 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
     flex-basis: 29px;
   }
 }
-
-
-/* Keep project links in the document flow on narrow screens. */
-@media (max-width: 620px) {
-  .social-corner {
-    position: relative;
-    inset: auto;
-    z-index: auto;
-    align-self: stretch;
-    width: 100%;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 0 0 12px;
-  }
-  .social-corner a {
-    flex: 0 0 auto;
-    font-size: 9px;
-    padding: 6px 8px;
-  }
-  .topbar { padding-top: 0; }
-}
