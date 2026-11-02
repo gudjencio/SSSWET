@@ -554,10 +554,19 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
 
         def do_POST(self) -> None:
             from urllib.parse import urlsplit
-            if self.client_address[0] not in {"127.0.0.1", "::1"}:
+            request_path = urlsplit(self.path).path
+            if request_path == "/api/project-reports":
+                origin = self.headers.get("Origin")
+                if origin not in ALLOWED_WEB_ORIGINS:
+                    self._json({"error": "Origin is not allowed to submit project reports"}, 403)
+                    return
+                token = os.environ.get("SSSWET_GITHUB_TOKEN", "").strip()
+                if not token:
+                    self._json({"error": "Project report intake is temporarily unavailable"}, 503)
+                    return
+            elif self.client_address[0] not in {"127.0.0.1", "::1"}:
                 self.send_error(403, "Verification reviews are restricted to the local machine")
                 return
-            request_path = urlsplit(self.path).path
             if request_path == "/api/research-priority-assessments":
                 origin = self.headers.get("Origin")
                 if origin and origin not in ALLOWED_WEB_ORIGINS and urlsplit(origin).hostname not in {"localhost", "127.0.0.1", "::1"}:
@@ -571,7 +580,7 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             if private_order_write and not self._private_admin_allowed():
                 self._json({"error": "Local administrator authentication required"}, 401)
                 return
-            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks", "/api/research-journal", "/api/research-priority-assessments"} and not private_order_write:
+            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks", "/api/research-journal", "/api/research-priority-assessments", "/api/project-reports"} and not private_order_write:
                 self.send_error(405, "Unsupported write operation")
                 return
             try:
@@ -582,7 +591,11 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                 payload = json.loads(self.rfile.read(length))
                 if not isinstance(payload, dict):
                     raise ValueError("A JSON object is required")
-                if private_order_write:
+                if request_path == "/api/project-reports":
+                    from .project_reports import create_project_report
+                    result = create_project_report(payload)
+                    self._json(result, 201)
+                elif private_order_write:
                     if order_registry is None:
                         self._json({"error": "Private order register is not configured"}, 503)
                         return
@@ -664,6 +677,13 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     self._json({"event": event, "append_only": True}, 201)
             except (ValueError, TypeError, json.JSONDecodeError) as exc:
                 self._json({"error": str(exc)}, 400)
+            except RuntimeError as exc:
+                self._json({"error": str(exc)}, 503)
+            except Exception as exc:
+                if request_path == "/api/project-reports":
+                    self._json({"error": "The report could not be submitted. Please try again later."}, 502)
+                else:
+                    raise
 
         def do_PUT(self) -> None:
             self.send_error(405, "The public interface is read-only")
