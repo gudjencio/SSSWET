@@ -297,7 +297,7 @@
       const paypal = await loadPayPalSdk();
       if (!paypal || !paypal.Buttons) throw new Error("PayPal Buttons are unavailable.");
       paypal.Buttons({
-        style: {shape:"pill", color:"white", layout:"vertical", label:"paypal"},
+        style: {shape:"pill", color:"gold", layout:"vertical", label:"paypal"},
         createSubscription: function(data, actions) {
           const amount = Number(amountInput.value);
           if (!Number.isFinite(amount) || amount < 1 || amount > 100000) {
