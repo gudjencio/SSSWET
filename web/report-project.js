@@ -193,7 +193,7 @@
         if (issueLabels.some(label=>label.includes("human-review")||label.includes("needs-review"))) { const result={key:"review"}; liveStatusCache.set(number,result); return result; }
         if (issue.state === "closed") { const result={key:"closed"}; liveStatusCache.set(number,result); return result; }
         const result = {key:"received"}; liveStatusCache.set(number,result); return result;
-      } catch (_) { const result={key:"received",unavailable:true}; liveStatusCache.set(number,result); return result; }
+      } catch (_) { return {key:"received",unavailable:true}; }
     }
 
     async function showHistory(){
@@ -234,11 +234,14 @@
     form.addEventListener("submit",async event=>{
       event.preventDefault();const t=text();submit.disabled=true;submit.textContent=t.sending;status.textContent="";
       try{
+        const cleanTitle=title.value.trim();
+        const cleanDescription=detail.value.trim();
+        if(!cleanTitle || !cleanDescription){status.textContent=t.error;return;}
         if(typeof window.ssswetApiFetch!=="function") throw new Error("unavailable");
-        const response=await window.ssswetApiFetch("/api/project-reports",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({category:category.value,title:title.value.trim(),description:detail.value.trim(),language:language(),page:location.pathname})});
+        const response=await window.ssswetApiFetch("/api/project-reports",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({category:category.value,title:cleanTitle,description:cleanDescription,language:language(),page:location.pathname})});
         const result=await response.json();
         if(!response.ok){const error=new Error(result.error||"submission failed");error.status=response.status;throw error;}
-        saveSubmittedReport({title:title.value.trim(),category:category.value,issue_url:result.issue_url||"",issue_number:result.issue_number||null,submitted_at:new Date().toISOString()});
+        saveSubmittedReport({title:cleanTitle,category:category.value,issue_url:result.issue_url||"",issue_number:result.issue_number||null,submitted_at:new Date().toISOString()});
         status.textContent=t.success;form.reset();localize();
         categoryLabel.hidden=true;titleLabel.hidden=true;detailLabel.hidden=true;intro.hidden=true;history.hidden=true;
         submit.dataset.mode="history";submit.type="button";submit.textContent=(actionLabels[language()]||actionLabels.en).view;
