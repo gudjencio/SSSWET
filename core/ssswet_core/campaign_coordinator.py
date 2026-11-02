@@ -47,6 +47,13 @@ class CampaignCoordinator:
             state=campaign_data["state"],
             milestones=tuple(CampaignMilestone(**item) for item in campaign_data["milestones"]),
             warnings=tuple(campaign_data.get("warnings", ())),
+            hypothesis=campaign_data.get("hypothesis", ""),
+            success_criteria=tuple(campaign_data.get("success_criteria", ())),
+            failure_criteria=tuple(campaign_data.get("failure_criteria", ())),
+            agent_roles=tuple(campaign_data.get("agent_roles", ())),
+            resource_requirements=tuple(campaign_data.get("resource_requirements", ())),
+            source_refs=tuple(campaign_data.get("source_refs", ())),
+            safety_gates=tuple(campaign_data.get("safety_gates", ())),
         )
         milestone = next(
             (item for item in campaign.milestones if item.milestone_id == milestone_id),
@@ -143,6 +150,13 @@ class CampaignCoordinator:
             state=campaign_data["state"],
             milestones=tuple(CampaignMilestone(**item) for item in campaign_data["milestones"]),
             warnings=tuple(campaign_data.get("warnings", ())),
+            hypothesis=campaign_data.get("hypothesis", ""),
+            success_criteria=tuple(campaign_data.get("success_criteria", ())),
+            failure_criteria=tuple(campaign_data.get("failure_criteria", ())),
+            agent_roles=tuple(campaign_data.get("agent_roles", ())),
+            resource_requirements=tuple(campaign_data.get("resource_requirements", ())),
+            source_refs=tuple(campaign_data.get("source_refs", ())),
+            safety_gates=tuple(campaign_data.get("safety_gates", ())),
         )
         milestone = next(
             (item for item in campaign.milestones if item.milestone_id == milestone_id),
@@ -170,6 +184,13 @@ class CampaignCoordinator:
             state=campaign_data["state"],
             milestones=tuple(CampaignMilestone(**item) for item in campaign_data["milestones"]),
             warnings=tuple(campaign_data.get("warnings", ())),
+            hypothesis=campaign_data.get("hypothesis", ""),
+            success_criteria=tuple(campaign_data.get("success_criteria", ())),
+            failure_criteria=tuple(campaign_data.get("failure_criteria", ())),
+            agent_roles=tuple(campaign_data.get("agent_roles", ())),
+            resource_requirements=tuple(campaign_data.get("resource_requirements", ())),
+            source_refs=tuple(campaign_data.get("source_refs", ())),
+            safety_gates=tuple(campaign_data.get("safety_gates", ())),
         )
         self.store.save_campaign(update_milestone(
             campaign, milestone_id, "blocked", notes=note
