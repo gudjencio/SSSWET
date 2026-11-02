@@ -164,6 +164,30 @@
     advancedComputing: {
       en: ["Advanced computing and scientific AI", "Computational tools, interpretable scientific models, reproducibility and evaluation of AI-system limitations."],
       fr: ["Calcul avancé et intelligence artificielle scientifique", "Outils de calcul, modèles scientifiques interprétables, reproductibilité et évaluation des limites des systèmes d’IA."]
+    },
+    modularProtectiveArmor: {
+      en: ["Modular protective armor", "Research into modular, repairable personal protection, ergonomic fit, mobility and independently tested performance for defined hazards."],
+      fr: ["Armure de protection modulaire", "Recherche sur la protection individuelle modulaire et réparable, l’ergonomie, la mobilité et les performances testées indépendamment pour des risques définis."]
+    },
+    blastAndImpactProtection: {
+      en: ["Blast and impact injury protection", "Research into passive injury reduction, impact protection, safe removal and independently validated performance limits."],
+      fr: ["Protection contre les impacts", "Recherche sur la réduction passive des blessures, la protection contre les impacts, le retrait sécurisé et les limites validées indépendamment."]
+    },
+    environmentalProtectionSuit: {
+      en: ["Advanced environmental protection suits", "Research into certified components for thermal, particulate and defined chemical exposure protection, with safe emergency removal."],
+      fr: ["Combinaisons de protection environnementale", "Recherche sur des composants certifiés contre les expositions thermiques, particulaires et chimiques définies, avec retrait d’urgence sécurisé."]
+    },
+    protectivePhysiologicalMonitoring: {
+      en: ["Protective physiological monitoring", "Non-diagnostic monitoring of environmental exposure and selected strain indicators, with privacy and reliability safeguards."],
+      fr: ["Surveillance physiologique de protection", "Surveillance non diagnostique de l’exposition environnementale et de certains indicateurs de fatigue, avec garanties de confidentialité et de fiabilité."]
+    },
+    poweredLoadAssistExoskeletons: {
+      en: ["Powered load-assist exoskeletons", "Research into ergonomic lifting and carrying assistance, safe disengagement, power-loss behavior and human-factors validation."],
+      fr: ["Exosquelettes motorisés d’assistance au port de charges", "Recherche sur l’assistance ergonomique au levage et au transport, le désengagement sécurisé, les pannes d’alimentation et la validation ergonomique."]
+    },
+    rescueMobilityExoskeletons: {
+      en: ["Rescue and mobility exoskeletons", "Research into safe mobility assistance for rescue, evacuation and accessibility, with manual override and fail-safe operation."],
+      fr: ["Exosquelettes de secours et de mobilité", "Recherche sur l’assistance à la mobilité pour le secours, l’évacuation et l’accessibilité, avec commande manuelle et fonctionnement sécurisé."]
     }
   });
 
