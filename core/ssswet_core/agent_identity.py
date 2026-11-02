@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -214,13 +215,21 @@ class AgentIdentityRegistry:
         stop_words = {
             "the", "and", "for", "with", "that", "this", "from", "into", "what",
             "when", "where", "which", "their", "about", "research", "study",
-            "les", "des", "une", "dans", "pour", "avec", "sur", "entre", "dans",
-            "cette", "cela", "comme", "plus", "être", "aux", "qui", "que",
+            "les", "des", "une", "dans", "pour", "avec", "sur", "entre",
+            "cette", "cela", "comme", "plus", "etre", "aux", "qui", "que",
+            "und", "der", "die", "das", "mit", "von", "ein", "eine", "para",
+            "con", "los", "las", "del", "por", "una", "unos", "unas",
         }
-        tokens = {
-            token.casefold() for token in re.findall(r"[\w'-]{2,}", query, flags=re.UNICODE)
-            if token.casefold() not in stop_words
-        }
+
+        def normalised_tokens(value: str) -> set[str]:
+            folded = unicodedata.normalize("NFKD", value.casefold())
+            plain = "".join(char for char in folded if not unicodedata.combining(char))
+            return {
+                token for token in re.findall(r"[\w'-]{2,}", plain, flags=re.UNICODE)
+                if token not in stop_words
+            }
+
+        tokens = normalised_tokens(query)
         if not tokens:
             return []
         with self.store._connect() as connection:
@@ -233,10 +242,7 @@ class AgentIdentityRegistry:
         for row in rows:
             item = dict(row)
             searchable = item["content"] + " " + item["source_reference"]
-            note_tokens = {
-                token.casefold() for token in re.findall(r"[\w'-]{2,}", searchable, flags=re.UNICODE)
-                if token.casefold() not in stop_words
-            }
+            note_tokens = normalised_tokens(searchable)
             overlap = tokens & note_tokens
             if not overlap:
                 continue
