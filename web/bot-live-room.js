@@ -343,12 +343,25 @@
     const handoffCards = handoffs.slice(0,8).map((item,index) => {
       const isResponse = item.message_type === "peer_review_response";
       const heading = esc(roleName(item.sender_role))+' → '+esc(roleName(item.recipient_role));
-      const state = isResponse
-        ? (lang()==="fr"?"examen documentaire · provisoire":"literature review · provisional")
-        : (lang()==="fr"?"transmis · en attente d’examen":"shared · awaiting review");
-      const label = isResponse
-        ? (lang()==="fr"?"Retour d’examen indépendant":"Independent review response")
-        : (lang()==="fr"?"Demande d’examen":"Review request");
+      const handoffLabels = {
+        en:{responseState:"literature review · provisional",requestState:"shared · awaiting review",response:"Independent review response",request:"Review request"},
+        fr:{responseState:"examen documentaire · provisoire",requestState:"transmis · en attente d’examen",response:"Retour d’examen indépendant",request:"Demande d’examen"},
+        es:{responseState:"revisión documental · provisional",requestState:"compartido · pendiente de revisión",response:"Respuesta de revisión independiente",request:"Solicitud de revisión"},
+        de:{responseState:"Literaturprüfung · vorläufig",requestState:"geteilt · Prüfung ausstehend",response:"Unabhängige Prüfungsantwort",request:"Prüfungsanfrage"},
+        it:{responseState:"revisione della letteratura · provvisoria",requestState:"condiviso · in attesa di revisione",response:"Risposta della revisione indipendente",request:"Richiesta di revisione"},
+        pt:{responseState:"revisão bibliográfica · provisória",requestState:"partilhado · aguarda revisão",response:"Resposta da revisão independente",request:"Pedido de revisão"},
+        nl:{responseState:"literatuurbeoordeling · voorlopig",requestState:"gedeeld · beoordeling in afwachting",response:"Onafhankelijke beoordelingsreactie",request:"Beoordelingsverzoek"},
+        ru:{responseState:"обзор литературы · предварительно",requestState:"передано · ожидает проверки",response:"Ответ независимой проверки",request:"Запрос на проверку"},
+        uk:{responseState:"огляд літератури · попередньо",requestState:"передано · очікує перевірки",response:"Відповідь незалежного огляду",request:"Запит на перевірку"},
+        ar:{responseState:"مراجعة أدبية · أولية",requestState:"تمت المشاركة · بانتظار المراجعة",response:"رد المراجعة المستقلة",request:"طلب مراجعة"},
+        he:{responseState:"סקירת ספרות · ראשונית",requestState:"שותף · ממתין לבדיקה",response:"תגובה לבדיקה עצמאית",request:"בקשת בדיקה"},
+        ja:{responseState:"文献レビュー · 暫定",requestState:"共有済み · 確認待ち",response:"独立レビューの回答",request:"レビュー依頼"},
+        ko:{responseState:"문헌 검토 · 잠정",requestState:"공유됨 · 검토 대기",response:"독립 검토 응답",request:"검토 요청"},
+        zh:{responseState:"文献审查 · 暂定",requestState:"已共享 · 等待审查",response:"独立审查回复",request:"审查请求"},
+        hi:{responseState:"साहित्य समीक्षा · प्रारंभिक",requestState:"साझा किया गया · समीक्षा लंबित",response:"स्वतंत्र समीक्षा का उत्तर",request:"समीक्षा अनुरोध"}
+      }[lang()] || {responseState:"literature review · provisional",requestState:"shared · awaiting review",response:"Independent review response",request:"Review request"};
+      const state = isResponse ? handoffLabels.responseState : handoffLabels.requestState;
+      const label = isResponse ? handoffLabels.response : handoffLabels.request;
       return '<article class="bot-conversation-message bot-handoff-message '+(isResponse?"bot-review-response":"bot-review-request")+'"><div class="message-avatar" aria-hidden="true">'+(isResponse?"✓":"↗")+'</div><div><strong>'+heading+'</strong><p>'+esc(item.content)+'</p><small>'+esc(label)+' · '+esc(state)+' · '+esc(time(item.created_at))+'</small></div></article>';
     });
     const messages = handoffCards.concat(valid.slice(0,10).map((item,index) => {
