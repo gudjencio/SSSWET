@@ -18,7 +18,7 @@
   <section class="vt-intro"><p class="eyebrow">SSSWET · SPATIOTEMPORAL RESEARCH</p><h1 data-i="title">Explore a place through recorded time</h1><p data-i="intro">Build a personal 3D map from locations you visit, replay observations you actually recorded, and compare them with clearly labelled model scenarios.</p><div class="vt-status" id="vt-status" role="status" aria-live="polite" data-i="ready">Ready. No sensors are active.</div></section>
   <section class="vt-map-section" aria-label="3D map">
     <div class="vt-map-heading"><div><h2 data-i="mapTitle">Your persistent 3D map</h2><p data-i="mapHelp">Explore the map. Start a scan only when you are ready and have permission to record.</p></div><button id="vt-locate" class="secondary" type="button" data-i="locate">Locate me</button></div>
-    <div id="vt-map" role="application" aria-label="Interactive 3D map"></div>
+    <div id="vt-map" role="application" aria-label="Interactive 3D map" data-a="mapAria"></div>
     <div class="vt-map-meta"><span id="vt-coordinates" data-i="noLocation">Location not shared</span><span data-i="mapAttribution">Map data © OpenStreetMap contributors · OpenFreeMap</span></div>
   </section>
   <section class="vt-grid">
@@ -41,7 +41,7 @@
     </article>
   </section>
   <section class="vt-panel vt-timeline"><div class="vt-panel-heading"><div><h2 data-i="timelineTitle">Recorded timeline</h2><p data-i="timelineIntro">Rewind and advance through the observations captured in this browser.</p></div><span id="vt-timeline-range">—</span></div>
-    <input id="vt-time" type="range" min="0" max="0" value="0" step="1" aria-label="Recorded observation timeline">
+    <input id="vt-time" type="range" min="0" max="0" value="0" step="1" aria-label="Recorded observation timeline" data-a="timelineAria">
     <div class="vt-actions"><button id="vt-prev" class="secondary" type="button" data-i="previous">Previous</button><button id="vt-play" class="primary" type="button" data-i="play">Play recorded timeline</button><button id="vt-next" class="secondary" type="button" data-i="next">Next</button></div>
     <div id="vt-selected" class="vt-selected" aria-live="polite" data-i="noObservations">No observations recorded yet.</div>
     <video id="vt-playback" controls playsinline hidden></video>
