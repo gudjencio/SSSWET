@@ -4,6 +4,7 @@ A literature-search pass is not a scientific verdict. This module preserves
 that distinction and keeps uncertainty and evidence provenance visible.
 """
 from dataclasses import dataclass
+from math import isfinite
 from typing import Any
 
 
@@ -46,31 +47,41 @@ def build_review_synthesis(reviews: list[dict[str, Any]]) -> ReviewSynthesis:
     evidence_count = 0
 
     for item in valid:
-        role = str(item.get("reviewer_role", "")).strip()
+        role_value = item.get("reviewer_role", "")
+        role = role_value.strip()[:100] if isinstance(role_value, str) else ""
         if role and role not in reviewers:
             reviewers.append(role)
         evidence = item.get("evidence", ())
         if isinstance(evidence, (list, tuple)):
-            evidence_count += sum(1 for entry in evidence if str(entry).strip())
+            # Count only concrete, non-empty evidence entries.
+            evidence_count += sum(
+                1 for entry in evidence
+                if isinstance(entry, str) and bool(entry.strip())
+            )
         source_ids = item.get("source_ids", ())
         if isinstance(source_ids, (list, tuple)):
             for source_id in source_ids:
-                value = str(source_id).strip()
+                if not isinstance(source_id, str):
+                    continue
+                value = source_id.strip()[:300]
                 if value and value not in sources:
                     sources.append(value)
         try:
             uncertainty = float(item.get("uncertainty"))
         except (TypeError, ValueError):
             continue
-        if 0.0 <= uncertainty <= 1.0:
+        if isfinite(uncertainty) and 0.0 <= uncertainty <= 1.0:
             uncertainty_values.append(uncertainty)
 
     if not valid:
         outcome = "no_review_records"
-    elif evidence_count == 0 and not sources:
+    elif not sources and evidence_count == 0:
         outcome = "insufficient_evidence_leads"
+    elif not sources:
+        outcome = "evidence_leads_without_traceable_sources"
     else:
-        outcome = "provisional_review_complete"
+        # Recording a review is not the same as completing scientific validation.
+        outcome = "provisional_review_recorded"
 
     levels = tuple(
         "high" if value >= 0.67 else "moderate" if value >= 0.34 else "lower"
@@ -84,7 +95,9 @@ def build_review_synthesis(reviews: list[dict[str, Any]]) -> ReviewSynthesis:
         "If reviewers disagree, what evidence would discriminate between their interpretations?",
     ]
     if not sources:
-        questions.insert(0, "No traceable source identifiers were returned; can relevant primary sources be located?")
+        questions.insert(0, "No traceable source identifiers were returned; can relevant primary sources be located and linked?")
+    if evidence_count == 0:
+        questions.insert(0, "No concrete evidence entries were recorded; what observations or source passages support each claim?")
     return ReviewSynthesis(
         review_count=len(valid),
         evidence_lead_count=evidence_count,
