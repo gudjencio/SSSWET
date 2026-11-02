@@ -1,6 +1,18 @@
 (() => {
   "use strict";
 
+  const loadPlatformRouting = () => {
+    if (document.querySelector('script[data-ssswet-platform-routing]')) return;
+    const script = document.createElement("script");
+    script.src = "platform-routing.js";
+    script.async = false;
+    script.dataset.ssswetPlatformRouting = "true";
+    document.body.appendChild(script);
+  };
+
+  if (document.body) loadPlatformRouting();
+  else document.addEventListener("DOMContentLoaded", loadPlatformRouting, { once: true });
+
   if (!("serviceWorker" in navigator)) return;
 
   const banner = document.getElementById("ssswet-update-banner");
