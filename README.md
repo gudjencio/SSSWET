@@ -7,6 +7,10 @@ SSSWET is an experimental research-software initiative. Its public website prese
 
 The project is exploratory. Public descriptions are intentionally high-level and must not be interpreted as claims that a proposed technology exists, is feasible, has been validated or is available for purchase.
 
+## Applications
+
+Install SSSWET on supported mobile devices from the website, or download the Windows, macOS and Linux desktop builds from [official releases](https://github.com/gudjencio/SSSWET/releases). Mobile installation and package availability are explained in [Application distribution](docs/APP_DISTRIBUTION.md).
+
 ## Public information
 
 This repository contains the public website, general project information and selected software components. Public material is not a complete description of the project's research programme, internal plans, unpublished concepts, implementation roadmap or confidential working material.
