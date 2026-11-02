@@ -42,7 +42,7 @@ class TaskDecomposer:
     )
 
     def decompose(self, objective: str, domain: str = "general") -> list[SubtaskSpec]:
-        text = re.sub(r"\\s+", " ", str(objective).strip())
+        text = re.sub(r"\s+", " ", str(objective).strip())
         if not text:
             raise ValueError("A research objective is required.")
 
