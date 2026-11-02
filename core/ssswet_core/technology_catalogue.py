@@ -305,9 +305,22 @@ TECHNOLOGY_CATALOGUE = [
     },
     {
         "technology_id": "cellular",
-        "title": "Cellular",
+        "title": "Cellular Reinforcement, Repair and Recovery",
         "domain": "life",
-        "subcategory": "regenerativeMedicine"
+        "subcategory": "regenerativeMedicine",
+        "research_scope": [
+            "Cellular resilience, damage prevention and repair mechanisms",
+            "Recovery of stressed but viable cells and tissues",
+            "Organ preservation and restoration after potentially reversible injury",
+            "Research into biological limits and time windows of resuscitation after recent cardiac arrest",
+            "Neuroprotection and the distinction between reversible dysfunction and irreversible loss of brain function",
+            "Long-term research on the biological limits of post-mortem cellular and organism-level restoration"
+        ],
+        "scientific_limitations": [
+            "Restoring isolated cells does not establish restoration of an organism or person",
+            "No current technology can reliably reverse irreversible death or guarantee resurrection",
+            "All clinical research requires qualified medical, ethics, biosafety and regulatory oversight"
+        ]
     },
     {
         "technology_id": "longevity",
@@ -632,6 +645,8 @@ def register_catalogue(registry: TechnologyDossierRegistry, actor_id: str = "cat
                 "catalogue_subcategory": item["subcategory"],
                 "catalogue_registration": True,
                 "research_status": "not_assessed",
+                "research_scope": item.get("research_scope", []),
+                "scientific_limitations": item.get("scientific_limitations", []),
             },
             actor_id=actor_id,
         )
