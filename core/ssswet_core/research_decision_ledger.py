@@ -97,7 +97,7 @@ class ResearchDecisionLedger:
                     raise ValueError("a correction or replacement requires evidence references")
                 prior = connection.execute(
                     "SELECT subject_id FROM research_decision_events WHERE decision_id=? "
-                    "ORDER BY created_at DESC, event_id DESC LIMIT 1", (supersedes,)
+                    "ORDER BY rowid DESC LIMIT 1", (supersedes,)
                 ).fetchone()
                 if prior is None:
                     raise ValueError("superseded decision does not exist")
@@ -105,16 +105,10 @@ class ResearchDecisionLedger:
                     raise ValueError("a decision can only supersede a decision on the same subject")
                 latest = connection.execute(
                     "SELECT status FROM research_decision_events WHERE decision_id=? "
-                    "ORDER BY created_at DESC, event_id DESC LIMIT 1", (supersedes,)
+                    "ORDER BY rowid DESC LIMIT 1", (supersedes,)
                 ).fetchone()
                 if latest["status"] in {"superseded", "withdrawn", "rejected"}:
                     raise ValueError("terminal decisions cannot be superseded again")
-                connection.execute(
-                    "INSERT INTO research_decision_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    (str(uuid4()), supersedes, subject_id, "status_changed", "superseded",
-                     f"Superseded by a later decision; see decision {new_id_placeholder}",
-                     None, "[]", "[]", actor_id, datetime.now(timezone.utc).isoformat()),
-                ) if False else None
             decision_id = str(uuid4())
             now = datetime.now(timezone.utc).isoformat()
             event_id = str(uuid4())
@@ -145,7 +139,7 @@ class ResearchDecisionLedger:
         with self.store._connect() as connection:
             prior = connection.execute(
                 "SELECT * FROM research_decision_events WHERE decision_id=? "
-                "ORDER BY created_at DESC, event_id DESC LIMIT 1", (decision_id,)
+                "ORDER BY rowid DESC LIMIT 1", (decision_id,)
             ).fetchone()
             if prior is None:
                 raise ValueError("decision does not exist")
@@ -169,7 +163,7 @@ class ResearchDecisionLedger:
         with self.store._connect() as connection:
             rows = connection.execute(
                 "SELECT * FROM research_decision_events WHERE subject_id=? "
-                "ORDER BY created_at, event_id LIMIT ?", (subject_id, limit)
+                "ORDER BY rowid LIMIT ?", (subject_id, limit)
             ).fetchall()
         return [{
             "event_id": row["event_id"], "decision_id": row["decision_id"],
@@ -186,7 +180,7 @@ class ResearchDecisionLedger:
         with self.store._connect() as connection:
             rows = connection.execute(
                 "SELECT * FROM research_decision_events WHERE decision_id=? "
-                "ORDER BY created_at, event_id", (decision_id,)
+                "ORDER BY rowid", (decision_id,)
             ).fetchall()
         if not rows:
             raise ValueError("decision does not exist")
