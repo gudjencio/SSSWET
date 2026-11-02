@@ -9,6 +9,14 @@ from datetime import datetime, timezone
 from typing import Any
 
 TECHNOLOGIES = {"cellular", "longevity", "armor", "jetpack", "translator", "spacetime", "timetravel", "cleanenergy", "energyStorage", "water", "foodSystems", "climate", "biodiversity", "wildlife", "oceans", "reforestation", "agriculture", "circularEconomy", "airQuality", "mobility", "accessibility", "disasterResilience", "publicHealth", "sanitation", "education", "animalHealth", "materials", "carbonMonitoring", "pollinators", "artificialGravity", "medicalNanotechnology", "atmosphericRestoration", "neurointerfaces", "quantumNetworks", "fusionEnergy", "spaceLifeSupport", "autonomousLabs", "roboticsExoskeletons", "planetaryMonitoring", "advancedComputing"}
+TECHNOLOGY_BY_NORMALIZED_KEY = {key.lower(): key for key in TECHNOLOGIES}
+
+
+def _normalize_technology(value: str) -> str:
+    normalized = str(value).strip().lower()
+    return TECHNOLOGY_BY_NORMALIZED_KEY.get(normalized, normalized)
+
+
 EVENT_TYPES = {
     "research_question", "literature_review", "feasibility_assessment",
     "simulation", "prototype", "test", "independent_review",
@@ -64,7 +72,7 @@ class ResearchJournal:
         state: str = "planned", classification: str = "project_update",
         evidence_refs: list[str] | None = None, author_label: str = "Project team",
     ) -> dict[str, Any]:
-        technology = str(technology).strip().lower()
+        technology = _normalize_technology(technology)
         event_type = str(event_type).strip().lower()
         state = str(state).strip().lower()
         classification = str(classification).strip().lower()
@@ -153,8 +161,10 @@ class ResearchJournal:
     def overview(self, *, technology: str | None = None, limit: int = 100) -> dict[str, Any]:
         if not isinstance(limit, int) or limit < 1 or limit > 500:
             raise ValueError("limit must be between 1 and 500")
-        if technology and technology not in TECHNOLOGIES:
-            raise ValueError("unknown technology")
+        if technology:
+            technology = _normalize_technology(technology)
+            if technology not in TECHNOLOGIES:
+                raise ValueError("unknown technology")
         with self.store._connect() as connection:
             if technology:
                 rows = connection.execute(
