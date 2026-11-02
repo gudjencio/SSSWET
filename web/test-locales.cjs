@@ -399,3 +399,19 @@ for (const locale of ["zh","hi"]) {
   }
 }
 console.log("Validated research-form localization and device installation guidance for all 15 complete interface locales.");
+
+
+const catalogueUiSource = fs.readFileSync(new URL("./catalogue-500-ui.js", `file://${__filename}`), "utf8");
+new Function(catalogueUiSource);
+for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"]) {
+  if (!catalogueUiSource.includes(locale + ":[")) {
+    throw new Error("Research registry status is not localized for " + locale);
+  }
+}
+for (const asset of ["./language-center.css","./ui-enhancements.js","./platform-routing.js","./catalogue-500-ui.js"]) {
+  if (!serviceWorkerCache.includes(asset)) throw new Error("Enhanced interface asset is missing from the service-worker cache: " + asset);
+}
+if (!stylesLatest.includes(".app-shell > .topbar") || !stylesLatest.includes("justify-content: center")) {
+  throw new Error("The responsive language selector is not centered in the application header.");
+}
+console.log("Validated 15-language research registry labels, cached interface assets and centered language navigation.");
