@@ -13,6 +13,7 @@
   const loadInterfaceEnhancements = () => {
     loadScript("ui-enhancements.js", "data-ssswet-ui-enhancements");
     loadScript("platform-routing.js", "data-ssswet-platform-routing");
+    loadScript("catalogue-500-ui.js", "data-ssswet-catalogue-500-ui");
   };
 
   if (document.body) loadInterfaceEnhancements();
@@ -60,17 +61,13 @@
     try {
       const registration = await navigator.serviceWorker.register("./sw.js");
       if (registration.waiting && navigator.serviceWorker.controller) showUpdate(registration.waiting);
-
       registration.addEventListener("updatefound", () => {
         const installing = registration.installing;
         if (!installing) return;
         installing.addEventListener("statechange", () => {
-          if (installing.state === "installed" && navigator.serviceWorker.controller) {
-            showUpdate(registration.waiting || installing);
-          }
+          if (installing.state === "installed" && navigator.serviceWorker.controller) showUpdate(registration.waiting || installing);
         });
       });
-
       window.addEventListener("online", () => registration.update().catch(() => {}));
       document.getElementById("language")?.addEventListener("change", () => {
         if (waitingWorker && !banner.hidden) {
