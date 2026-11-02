@@ -124,3 +124,21 @@ def test_engine_requires_persistent_store_for_decision_lineage():
         engine.record_research_decision(
             subject_id="claim", rationale="Proposal.", actor_id="mira"
         )
+
+
+def test_engine_exposes_agent_memory_evidence_review(tmp_path):
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    engine = SSSWETEngine(store=SQLiteResearchStore(tmp_path / "engine-memory-review.sqlite3"))
+    memory = engine.agent_identities.remember(
+        agent_id="mira-review", role="general_researcher",
+        content="A material retained strength under cyclic loading.",
+        source_reference="doi:10.example/cyclic-strength",
+    )
+    review = engine.record_agent_memory_review(
+        memory_id=memory["memory_id"], status="recheck_required",
+        rationale="A revised test standard requires reassessment.",
+        reviewer_id="elias", evidence_reference="standard:revision-3",
+    )
+    assert review["status"] == "recheck_required"
+    assert engine.search_team_memories("material cyclic loading")[0]["source_review_status"] == "recheck_required"
