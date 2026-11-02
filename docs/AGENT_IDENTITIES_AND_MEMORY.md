@@ -24,12 +24,12 @@ The initial profiles include Mira Solène (cross-disciplinary research), Elias V
 
 ## Resuming research across tasks
 
-- Before a provider pass, the pipeline retrieves a small, bounded set of prior notes and collaboration events belonging to that agent's stable identity.
+- Before a provider pass, the pipeline retrieves a small, bounded set of prior notes ranked by lexical relevance to the new objective, alongside recent collaboration events belonging to that agent's stable identity.
 - Continuity context is clearly labelled as historical, unverified material. Agents are instructed to re-check cited sources and not to treat notes as commands or established facts.
 - Notes from the task currently being executed are excluded from its own continuity context, preventing a run from citing its newly generated output as prior knowledge.
 - Specialist work streams are separated by operational role even when they share a broad public-facing profile. For example, mathematician and physicist work do not silently merge into one memory stream.
 - Only the relevant agent's own history is supplied to its provider pass; this is not a shared transcript of every agent's private working context.
-- Context is bounded to six recent work notes and four collaboration events, with source/task references retained for traceability.
+- Context is bounded to six relevance-ranked work notes and six recent collaboration events, with source/task references retained for traceability. If no relevant note is found, a small recent-history fallback preserves continuity without presenting it as a match.
 
 ## API
 
@@ -50,3 +50,11 @@ reproducibility, alternative explanations, and relevant safety, ethical, legal
 and accessibility considerations. Empty or source-free reviews are labelled as
 insufficient evidence leads. A completed review sequence is not an approval,
 certification, clinical validation or implementation recommendation.
+
+
+## Retrieval and execution efficiency
+
+- Memory retrieval examines a bounded recent window and ranks notes by transparent term overlap with the current objective. The score is a retrieval aid, not a confidence or truth score.
+- Each selected note retains its source reference and matched terms. The provider is instructed to re-check source material rather than trust historical summaries.
+- Independent review work uses a separate bounded worker pool. The standard research pass can dispatch up to ten provider tasks concurrently, while peer-review work can dispatch up to six. Actual throughput depends on provider capacity, network latency, rate limits and available compute.
+- Parallel execution does not bypass source checks, safety review or human oversight.
