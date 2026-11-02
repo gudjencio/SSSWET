@@ -23,14 +23,14 @@
     const style = document.createElement("style");
     style.id = "ssswet-equations-style";
     style.textContent = `
-      .ssswet-equations{position:relative;margin:0 0 18px;padding:14px 16px;border:1px solid rgba(255,255,255,.08);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));overflow:hidden;min-height:92px;text-align:center}
+      .ssswet-equations{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);z-index:5;width:min(420px,72%);margin:0;padding:8px 13px;border:1px solid rgba(190,166,119,.18);border-radius:13px;background:rgba(5,7,6,.78);backdrop-filter:blur(8px);overflow:hidden;min-height:0;text-align:center;pointer-events:none}
       .ssswet-equations::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 0,rgba(255,255,255,.08),transparent 58%);pointer-events:none}
-      .ssswet-equations-label{position:relative;font-size:.67rem;letter-spacing:.16em;text-transform:uppercase;opacity:.52;margin-bottom:7px}
-      .ssswet-equation{position:relative;min-height:31px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(1rem,2.2vw,1.34rem);letter-spacing:.025em;line-height:1.4}
+      .ssswet-equations-label{position:relative;font-size:.58rem;letter-spacing:.13em;text-transform:uppercase;opacity:.5;margin-bottom:3px}
+      .ssswet-equation{position:relative;min-height:22px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(.78rem,1.5vw,1rem);letter-spacing:.025em;line-height:1.35}
       .ssswet-equation::after{content:"";display:inline-block;width:2px;height:1.05em;margin-left:3px;vertical-align:-.16em;background:currentColor;animation:ssswetCaret .8s steps(1) infinite}
-      .ssswet-equation-caption{position:relative;margin-top:5px;font-size:.72rem;opacity:.55}
+      .ssswet-equation-caption{display:none}
       @keyframes ssswetCaret{50%{opacity:0}}
-      @media(max-width:640px){.ssswet-equations{margin-inline:0;padding:12px}.ssswet-equation{font-size:1rem}}
+      @media(max-width:640px){.ssswet-equations{bottom:52px;width:min(360px,82%);padding:7px 10px}.ssswet-equation{font-size:.78rem}}
     `;
     document.head.appendChild(style);
   };
@@ -38,14 +38,14 @@
   const mount = () => {
     injectStyle();
     if (document.getElementById("ssswet-equations")) return;
-    const target = document.querySelector(".bot-status");
+    const target = document.querySelector(".bot-command-visual");
     if (!target) return;
     const panel = document.createElement("section");
     panel.id = "ssswet-equations";
     panel.className = "ssswet-equations";
     panel.setAttribute("aria-label", "Research calculations");
     panel.innerHTML = '<div class="ssswet-equations-label"></div><div class="ssswet-equation" aria-live="polite"></div><div class="ssswet-equation-caption"></div>';
-    target.parentNode.insertBefore(panel, target);
+    target.appendChild(panel);
 
     const label = panel.querySelector(".ssswet-equations-label");
     const equation = panel.querySelector(".ssswet-equation");
