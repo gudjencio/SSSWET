@@ -1,11 +1,21 @@
 {
-  "name": "SSSWET",
+  "name": "SSSWET — Research Platform",
   "short_name": "SSSWET",
-  "description": "Super Soldier Space Warping Engeriening Tech",
+  "description": "Super Soldier Space Warping Engineering Tech",
+  "id": "./",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#030303",
   "theme_color": "#050505",
+  "orientation": "any",
   "lang": "en",
-  "icons": []
+  "icons": [
+    {
+      "src": "./icons/ssswet-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
 }
