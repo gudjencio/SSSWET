@@ -62,7 +62,7 @@ def main():
         return 0
     tick=chr(96)
     if patch.startswith(tick*3):
-        patch=re.sub("^"+re.escape(tick*3)+"(?:diff)?\\s*|\\s*"+re.escape(tick*3)+"$","",patch).strip()
+        patch=re.sub(r"^"+re.escape(tick*3)+r"(?:diff)?\s*|\s*"+re.escape(tick*3)+r"$","",patch).strip()
     if patch=="NO_SAFE_PATCH" or not patch.startswith("diff --git "):
         comment("The report was processed. It needs clarification or human review before a safe code change can be prepared. No project files were changed.")
         return 0
@@ -70,7 +70,7 @@ def main():
     if not pairs or len(pairs)>6 or any(old!=new or not allowed(new) for old,new in pairs):
         comment("The proposed change did not pass the automatic safety scope. No project files were changed.")
         return 0
-    if re.search(r"^(deleted file mode|new file mode|rename from|rename to) ",patch,flags=re.M) or re.search(r"^\\+\\+\\+ /dev/null$",patch,flags=re.M):
+    if re.search(r"^(deleted file mode|new file mode|rename from|rename to) ",patch,flags=re.M) or re.search(r"^\+\+\+ /dev/null$",patch,flags=re.M):
         comment("The proposed change included a deletion or file operation that is not permitted. No project files were changed.")
         return 0
     patch_file=ROOT/".ssswet-report.patch"; patch_file.write_text(patch+"\n",encoding="utf-8")
