@@ -134,17 +134,33 @@ class ScientificReviewBoard:
         summaries = []
         for key, items in grouped.items():
             verdicts = sorted({item["verdict"] for item in items})
+            positions = []
+            for verdict in verdicts:
+                position_reviews = [item for item in items if item["verdict"] == verdict]
+                positions.append({
+                    "position": verdict,
+                    "review_count": len(position_reviews),
+                    "reviewer_labels": sorted({item["reviewer_id"] for item in position_reviews}),
+                    "rationales": [item["rationale"] for item in position_reviews],
+                    "methods_assessments": [item["methods_assessment"] for item in position_reviews],
+                    "limitations": [item["limitations"] for item in position_reviews],
+                    "evidence_refs": sorted({
+                        ref for item in position_reviews for ref in item["evidence_refs"]
+                    }),
+                })
             summaries.append({
                 "dossier_id": key, "review_count": len(items),
                 "distinct_reviewer_labels": len({item["reviewer_id"] for item in items}),
                 "verdicts_present": verdicts,
                 "disagreement_recorded": len(verdicts) > 1,
+                "competing_positions": positions,
                 "conflict_declarations": {
                     status: sum(item["conflict_status"] == status for item in items)
                     for status in sorted(CONFLICT_STATUSES)
                 },
                 "scientific_validity_established": False,
                 "consensus_declared": False,
+                "adjudication_required_for_resolution": len(verdicts) > 1,
             })
         return {
             "reviews": reviews, "summaries": summaries, "count": len(reviews),
