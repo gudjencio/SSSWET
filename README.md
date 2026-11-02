@@ -7,6 +7,10 @@ SSSWET is an experimental research-software initiative. Its public website prese
 
 The project is exploratory. Public descriptions are intentionally high-level and must not be interpreted as claims that a proposed technology exists, is feasible, has been validated or is available for purchase.
 
+## Research catalogue
+
+The platform maintains 100 research programmes across eight translated categories. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md) and read about the [research-agent identities and persistent memory](docs/AGENT_IDENTITIES_AND_MEMORY.md).
+
 ## Applications
 
 Install SSSWET on supported mobile devices from the website, or download the Windows, macOS and Linux desktop builds from [official releases](https://github.com/gudjencio/SSSWET/releases). Mobile installation and package availability are explained in [Application distribution](docs/APP_DISTRIBUTION.md).
