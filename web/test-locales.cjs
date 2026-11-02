@@ -287,7 +287,7 @@ if (!pageSource.includes('id="ssswet-update-banner"') ||
 }
 if (!serviceWorkerCache.includes('"./service-worker-updates.js"') ||
     !serviceWorkerCache.includes('SSSWET_SKIP_WAITING') ||
-    serviceWorkerCache.includes("self.skipWaiting();")) {
+    /^\s*self\.skipWaiting\(\);\s*$/m.test(serviceWorkerCache)) {
   throw new Error("Application updates must be cached and activated only after user confirmation.");
 }
 console.log("Validated the user-controlled service worker update flow.");
