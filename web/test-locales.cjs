@@ -295,8 +295,8 @@ console.log("Validated the user-controlled service worker update flow.");
 
 const taxonomySource = fs.readFileSync(new URL("./technology-categories.js", `file://${__filename}`), "utf8");
 new Function(taxonomySource);
-const taxonomyGroupsMatch = taxonomySource.match(/const groups = (\{[\s\\S]*?\});/);
-const taxonomyTranslationsMatch = taxonomySource.match(/const translations = (\{[\s\\S]*?\});/);
+const taxonomyGroupsMatch = taxonomySource.match(/const groups = (\{[\s\S]*?\});/);
+const taxonomyTranslationsMatch = taxonomySource.match(/const translations = (\{[\s\S]*?\});/);
 if (!taxonomyGroupsMatch || !taxonomyTranslationsMatch) throw new Error("Technology taxonomy data is missing.");
 const taxonomyGroups = JSON.parse(taxonomyGroupsMatch[1]);
 const taxonomyTranslations = JSON.parse(taxonomyTranslationsMatch[1]);
