@@ -64,7 +64,7 @@
       card.querySelector("p").textContent=description;
       let tag=card.querySelector(".technology-category-tag");
       if(!tag){tag=document.createElement("small");tag.className="technology-category-tag";card.insertBefore(tag,card.querySelector("h3"));}
-      tag.textContent=l.values[categoryKeys.indexOf(meta.category)]+" · "+l.values[8+["astrophysics","propulsion","spaceHabitats","nuclearProtection","protectiveEngineering","cleanGeneration","energyStorage","adaptiveMaterials","structuralMaterials","regenerativeMedicine","humanAugmentation","animalCare","ecosystemRestoration","climateResilience","autonomousResearch","assistiveRobotics","advancedComputing","communication","publicKnowledge"].indexOf(meta.subcategory)];
+      tag.textContent=l.values[categoryKeys.indexOf(meta.category)]+" · "+(oldSubcategoryKeys.indexOf(meta.subcategory)>=0?l.values[8+oldSubcategoryKeys.indexOf(meta.subcategory)]:(newSubcategoryLabels[l.lang]||newSubcategoryLabels.en)[meta.subcategory==="sceneSimulation"?0:1]);
       button.textContent=lang==="fr"?"Découvrir et contribuer":lang==="es"?"Explorar y contribuir":lang==="de"?"Entdecken & beitragen":lang==="it"?"Esplora e contribuisci":lang==="pt"?"Explorar e contribuir":lang==="nl"?"Ontdek & draag bij":lang==="ru"?"Изучить и поддержать":lang==="uk"?"Дізнатися й підтримати":lang==="ar"?"استكشف وساهم":lang==="he"?"לגלות ולתרום":lang==="ja"?"詳しく見る・支援する":lang==="ko"?"살펴보고 참여하기":lang==="zh"?"了解并支持":lang==="hi"?"जानें और योगदान दें":"Explore & contribute";
     });
     renderFilters();
@@ -82,7 +82,7 @@
         cards.forEach(card=>{
           const button=card.querySelector("button[data-tech]");
           const key=button.dataset.tech;
-          const item=(window.SSSWET_TECHNOLOGIES||{})[key]||{};
+          const item=(window.SSSWET_TECHNOLOGIES||{})[key] || curatedTechnologyCopy[key] || {};
           const searchable=[item.en?.[0],item.en?.[1],item.fr?.[0],item.fr?.[1],key].join(" ").toLocaleLowerCase();
           const visible=(!selectedCategory||selectedCategory===category)&&(!selectedSubcategory||selectedSubcategory===subcategory)&&(!query||searchable.includes(query));
           card.hidden=!visible;
