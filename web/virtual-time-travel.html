@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#05070b">
+<meta name="description" content="SSSWET Virtual Time Travel Mapping — consent-based spatial capture, observation replay and uncertainty-aware scenario modelling.">
+<title>Virtual Time Travel Mapping · SSSWET</title>
+<link rel="stylesheet" href="virtual-time-travel.css">
+<link href="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js"></script>
+</head>
+<body>
+<header class="vt-header">
+  <a class="vt-brand" href="./index.html"><span class="vt-mark">SSSWET</span><span data-i="brand">Virtual Time Travel Mapping</span></a>
+  <div class="vt-header-actions"><label class="vt-language"><span class="sr-only" data-i="language">Language</span><select id="vt-language" aria-label="Language"><option value="en">English</option><option value="fr">Français</option><option value="es">Español</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="nl">Nederlands</option><option value="ru">Русский</option><option value="uk">Українська</option><option value="ar">العربية</option><option value="he">עברית</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option><option value="hi">हिन्दी</option></select></label><a class="vt-back" href="./index.html" data-i="back">Back to SSSWET</a></div>
+</header>
+<main class="vt-shell">
+  <section class="vt-intro"><p class="eyebrow">SSSWET · SPATIOTEMPORAL RESEARCH</p><h1 data-i="title">Explore a place through recorded time</h1><p data-i="intro">Build a personal 3D map from locations you visit, replay observations you actually recorded, and compare them with clearly labelled model scenarios.</p><div class="vt-status" id="vt-status" role="status" aria-live="polite" data-i="ready">Ready. No sensors are active.</div></section>
+  <section class="vt-map-section" aria-label="3D map">
+    <div class="vt-map-heading"><div><h2 data-i="mapTitle">Your persistent 3D map</h2><p data-i="mapHelp">Explore the map. Start a scan only when you are ready and have permission to record.</p></div><button id="vt-locate" class="secondary" type="button" data-i="locate">Locate me</button></div>
+    <div id="vt-map" role="application" aria-label="Interactive 3D map"></div>
+    <div class="vt-map-meta"><span id="vt-coordinates" data-i="noLocation">Location not shared</span><span data-i="mapAttribution">Map data © OpenStreetMap contributors · OpenFreeMap</span></div>
+  </section>
+  <section class="vt-grid">
+    <article class="vt-panel"><h2 data-i="captureTitle">Capture a new visit</h2><p data-i="captureIntro">All capture is optional. Nothing is uploaded to SSSWET servers; observations and media stay in this browser's local storage.</p>
+      <div class="vt-consents">
+        <label><input id="vt-consent-location" type="checkbox" checked><span data-i="consentLocation">Record location and movement sensors</span></label>
+        <label><input id="vt-consent-camera" type="checkbox"><span data-i="consentCamera">Record camera video (optional)</span></label>
+        <label><input id="vt-consent-mic" type="checkbox"><span data-i="consentMic">Record microphone audio (optional)</span></label>
+      </div>
+      <div class="vt-actions"><button id="vt-start" type="button" class="primary" data-i="start">Start local scan</button><button id="vt-stop" type="button" class="secondary" disabled data-i="stop">Stop scan</button></div>
+      <video id="vt-preview" autoplay muted playsinline hidden></video>
+      <p class="vt-small" data-i="captureNote">Only record places and people when you have the necessary permission. Check local recording and data-protection laws. Avoid capturing private conversations or identifiable bystanders without consent.</p>
+      <div class="vt-storage"><span data-i="storage">Saved locally</span><strong id="vt-storage-count">0 observations · 0 media clips</strong></div>
+    </article>
+    <article class="vt-panel"><h2 data-i="annotationTitle">Annotate an event</h2><p data-i="annotationIntro">Add context that sensors cannot infer reliably. Annotations are stored with the selected scan time.</p>
+      <label><span data-i="eventType">Event type</span><select id="vt-event-type"><option value="note" data-i="eventNote">General note</option><option value="object" data-i="eventObject">Object moved or found</option><option value="collision" data-i="eventCollision">Possible collision</option><option value="weather" data-i="eventWeather">Environmental change</option><option value="route" data-i="eventRoute">Movement or route</option></select></label>
+      <label><span data-i="eventDescription">Description</span><textarea id="vt-event-description" rows="3" maxlength="1000" data-ph="eventPlaceholder" placeholder="Describe what you observed…"></textarea></label>
+      <button id="vt-add-event" type="button" class="secondary" data-i="addEvent">Save observation</button>
+      <div id="vt-event-feedback" class="vt-feedback" role="status" aria-live="polite"></div>
+    </article>
+  </section>
+  <section class="vt-panel vt-timeline"><div class="vt-panel-heading"><div><h2 data-i="timelineTitle">Recorded timeline</h2><p data-i="timelineIntro">Rewind and advance through the observations captured in this browser.</p></div><span id="vt-timeline-range">—</span></div>
+    <input id="vt-time" type="range" min="0" max="0" value="0" step="1" aria-label="Recorded observation timeline">
+    <div class="vt-actions"><button id="vt-prev" class="secondary" type="button" data-i="previous">Previous</button><button id="vt-play" class="primary" type="button" data-i="play">Play recorded timeline</button><button id="vt-next" class="secondary" type="button" data-i="next">Next</button></div>
+    <div id="vt-selected" class="vt-selected" aria-live="polite" data-i="noObservations">No observations recorded yet.</div>
+    <video id="vt-playback" controls playsinline hidden></video>
+  </section>
+  <section class="vt-grid">
+    <article class="vt-panel"><h2 data-i="modelTitle">Explore an unrecorded interval</h2><p data-i="modelIntro">The model can extend a measured trajectory as a scenario. It cannot turn missing data into historical facts or guarantee future outcomes.</p>
+      <label><span data-i="scenario">Scenario</span><select id="vt-scenario"><option value="past" data-i="past">Earlier interval not recorded</option><option value="future" data-i="future">Possible future scenario</option></select></label>
+      <label><span data-i="horizon">Time horizon</span><select id="vt-horizon"><option value="60">1 minute</option><option value="300" selected>5 minutes</option><option value="900">15 minutes</option></select></label>
+      <button id="vt-model" type="button" class="secondary" data-i="runModel">Generate cautious scenario</button>
+      <div id="vt-model-result" class="vt-model-result" role="status" aria-live="polite" data-i="modelPlaceholder">A scenario will appear here with its assumptions and uncertainty.</div>
+    </article>
+    <article class="vt-panel"><h2 data-i="dataTitle">Your data and privacy</h2><p data-i="dataIntro">Data is stored in this browser's IndexedDB. It is not sent to the project or another server by this application.</p>
+      <div class="vt-actions"><button id="vt-export" class="secondary" type="button" data-i="export">Export observation index</button><button id="vt-delete" class="danger" type="button" data-i="delete">Delete all local data</button></div>
+      <p class="vt-small" data-i="privacyNote">Export includes sensor and annotation metadata, not recorded media. Keep exported files secure. Clearing browser data may remove your local map and recordings.</p>
+      <div id="vt-data-feedback" class="vt-feedback" role="status" aria-live="polite"></div>
+    </article>
+  </section>
+  <footer class="vt-footer"><span data-i="footer">SSSWET research prototype · Recorded observations, estimates and simulations are kept distinct.</span><a href="https://github.com/gudjencio/SSSWET" target="_blank" rel="noopener noreferrer">GitHub</a></footer>
+</main>
+<script src="virtual-time-travel.js"></script>
+</body></html>
