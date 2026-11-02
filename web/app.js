@@ -491,6 +491,7 @@
   let priorityAssessmentReport = null;
 
   function renderPriorityAssessments(report) {
+    const fr = currentLanguage() === "fr";
     priorityAssessmentReport = report || null;
     const container = document.getElementById("priority-assessment-ranking");
     if (!container) return;
@@ -499,13 +500,16 @@
     const incomplete = Array.isArray(report && report.incomplete) ? report.incomplete : [];
     const summary = document.createElement("p");
     summary.className = "priority-assessment-summary";
-    summary.textContent = (report?.assessed_programmes ?? 0) + " programmes assessed · "
-      + ranked.length + " complete rankings · " + incomplete.length + " incomplete";
+    summary.textContent = fr
+      ? (report?.assessed_programmes ?? 0) + " programmes évalués · " + ranked.length + " classements complets · " + incomplete.length + " incomplets"
+      : (report?.assessed_programmes ?? 0) + " programmes assessed · " + ranked.length + " complete rankings · " + incomplete.length + " incomplete";
     container.append(summary);
     if (!ranked.length && !incomplete.length) {
       const empty = document.createElement("p");
       empty.className = "visual-empty";
-      empty.textContent = "No programme assessments have been recorded yet. Scores are never generated from catalogue descriptions.";
+      empty.textContent = fr
+        ? "Aucune évaluation de programme n’a encore été enregistrée. Les notes ne sont jamais déduites des descriptions du catalogue."
+        : "No programme assessments have been recorded yet. Scores are never generated from catalogue descriptions.";
       container.append(empty);
     }
     ranked.forEach(item => {
@@ -524,33 +528,33 @@
       fill.style.width = Math.max(0, Math.min(100, Number(item.score))) + "%";
       track.append(fill);
       const meta = document.createElement("small");
-      meta.textContent = "Latest assessment · " + (item.reviewer_label || "Reviewer not named")
-        + " · " + new Date(item.created_at).toLocaleDateString();
+      meta.textContent = (fr ? "Dernière évaluation · " : "Latest assessment · ") + (item.reviewer_label || (fr ? "Évaluateur non nommé" : "Reviewer not named"))
+        + " · " + new Date(item.created_at).toLocaleDateString(fr ? "fr-FR" : "en-US");
       article.append(heading, track, meta);
       container.append(article);
     });
     if (incomplete.length) {
       const heading = document.createElement("h4");
       heading.className = "priority-incomplete-heading";
-      heading.textContent = "Incomplete assessments — not ranked";
+      heading.textContent = fr ? "Évaluations incomplètes — non classées" : "Incomplete assessments — not ranked";
       container.append(heading);
       incomplete.forEach(item => {
         const line = document.createElement("p");
         line.className = "priority-incomplete-item";
         line.textContent = item.programme_id + " · " + item.coverage_percent
-          + "% assessed · missing: " + (item.missing_criteria || Object.keys(item.scores || {}).filter(key => item.scores[key] == null)).join(", ");
+          + (fr ? " % évalués · critères manquants : " : "% assessed · missing: ") + (item.missing_criteria || Object.keys(item.scores || {}).filter(key => item.scores[key] == null)).join(", ");
         container.append(line);
       });
     }
     const history = document.createElement("details");
     history.className = "priority-history";
     const summaryLine = document.createElement("summary");
-    summaryLine.textContent = "Assessment history (" + (report?.history_count ?? 0) + " entries)";
+    summaryLine.textContent = (fr ? "Historique des évaluations (" : "Assessment history (") + (report?.history_count ?? 0) + (fr ? " entrées)" : " entries)");
     history.append(summaryLine);
     (report?.history || []).slice(0, 40).forEach(item => {
       const row = document.createElement("p");
-      row.textContent = item.programme_id + " · " + (item.score == null ? "Incomplete" : Number(item.score).toFixed(1) + " / 100")
-        + " · " + (item.reviewer_label || "Reviewer not named") + " · " + new Date(item.created_at).toLocaleString();
+      row.textContent = item.programme_id + " · " + (item.score == null ? (fr ? "Incomplet" : "Incomplete") : Number(item.score).toFixed(1) + " / 100")
+        + " · " + (item.reviewer_label || (fr ? "Évaluateur non nommé" : "Reviewer not named")) + " · " + new Date(item.created_at).toLocaleString(fr ? "fr-FR" : "en-US");
       history.append(row);
     });
     container.append(history);
@@ -577,17 +581,19 @@
     const status = document.getElementById("priority-assessment-status");
     const container = document.getElementById("priority-assessment-ranking");
     if (!status || !container) return;
-    status.textContent = "Loading the local assessment register…";
+    const fr = currentLanguage() === "fr";
+    status.textContent = fr ? "Chargement du registre local des évaluations…" : "Loading the local assessment register…";
     try {
       const [report, framework] = await Promise.all([
         apiGet("/api/research-priority-assessments"),
         apiGet("/api/research-priority-framework")
       ]);
       renderPriorityAssessments(report);
-      status.textContent = "Local assessment register connected · " + framework.criteria.length
-        + " weighted criteria · " + framework.weight_total + "% total weight · append-only history";
+      status.textContent = fr
+        ? "Registre local connecté · " + framework.criteria.length + " critères pondérés · pondération totale : " + framework.weight_total + " % · historique non modifiable"
+        : "Local assessment register connected · " + framework.criteria.length + " weighted criteria · " + framework.weight_total + "% total weight · append-only history";
     } catch (error) {
-      status.textContent = "The local assessment register is unavailable: " + String(error.message || error);
+      status.textContent = (fr ? "Registre local indisponible : " : "The local assessment register is unavailable: ") + String(error.message || error);
     }
   }
 
@@ -606,7 +612,7 @@
     const evidenceRefs = String(formData.get("evidence_refs") || "").split("\\n")
       .map(value => value.trim()).filter(Boolean);
     button.disabled = true;
-    status.textContent = "Saving a new append-only assessment…";
+    status.textContent = currentLanguage() === "fr" ? "Enregistrement d’une nouvelle évaluation dans l’historique…" : "Saving a new append-only assessment…";
     try {
       await apiPost("/api/research-priority-assessments", {
         programme_id: formData.get("programme_id"),
@@ -618,9 +624,9 @@
       priorityForm.elements.rationale.value = "";
       priorityForm.elements.evidence_refs.value = "";
       await loadPriorityAssessments();
-      status.textContent = "Assessment saved. The previous assessment remains in the history.";
+      status.textContent = currentLanguage() === "fr" ? "Évaluation enregistrée. La précédente reste conservée dans l’historique." : "Assessment saved. The previous assessment remains in the history.";
     } catch (error) {
-      status.textContent = "Assessment not saved: " + String(error.message || error);
+      status.textContent = (currentLanguage() === "fr" ? "Évaluation non enregistrée : " : "Assessment not saved: ") + String(error.message || error);
     } finally {
       button.disabled = false;
     }
