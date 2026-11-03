@@ -31,7 +31,7 @@ for (const feature of [
 }
 
 for (const locale of ["en", "fr", "es", "de", "it", "pt", "nl", "ru", "uk", "ar", "he", "ja", "ko", "zh", "hi"]) {
-  const localeLine = source.split("\\n").find(line => line.trim().startsWith(`${locale}: {`));
+  const localeLine = source.split("\n").find(line => line.trim().startsWith(`${locale}: {`));
   if (!localeLine || !localeLine.includes("forward:") || !localeLine.includes("mutualNote:") || !localeLine.includes("notAvailable:")) {
     throw new Error(`Keyframe correspondence locale is incomplete: ${locale}`);
   }
