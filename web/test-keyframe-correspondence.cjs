@@ -16,14 +16,12 @@ assert.ok(api, "The pure correspondence API must be available for deterministic 
 for (const feature of [
   "patchDescriptors",
   "correspondenceDistribution",
-  "candidate matches",
-  "correspondances candidates",
   "カメラ姿勢",
   "3D overlap",
   "ctx.getImageData",
   "mutual matches",
   "correspondances réciproques",
-  "one-way candidates",
+  "forward candidates",
   "mutualNote",
   "nearestMatches",
   "backward[bestIndex] !== i",
@@ -40,7 +38,7 @@ const unique = api.correspondenceDistribution(
   [[0], [10], [20]],
   [[0.01], [10.01], [20.01]]
 );
-assert.equal(unique.candidates, 3, "All three distinctive forward candidates should pass");
+assert.equal(unique.forwardCandidates, 3, "All three distinctive forward candidates should pass");
 assert.equal(unique.count, 3, "Distinctive reciprocal matches should be retained");
 assert.equal(unique.dx, 0);
 assert.equal(unique.dy, 0);
@@ -50,7 +48,7 @@ const duplicate = api.correspondenceDistribution(
   [[0], [0.02], [10]],
   [[0.01], [10.01]]
 );
-assert.equal(duplicate.candidates, 3, "The fixture should expose three one-way candidates");
+assert.equal(duplicate.forwardCandidates, 3, "The fixture should expose three forward candidates");
 assert.equal(duplicate.count, 1, "A many-to-one ambiguity must not be counted as reciprocal");
 assert.ok(duplicate.count < duplicate.candidates);
 
