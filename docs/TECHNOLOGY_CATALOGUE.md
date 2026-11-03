@@ -1,6 +1,6 @@
 # SSSWET technology catalogue
 
-The public interface presents **118 selected contribution themes** grouped into eight categories. The scientific registry contains **512 research-programme dossiers**: the original 106 entries, 394 generated research scopes and twelve curated additions. These are research records, not 512 validated technologies.
+The public interface presents **606 selected contribution themes** grouped into eight categories. The scientific registry contains **1,000 research-programme dossiers**: the original 106 entries, 882 generated research scopes and twelve curated additions. These are research records, not 512 validated technologies.
 
 ## Categories and subcategories
 
@@ -34,6 +34,12 @@ The catalogue includes **Human-like Robots (Robots humanoïdes)** as a research 
 ### Sentient AI and subjective experience
 
 The catalogue includes **Sentient AI (IA sentiente)** as a long-term research objective: investigate whether artificial systems could possess genuine subjective experience rather than merely imitate conscious behaviour. The programme compares competing theories, demands falsifiable predictions and independent replication, and separates capability, self-report and behavioural resemblance from evidence of subjective experience. No accepted test currently establishes AI consciousness. Potential welfare implications require precautionary review, independent ethical oversight and predefined stop conditions; the entry does not claim that a sentient system has been created or detected.
+
+## 488 additional research programmes
+
+The portfolio expansion adds 488 distinct, domain-specific research programmes across space systems, civilian protection, energy, materials, life sciences, environmental stewardship, robotics and knowledge systems. Each entry has a stable identifier, a defined research scope and explicit limitations. Their presence in the registry does not mean that the underlying technologies have been built, tested or validated.
+
+The 1,000-entry total is composed of 106 original catalogue entries, 394 earlier generated research scopes, 12 curated programmes and 488 additional domain-specific programmes. The contribution interface classifies 606 themes; the dossier registry contains 1,000 entries.
 
 ## Research integrity
 
