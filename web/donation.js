@@ -479,6 +479,7 @@
   if (!modal || !grid) return;
   // Rebuild the cards from the single catalogue source to prevent stale or partial HTML lists.
   grid.replaceChildren();
+  const cardFragment = document.createDocumentFragment();
   Object.entries(technologies).forEach(([key, item], index) => {
     const card = document.createElement("article");
     card.className = "technology-card";
@@ -494,8 +495,9 @@
     button.dataset.tech = key;
     button.textContent = "Explore & contribute";
     card.append(number, heading, summary, button);
-    grid.append(card);
+    cardFragment.append(card);
   });
+  grid.append(cardFragment);
   updateCatalogueCount();
   document.getElementById("language")?.addEventListener("change", updateCatalogueCount);
   window.addEventListener("ssswet-language-changed", updateCatalogueCount);
@@ -529,18 +531,20 @@
       if (!select) continue;
       const previous = select.value;
       select.replaceChildren();
+      const optionFragment = document.createDocumentFragment();
       if (definition.includeAll) {
         const all = document.createElement("option");
         all.value = "";
         all.textContent = language === "fr" ? "Toutes les technologies" : "All technologies";
-        select.append(all);
+        optionFragment.append(all);
       }
       Object.entries(technologies).forEach(([key, item]) => {
         const option = document.createElement("option");
         option.value = key;
         option.textContent = item[language][0];
-        select.append(option);
+        optionFragment.append(option);
       });
+      select.append(optionFragment);
       if ([...select.options].some(option => option.value === previous)) select.value = previous;
     }
   }

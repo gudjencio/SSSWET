@@ -36,6 +36,7 @@
   const categoryNodes = new Map();
   const subcategoryNodes = new Map();
   const sourceCards = [...root.querySelectorAll(".technology-card")];
+  const cardByKey = new Map(sourceCards.map(card => [card.querySelector("button[data-tech]")?.dataset.tech, card]).filter(([key]) => key));
   function buildOptions(select, values, selected, allLabel, localized) {
     select.replaceChildren();
     const all = document.createElement("option"); all.value=""; all.textContent=allLabel; select.append(all);
@@ -77,7 +78,7 @@
     for(const [category,subgroups] of Object.entries(groups)){
       let visibleCount=0;
       for(const [subcategory,keys] of Object.entries(subgroups)){
-        const cards=keys.map(key=>sourceCards.find(card=>card.querySelector("button[data-tech]")?.dataset.tech===key)).filter(Boolean);
+        const cards=keys.map(key=>cardByKey.get(key)).filter(Boolean);
         let count=0;
         cards.forEach(card=>{
           const button=card.querySelector("button[data-tech]");
@@ -105,7 +106,7 @@
         const sub=document.createElement("div");sub.className="technology-subcategory-group";sub.dataset.subcategory=subcategory;
         const subTitle=document.createElement("h4");subTitle.className="technology-subcategory-heading";sub.append(subTitle);
         subcategoryNodes.set(category+":"+subcategory,sub);
-        keys.forEach(key=>{const card=sourceCards.find(item=>item.querySelector("button[data-tech]")?.dataset.tech===key);if(card)sub.append(card);});
+        keys.forEach(key=>{const card=cardByKey.get(key);if(card)sub.append(card);});
         section.append(sub);
       }
       fragment.append(section);
