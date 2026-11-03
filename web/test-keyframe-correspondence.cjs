@@ -12,7 +12,13 @@ for (const feature of [
   "カメラ姿勢",
   "3D overlap",
   "best / Math.max(second",
-  "ctx.getImageData"
+  "ctx.getImageData",
+  "median(values)",
+  "median shift",
+  "déplacement médian",
+  "median spread",
+  "displacementNote",
+  "Math.hypot(item.dx - dx, item.dy - dy)"
 ]) {
   if (!source.includes(feature)) throw new Error(`Keyframe correspondence feature missing: ${feature}`);
 }
