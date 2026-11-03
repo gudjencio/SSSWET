@@ -13,7 +13,7 @@ for (const feature of [
   "3D overlap",
   "best / Math.max(second",
   "ctx.getImageData",
-  "median(values)",
+  "const median = values",
   "median shift",
   "déplacement médian",
   "median spread",
