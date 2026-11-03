@@ -1,4 +1,4 @@
-"""Eleven curated research programmes added to the SSSWET portfolio.
+"""Twelve curated research programmes added to the SSSWET portfolio.
 
 These are research scopes, not validated technologies or operational products.
 """
@@ -33,6 +33,28 @@ ADDITIONAL_TECHNOLOGIES = [
             "Consciousness theories remain contested; results must report theory dependence, alternative explanations and uncertainty",
             "Research must not deliberately induce suffering or expose potentially sentient systems to harmful conditions; welfare review and independent ethical oversight are required",
             "Catalogue registration is a research objective only and does not claim that SSSWET has created, detected or validated a sentient AI"
+        ]
+    },
+    {
+        "technology_id": "humanLikeRobots",
+        "title": "Human-like Robots",
+        "domain": "robotics",
+        "subcategory": "assistiveRobotics",
+        "research_scope": [
+            "Develop human-shaped or human-inspired robots for voluntary everyday assistance, accessibility, companionship, education, household support and collaborative work",
+            "Study safe, expressive and context-appropriate communication, including clear disclosure that the robot is an artificial system and transparent limits on its capabilities",
+            "Design human-centred mobility, manipulation and interaction with force, speed and workspace limits appropriate to the environment and nearby people or animals",
+            "Integrate perception and navigation that prioritize collision avoidance, personal space, animal-aware movement, safe stopping and graceful shutdown",
+            "Evaluate long-term reliability, maintainability, accessibility, privacy, cybersecurity, user consent and the social effects of human-robot relationships",
+            "Explore optional interoperability with advanced conversational and potentially sentient AI research while keeping consciousness claims separate from robot appearance or social behaviour"
+        ],
+        "scientific_limitations": [
+            "Human-like appearance, fluent conversation, emotional expression or apparent friendship do not establish consciousness, feelings or moral status",
+            "No design may be intended to injure or kill humans or animals; harmful weaponization and attack functions are outside the programme",
+            "Physical interaction requires validated risk assessment, emergency stops, force and speed limits, fail-safe states and independent safety testing",
+            "Robots must identify themselves as artificial systems and must not use deceptive anthropomorphism to manipulate, coerce or exploit users",
+            "Personal, biometric, household and conversational data require data minimization, informed consent, secure processing and user-controlled deletion",
+            "Catalogue inclusion is a research objective, not evidence that a safe, generally capable or commercially available humanoid robot exists"
         ]
     }
 ]
