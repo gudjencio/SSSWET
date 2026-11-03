@@ -40,6 +40,9 @@ def test_extended_portfolio_contains_twelve_curated_additions_and_488_new_resear
     ids = [item["technology_id"] for item in portfolio]
     assert len(portfolio) == 1000
     assert len(ids) == len(set(ids))
+    titles = [item["title"] for item in portfolio]
+    assert len(titles) == len(set(titles))
+    assert all(item.get("research_scope") and item.get("scientific_limitations") for item in portfolio)
     assert len(ADDITIONAL_TECHNOLOGIES) == 12
     from ssswet_core.technology_catalogue_expansion_2 import TECHNOLOGY_CATALOGUE_EXPANSION_2
     assert len(TECHNOLOGY_CATALOGUE_EXPANSION_2) == 488
@@ -50,13 +53,13 @@ def test_extended_portfolio_contains_twelve_curated_additions_and_488_new_resear
     assert virtual_time["domain"] == "society"
 
 
-def test_engine_registers_all_512_research_programmes(tmp_path):
+def test_engine_registers_all_1000_research_programmes(tmp_path):
     from ssswet_core.engine import SSSWETEngine
 
-    engine = SSSWETEngine(SQLiteResearchStore(tmp_path / "engine-catalogue-512.sqlite3"))
+    engine = SSSWETEngine(SQLiteResearchStore(tmp_path / "engine-catalogue-1000.sqlite3"))
     result = engine.register_technology_catalogue(actor_id="catalogue-bot")
-    assert result["catalogue_size"] == 512
-    assert result["created_count"] == 512
+    assert result["catalogue_size"] == 1000
+    assert result["created_count"] == 1000
     assert engine.get_technology_dossier("virtualTimeTravelMap")["scientific_validity_established"] is False
 
 
