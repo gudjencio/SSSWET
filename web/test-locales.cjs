@@ -92,7 +92,7 @@ if (new Set(languageCodes).size !== languageCodes.length) {
   throw new Error("The language catalogue contains duplicate language codes");
 }
 
-const userReferenceLanguageCodes = `af sq de am en ar hy as ay az bm bn bho be my bs br bg yue ca ceb ny zh-CN zh-TW si ko co ht hr da dv doi es eo et ee fi fon fr fy gd gl cy ka el gn gu ha haw he hi hmn hu ig ilo id ga is it ja jv kn kk km rw kok kri ku ckb ky lo la lv ln lt lg lb mk mai mg ms ml mt mi mr mni lus mn nl ne no oc or om uz ug ps pa fa pl pt qu ro sa sm sg sr st sn sd sk sl so su sv sw tg ta tt cs te th bo ti ts tr tk tw uk ur vi xh yi yo zu ab aa ace ban btx bts bbc bci bem eu bxr ce crs mfe kg luo gv pap ber tpi fr-CA fur gsw crh ca-valencia ach alz chr din dmk dyu ff gaa nqo ss ve wo av awa bal ba bew bik prs dz cnh hil os pnb cv ch chk fj hrx`.split(/\\s+/);
+const userReferenceLanguageCodes = `af sq de am en ar hy as ay az bm bn bho be my bs br bg yue ca ceb ny zh-CN zh-TW si ko co ht hr da dv doi es eo et ee fi fon fr fy gd gl cy ka el gn gu ha haw he hi hmn hu ig ilo id ga is it ja jv kn kk km rw kok kri ku ckb ky lo la lv ln lt lg lb mk mai mg ms ml mt mi mr mni lus mn nl ne no oc or om uz ug ps pa fa pl pt qu ro sa sm sg sr st sn sd sk sl so su sv sw tg ta tt cs te th bo ti ts tr tk tw uk ur vi xh yi yo zu ab aa ace ban btx bts bbc bci bem eu bxr ce crs mfe kg luo gv pap ber tpi fr-CA fur gsw crh ca-valencia ach alz chr din dmk dyu ff gaa nqo ss ve wo av awa bal ba bew bik prs dz cnh hil os pnb cv ch chk fj hrx`.split(/\s+/);
 const missingReferenceLanguages = userReferenceLanguageCodes.filter(code => !languageCodes.includes(code));
 if (missingReferenceLanguages.length) {
   throw new Error("The user reference language list is incomplete: " + missingReferenceLanguages.join(", "));
