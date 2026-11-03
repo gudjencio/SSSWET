@@ -14,6 +14,8 @@ def compact_records(records: list[dict], *, key_field: str = "key", policy: Rete
     if policy.keep_latest_per_key:
         latest = {}
         for record in records:
-            latest[record.get(key_field)] = record
+            key = record.get(key_field)
+            latest.pop(key, None)
+            latest[key] = record
         selected = list(latest.values())
     return selected[-policy.max_items:]
