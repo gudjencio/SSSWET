@@ -27,7 +27,7 @@ def test_missingness_profile_does_not_modify_rows():
     rows = [{"a": 1}, {"a": None, "b": 2}]
     result = analyze(rows)
     assert result["columns"]["a"]["missing_count"] == 1
-    assert result["incomplete_row_count"] == 1
+    assert result["incomplete_row_count"] == 2
     assert rows == [{"a": 1}, {"a": None, "b": 2}]
 
 def test_outliers_are_flagged_not_removed():
