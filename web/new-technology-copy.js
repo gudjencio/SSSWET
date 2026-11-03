@@ -1,4 +1,4 @@
-/* Curated translations for the eleven new research themes. */
+/* Curated translations for the twelve new research themes. */
 (() => {
   "use strict";
   const ids=["virtualTimeTravelMap","spatiotemporalDigitalTwin","forensicSceneReconstruction","predictiveSceneSimulation","geospatialSensorFusion","persistent3DMapping","motionTrajectoryReconstruction","privacyPreservingCapture","environmentalEventReplay","uncertaintyAwareWorldModel","sentientAI","humanLikeRobots"];
