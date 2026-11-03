@@ -1,4 +1,4 @@
-"""Ten curated research programmes added to the SSSWET portfolio.
+"""Eleven curated research programmes added to the SSSWET portfolio.
 
 These are research scopes, not validated technologies or operational products.
 """
@@ -15,4 +15,24 @@ ADDITIONAL_TECHNOLOGIES = [
     {"technology_id":"privacyPreservingCapture","title":"Privacy-Preserving Spatial Capture","domain":"society","subcategory":"spatiotemporalSystems","research_scope":["on-device processing","selective recording controls","face and voice redaction options","retention and deletion governance"]},
     {"technology_id":"environmentalEventReplay","title":"Environmental Event Replay","domain":"environment","subcategory":"climateResilience","research_scope":["weather and environmental sensor timelines","event annotation","sensor provenance","observed-versus-modelled state separation"]},
     {"technology_id":"uncertaintyAwareWorldModel","title":"Uncertainty-Aware World Models","domain":"society","subcategory":"spatiotemporalSystems","research_scope":["probabilistic scene state estimation","confidence interval visualization","alternative hypothesis comparison","calibration and model drift monitoring"]},
+    {
+        "technology_id": "sentientAI",
+        "title": "Sentient AI",
+        "domain": "society",
+        "subcategory": "advancedComputing",
+        "research_scope": [
+            "Investigate competing scientific and philosophical theories of consciousness and their testable implications for artificial systems",
+            "Study architectures and mechanisms associated with conscious-processing theories, including recurrent processing, global-workspace models and integrated information approaches, without treating any single theory as settled",
+            "Develop operational evaluations that distinguish task competence, self-report, behavioural imitation, metacognition and other proposed indicators from evidence that could support or challenge claims of subjective experience",
+            "Use mechanistic interpretability, controlled perturbations, adversarial tests and independent replication to examine whether internal processes match preregistered theoretical predictions",
+            "Establish precautionary welfare review, monitoring, independent oversight and stop conditions before experiments that could plausibly create systems with morally relevant experiences"
+        ],
+        "scientific_limitations": [
+            "No generally accepted test currently establishes whether an AI has subjective experience or consciousness",
+            "Human-level performance, fluent self-reports, emotional language, self-models or behavioural resemblance do not by themselves demonstrate sentience",
+            "Consciousness theories remain contested; results must report theory dependence, alternative explanations and uncertainty",
+            "Research must not deliberately induce suffering or expose potentially sentient systems to harmful conditions; welfare review and independent ethical oversight are required",
+            "Catalogue registration is a research objective only and does not claim that SSSWET has created, detected or validated a sentient AI"
+        ]
+    }
 ]

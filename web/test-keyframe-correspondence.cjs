@@ -53,7 +53,7 @@ const duplicate = api.correspondenceDistribution(
 );
 assert.equal(duplicate.forwardCandidates, 3, "The fixture should expose three forward candidates");
 assert.equal(duplicate.count, 1, "A many-to-one ambiguity must not be counted as reciprocal");
-assert.ok(duplicate.count < duplicate.candidates);
+assert.ok(duplicate.count < duplicate.forwardCandidates);
 
 assert.deepEqual(Array.from(api.nearestMatches([[0]], [[0.1]])), [-1],
   "A single possible target cannot pass a two-neighbour ratio test");

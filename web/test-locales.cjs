@@ -118,7 +118,7 @@ const donationSource = fs.readFileSync(new URL("./donation.js", `file://${__file
 for (const feature of ["SSSWET_TECHNOLOGIES", "minimumLocal", "Intl.NumberFormat", "donation-checkout", "SSSWET_DONATION_LINKS"]) {
   if (!donationSource.includes(feature)) throw new Error(`Donation feature missing: ${feature}`);
 }
-for (const technology of ["cellular", "longevity", "armor", "jetpack", "translator", "spacetime"]) {
+for (const technology of ["cellular", "longevity", "armor", "jetpack", "translator", "spacetime", "sentientAI"]) {
   if (!donationSource.includes(technology)) throw new Error(`Technology catalogue entry missing: ${technology}`);
 }
 if (!pageSource.includes('id="technology-dialog"') || !pageSource.includes('id="technology-grid"')) throw new Error("Technology showcase or contribution dialog is missing");
@@ -461,10 +461,10 @@ if (!readAloudSource.includes("Read selected text")) throw new Error("Accessible
 
 const categoryScript = fs.readFileSync(__dirname + "/technology-categories.js", "utf8");
 new Function(categoryScript);
-for (const key of ["virtualTimeTravelMap","spatiotemporalDigitalTwin","forensicSceneReconstruction","predictiveSceneSimulation","geospatialSensorFusion","persistent3DMapping","motionTrajectoryReconstruction","privacyPreservingCapture","environmentalEventReplay","uncertaintyAwareWorldModel"]) {
+for (const key of ["virtualTimeTravelMap","spatiotemporalDigitalTwin","forensicSceneReconstruction","predictiveSceneSimulation","geospatialSensorFusion","persistent3DMapping","motionTrajectoryReconstruction","privacyPreservingCapture","environmentalEventReplay","uncertaintyAwareWorldModel","sentientAI"]) {
   if (!categoryScript.includes(key)) throw new Error("New research theme missing from the interface: " + key);
 }
-if (!categoryScript.includes("curatedTechnologyCopy") || !categoryScript.includes("spatiotemporalSystems")) throw new Error("New research theme translations or category are missing.");
+if (!categoryScript.includes("curatedTechnologyCopy") || !categoryScript.includes("spatiotemporalSystems") || !categoryScript.includes("sentientAI")) throw new Error("New research theme translations or category are missing.");
 
 const newCopySource = fs.readFileSync(__dirname + "/new-technology-copy.js", "utf8");
 new Function(newCopySource);
@@ -472,9 +472,20 @@ for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja
   if (!newCopySource.includes("\"" + locale + "\":")) throw new Error("New technology descriptions are missing locale " + locale);
 }
 if (!newCopySource.includes("SSSWET_TECHNOLOGIES")) throw new Error("Curated technology metadata is not exposed to the contribution interface.");
+const sentientContext = { window: {} };
+vm.runInNewContext(newCopySource, sentientContext);
+const sentientTranslations = sentientContext.window.SSSWET_TECHNOLOGIES?.sentientAI;
+if (!sentientTranslations || Object.keys(sentientTranslations).length !== 15) throw new Error("Sentient AI must provide 15 localized title and description pairs.");
+for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"]) {
+  const pair = sentientTranslations[locale];
+  if (!Array.isArray(pair) || pair.length !== 2 || pair.some(value => !value.trim())) throw new Error("Sentient AI translation is incomplete: " + locale);
+}
+
 
 
 const virtualTimeSource = fs.readFileSync(new URL("./virtual-time-travel.js", `file://${__filename}`), "utf8");
 if (!virtualTimeSource.includes("lastOrientationWrite=0")) throw new Error("Virtual time capture must track orientation sampling independently.");
 if (!virtualTimeSource.includes("Date.now()-lastOrientationWrite<900") || !virtualTimeSource.includes("Date.now()-lastMotionWrite<900")) throw new Error("Motion and orientation sampling must each have independent throttling.");
-console.log("Validated independent motion and orientation sensor sampling.");
+const catalogueUiSource = fs.readFileSync(__dirname + "/catalogue-500-ui.js", "utf8");
+if (!catalogueUiSource.includes("117 contribution themes") || !catalogueUiSource.includes("511 research dossiers") || !catalogueUiSource.includes("IA sentiente")) throw new Error("Public catalogue counts or Sentient AI French title are out of date.");
+console.log("Validated Sentient AI registration, 15 translations, catalogue counts and independent motion/orientation sampling.");

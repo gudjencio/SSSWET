@@ -26,6 +26,10 @@
       en: ["Space-warping physics", "Theoretical and mathematical exploration of spacetime models, with no claim of practical propulsion or controllable warping."],
       fr: ["Physique de la déformation de l'espace-temps", "Exploration théorique et mathématique de modèles d'espace-temps, sans prétendre disposer d'une propulsion pratique ni d'une déformation contrôlable."]
     },
+    sentientAI: {
+      en: ["Sentient AI", "Research into whether artificial systems could have genuine subjective experience, distinct from behavioural imitation. No current test conclusively establishes AI consciousness; human-like performance or self-reports are not proof."],
+      fr: ["IA sentiente", "Recherche sur la possibilité qu’une intelligence artificielle possède une expérience subjective authentique, et non une simple imitation comportementale. Aucun test actuel ne démontre de façon concluante la conscience d’une IA ; des performances ou déclarations d’apparence humaine ne constituent pas une preuve."]
+    },
     timetravel: {
       en: ["Time travel research", "Exploratory study of time, causality, relativity, spacetime geometry and the mathematical limits of proposed temporal models. This is a long-term research ambition, not an available capability."],
       fr: ["Voyage dans le temps", "Étude exploratoire du temps, de la causalité, de la relativité, de la géométrie de l'espace-temps et des limites mathématiques des modèles temporels proposés. Il s'agit d'une ambition de recherche à long terme, pas d'une capacité disponible."]
