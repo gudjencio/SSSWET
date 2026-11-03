@@ -34,8 +34,8 @@ class ClaimConflict:
     subject: str
     predicate: str
     values: tuple[str, ...]
-    source_ids: tuple[str, ...]
-    explanation: str
+    source_ids: tuple[str, ...] = ()
+    explanation: str = ""
 
 
 class ContradictionDetector:
@@ -52,19 +52,12 @@ class ContradictionDetector:
             values: dict[str, list[ResearchClaim]] = {}
             for claim in group:
                 values.setdefault(_normalize(claim.value), []).append(claim)
-
             if len(values) < 2:
                 continue
-
-            # A disagreement within one source is not independent corroboration.
             source_ids = tuple(sorted({claim.source_id for claim in group}))
             if len(source_ids) < 2:
                 continue
-
-            display_values = tuple(sorted(
-                {claim.value.strip() for claim in group},
-                key=str.casefold,
-            ))
+            display_values = tuple(sorted({claim.value.strip() for claim in group}, key=str.casefold))
             conflicts.append(ClaimConflict(
                 subject=subject,
                 predicate=predicate,
@@ -77,7 +70,6 @@ class ContradictionDetector:
                     "this as a substantive contradiction."
                 ),
             ))
-
         return sorted(conflicts, key=lambda item: (item.subject, item.predicate))
 
     def requires_third_review(self, claims: list[ResearchClaim]) -> bool:
