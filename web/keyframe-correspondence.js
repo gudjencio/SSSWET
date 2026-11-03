@@ -74,7 +74,7 @@
         if (candidateDistance < best) { second = best; best = candidateDistance; bestIndex = j; }
         else if (candidateDistance < second) second = candidateDistance;
       }
-      if (!Number.isFinite(best) || !Number.isFinite(second) || best >= 0.72 || best / Math.max(second, 1e-6) >= 0.82) return -1;
+      if (!Number.isFinite(best) || !Number.isFinite(second) || best >= 0.72 || second <= 1e-6 || best / second >= 0.82) return -1;
       return bestIndex;
     });
   };
