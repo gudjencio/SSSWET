@@ -1,6 +1,6 @@
 # SSSWET technology catalogue
 
-The public interface presents **117 selected contribution themes** grouped into eight categories. The scientific registry contains **511 research-programme dossiers**: the original 106 entries, 394 generated research scopes and eleven curated additions. These are research records, not 511 validated technologies.
+The public interface presents **118 selected contribution themes** grouped into eight categories. The scientific registry contains **512 research-programme dossiers**: the original 106 entries, 394 generated research scopes and twelve curated additions. These are research records, not 512 validated technologies.
 
 ## Categories and subcategories
 
@@ -26,6 +26,10 @@ The catalogue includes black-hole observation and physics, exploration-probe con
 ### Nuclear-event and radiation protection
 
 The catalogue includes civilian blast resilience, radiation shielding, dosimetry networks, fallout detection and decontamination, electromagnetic-pulse resilience and extreme-heat protection. Research is limited to protective, emergency-response and public-safety applications. It does not include weapon design, construction or optimization.
+
+### Human-like robots and assistive companionship
+
+The catalogue includes **Human-like Robots (Robots humanoïdes)** as a research objective for human-inspired robots that support daily living, accessibility, household tasks, education, companionship and collaborative work. Research must prioritize collision avoidance, animal-aware movement, safe physical interaction, emergency stops, force and speed limits, privacy, cybersecurity, informed consent and transparent disclosure that each robot is an artificial system. No design may be intended to injure or kill humans or animals. Human-like appearance or friendly behaviour does not establish consciousness or feelings.
 
 ### Sentient AI and subjective experience
 
