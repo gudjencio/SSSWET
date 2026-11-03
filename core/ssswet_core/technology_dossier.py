@@ -176,8 +176,8 @@ class TechnologyDossierRegistry:
         }
 
     def list_dossiers(self, limit: int = 100) -> list[dict]:
-        if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 510:
-            raise ValueError("limit must be between 1 and 510")
+        if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 1000:
+            raise ValueError("limit must be between 1 and 1000")
         with self.store._connect() as connection:
             rows = connection.execute(
                 "SELECT technology_id FROM technology_dossiers ORDER BY created_at DESC LIMIT ?",

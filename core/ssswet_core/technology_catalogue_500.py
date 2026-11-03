@@ -7,7 +7,35 @@ from .technology_catalogue_additions import ADDITIONAL_TECHNOLOGIES
 from .technology_catalogue_expansion_2 import TECHNOLOGY_CATALOGUE_EXPANSION_2
 from .technology_dossier import TechnologyDossierRegistry
 
-TECHNOLOGY_CATALOGUE = [*CORE_TECHNOLOGY_CATALOGUE, *TECHNOLOGY_CATALOGUE_EXPANSION, *ADDITIONAL_TECHNOLOGIES, *TECHNOLOGY_CATALOGUE_EXPANSION_2]
+def _complete_research_record(item: dict) -> dict:
+    """Ensure every public catalogue entry states a scope and its limitations."""
+    record = dict(item)
+    scope = record.get("research_scope")
+    if not isinstance(scope, list) or not scope:
+        record["research_scope"] = [
+            "Define a testable research question, measurable outcomes and reproducible methods",
+            "Compare evidence, simulations and alternative explanations with explicit uncertainty",
+            "Assess safety, accessibility, lifecycle impact and independent review before deployment",
+        ]
+    limitations = record.get("scientific_limitations")
+    if not isinstance(limitations, list) or not limitations:
+        record["scientific_limitations"] = [
+            "Catalogue inclusion records a research objective only; it does not establish feasibility, readiness or validation",
+            "Distinguish measured evidence, model assumptions, simulations, hypotheses and unverified claims",
+            "Any prototype or field study requires qualified oversight, documented risk assessment and applicable legal review",
+        ]
+    return record
+
+
+TECHNOLOGY_CATALOGUE = [
+    _complete_research_record(item)
+    for item in (
+        *CORE_TECHNOLOGY_CATALOGUE,
+        *TECHNOLOGY_CATALOGUE_EXPANSION,
+        *ADDITIONAL_TECHNOLOGIES,
+        *TECHNOLOGY_CATALOGUE_EXPANSION_2,
+    )
+]
 if len(TECHNOLOGY_CATALOGUE) != 1000:
     raise RuntimeError(f"SSSWET technology catalogue must contain 1000 entries; found {len(TECHNOLOGY_CATALOGUE)}")
 

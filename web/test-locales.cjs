@@ -499,3 +499,15 @@ if (!virtualTimeSource.includes("lastOrientationWrite=0")) throw new Error("Virt
 if (!virtualTimeSource.includes("Date.now()-lastOrientationWrite<900") || !virtualTimeSource.includes("Date.now()-lastMotionWrite<900")) throw new Error("Motion and orientation sampling must each have independent throttling.");
 if (!catalogueUiSource.includes("606 contribution themes") || !catalogueUiSource.includes("1000 research dossiers") || !catalogueUiSource.includes("IA sentiente")) throw new Error("Public catalogue counts or Sentient AI French title are out of date.");
 console.log("Validated Sentient AI and Human-like Robots registration, 15 translations, catalogue counts and independent motion/orientation sampling.");
+
+
+// Keep the public project support controls wired into the published page.
+if (!pageSource.includes('class="repair-project-slot"') || !pageSource.includes('id="repair-project-button"')) {
+  throw new Error("The always-available project recovery control is missing from the page");
+}
+if (!pageSource.includes('src="repair-project.js"') || !pageSource.includes('src="report-project.js"')) {
+  throw new Error("Project recovery and reporting scripts must be loaded by the public page");
+}
+if (!pageSource.includes('href="mobile-repair.css"')) {
+  throw new Error("Project support controls must load their responsive stylesheet");
+}
