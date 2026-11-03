@@ -4,6 +4,6 @@ The machine-readable research catalogue uses the same stable technology identifi
 
 Registration is idempotent: running it again does not duplicate existing dossiers. New entries begin in the `concept` state and explicitly carry `research_status: not_assessed`. Catalogue presence is not evidence of active research, feasibility, validation, a prototype, or a product.
 
-The current catalogue contains 511 technology identifiers: 106 core entries, 394 generated research scopes and eleven curated additions. The registry reports the number created and already present on each run.
+The current catalogue contains 512 technology identifiers: 106 core entries, 394 generated research scopes and twelve curated additions. The registry reports the number created and already present on each run.
 
 Implementation: `core/ssswet_core/technology_catalogue.py`.
