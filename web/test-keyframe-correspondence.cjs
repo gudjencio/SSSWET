@@ -31,7 +31,10 @@ for (const feature of [
 }
 
 for (const locale of ["en", "fr", "es", "de", "it", "pt", "nl", "ru", "uk", "ar", "he", "ja", "ko", "zh", "hi"]) {
-  if (!source.includes(`${locale}: {`)) throw new Error(`Keyframe correspondence locale missing: ${locale}`);
+  const localeLine = source.split("\\n").find(line => line.trim().startsWith(`${locale}: {`));
+  if (!localeLine || !localeLine.includes("forward:") || !localeLine.includes("mutualNote:") || !localeLine.includes("notAvailable:")) {
+    throw new Error(`Keyframe correspondence locale is incomplete: ${locale}`);
+  }
 }
 
 const unique = api.correspondenceDistribution(
@@ -54,6 +57,10 @@ assert.ok(duplicate.count < duplicate.candidates);
 
 assert.deepEqual(Array.from(api.nearestMatches([[0]], [[0.1]])), [-1],
   "A single possible target cannot pass a two-neighbour ratio test");
+assert.deepEqual(Array.from(api.nearestMatches([[0]], [[0], [0]])), [-1],
+  "Equal zero-distance alternatives must be rejected as ambiguous");
+const tied = api.correspondenceDistribution([[0], [0]], [[0], [0]]);
+assert.equal(tied.count, 0, "Identical descriptors must not create false reciprocal matches");
 const insufficient = api.correspondenceDistribution([[0]], [[0.1]]);
 assert.equal(insufficient.count, 0);
 assert.equal(insufficient.dx, null);
