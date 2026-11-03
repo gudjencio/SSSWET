@@ -66,6 +66,12 @@ The keyframe review also reports how candidate visual correspondences are distri
 
 This is a screening heuristic only. It does not estimate camera pose, optical flow, geometric overlap, depth, metric scale, a homography, epipolar geometry or a 3D reconstruction. It must not be used as proof that a scene can be reconstructed. The result is sensitive to image content, repeated patterns, blur, exposure and viewpoint changes; independent calibration and geometric validation remain necessary.
 
+## Local displacement consistency screening
+
+For each adjacent pair of candidate frames, the local correspondence heuristic now records matched patch-grid coordinates and reports the median horizontal and vertical grid displacement, plus the median radial deviation from that displacement. These robust summaries can help identify whether candidate matches suggest a broadly consistent image-grid shift or highly dispersed local changes.
+
+The values are expressed in coarse descriptor-grid cells, not pixels or physical distance. This is not optical flow, camera motion estimation, feature tracking, homography fitting, epipolar geometry, geometric verification or a 3D reconstruction. Repeated textures, blur, exposure changes, parallax and viewpoint changes can produce misleading matches. Treat the values only as a triage aid; they do not validate camera motion or scene geometry.
+
 ## Scientific status
 
 **Status: research concept and early web prototype.** No claim is made that virtual time travel, exact reconstruction of unrecorded history or reliable prediction of arbitrarily distant future events has been achieved.
