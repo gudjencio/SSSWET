@@ -137,8 +137,8 @@ const paymentConfig = fs.readFileSync(new URL("./donation-config.js", `file://${
 new Function(donationSourceLatest);
 const catalogueBlock = donationSourceLatest.slice(donationSourceLatest.indexOf("const technologies = {"), donationSourceLatest.indexOf("window.SSSWET_TECHNOLOGIES"));
 const catalogueEntries = [...catalogueBlock.matchAll(/^    ([A-Za-z_$][\w$]*): \{/gm)].map(match => match[1]);
-if (catalogueEntries.length !== 107 || new Set(catalogueEntries).size !== 107) {
-  throw new Error(`Expected exactly 107 unique public technology catalogue entries; found ${catalogueEntries.length}.`);
+if (catalogueEntries.length !== 108 || new Set(catalogueEntries).size !== 108) {
+  throw new Error(`Expected exactly 108 unique public technology catalogue entries; found ${catalogueEntries.length}.`);
 }
 if (!donationSourceLatest.includes("grid.replaceChildren()") || !donationSourceLatest.includes("updateCatalogueCount()")) {
   throw new Error("The public catalogue must render the complete canonical list and count rendered cards.");
@@ -322,8 +322,8 @@ if (!taxonomyGroupsMatch || !taxonomyTranslationsMatch) throw new Error("Technol
 const taxonomyGroups = JSON.parse(taxonomyGroupsMatch[1]);
 const taxonomyTranslations = JSON.parse(taxonomyTranslationsMatch[1]);
 const taxonomyKeys = Object.values(taxonomyGroups).flatMap(group => Object.values(group).flat());
-if (Object.keys(taxonomyGroups).length !== 8 || taxonomyKeys.length !== 117 || new Set(taxonomyKeys).size !== 117) {
-  throw new Error("The technology taxonomy must classify exactly one hundred and seventeen unique programmes in eight categories.");
+if (Object.keys(taxonomyGroups).length !== 8 || taxonomyKeys.length !== 118 || new Set(taxonomyKeys).size !== 118) {
+  throw new Error("The technology taxonomy must classify exactly one hundred and eighteen unique programmes in eight categories.");
 }
 const requiredTaxonomyLocales = ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"];
 for (const locale of requiredTaxonomyLocales) {
@@ -480,6 +480,14 @@ for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja
   const pair = sentientTranslations[locale];
   if (!Array.isArray(pair) || pair.length !== 2 || pair.some(value => !value.trim())) throw new Error("Sentient AI translation is incomplete: " + locale);
 }
+const robotContext = { window: {} };
+vm.runInNewContext(newCopySource, robotContext);
+const robotTranslations = robotContext.window.SSSWET_TECHNOLOGIES?.humanLikeRobots;
+if (!robotTranslations || Object.keys(robotTranslations).length !== 15) throw new Error("Human-like Robots must provide 15 localized title and description pairs.");
+for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"]) {
+  const pair = robotTranslations[locale];
+  if (!Array.isArray(pair) || pair.length !== 2 || pair.some(value => !value.trim())) throw new Error("Human-like Robots translation is incomplete: " + locale);
+}
 
 
 
@@ -487,4 +495,4 @@ const virtualTimeSource = fs.readFileSync(new URL("./virtual-time-travel.js", `f
 if (!virtualTimeSource.includes("lastOrientationWrite=0")) throw new Error("Virtual time capture must track orientation sampling independently.");
 if (!virtualTimeSource.includes("Date.now()-lastOrientationWrite<900") || !virtualTimeSource.includes("Date.now()-lastMotionWrite<900")) throw new Error("Motion and orientation sampling must each have independent throttling.");
 if (!catalogueUiSource.includes("117 contribution themes") || !catalogueUiSource.includes("511 research dossiers") || !catalogueUiSource.includes("IA sentiente")) throw new Error("Public catalogue counts or Sentient AI French title are out of date.");
-console.log("Validated Sentient AI registration, 15 translations, catalogue counts and independent motion/orientation sampling.");
+console.log("Validated Sentient AI and Human-like Robots registration, 15 translations, catalogue counts and independent motion/orientation sampling.");
