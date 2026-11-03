@@ -28,19 +28,23 @@ def test_engine_can_register_full_catalogue(tmp_path):
 
     engine = SSSWETEngine(SQLiteResearchStore(tmp_path / "engine-catalogue.sqlite3"))
     result = engine.register_technology_catalogue(actor_id="catalogue-bot")
-    assert result["catalogue_size"] == 512
-    assert result["created_count"] == 512
+    assert result["catalogue_size"] == 1000
+    assert result["created_count"] == 1000
     assert engine.get_technology_dossier("education")["domain"] == "society"
 
 
-def test_extended_portfolio_contains_twelve_curated_additions():
+def test_extended_portfolio_contains_twelve_curated_additions_and_488_new_research_programmes():
     from ssswet_core.technology_catalogue_500 import TECHNOLOGY_CATALOGUE as portfolio
     from ssswet_core.technology_catalogue_additions import ADDITIONAL_TECHNOLOGIES
 
     ids = [item["technology_id"] for item in portfolio]
-    assert len(portfolio) == 512
+    assert len(portfolio) == 1000
     assert len(ids) == len(set(ids))
     assert len(ADDITIONAL_TECHNOLOGIES) == 12
+    from ssswet_core.technology_catalogue_expansion_2 import TECHNOLOGY_CATALOGUE_EXPANSION_2
+    assert len(TECHNOLOGY_CATALOGUE_EXPANSION_2) == 488
+    assert len({item["technology_id"] for item in TECHNOLOGY_CATALOGUE_EXPANSION_2}) == 488
+    assert len({item["title"] for item in TECHNOLOGY_CATALOGUE_EXPANSION_2}) == 488
     virtual_time = next(item for item in portfolio if item["technology_id"] == "virtualTimeTravelMap")
     assert "Unrecorded past events cannot be recovered as observations; retrospective outputs are hypotheses constrained by evidence." in virtual_time["scientific_limitations"]
     assert virtual_time["domain"] == "society"
