@@ -3,6 +3,8 @@ const vm = require("node:vm");
 const source = fs.readFileSync(new URL("./locales.js", `file://${__filename}`), "utf8");
 const context = { window: {} };
 vm.runInNewContext(source, context);
+const coreUiSource = fs.readFileSync(new URL("./core-ui-locales.js", `file://${__filename}`), "utf8");
+vm.runInNewContext(coreUiSource, context);
 const locales = context.window.SSSWET_LOCALES;
 if (!locales || Object.keys(locales).length < 14) {
   throw new Error("Expected at least 14 available interface locales");
@@ -23,7 +25,7 @@ const required = [
 ];
 const fullyTranslated = new Set(["en", "fr", "es", "de", "it", "pt", "nl", "ru", "uk", "ar", "he", "ja", "ko", "zh", "hi"]);
 const additionalTranslated = new Set(["id", "tr", "pl", "bn", "sw", "vi", "fa", "ur", "ta", "te"]);
-const additionalRequired = ["tagline", "status", "statusOnline", "statusOffline", "mission", "agents", "verification", "discover", "working", "verified", "ready", "footer", "offline", "noDiscoveries", "noActivity", "noVerified", "language", "social", "contact", "dashboard", "dashboardNote", "refresh", "timelineTitle", "timelineFilter", "allCampaigns", "timelineSearchLabel", "timelineSearchPlaceholder", "timelineTypeFilter", "allEventTypes", "timelineNoMatches", "timelineCaption", "timelineEmpty"];
+const additionalRequired = ["tagline", "status", "statusOnline", "statusOffline", "mission", "agents", "verification", "discover", "working", "verified", "ready", "footer", "offline", "noDiscoveries", "noActivity", "noVerified", "language", "social", "contact", "dashboard", "dashboardNote", "refresh", "timelineTitle", "timelineFilter", "allCampaigns", "timelineSearchLabel", "timelineSearchPlaceholder", "timelineTypeFilter", "allEventTypes", "timelineNoMatches", "timelineCaption", "timelineEmpty", "voiceDisable", "voiceRead", "voicePause", "voiceResume", "voiceStop"];
 for (const [code, locale] of Object.entries(locales)) {
   if (!locale.name || !["ltr", "rtl"].includes(locale.dir)) {
     throw new Error(`Locale ${code} must define a name and text direction`);
@@ -57,6 +59,7 @@ for (const feature of ["ssswet-language-changed", "data-language", "document.doc
   if (!timeTravelLinkSource.includes(feature)) throw new Error("Virtual Time Travel launch localization is missing " + feature);
 }
 console.log("Validated the Virtual Time Travel launch label in all 25 translated interface locales and on language changes.");
+console.log("Validated five voice-control labels in ten additional interface languages.");
 
 for (const [code, locale] of Object.entries(locales)) {
   if (!locale.voiceEnable || !locale.voiceDisable || !locale.voiceListen) {
