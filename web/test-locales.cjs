@@ -237,6 +237,13 @@ console.log("Validated local engine discovery, offline alternatives, project ema
 if (!stylesLatest.includes(".repair-project-button")) throw new Error("Project recovery button styling is missing.");
 if (!pageSource.includes('id="fund-techs-button"') || !pageSource.includes('href="https://sites.google.com/view/aevolis/loop"') || !pageSource.includes('target="_blank"') || !stylesLatest.includes(".fund-techs-button")) throw new Error("The top-level free research-funding link is missing or incorrectly styled.");
 if (!pageSource.includes('class="top-action-links"') || !pageSource.includes('id="repair-project-button"')) throw new Error("The funding and project-recovery actions must be grouped at the top of the interface.");
+const topActionsSource = fs.readFileSync(new URL("./top-action-links.js", `file://${__filename}`), "utf8");
+new Function(topActionsSource);
+for (const [code, label] of Object.entries({en:"Fund our techs for free",fr:"Financer gratuitement nos travaux",es:"Financia nuestros proyectos tecnológicos gratis",de:"Unsere Technologieprojekte kostenlos unterstützen",it:"Sostieni gratuitamente i nostri progetti tecnologici",pt:"Apoie gratuitamente os nossos projetos tecnológicos",nl:"Steun onze technologieprojecten gratis",ru:"Бесплатно поддержите наши технологические проекты",uk:"Безкоштовно підтримайте наші технологічні проєкти",ar:"ادعموا مشاريعنا التقنية مجانًا",he:"תמכו בפרויקטים הטכנולוגיים שלנו בחינם",ja:"私たちの技術プロジェクトを無料で応援",ko:"우리의 기술 프로젝트를 무료로 후원하세요",zh:"免费支持我们的技术项目",hi:"हमारी तकनीकी परियोजनाओं का निःशुल्क समर्थन करें",id:"Dukung proyek teknologi kami secara gratis",tr:"Teknoloji projelerimizi ücretsiz destekleyin",pl:"Wesprzyj bezpłatnie nasze projekty technologiczne",bn:"আমাদের প্রযুক্তি প্রকল্পগুলো বিনামূল্যে সহায়তা করুন",sw:"Saidia miradi yetu ya teknolojia bila malipo",vi:"Ủng hộ miễn phí các dự án công nghệ của chúng tôi",fa:"از پروژه‌های فناوری ما به‌صورت رایگان حمایت کنید",ur:"ہمارے ٹیکنالوجی منصوبوں کی مفت معاونت کریں",ta:"எங்கள் தொழில்நுட்பத் திட்டங்களுக்கு இலவசமாக ஆதரவளியுங்கள்",te:"మా సాంకేతిక ప్రాజెక్టులకు ఉచితంగా మద్దతు ఇవ్వండి"})) {
+ if (!topActionsSource.includes(code+':"'+label+'"')) throw new Error("Top funding button translation missing or incorrect: "+code);
+}
+if (!pageSource.includes('src="top-action-links.js"')) throw new Error("Top action localization script is not loaded.");
+
 for (const logText of ["function localizeResearchLog", "Task lifecycle state updated.", "Research group created with role-matched agents.", "Erreur technique à examiner"]) {
   if (!appSource.includes(logText)) throw new Error("Localized research log handling is missing: " + logText);
 }
