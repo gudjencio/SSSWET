@@ -30,6 +30,10 @@
       en: ["Sentient AI", "Research into whether artificial systems could have genuine subjective experience, distinct from behavioural imitation. No current test conclusively establishes AI consciousness; human-like performance or self-reports are not proof."],
       fr: ["IA sentiente", "Recherche sur la possibilité qu’une intelligence artificielle possède une expérience subjective authentique, et non une simple imitation comportementale. Aucun test actuel ne démontre de façon concluante la conscience d’une IA ; des performances ou déclarations d’apparence humaine ne constituent pas une preuve."]
     },
+    humanLikeRobots: {
+      en: ["Human-like Robots", "Research into human-inspired robots for everyday assistance, accessibility, companionship and collaboration. Robots must clearly disclose that they are artificial systems, protect privacy, avoid physical contact unless safe and consented, and never be designed to injure or kill people or animals."],
+      fr: ["Robots humanoïdes", "Recherche sur des robots d’inspiration humaine pour l’aide quotidienne, l’accessibilité, la compagnie et la coopération. Les robots doivent clairement indiquer qu’ils sont des systèmes artificiels, protéger la vie privée, éviter tout contact physique non sûr ou non consenti et ne jamais être conçus pour blesser ou tuer des humains ou des animaux."]
+    },
     timetravel: {
       en: ["Time travel research", "Exploratory study of time, causality, relativity, spacetime geometry and the mathematical limits of proposed temporal models. This is a long-term research ambition, not an available capability."],
       fr: ["Voyage dans le temps", "Étude exploratoire du temps, de la causalité, de la relativité, de la géométrie de l'espace-temps et des limites mathématiques des modèles temporels proposés. Il s'agit d'une ambition de recherche à long terme, pas d'une capacité disponible."]
