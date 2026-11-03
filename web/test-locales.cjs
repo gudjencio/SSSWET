@@ -187,9 +187,9 @@ if (!pageSource.includes('id="ssswet-report-button"') ||
     !reportSource.includes('document.getElementById("ssswet-report-button") || document.createElement("button")')) {
   throw new Error("The report button must be present in the initial page and enhanced by the report module.");
 }
-const topActionsSource = fs.readFileSync(new URL("./top-action-links.js", `file://${__filename}`), "utf8");
-if (!topActionsSource.includes('fr:"Soutenir gratuitement nos technologies"') ||
-    !topActionsSource.includes('Réparer le projet s’il ne fonctionne plus')) {
+const topActionsFrenchSource = fs.readFileSync(new URL("./top-action-links.js", `file://${__filename}`), "utf8");
+if (!topActionsFrenchSource.includes('fr:"Soutenir gratuitement nos technologies"') ||
+    !topActionsFrenchSource.includes('Réparer le projet s’il ne fonctionne plus')) {
   throw new Error("The top support actions must have reliable French labels.");
 }
 if (!reportSource.includes('new MutationObserver') || !reportSource.includes('repair-project-slot')) {
