@@ -1845,3 +1845,15 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 #ssswet-read-selection{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:max(78px,calc(env(safe-area-inset-bottom) + 72px));z-index:100;min-height:42px;padding:10px 15px;border:1px solid rgba(151,205,237,.48);border-radius:999px;background:rgba(14,27,40,.97);color:#dceeff;box-shadow:0 8px 24px #0007;font-size:11px;font-weight:750;cursor:pointer}
 #ssswet-read-selection:disabled{opacity:.42;cursor:not-allowed}
 @media(max-width:620px){#ssswet-read-selection{right:max(12px,env(safe-area-inset-right));bottom:max(72px,calc(env(safe-area-inset-bottom) + 68px));}}
+
+
+/* Primary project actions, kept together near the top of the interface. */
+.top-action-links{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;width:min(760px,100%);margin:0 auto 20px;padding:0 12px}
+.top-action-links a{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 17px;border-radius:999px;text-decoration:none;font-size:11px;font-weight:800;letter-spacing:.015em;transition:transform .18s ease,background .18s ease,border-color .18s ease}
+.top-action-links a:hover{transform:translateY(-2px)}
+.fund-techs-button{border:1px solid rgba(238,218,157,.68);background:linear-gradient(135deg,#f4e7bd,#dfc987);color:#241d0d;box-shadow:0 5px 22px rgba(218,190,119,.16)}
+.fund-techs-button:hover{background:linear-gradient(135deg,#fff0c8,#ead89f);border-color:#fff0c8}
+.top-action-links .repair-project-button{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.055);color:#dedede}
+.top-action-links .repair-project-button:hover{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.42)}
+.top-action-links a:focus-visible{outline:2px solid #f3dfaa;outline-offset:3px}
+@media(max-width:480px){.top-action-links{gap:8px}.top-action-links a{flex:1 1 100%;max-width:320px}}

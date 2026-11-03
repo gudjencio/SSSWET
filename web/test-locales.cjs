@@ -229,12 +229,14 @@ if (!pageSource.includes("ssswetindustries@gmail.com")) throw new Error("Project
 for (const feature of ["cleanenergy", "biodiversity", "wildlife", "oceans", "animalHealth", "pollinators", "water", "accessibility", "disasterResilience"]) {
   if (!donationSourceLatest.includes(feature)) throw new Error("Expanded social-benefit technology missing: " + feature);
 }
-if (!donationSourceLatest.includes("grid.append(card)")) throw new Error("Dynamic technology cards are not generated.");
+if (!donationSourceLatest.includes("cardFragment.append(card)") || !donationSourceLatest.includes("grid.append(cardFragment)")) throw new Error("Dynamic technology cards must be batch-inserted from a document fragment.");
 const stylesLatest = fs.readFileSync(new URL("./styles.css", "file://" + __filename), "utf8");
 if (!stylesLatest.includes("scroll-snap-type:x mandatory")) throw new Error("Mobile horizontal technology rail is missing.");
 console.log("Validated local engine discovery, offline alternatives, project email and expanded horizontal technology catalogue.");
 
 if (!stylesLatest.includes(".repair-project-button")) throw new Error("Project recovery button styling is missing.");
+if (!pageSource.includes('id="fund-techs-button"') || !pageSource.includes('href="https://sites.google.com/view/aevolis/loop"') || !pageSource.includes('target="_blank"') || !stylesLatest.includes(".fund-techs-button")) throw new Error("The top-level free research-funding link is missing or incorrectly styled.");
+if (!pageSource.includes('class="top-action-links"') || !pageSource.includes('id="repair-project-button"')) throw new Error("The funding and project-recovery actions must be grouped at the top of the interface.");
 for (const logText of ["function localizeResearchLog", "Task lifecycle state updated.", "Research group created with role-matched agents.", "Erreur technique à examiner"]) {
   if (!appSource.includes(logText)) throw new Error("Localized research log handling is missing: " + logText);
 }
