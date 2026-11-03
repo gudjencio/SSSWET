@@ -6,7 +6,7 @@ new vm.Script(source);
 
 for (const feature of [
   "patchDescriptors",
-  "correspondenceCount",
+  "correspondenceDistribution",
   "candidate matches",
   "correspondances candidates",
   "カメラ姿勢",
