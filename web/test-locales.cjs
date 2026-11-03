@@ -322,8 +322,8 @@ if (!taxonomyGroupsMatch || !taxonomyTranslationsMatch) throw new Error("Technol
 const taxonomyGroups = JSON.parse(taxonomyGroupsMatch[1]);
 const taxonomyTranslations = JSON.parse(taxonomyTranslationsMatch[1]);
 const taxonomyKeys = Object.values(taxonomyGroups).flatMap(group => Object.values(group).flat());
-if (Object.keys(taxonomyGroups).length !== 8 || taxonomyKeys.length !== 118 || new Set(taxonomyKeys).size !== 118) {
-  throw new Error("The technology taxonomy must classify exactly one hundred and eighteen unique programmes in eight categories.");
+if (Object.keys(taxonomyGroups).length !== 8 || taxonomyKeys.length !== 606 || new Set(taxonomyKeys).size !== 606) {
+  throw new Error("The technology taxonomy must classify exactly six hundred and six unique programmes in eight categories.");
 }
 const requiredTaxonomyLocales = ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"];
 for (const locale of requiredTaxonomyLocales) {
@@ -340,9 +340,12 @@ if (!pageSource.includes('src="technology-categories.js"') ||
     !serviceWorkerCache.includes('"./technology-categories.js"')) {
   throw new Error("The categorized technology catalogue must be loaded and cached.");
 }
-console.log("Validated exactly 118 unique technology themes, eight categories, and 15 translated taxonomies.");
+console.log("Validated exactly 606 unique technology themes, eight categories, and 15 translated taxonomies.");
 
 
+const expansionSource = fs.readFileSync(new URL("./technology-expansion-ui.js", `file://${__filename}`), "utf8");
+new Function(expansionSource);
+if (!expansionSource.includes("researchSpace") || !expansionSource.includes("researchSociety")) throw new Error("The expanded technology interface is incomplete.");
 const botRoomSource = fs.readFileSync(new URL("./bot-live-room.js", `file://${__filename}`), "utf8");
 new Function(botRoomSource);
 if (!pageSource.includes('id="bot-free-question-form"') ||
@@ -494,5 +497,5 @@ for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja
 const virtualTimeSource = fs.readFileSync(new URL("./virtual-time-travel.js", `file://${__filename}`), "utf8");
 if (!virtualTimeSource.includes("lastOrientationWrite=0")) throw new Error("Virtual time capture must track orientation sampling independently.");
 if (!virtualTimeSource.includes("Date.now()-lastOrientationWrite<900") || !virtualTimeSource.includes("Date.now()-lastMotionWrite<900")) throw new Error("Motion and orientation sampling must each have independent throttling.");
-if (!catalogueUiSource.includes("118 contribution themes") || !catalogueUiSource.includes("512 research dossiers") || !catalogueUiSource.includes("IA sentiente")) throw new Error("Public catalogue counts or Sentient AI French title are out of date.");
+if (!catalogueUiSource.includes("606 contribution themes") || !catalogueUiSource.includes("1000 research dossiers") || !catalogueUiSource.includes("IA sentiente")) throw new Error("Public catalogue counts or Sentient AI French title are out of date.");
 console.log("Validated Sentient AI and Human-like Robots registration, 15 translations, catalogue counts and independent motion/orientation sampling.");
