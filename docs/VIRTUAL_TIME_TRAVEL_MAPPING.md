@@ -121,3 +121,12 @@ The current workflow is intentionally staged:
 Until stages 3–5 exist and are independently evaluated, the interface must not describe candidate frames or map extrusions as a reconstructed physical scene.
 
 This feature is only a preparatory image-selection aid. A sharp frame is not necessarily geometrically useful, and a large visual change or correspondence count does not prove that two frames overlap appropriately. Any later reconstruction pipeline will require calibrated capture, robust feature matching, pose estimation, scale recovery, georeferencing and independent validation.
+
+
+## Reciprocal local correspondence screening
+
+The adjacent-frame patch matcher now applies its nearest-neighbour and descriptor-ratio checks in both directions. A pair is counted only when patch A selects patch B as its best candidate, patch B selects patch A as its best candidate, and both directional ratio checks pass. The interface reports the forward one-way candidate count separately from the reciprocal count. Spatial coverage and median grid displacement are calculated from reciprocal pairs only; displacement and spread are shown as unavailable when no reciprocal pair survives.
+
+This mutual-nearest-neighbour constraint prevents several source patches from all being counted against the same destination patch. It is a deterministic one-to-one consistency screen, not a geometric outlier filter. It does not fit a translation, homography, essential matrix or camera pose; it does not use RANSAC; and it does not identify geometric inliers. It can reject valid correspondences under occlusion, repeated texture, viewpoint change, parallax or appearance change. A reciprocal match is still only a candidate intensity-patch association, not a tracked physical feature or evidence of 3D overlap.
+
+Regression acceptance criteria cover: (1) three distinctive synthetic descriptor pairs produce three reciprocal matches; (2) a many-to-one ambiguity is reduced from three forward candidates to one reciprocal pair; (3) a one-candidate target cannot pass a two-neighbour ratio test; and (4) empty results do not display a zero displacement as if it were measured. Tests use synthetic descriptors and do not claim real-world reconstruction accuracy.
