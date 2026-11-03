@@ -4,7 +4,7 @@
   const translations = {
     en: "Repair if broken",
     ur: "اگر پروجیکٹ خراب ہو تو دوبارہ کھولیں",
-    fr: "Relancer le projet, s’il est cassé",
+    fr: "Réparer le projet s’il ne fonctionne plus",
     es: "Reiniciar el proyecto si está dañado",
     pt: "Reiniciar o projeto se estiver com problemas",
     it: "Riavvia il progetto se non funziona",

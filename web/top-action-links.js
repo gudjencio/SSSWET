@@ -3,7 +3,7 @@
 "use strict";
 const labels = {
 en:"Fund our techs for free",
-fr:"Financer gratuitement nos travaux",
+fr:"Soutenir gratuitement nos technologies",
 es:"Financia nuestros proyectos tecnológicos gratis",
 de:"Unsere Technologieprojekte kostenlos unterstützen",
 it:"Sostieni gratuitamente i nostri progetti tecnologici",
@@ -35,10 +35,17 @@ function language(){
 }
 function apply(){
  const node=document.getElementById("fund-techs-button");
- if(!node)return;
- const label=labels[language()];
- node.textContent=label;
- node.setAttribute("aria-label",label);
+ if(node){
+  const label=labels[language()];
+  node.textContent=label;
+  node.setAttribute("aria-label",label);
+ }
+ const repair=document.getElementById("repair-project-button");
+ if(repair && language()==="fr"){
+  const label="Réparer le projet s’il ne fonctionne plus";
+  repair.textContent=label;
+  repair.setAttribute("aria-label",label);
+ }
 }
 window.addEventListener("ssswet-language-changed",event=>{
  window.__SSSWET_ACTIVE_LANGUAGE__=event.detail?.language||document.documentElement.dataset.language||"";

@@ -120,10 +120,10 @@
   document.head.append(style);
 
   function init(){
-    if(document.getElementById("ssswet-report-button")) return;
+    if(document.getElementById("ssswet-report-dialog")) return;
     const slot=document.querySelector(".repair-project-slot");
     if(!slot) return;
-    const button=document.createElement("button");
+    const button=document.getElementById("ssswet-report-button") || document.createElement("button");
     button.type="button";button.id="ssswet-report-button";button.className="report-project-button";
     const dialog=document.createElement("dialog");dialog.className="ssswet-report-dialog";dialog.id="ssswet-report-dialog";
     const form=document.createElement("form");
@@ -144,7 +144,8 @@
     titleLabel.append(document.createTextNode(""),title);
     detailLabel.append(document.createTextNode(""),detail);
     actions.append(cancel,submit);form.append(heading,intro,categoryLabel,titleLabel,detailLabel,status,history,actions);dialog.append(form);
-    slot.append(button,dialog);
+    if (!button.isConnected) slot.append(button);
+    slot.append(dialog);
 
     function localize(){
       const t=text();

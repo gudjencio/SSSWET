@@ -70,7 +70,8 @@ for (const [code, locale] of Object.entries(locales)) {
 const appSource = fs.readFileSync(new URL("./app.js", `file://${__filename}`), "utf8");
 const pageSource = fs.readFileSync(new URL("./index.html", `file://${__filename}`), "utf8");
 
-if (!/fr:\s*\["SSSWET"/.test(appSource)) throw new Error("French branding must display SSSWET, not ETDESS");
+if (!/fr:\s*\["ETDESS"/.test(appSource)) throw new Error("French branding must display ETDESS");
+if (!appSource.includes('networkLabel.textContent = code === "fr"')) throw new Error("French live research network branding must use ETDESS");
 if (!appSource.includes('timeZone === "Europe/Paris"')) throw new Error("French locale should be detected from the metropolitan France time zone");
 const interfaceTranslationKeys = [...new Set([...pageSource.matchAll(/data-i18n(?:-aria|-placeholder)?="([^"]+)"/g)].map(match => match[1]))];
 for (const key of interfaceTranslationKeys) {
@@ -181,6 +182,15 @@ if (!reportSource.includes("getLiveReportStatus") || !reportSource.includes("rep
 }
 for (const language of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi","id","tr","pl","bn","sw","vi","fa","ur","ta","te"]) {
   if (!reportSource.includes(language+":{received:")) throw new Error("Missing localized live report status for "+language);
+}
+if (!pageSource.includes('id="ssswet-report-button"') ||
+    !reportSource.includes('document.getElementById("ssswet-report-button") || document.createElement("button")')) {
+  throw new Error("The report button must be present in the initial page and enhanced by the report module.");
+}
+const topActionsSource = fs.readFileSync(new URL("./top-action-links.js", `file://${__filename}`), "utf8");
+if (!topActionsSource.includes('fr:"Soutenir gratuitement nos technologies"') ||
+    !topActionsSource.includes('Réparer le projet s’il ne fonctionne plus')) {
+  throw new Error("The top support actions must have reliable French labels.");
 }
 if (!reportSource.includes('new MutationObserver') || !reportSource.includes('repair-project-slot')) {
   throw new Error("The report control must attach when the repair control is added dynamically.");

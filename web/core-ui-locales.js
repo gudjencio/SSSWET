@@ -20,7 +20,7 @@
   for (const [code, copy] of Object.entries(translations)) {
     if (!locales[code]) continue;
     for (const [key, value] of Object.entries(copy)) {
-      if (!locales[code][key]) locales[code][key] = value;
+      if (!locales[code][key] || locales[code][key] === locales.en[key]) locales[code][key] = value;
     }
   }
 
@@ -39,7 +39,7 @@
   for (const [code, copy] of Object.entries(dashboardSections)) {
     if (!locales[code]) continue;
     for (const [key, value] of Object.entries(copy)) {
-      if (!locales[code][key]) locales[code][key] = value;
+      if (!locales[code][key] || locales[code][key] === locales.en[key]) locales[code][key] = value;
     }
   }
 
