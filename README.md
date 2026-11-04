@@ -106,7 +106,7 @@ SSSWET uses two complementary maintenance tracks:
 
 - Daily maintenance reviews reproducible defects, security, accessibility, links, tests and deployment health, and applies low-risk corrections with regression tests.
 - Daily feature development targets ten substantial improvements per run across research workflows, scientific memory, agent coordination, accessibility, reliability, performance and protective technology. Each proposed change must be compared with the previous version and pass its acceptance tests before it is described as an improvement. If fewer than ten can safely meet measurable acceptance criteria, the shortfall is reported rather than padded.
-- 30-minute and hourly GitHub Actions regression watches run Python and JavaScript checks and the core test suite. It detects regressions; it does not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
+- 30-minute and hourly GitHub Actions regression watches run Python and JavaScript checks and the core test suite. They detect regressions; they do not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
 
 No update may knowingly reduce documented usefulness, performance, durability, efficiency, safety, maintainability, accessibility or evidence quality. Benchmark gains and claims about agent capability require repeatable measurements. Scientific, ethical, privacy, cybersecurity and legal safeguards remain mandatory.
 
