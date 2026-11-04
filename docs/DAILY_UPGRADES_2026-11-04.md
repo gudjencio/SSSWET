@@ -66,7 +66,7 @@ The previous behaviour was captured in regression fixtures where practical. The 
 
 10. **Audited retention projections**
     - Before: the basic helper retained the latest record per key and truncated the result, without reporting omitted records or carrying forward older source references.
-    - Now: a non-destructive projection protects candidate/contested/current records, aggregates source lineage across retained versions, and reports capacity overflow and provenance-retention ratio. The keep-latest option can be disabled when callers need individual version rows.
+    - Now: a non-destructive projection protects candidate/contested/rejected/current records, aggregates source lineage across retained versions, and reports capacity overflow and provenance-retention ratio. The keep-latest option can be disabled when callers need individual version rows.
     - Acceptance: the latest version keeps source references from earlier versions of the same key; contested records are not silently dropped when protected records exceed the nominal cap.
     - Limitation: this function produces a projection only. It does not delete or compact the persistent database.
 
