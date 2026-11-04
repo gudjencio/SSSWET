@@ -232,3 +232,13 @@ def test_fair_resource_rounding_uses_exact_integer_remainders():
     )
     assert result["allocations_by_request"]["small"]["water"] == 1
     assert result["allocations_by_request"]["large"]["water"] == 1
+
+
+def test_retention_projection_protects_rejected_findings_for_negative_knowledge():
+    result = compact_records_with_audit(
+        [{"record_id": "rejected-1", "key": "failed-method", "status": "rejected",
+          "source_ids": ["counterevidence-1"]}],
+        policy=RetentionPolicy(max_items=1),
+    )
+    assert result["records"][0]["retention_protected"] is True
+    assert result["provenance_retention_ratio"] == 1.0
