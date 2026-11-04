@@ -1857,3 +1857,17 @@ html[dir="rtl"] .language-control { right: auto; left: 0; }
 .top-action-links .repair-project-button:hover{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.42)}
 .top-action-links a:focus-visible{outline:2px solid #f3dfaa;outline-offset:3px}
 @media(max-width:480px){.top-action-links{gap:8px}.top-action-links a{flex:1 1 100%;max-width:320px}}
+
+
+/* Paginated technology catalogue — keep the DOM lightweight on mobile and desktop. */
+.technology-catalogue-controls { display: grid; grid-template-columns: minmax(220px, 1.6fr) repeat(2, minmax(150px, 1fr)); gap: 10px; margin: 18px auto 20px; width: min(100%, 900px); text-align: left; }
+.technology-catalogue-controls label { display: grid; gap: 6px; color: #b9b3c8; font-size: 11px; }
+.technology-catalogue-controls input, .technology-catalogue-controls select { width: 100%; min-width: 0; border: 1px solid #393347; border-radius: 10px; padding: 11px 12px; background: #0b0a10; color: #f1edf8; }
+.technology-pagination { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 18px auto 8px; }
+.technology-pagination .catalogue-page-status { color: #aaa4b6; font-size: 11px; text-align: center; }
+.technology-pagination .catalogue-page-button { min-width: 104px; padding: 10px 14px; border: 1px solid #4a405e; border-radius: 10px; background: #171321; color: #eee8fa; }
+.technology-pagination .catalogue-page-button:disabled { opacity: .35; cursor: not-allowed; }
+.technology-catalogue-empty { grid-column: 1 / -1; padding: 28px 12px; color: #aaa4b6; text-align: center; }
+.technology-card .technology-category-tag { color: #c1a85e; font-size: 9px; line-height: 1.4; }
+@media (max-width: 720px) { .technology-catalogue-controls { grid-template-columns: 1fr; gap: 9px; } .technology-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; } .technology-card { padding: 12px; } .technology-card h3 { font-size: 13px; } .technology-card p { font-size: 10px; } }
+@media (max-width: 420px) { .technology-grid { grid-template-columns: 1fr; } .technology-pagination { gap: 7px; } .technology-pagination .catalogue-page-button { min-width: 88px; } }

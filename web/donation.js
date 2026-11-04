@@ -442,8 +442,9 @@
     }
   });
 
-  window.SSSWET_TECHNOLOGIES = technologies;
+  // Preserve the expanded research catalogue loaded before this file.
   Object.assign(technologies, window.SSSWET_TECHNOLOGIES || {});
+  window.SSSWET_TECHNOLOGIES = technologies;
 
   const catalogueCountLabels = {
     en: "research programmes", fr: "programmes de recherche", es: "programas de investigación",
@@ -456,7 +457,7 @@
     const element = document.getElementById("technology-catalogue-count");
     if (!element) return;
     const grid = document.getElementById("technology-grid");
-    const total = grid ? grid.querySelectorAll(".technology-card").length : Object.keys(technologies).length;
+    const total = Object.keys(technologies).length;
     const lang = (document.documentElement.lang || document.getElementById("language")?.value || "en").toLowerCase().split("-")[0];
     element.textContent = total + " " + (catalogueCountLabels[lang] || catalogueCountLabels.en);
     element.dataset.catalogueCount = String(total);
@@ -477,19 +478,20 @@
   const modal = document.getElementById("technology-dialog");
   const grid = document.getElementById("technology-grid");
   if (!modal || !grid) return;
-  // Rebuild the cards from the single catalogue source to prevent stale or partial HTML lists.
+  // Render only a small first batch. The catalogue navigator creates subsequent pages on demand.
   grid.replaceChildren();
+  const initialBatch = Object.entries(technologies).slice(0, 24);
   const cardFragment = document.createDocumentFragment();
-  Object.entries(technologies).forEach(([key, item], index) => {
+  initialBatch.forEach(([key, item], index) => {
     const card = document.createElement("article");
     card.className = "technology-card";
     const number = document.createElement("span");
     number.className = "technology-number";
-    number.textContent = String(index + 1).padStart(2, "0");
+    number.textContent = String(index + 1).padStart(3, "0");
     const heading = document.createElement("h3");
-    heading.textContent = item.en[0];
+    heading.textContent = item.en?.[0] || key;
     const summary = document.createElement("p");
-    summary.textContent = item.en[1];
+    summary.textContent = item.en?.[1] || "";
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.tech = key;
@@ -767,6 +769,8 @@
     });
     const note=document.getElementById("portfolio-manual-note"); if(note) note.textContent=labels.manual;
   }
+  window.SSSWET_RENDER_PORTFOLIO = renderPortfolio;
+
   function openTechnology(key) {
     const item = technologies[key] || window.SSSWET_TECHNOLOGIES?.[key];
     if (!item) return;
@@ -831,11 +835,7 @@
       const value = copy()[key === "dialogEyebrow" ? "dialogEyebrow" : key];
       if (value) element.textContent = value;
     });
-    document.querySelectorAll(".technology-card").forEach((card, index) => {
-      const item = Object.values(technologies)[index];
-      if (item) { card.querySelector("h3").textContent = item[language][0]; card.querySelector("p").textContent = item[language][1]; }
-      const button = card.querySelector("button"); if (button) button.textContent = copy().explore;
-    });
+    // The paginated catalogue owns visible card localization.
     if (selectedTechnology) {
       const item = technologies[selectedTechnology];
       title.textContent = item[language][0]; description.textContent = item[language][1];
