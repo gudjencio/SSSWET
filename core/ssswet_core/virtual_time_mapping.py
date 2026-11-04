@@ -36,7 +36,7 @@ class VirtualTimeMap:
     def add(self, observation: TemporalObservation) -> None:
         if not isinstance(observation, TemporalObservation):
             raise TypeError("observation must be a TemporalObservation")
-        if isinstance(observation.uncertainty_seconds, bool) or not math.isfinite(float(observation.uncertainty_seconds)):
+        if isinstance(observation.uncertainty_seconds, bool) or not isinstance(observation.uncertainty_seconds, (int, float)) or not math.isfinite(float(observation.uncertainty_seconds)):
             raise ValueError("uncertainty_seconds must be finite")
         if observation.uncertainty_seconds < 0:
             raise ValueError("uncertainty_seconds must be non-negative")
@@ -54,7 +54,7 @@ class VirtualTimeMap:
 
     def window(self, *, max_uncertainty_seconds: float | None = None) -> list[TemporalObservation]:
         if max_uncertainty_seconds is not None:
-            if isinstance(max_uncertainty_seconds, bool) or not math.isfinite(float(max_uncertainty_seconds)) or max_uncertainty_seconds < 0:
+            if isinstance(max_uncertainty_seconds, bool) or not isinstance(max_uncertainty_seconds, (int, float)) or not math.isfinite(float(max_uncertainty_seconds)) or max_uncertainty_seconds < 0:
                 raise ValueError("max_uncertainty_seconds must be finite and non-negative")
         values = list(self._observations.values())
         if max_uncertainty_seconds is not None:
