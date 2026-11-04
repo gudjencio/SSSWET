@@ -9,7 +9,7 @@ from ssswet_core.evidence_packet_validator import validate_packet
 from ssswet_core.provenance import ProvenanceRecord, content_digest, provenance_digest, verify_chain
 from ssswet_core.research_checkpoint import CheckpointLedger
 from ssswet_core.rescue_resource_planner import plan_fair_resources
-from ssswet_core.retrieval_evaluation import compare_retrieval_evaluations, evaluate_retrieval
+from ssswet_core.retrieval_evaluation import benchmark_retrieval, compare_retrieval_evaluations, evaluate_retrieval
 from ssswet_core.virtual_time_mapping import TemporalObservation, VirtualTimeMap
 
 def test_provenance_verification_rejects_non_genesis_parent_and_duplicate_source():
@@ -197,3 +197,38 @@ def test_engine_exposes_agent_handoff_packet_facade():
     assert packet["task_id"] == "engine-task"
     assert packet["source_refs"] == ["source-1"]
     assert packet["autonomous_execution_authorized"] is False
+
+
+def test_retrieval_latency_benchmark_reports_distribution_without_flaky_thresholds():
+    records = [{"memory_id": "m", "topic": "thermal fatigue", "statement": "Coating cycle test."}]
+    report = benchmark_retrieval(search_collective_memory, records, "thermal fatigue", repeats=3)
+    assert report["repeats"] == 3
+    assert report["result_count"] == 1
+    assert report["median_ms"] >= 0
+    assert report["p95_ms"] >= report["median_ms"]
+    assert report["timing_is_environment_dependent"] is True
+
+
+def test_retention_policy_can_keep_individual_versions_when_requested():
+    records = [
+        {"record_id": "a1", "key": "a", "status": "reviewed"},
+        {"record_id": "a2", "key": "a", "status": "reviewed"},
+    ]
+    result = compact_records_with_audit(
+        records, policy=RetentionPolicy(max_items=1, keep_latest_per_key=False)
+    )
+    assert result["retained_group_count"] == 1
+    assert result["omitted_group_count"] == 1
+    assert result["records"][0]["record_id"] == "a2"
+
+
+def test_fair_resource_rounding_uses_exact_integer_remainders():
+    result = plan_fair_resources(
+        [
+            {"request_id": "small", "priority": 2, "needs": {"water": 1}},
+            {"request_id": "large", "priority": 2, "needs": {"water": 2}},
+        ],
+        {"water": 2},
+    )
+    assert result["allocations_by_request"]["small"]["water"] == 1
+    assert result["allocations_by_request"]["large"]["water"] == 1
