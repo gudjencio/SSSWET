@@ -20,6 +20,7 @@ from .agent_identity import AgentIdentityRegistry
 from .review_assignment import IndependentReviewerSelector, ReviewerCandidate
 from .research_decision_ledger import ResearchDecisionLedger
 from .research_knowledge_graph import ResearchKnowledgeGraph
+from .agent_handoff import build_handoff_packet
 
 
 @dataclass
@@ -155,6 +156,9 @@ class SSSWETEngine:
         if self.research_decisions is None:
             raise RuntimeError("A persistent research store is required for decision lineage")
         return self.research_decisions.history(subject_id, limit=limit)
+
+    def build_agent_handoff_packet(self, task_id: str, objective: str, memories, **options) -> dict:
+        return build_handoff_packet(task_id, objective, memories, **options)
 
     def record_agent_memory_review(self, **review_inputs) -> dict:
         if self.agent_identities is None:
