@@ -19,7 +19,7 @@ The previous behaviour was captured in regression fixtures where practical. The 
 2. **Field-weighted research-memory retrieval**
    - Before: topic text, statement text, campaign identifiers and opaque source IDs shared one lexical overlap score.
    - Now: deterministic BM25-style scoring weights topic terms above statement terms; source and campaign identifiers are exact filters rather than free-text evidence.
-   - Acceptance: the fixed regression fixture moves a source-ID token collision below the relevant research statement; exact source and campaign filters still retrieve the intended record.
+   - Acceptance: the fixed regression fixture moves a campaign-metadata token collision below the relevant research statement; exact source and campaign filters still retrieve the intended record.
    - Regression risk: users who previously searched by typing a source identifier into the prose query must use the explicit source_id filter.
 
 3. **Retrieval-quality evaluation**
