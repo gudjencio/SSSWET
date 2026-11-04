@@ -49,7 +49,7 @@ def test_memory_retrieval_uses_research_text_and_exact_metadata_filters():
          "statement": "Protective coating adhesion changes under repeated thermal cycling and fatigue testing.",
          "campaign_id": "materials", "source_ids": ["source-relevant"], "status": "reviewed"},
         {"memory_id": "noise", "topic": "Note", "statement": "Maintenance log.",
-         "campaign_id": "operations", "source_ids": ["thermal-fatigue-coating-reference"], "status": "reviewed"},
+         "campaign_id": "thermal fatigue coating", "source_ids": ["thermal-fatigue-coating-reference"], "status": "reviewed"},
     ]
     before_ids = _legacy_memory_search(records, "thermal fatigue coating")
     after = search_collective_memory(records, "thermal fatigue coating")
@@ -66,7 +66,7 @@ def test_retrieval_metrics_quantify_before_and_after_ranking():
          "statement": "Protective coating adhesion changes under repeated thermal cycling and fatigue testing.",
          "campaign_id": "materials", "source_ids": ["source-relevant"]},
         {"memory_id": "noise", "topic": "Note", "statement": "Maintenance log.",
-         "campaign_id": "operations", "source_ids": ["thermal-fatigue-coating-reference"]},
+         "campaign_id": "thermal fatigue coating", "source_ids": ["thermal-fatigue-coating-reference"]},
     ]
     before = evaluate_retrieval({"thermal": _legacy_memory_search(records, "thermal fatigue coating")},
                                {"thermal": {"relevant"}}, k=1)
