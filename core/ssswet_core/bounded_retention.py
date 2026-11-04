@@ -7,7 +7,7 @@ from dataclasses import dataclass
 class RetentionPolicy:
     max_items: int = 10000
     keep_latest_per_key: bool = True
-    protected_statuses: tuple[str, ...] = ("candidate", "contested", "under_review")
+    protected_statuses: tuple[str, ...] = ("candidate", "contested", "under_review", "rejected")
 
 def compact_records(records: list[dict], *, key_field: str = "key",
                     policy: RetentionPolicy = RetentionPolicy()) -> list[dict]:
