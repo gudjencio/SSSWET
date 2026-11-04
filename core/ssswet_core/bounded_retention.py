@@ -72,12 +72,12 @@ def compact_records_with_audit(records: list[dict], *, key_field: str = "key",
         merged["retention_history_count"] = len(entries)
         merged["retention_protected"] = protected
         merged["retention_record_ids"] = record_ids
-        prepared.append({"last_index": latest_index, "record": merged, "protected": protected, "group_key": group_key})
+        prepared.append({"last_index": latest_index, "record": merged, "protected": protected, "group_key": group_key, "history_count": len(entries)})
     protected_items = [item for item in prepared if item["protected"]]
     optional_items = [item for item in prepared if not item["protected"]]
     capacity_exceeded = len(protected_items) > policy.max_items
     slots = max(0, policy.max_items - len(protected_items))
-    selected = protected_items + sorted(optional_items, key=lambda item: item["last_index"], reverse=True)[:slots]
+    selected = protected_items + sorted(optional_items, key=lambda item: (item["history_count"], item["last_index"]), reverse=True)[:slots]
     selected.sort(key=lambda item: item["last_index"])
     selected_records = [item["record"] for item in selected]
     retained_sources = {source for item in selected_records for source in item.get("retention_source_ids", [])}
