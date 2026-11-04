@@ -37,7 +37,7 @@ def compact_records_with_audit(records: list[dict], *, key_field: str = "key",
     groups = {}
     for index, record in enumerate(records):
         key = record.get(key_field)
-        group_key = ("key", key) if key is not None else ("index", index)
+        group_key = ("key", key) if policy.keep_latest_per_key and key is not None else ("index", index)
         groups.setdefault(group_key, []).append((index, record))
     prepared = []
     all_source_refs = set()
