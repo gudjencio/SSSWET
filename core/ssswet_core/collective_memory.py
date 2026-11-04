@@ -78,7 +78,11 @@ def search_collective_memory(records: Iterable[dict], query: str, *, limit: int 
     query_tokens = sorted(set(_tokens(query)))
     if not query_tokens:
         return []
+    if statuses is not None and isinstance(statuses, (str, bytes)):
+        raise TypeError("statuses must be a collection of workflow states")
     status_filter = set(statuses) if statuses is not None else None
+    if status_filter is not None and not status_filter.issubset(MEMORY_STATES):
+        raise ValueError("statuses contains an unsupported memory state")
     candidates = []
     for record in records:
         if not include_rejected and record.get("status") == "rejected":
