@@ -22,10 +22,8 @@ class ProvenanceRecord:
                 raise ValueError(f"{name} is required")
         if not isinstance(self.content_digest, str) or not _SHA256.fullmatch(self.content_digest):
             raise ValueError("content_digest must be a lowercase SHA-256 hex digest")
-        if self.parent_digest is not None and (
-            not isinstance(self.parent_digest, str) or not _SHA256.fullmatch(self.parent_digest)
-        ):
-            raise ValueError("parent_digest must be null or a lowercase SHA-256 hex digest")
+        if self.parent_digest is not None and not isinstance(self.parent_digest, str):
+            raise ValueError("parent_digest must be null or text")
 
 def content_digest(content: str) -> str:
     if not isinstance(content, str):
