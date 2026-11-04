@@ -12,7 +12,7 @@ The project is exploratory. Public descriptions are intentionally high-level and
 The latest expansion adds ten curated programmes, including [Virtual Time Travel Mapping](docs/VIRTUAL_TIME_TRAVEL_MAPPING.md). This is a local-first research concept for consented 3D spatial capture, replay of recorded observations, and explicitly uncertain modelling of unrecorded past or future scenarios. It does not recover unrecorded history or predict the future with certainty.
 
 
-The platform maintains 510 research programmes across eight translated categories, including ten newly added research programmes. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md), the [protective systems and exoskeleton portfolio](docs/PROTECTIVE_SYSTEMS_AND_EXOSKELETON_PORTFOLIO.md), and the [protective system technical specification framework](docs/PROTECTIVE_SYSTEM_TECHNICAL_SPECIFICATION_FRAMEWORK.md).
+The public catalogue defines **1,000 research programmes** across eight categories; the contribution interface separately presents **606 selected themes**. These entries are research scopes, not demonstrated technologies. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md), the [protective systems and exoskeleton portfolio](docs/PROTECTIVE_SYSTEMS_AND_EXOSKELETON_PORTFOLIO.md), and the [protective system technical specification framework](docs/PROTECTIVE_SYSTEM_TECHNICAL_SPECIFICATION_FRAMEWORK.md).
 
 The cellular programme now includes dedicated draft workstreams covering cellular recovery, tissue and organ preservation, neural preservation and post-mortem biological limits. These remain research proposals and do not claim that human resurrection is currently possible.
 
@@ -98,15 +98,15 @@ SSSWET is an evolving research initiative. Public summaries are informational an
 
 ## Language availability
 
-The public interface offers **300 selectable language entries**. The catalogue includes all **190 unique language codes** in the project's current reference list, covering the named languages, regional varieties and grouped language families. Each option has a language code and a native-language label. This confirms selector availability, not complete translation: the principal interface is maintained in a limited set of core locales, selected additional sections have further translations, and untranslated strings use the English fallback. Language availability must not be mistaken for a complete professional translation. Contributions from qualified native speakers are welcome, especially for scientific, medical, safety and accessibility terminology.
+The public interface offers **300 selectable language entries**. The catalogue includes all **189 unique language codes** in the project's current reference list, covering the named languages, regional varieties and grouped language families. Each option has a language code and a native-language label. This confirms selector availability, not complete translation: the principal interface is maintained in a limited set of core locales, selected additional sections have further translations, and untranslated strings use the English fallback. Language availability must not be mistaken for a complete professional translation. Contributions from qualified native speakers are welcome, especially for scientific, medical, safety and accessibility terminology.
 
 ## Continuous improvement and regression monitoring
 
 SSSWET uses two complementary maintenance tracks:
 
 - Daily maintenance reviews reproducible defects, security, accessibility, links, tests and deployment health, and applies low-risk corrections with regression tests.
-- Daily feature development targets three substantial improvements to research workflows, scientific memory, agent coordination, accessibility, reliability, performance or protective technology. Each proposed change must be compared with the previous version and must pass its acceptance tests before it is described as an improvement.
-- An hourly GitHub Actions regression watch runs Python and JavaScript checks and the core test suite. It detects regressions; it does not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
+- Daily feature development targets ten substantial improvements per run across research workflows, scientific memory, agent coordination, accessibility, reliability, performance and protective technology. Each proposed change must be compared with the previous version and pass its acceptance tests before it is described as an improvement. If fewer than ten can safely meet measurable acceptance criteria, the shortfall is reported rather than padded.
+- 30-minute and hourly GitHub Actions regression watches run Python and JavaScript checks and the core test suite. It detects regressions; it does not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
 
 No update may knowingly reduce documented usefulness, performance, durability, efficiency, safety, maintainability, accessibility or evidence quality. Benchmark gains and claims about agent capability require repeatable measurements. Scientific, ethical, privacy, cybersecurity and legal safeguards remain mandatory.
 
