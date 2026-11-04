@@ -24,7 +24,7 @@ The previous behaviour was captured in regression fixtures where practical. The 
 
 3. **Retrieval-quality evaluation**
    - Before: memory search had no standard ranking-quality report.
-   - Now: MRR@k, precision@k, recall@k and nDCG@k are calculated from labelled query fixtures, with a before/after comparator.
+   - Now: MRR@k, precision@k, recall@k and nDCG@k are calculated from labelled query fixtures, with a before/after comparator. A repeatable helper also reports median and p95 search latency without imposing a machine-specific pass threshold.
    - Acceptance: the fixture reports an MRR@1 increase from 0.0 to 1.0 for the known metadata-token collision; recall non-regression is explicitly reported.
    - Limitation: synthetic labelled fixtures do not establish performance on an external scientific corpus. Real relevance labels are still needed for representative benchmarking.
 
@@ -56,7 +56,7 @@ The previous behaviour was captured in regression fixtures where practical. The 
    - Before: observations could be filtered by a maximum uncertainty threshold but not queried by interval overlap; a repeated source ID silently replaced its earlier observation.
    - Now: ISO-8601/date/year timestamps are normalised to UTC, uncertainty-expanded interval queries are available, non-finite uncertainty is rejected, and conflicting duplicate source IDs are refused.
    - Acceptance: an observation whose uncertainty interval overlaps a requested time window is returned; the same query without uncertainty expansion is not; duplicate overwrite is blocked.
-   - Limitation: the interval is a simple symmetric bound, not a calibrated probability distribution or recovered historical record.
+   - Limitation: the interval is a simple symmetric bound, not a calibrated probability distribution or recovered historical record. A year-only timestamp is represented by 1 January at 00:00 UTC, not by a full-year interval.
 
 9. **Priority-tiered, proportional rescue-resource allocation**
    - Before: a single needs/stock comparison reported aggregate allocations without distributing scarce stock across multiple requests.
@@ -66,7 +66,7 @@ The previous behaviour was captured in regression fixtures where practical. The 
 
 10. **Audited retention projections**
     - Before: the basic helper retained the latest record per key and truncated the result, without reporting omitted records or carrying forward older source references.
-    - Now: a non-destructive projection protects candidate/contested/current records, aggregates source lineage across retained versions, and reports capacity overflow and provenance-retention ratio.
+    - Now: a non-destructive projection protects candidate/contested/current records, aggregates source lineage across retained versions, and reports capacity overflow and provenance-retention ratio. The keep-latest option can be disabled when callers need individual version rows.
     - Acceptance: the latest version keeps source references from earlier versions of the same key; contested records are not silently dropped when protected records exceed the nominal cap.
     - Limitation: this function produces a projection only. It does not delete or compact the persistent database.
 
