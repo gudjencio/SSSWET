@@ -57,7 +57,7 @@ def build_handoff_packet(task_id: str, objective: str, memories: Iterable[dict],
             sources = [sources]
         if not isinstance(sources, (list, tuple, set)):
             raise TypeError("memory source_ids must be a collection")
-        valid_sources = [source.strip() for source in sources if isinstance(source, str) and source.strip()]
+        valid_sources = sorted({source.strip() for source in sources if isinstance(source, str) and source.strip()})
         invalid_source_count = len(sources) - len(valid_sources)
         memory = {
             "memory_id": item.get("memory_id", ""), "topic": item.get("topic", ""),
