@@ -541,3 +541,30 @@ if (!pageSource.includes('src="repair-project.js"') || !pageSource.includes('src
 if (!pageSource.includes('href="mobile-repair.css"')) {
   throw new Error("Project support controls must load their responsive stylesheet");
 }
+
+
+const readmeSource = fs.readFileSync(new URL("../README.md", `file://${__filename}`), "utf8");
+for (const statement of [
+  "1,000 research programmes",
+  "606 selected themes",
+  "189 unique language codes",
+  "ten substantial improvements per run",
+  "30-minute and hourly GitHub Actions regression watches"
+]) {
+  if (!readmeSource.includes(statement)) throw new Error("Public README is out of sync: " + statement);
+}
+if (/510 research programmes|190 unique language codes|three substantial improvements/.test(readmeSource)) {
+  throw new Error("Public README contains superseded catalogue or maintenance figures.");
+}
+if (!pageSource.includes('content="SSSWET — Super Soldier Space Warping Engineering Tech"') ||
+    pageSource.includes("Engeriening")) {
+  throw new Error("The public page description must use the correct project name.");
+}
+if (!pageSource.includes(">Explore Virtual Time Travel Mapping</a>") ||
+    !timeTravelLinkSource.includes('en:"Explore Virtual Time Travel Mapping"') ||
+    !timeTravelLinkSource.includes('fr:"Explorer la cartographie spatio-temporelle virtuelle"') ||
+    timeTravelLinkSource.includes("Virtual Time Machine") ||
+    timeTravelLinkSource.includes("machine à voyager dans le temps")) {
+  throw new Error("The public Virtual Time Travel link must describe the mapping prototype, not imply a time machine.");
+}
+console.log("Validated public catalogue counts, maintenance targets, project metadata and evidence-aligned Virtual Time Travel wording.");
