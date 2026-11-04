@@ -184,3 +184,16 @@ def test_retention_protected_overflow_is_reported_not_silently_dropped():
     assert result["retained_group_count"] == 2
     assert result["capacity_exceeded"] is True
     assert result["omitted_group_count"] == 0
+
+
+def test_engine_exposes_agent_handoff_packet_facade():
+    from ssswet_core.engine import SSSWETEngine
+    packet = SSSWETEngine().build_agent_handoff_packet(
+        "engine-task", "Review thermal coating fatigue",
+        [{"memory_id": "m", "topic": "Thermal fatigue",
+          "statement": "Protective coating fatigue under repeated thermal cycling.",
+          "source_ids": ["source-1"], "status": "candidate"}],
+    )
+    assert packet["task_id"] == "engine-task"
+    assert packet["source_refs"] == ["source-1"]
+    assert packet["autonomous_execution_authorized"] is False
