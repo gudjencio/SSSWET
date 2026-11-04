@@ -63,14 +63,21 @@ def plan_fair_resources(requests: list[dict], available: dict[str, int]) -> dict
             if remaining >= demand:
                 tier_allocations = {item["request_id"]: item["needs"][resource] for item in tier}
             else:
-                exact = {item["request_id"]: remaining * item["needs"][resource] / demand for item in tier}
-                tier_allocations = {
-                    request_id: min(next(item["needs"][resource] for item in tier if item["request_id"] == request_id), int(value))
-                    for request_id, value in exact.items()
+                numerators = {
+                    item["request_id"]: remaining * item["needs"][resource]
+                    for item in tier
                 }
+                tier_allocations = {
+                    request_id: min(
+                        next(item["needs"][resource] for item in tier if item["request_id"] == request_id),
+                        numerator // demand,
+                    )
+                    for request_id, numerator in numerators.items()
+                }
+                remainders = {request_id: numerator % demand for request_id, numerator in numerators.items()}
                 unassigned = remaining - sum(tier_allocations.values())
                 order = sorted(tier, key=lambda item: (
-                    -(exact[item["request_id"]] - int(exact[item["request_id"]])), item["request_id"]
+                    -remainders[item["request_id"]], item["request_id"]
                 ))
                 for item in order:
                     if unassigned <= 0:
