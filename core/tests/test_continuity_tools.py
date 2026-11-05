@@ -83,7 +83,7 @@ def test_07_agent_handoff_is_bounded_and_preserves_provenance():
     packet = build_agent_handoff(sample_records(), "wave speed", campaign_id="c1",
                                  max_records=1, max_chars=1000)
     assert len(packet["records"]) == 1
-    assert packet["source_ids"] == ["p1"]
+    assert packet["source_ids"] == ["p2"]\n    assert packet["records"][0]["memory_id"] == "m2"
     assert packet["human_review_required"] is True
     assert "Treat retrieved statements as claims" in packet["constraints"][0]
     assert packet["truncated"] is True
