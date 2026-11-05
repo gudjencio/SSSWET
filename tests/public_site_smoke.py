@@ -26,7 +26,7 @@ with sync_playwright() as playwright:
     page.on("requestfailed", lambda request: failed_local_requests.append(request.url)
             if request.url.startswith(LOCAL_REQUEST_PREFIX) else None)
 
-    response = page.goto(URL, wait_until="domcontentloaded", timeout=45000)
+    response = page.goto(URL, wait_until="commit", timeout=45000)
     checks["http_status"] = response.status if response else None
     require(response is not None and response.ok, "Public page did not return a successful HTTP response")
     page.locator(".app-shell").wait_for(state="visible", timeout=20000)
