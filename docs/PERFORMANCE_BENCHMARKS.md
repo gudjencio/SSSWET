@@ -14,10 +14,12 @@ viewports. Each trial records:
 - First Contentful Paint and a sampled Largest Contentful Paint;
 - Cumulative Layout Shift and observed long tasks;
 - DOM node count and live catalogue card count;
+- measured header, language selector, action area and research-stage geometry;
+- advisory checks for fixed header/select dimensions and horizontal overflow.
 - append/layout stress probes with 100, 500 and 1,000 cloned catalogue cards;
 - environment, commit and workflow-run metadata.
 
-The JSON report is uploaded as a GitHub Actions artifact for 90 days. It can
+The JSON report is uploaded as a GitHub Actions artifact for 90 days. Navigation wait time is recorded immediately when the browser load event completes; the later settling interval is reported separately so it is not accidentally counted as page-load time. It can
 be downloaded from the workflow run's **Artifacts** section.
 
 ## Interpretation and safeguards
@@ -27,7 +29,7 @@ GitHub-hosted runners use virtual hardware; the mobile viewport is emulation,
 not a physical phone. LCP is sampled after a fixed settling interval. The
 catalogue scale test clones an existing card and is a synthetic stress probe.
 
-No hard performance threshold is enforced yet. First collect comparable
+No hard performance threshold is enforced yet. Header geometry checks are recorded as diagnostics and do not fail the run until repeated baseline data supports stable thresholds. First collect comparable
 measurements across multiple runs and inspect variance. Only then should
 regression thresholds be introduced. Do not compare runs across materially
 different runner or browser environments as if they were identical.
