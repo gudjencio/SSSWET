@@ -37,22 +37,26 @@ visitor's device.
 13. The browser benchmark records navigation wait time separately from its
     post-load observation delay and reports header, action-control and
     research-stage geometry plus horizontal-overflow diagnostics.
-14. The browser benchmark switches through French, German, Arabic and Japanese
-    when available, checking RTL/LTR geometry and overflow after localization.
+14. The browser benchmark stress-tests longer French, German, Arabic and
+    Japanese action labels, including RTL direction, without invoking the live
+    research engine or triggering application-side language refreshes.
 
 ## Validation
 
 The performance workflow runs three Chromium trials at desktop and mobile
 viewports. It records CLS and the first ten layout-shift sources, alongside
-header and selector dimensions. Geometry checks are advisory until repeated
-runs establish stable baselines.
+header, selector and action-control dimensions. Geometry checks are advisory
+and are retained in the JSON artifact.
 
-The first updated run reduced median CLS from 0.248 to 0.038 on desktop and
-from 0.208 to 0.165 on the mobile viewport, compared with the immediately
-preceding benchmark on the same virtual runner family. These are three-trial
-laboratory medians, not field-user measurements. Mobile still has a substantial
-shift associated with responsive project action controls; the follow-up action
-row sizing and multilingual checks are intended to address and verify that
-remaining issue. No production
-deployment, payment flow, account operation or hosted-engine request is part
-of this change.
+After the header and action-row fixes, the three-trial median CLS was 0.011 on
+desktop and 0.017 on the mobile viewport, compared with initial medians of
+0.248 and 0.208 respectively. That is approximately 95% lower CLS on desktop
+and 92% lower on mobile in this virtual Chromium test environment. First
+Contentful Paint medians also moved from 136 ms to 104 ms on desktop and from
+128 ms to 72 ms on mobile. These are laboratory comparisons, not field-user
+measurements or guarantees for physical devices.
+
+The benchmark now resets its layout-shift accumulator before each synthetic
+locale scenario, so each scenario has an independent CLS observation. No
+production deployment, payment flow, account operation or hosted-engine
+request is part of this change.
