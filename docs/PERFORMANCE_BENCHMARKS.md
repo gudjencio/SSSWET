@@ -1,57 +1,45 @@
-# Repeatable browser performance benchmarks
+# Layout stability and responsive performance — 5 November 2026
 
-SSSWET runs an advisory Chromium benchmark against the locally served public
-web interface. The workflow runs for pull requests targeting `main`, on
-manual dispatch, and weekly.
+## Measured issue
 
-## Measurements
+The first repeatable browser benchmark recorded cumulative layout shift (CLS)
+medians of 0.248 on desktop and 0.208 on a 390 × 844 mobile viewport. The
+largest recorded sources included the top header, language selector, project
+action links and research command area.
 
-Each run performs three trials at desktop (1440 × 900) and mobile (390 × 844)
-viewports. Each trial records:
+These are laboratory measurements from a virtual Chromium runner, not field
+telemetry. They identify a regression target; they do not describe every
+visitor's device.
 
-- cold navigation and a warm reload in the same browser context;
-- navigation response, DOM-content-loaded and load timings;
-- First Contentful Paint and a sampled Largest Contentful Paint;
-- Cumulative Layout Shift and observed long tasks;
-- DOM node count and live catalogue card count;
-- measured header, language selector, action area and research-stage geometry;
-- advisory checks for fixed header/select dimensions and horizontal overflow.
-- append/layout stress probes with 100, 500 and 1,000 cloned catalogue cards;
-- environment, commit and workflow-run metadata.
+## Changes
 
-The JSON report is uploaded as a GitHub Actions artifact for 90 days. Navigation wait time is recorded immediately when the browser load event completes; the later settling interval is reported separately so it is not accidentally counted as page-load time. It can
-be downloaded from the workflow run's **Artifacts** section.
+1. The language control now remains in normal layout flow instead of inheriting
+   conflicting absolute-position rules from older responsive styles.
+2. The desktop header has a reserved 56 px block size.
+3. The mobile header has a reserved 52 px block size.
+4. The language control has a fixed 42 px height before and after options load.
+5. The language selector has a bounded 320 px width and can shrink on narrow
+   screens.
+6. Long language labels no longer determine the selector's intrinsic width.
+7. The selector uses a stable custom chevron while remaining a native,
+   keyboard-operable HTML select.
+8. The header layout no longer depends on left/right positioning rules, which
+   also reduces direction-specific layout overrides for RTL languages.
+9. The capitalization MutationObserver now edits only the changed text node
+   instead of rescanning its entire parent subtree for each character-data
+   mutation.
+10. The browser benchmark now records navigation wait time separately from its
+    post-load observation delay and reports header/select geometry plus
+    horizontal-overflow diagnostics.
 
-## Interpretation and safeguards
+## Validation
 
-These are controlled laboratory observations, not field-user telemetry.
-GitHub-hosted runners use virtual hardware; the mobile viewport is emulation,
-not a physical phone. LCP is sampled after a fixed settling interval. The
-catalogue scale test clones an existing card and is a synthetic stress probe.
+The performance workflow runs three Chromium trials at desktop and mobile
+viewports. It records CLS and the first ten layout-shift sources, alongside
+header and selector dimensions. Geometry checks are advisory until repeated
+runs establish stable baselines.
 
-No hard performance threshold is enforced yet. Header geometry checks are recorded as diagnostics and do not fail the run until repeated baseline data supports stable thresholds. First collect comparable
-measurements across multiple runs and inspect variance. Only then should
-regression thresholds be introduced. Do not compare runs across materially
-different runner or browser environments as if they were identical.
-
-The benchmark does not transmit visitor data, does not contact the hosted
-research engine, and does not submit forms or perform payment or contribution
-actions. It uses a local static server and disposable browser contexts.
-
-## Reproduce locally
-
-Install Python and Playwright, install Chromium, then serve the public UI:
-
-```bash
-python -m pip install playwright
-python -m playwright install chromium
-python -m http.server 8765 --directory web
-```
-
-In another terminal:
-
-```bash
-python .github/scripts/performance_benchmark.py --url http://127.0.0.1:8765/ --trials 3
-```
-
-The default output is `performance-results/benchmark.json`.
+No performance improvement percentage is claimed until the updated benchmark
+completes and comparable measurements can be examined. No production
+deployment, payment flow, account operation or hosted-engine request is part
+of this change.
