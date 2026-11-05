@@ -820,6 +820,12 @@
       card.querySelector("p").textContent = names[index][copy() === translations.fr ? "fr" : "en"][1];
     }
   });
+  // Refresh catalogue-dependent controls after deferred research data arrives.
+  window.addEventListener("ssswet-catalogue-ready", () => {
+    updateCatalogueCount();
+    populateTechnologySelectors();
+    renderPortfolio();
+  });
   currencyNote.textContent = copy().currencyNote;
   applyPaymentLanguage();
   renderPortfolio();

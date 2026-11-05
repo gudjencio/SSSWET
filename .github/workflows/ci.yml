@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main, perf/reproducible-browser-benchmarks-2026-11-05]
+    branches: [main, perf/reproducible-browser-benchmarks-2026-11-05, perf/layout-stability-mobile-2026-11-05]
 
 permissions:
   contents: read
@@ -36,6 +36,7 @@ jobs:
           node --check web/research-journal.js
           node --check web/app.js
           node --check web/catalogue-500-ui.js
+          node --check web/catalogue-loader.js
           node --check web/platform-downloads.js
           node --check web/donation.js
           node --check web/technology-categories.js

@@ -63,6 +63,19 @@ def page_metrics(page: object) -> dict:
       const paint = Object.fromEntries(performance.getEntriesByType('paint').map(e => [e.name, e.startTime]));
       const bench = window.__ssswetBench || {};
       const cards = document.querySelectorAll('#technology-grid .technology-card').length;
+      const catalogueTiming = window.SSSWET_CATALOGUE_TIMING || {};
+      const catalogueResource = performance.getEntriesByType('resource').find(entry => entry.name.includes('technology-expansion-ui.js'));
+      const catalogueLoad = {
+        loaded: window.SSSWET_CATALOGUE_LOADED === true,
+        failed: window.SSSWET_CATALOGUE_LOADED === false,
+        duration_ms: Number.isFinite(catalogueTiming.startedAt) && Number.isFinite(catalogueTiming.completedAt)
+          ? catalogueTiming.completedAt - catalogueTiming.startedAt : null,
+        start_after_fcp_ms: Number.isFinite(catalogueTiming.startedAt) && Number.isFinite(paint['first-contentful-paint'])
+          ? catalogueTiming.startedAt - paint['first-contentful-paint'] : null,
+        resource_duration_ms: catalogueResource ? catalogueResource.duration : null,
+        transfer_bytes: catalogueResource ? catalogueResource.transferSize : null,
+        taxonomy_count: window.SSSWET_TECHNOLOGY_TAXONOMY?.count ?? null
+      };
       const rect = selector => {
         const element = document.querySelector(selector);
         if (!element) return null;
@@ -111,6 +124,8 @@ def page_metrics(page: object) -> dict:
         layout_shift_diagnostics: (bench.layoutShifts || []).slice(0, 10),
         dom_node_count: document.getElementsByTagName('*').length,
         catalogue_card_count: cards,
+        catalogue_load: catalogueLoad,
+        catalogue_load_ms: catalogueLoad.duration_ms,
         document_ready_state: document.readyState,
         layout_geometry: geometry,
         layout_checks: layoutChecks
@@ -267,6 +282,7 @@ def main() -> int:
                 "CI virtual hardware is not a physical low-end phone or desktop.",
                 "Synthetic catalogue scaling is a stress probe, not a user-experience score.",
                 "LCP is sampled after a fixed settling interval and may differ from field data.",
+                "Generated catalogue readiness and resource timing are reported separately from initial paint metrics.",
                 "No pass/fail performance threshold is imposed until stable baselines exist."
             ]
         },
@@ -282,7 +298,7 @@ def main() -> int:
     for viewport in viewports:
         group = [item for item in results["trials"] if item["viewport"]["name"] == viewport["name"]]
         for mode in ("cold", "warm"):
-            for metric in ("navigation_wait_ms", "fcp_ms", "lcp_ms", "cls", "long_task_total_ms", "dom_node_count"):
+            for metric in ("navigation_wait_ms", "fcp_ms", "lcp_ms", "cls", "long_task_total_ms", "dom_node_count", "catalogue_load_ms"):
                 values = [item[mode].get(metric) for item in group if isinstance(item[mode].get(metric), (int, float))]
                 if values:
                     results.setdefault("summary", {}).setdefault(viewport["name"], {}).setdefault(mode, {})[metric] = {
