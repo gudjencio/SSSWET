@@ -29,7 +29,7 @@ with sync_playwright() as playwright:
     response = page.goto(URL, wait_until="domcontentloaded", timeout=45000)
     checks["http_status"] = response.status if response else None
     require(response is not None and response.ok, "Public page did not return a successful HTTP response")
-    page.locator("#title").wait_for(state="visible", timeout=20000)
+    page.locator("#brand-mark").wait_for(state="visible", timeout=20000)
     require(page.locator(".app-shell").is_visible(), "Main application shell is not visible")
     require(page.locator("#technology-grid").is_visible(), "Technology catalogue is not visible")
 
