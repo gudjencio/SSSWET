@@ -12,6 +12,8 @@ The project is exploratory. Public descriptions are intentionally high-level and
 The latest expansion adds ten curated programmes, including [Virtual Time Travel Mapping](docs/VIRTUAL_TIME_TRAVEL_MAPPING.md). This is a local-first research concept for consented 3D spatial capture, replay of recorded observations, and explicitly uncertain modelling of unrecorded past or future scenarios. It does not recover unrecorded history or predict the future with certainty.
 
 
+The latest performance work reduces repeated catalogue DOM traversal, pauses background status polling, replaces voice-state polling with browser events, and adds indexed collective-memory queries. See [performance improvements](docs/PERFORMANCE_IMPROVEMENTS_2026-11-05.md) for implementation details and validation policy.
+
 The platform maintains 510 research programmes across eight translated categories, including ten newly added research programmes. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md), the [protective systems and exoskeleton portfolio](docs/PROTECTIVE_SYSTEMS_AND_EXOSKELETON_PORTFOLIO.md), and the [protective system technical specification framework](docs/PROTECTIVE_SYSTEM_TECHNICAL_SPECIFICATION_FRAMEWORK.md).
 
 The cellular programme now includes dedicated draft workstreams covering cellular recovery, tissue and organ preservation, neural preservation and post-mortem biological limits. These remain research proposals and do not claim that human resurrection is currently possible.
@@ -109,6 +111,10 @@ SSSWET uses two complementary maintenance tracks:
 - An hourly GitHub Actions regression watch runs Python and JavaScript checks and the core test suite. It detects regressions; it does not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
 
 No update may knowingly reduce documented usefulness, performance, durability, efficiency, safety, maintainability, accessibility or evidence quality. Benchmark gains and claims about agent capability require repeatable measurements. Scientific, ethical, privacy, cybersecurity and legal safeguards remain mandatory.
+
+## Persistent research-continuity workflows
+
+The research-continuity service connects bounded retrieval, source-preserving agent hand-offs, duplicate and conflict review, checksummed memory exports, and uncertainty-aware timeline analysis directly to the persistent collective-memory store. Its overview API is read-only; it does not silently rewrite review states or decide scientific disagreements. See [Persistent research-continuity workflows](docs/PERSISTENT_RESEARCH_CONTINUITY.md).
 
 ## Cross-agent research memory
 
