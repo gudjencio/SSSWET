@@ -70,6 +70,8 @@ def page_metrics(page: object) -> dict:
         failed: window.SSSWET_CATALOGUE_LOADED === false,
         duration_ms: Number.isFinite(catalogueTiming.startedAt) && Number.isFinite(catalogueTiming.completedAt)
           ? catalogueTiming.completedAt - catalogueTiming.startedAt : null,
+        start_after_fcp_ms: Number.isFinite(catalogueTiming.startedAt) && Number.isFinite(paint['first-contentful-paint'])
+          ? catalogueTiming.startedAt - paint['first-contentful-paint'] : null,
         resource_duration_ms: catalogueResource ? catalogueResource.duration : null,
         transfer_bytes: catalogueResource ? catalogueResource.transferSize : null,
         taxonomy_count: window.SSSWET_TECHNOLOGY_TAXONOMY?.count ?? null
