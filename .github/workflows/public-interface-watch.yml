@@ -39,7 +39,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ssswet-public-site-\${{ github.run_id }}
+          name: ssswet-public-site-${{ github.run_id }}
           path: artifacts/
           if-no-files-found: warn
           retention-days: 14
@@ -49,14 +49,14 @@ jobs:
         with:
           script: |
             const title = "Public SSSWET interface browser check failed";
-            const runUrl = \`https://github.com/\${context.repo.owner}/\${context.repo.repo}/actions/runs/\${context.runId}\`;
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = [
               "The scheduled real-browser smoke test detected a public-interface failure.",
               "",
               "Public URL: https://gudjencio.github.io/SSSWET/",
-              \`Workflow run: \${runUrl}\`,
-              \`Commit: \${context.sha}\`,
-              \`Detected: \${new Date().toISOString()}\`,
+              `Workflow run: ${runUrl}`,
+              `Commit: ${context.sha}`,
+              `Detected: ${new Date().toISOString()}`,
               "",
               "Download the browser evidence artifact and inspect the run logs. Reproduce the defect against the deployed page and current source before proposing a fix. Do not auto-merge or deploy a repair."
             ].join("\n");
@@ -72,7 +72,7 @@ jobs:
             } else {
               await github.rest.issues.create({
                 owner: context.repo.owner, repo: context.repo.repo,
-                title, body, labels: ["bug"]
+                title, body
               });
             }
       - name: Fail the workflow when the public interface is unhealthy
