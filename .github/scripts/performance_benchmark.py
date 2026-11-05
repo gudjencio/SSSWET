@@ -194,6 +194,7 @@ def run_trial(browser: object, url: str, viewport: dict, trial: int) -> dict:
         }
     ]
     for scenario in locale_scenarios:
+        page.evaluate("() => { if (window.__ssswetBench) { window.__ssswetBench.cls = 0; window.__ssswetBench.layoutShifts = []; } }")
         page.evaluate(
             """spec => {
                 document.documentElement.lang = spec.locale;
