@@ -289,6 +289,19 @@ def main() -> int:
                         "min": round(min(values), 3),
                         "max": round(max(values), 3)
                     }
+        for mode in ("cold", "warm"):
+            checks = [item[mode].get("layout_checks", {}) for item in group]
+            check_names = sorted({name for item in checks for name in item})
+            pass_rate = {}
+            for name in check_names:
+                observed = [item[name] for item in checks if name in item]
+                if observed:
+                    pass_rate[name] = {
+                        "passed": sum(bool(value) for value in observed),
+                        "total": len(observed),
+                        "rate": round(sum(bool(value) for value in observed) / len(observed), 3)
+                    }
+            results.setdefault("summary", {}).setdefault(viewport["name"], {}).setdefault(mode, {})["layout_check_pass_rate"] = pass_rate
 
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
