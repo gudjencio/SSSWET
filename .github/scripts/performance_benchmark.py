@@ -171,7 +171,17 @@ def run_trial(browser: object, url: str, viewport: dict, trial: int) -> dict:
         )
         if not available:
             continue
-        page.locator("#language").select_option(locale)
+        selected = page.locator("#language").evaluate(
+            """(select, code) => {
+                if (!Array.from(select.options).some(option => option.value === code)) return false;
+                select.value = code;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                return true;
+            }""",
+            locale
+        )
+        if not selected:
+            continue
         page.wait_for_timeout(250)
         locale_metrics = page_metrics(page)
         locale_layouts.append({
