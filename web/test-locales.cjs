@@ -366,9 +366,15 @@ const curatedTechnologySource = fs.readFileSync(new URL("./technology-categories
 for (const key of taxonomyKeys) {
   if (!catalogueDonationSource.includes(key + ": {") && !curatedTechnologySource.includes(key)) throw new Error(`Technology ${key} is missing from the public catalogue.`);
 }
-if (!pageSource.includes('src="technology-categories.js"') ||
+const catalogueLoaderSource = fs.readFileSync(new URL("./catalogue-loader.js", "file://" + __filename), "utf8");
+new Function(catalogueLoaderSource);
+if (!pageSource.includes('src="catalogue-loader.js"') ||
+    pageSource.includes('src="technology-expansion-ui.js"') ||
+    !catalogueLoaderSource.includes('"technology-expansion-ui.js"') ||
+    !catalogueLoaderSource.includes('"technology-categories.js"') ||
+    !catalogueDonationSource.includes('"ssswet-catalogue-ready"') ||
     !serviceWorkerCache.includes('"./technology-categories.js"')) {
-  throw new Error("The categorized technology catalogue must be loaded and cached.");
+  throw new Error("The deferred catalogue loader, data, navigator and offline cache must remain connected.");
 }
 console.log("Validated exactly 606 unique technology themes, eight categories, and 15 translated taxonomies.");
 
