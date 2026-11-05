@@ -70,7 +70,7 @@
     document.querySelectorAll("#bot-current-technology-title,.technology-card h3,[data-technology-title]").forEach(el => {
       const original = el.dataset.ssswetOriginalTitle || el.textContent.trim();
       if (!el.dataset.ssswetOriginalTitle) el.dataset.ssswetOriginalTitle = original;
-      const target = isFr ? frenchTitle(original) : original;
+      const target = language === "fr" ? frenchTitle(original) : original;
       if (el.textContent !== target) el.textContent = target;
     });
     document.querySelectorAll("body *:not(script):not(style)").forEach(el => {
