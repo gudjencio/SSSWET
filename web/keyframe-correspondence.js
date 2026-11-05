@@ -68,6 +68,42 @@
     return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
   };
 
+  const isRelevantImageLoad = target =>
+    Boolean(target && typeof target.matches === "function" && target.matches(".vt-keyframe-card img"));
+
+  const isWithinKeyframeCard = node =>
+    Boolean(node && (
+      (typeof node.matches === "function" && node.matches(".vt-keyframe-card")) ||
+      (typeof node.closest === "function" && node.closest(".vt-keyframe-card"))
+    ));
+
+  const containsKeyframeCard = node =>
+    Boolean(node && (
+      (node.nodeType === 1 && typeof node.matches === "function" && node.matches(".vt-keyframe-card")) ||
+      (typeof node.querySelector === "function" && node.querySelector(".vt-keyframe-card"))
+    ));
+
+  const shouldRefreshFromMutations = records => Array.from(records || []).some(record => {
+    if (!record) return false;
+    if (record.type === "attributes") {
+      return record.attributeName === "src" && isRelevantImageLoad(record.target);
+    }
+    if (record.type !== "childList") return false;
+    const targetInCard = isWithinKeyframeCard(record.target);
+    const changedNodes = [
+      ...Array.from(record.addedNodes || []),
+      ...Array.from(record.removedNodes || [])
+    ];
+    return changedNodes.some(node => {
+      if (!node) return false;
+      if (containsKeyframeCard(node)) return true;
+      return targetInCard && (
+        (node.nodeType === 1 && typeof node.matches === "function" && node.matches("img")) ||
+        (typeof node.querySelector === "function" && node.querySelector("img"))
+      );
+    });
+  });
+
   const MAX_DESCRIPTOR_DISTANCE = 0.72;
   const MAX_NEAREST_RATIO = 0.82;
   const MIN_SECOND_DISTANCE = 1e-6;
@@ -147,7 +183,15 @@
     };
   };
 
-  const api = Object.freeze({ distance, median, nearestMatchDetails, nearestMatches, correspondenceDistribution });
+  const api = Object.freeze({
+    distance,
+    median,
+    nearestMatchDetails,
+    nearestMatches,
+    correspondenceDistribution,
+    isRelevantImageLoad,
+    shouldRefreshFromMutations
+  });
   if (typeof window !== "undefined") window.SSSWETKeyframeCorrespondence = api;
   if (!root) return;
 
@@ -155,10 +199,10 @@
   const render = () => {
     timer = 0;
     const images = [...root.querySelectorAll(".vt-keyframe-card img")];
+    root.querySelectorAll(".vt-keyframe-correspondence, .vt-keyframe-correspondence-note, .vt-keyframe-displacement-note, .vt-keyframe-mutual-note, .vt-keyframe-diagnostic-note").forEach(node => node.remove());
     if (images.length < 2) return;
     const descriptors = images.map(patchDescriptors);
     const text = copy[language()];
-    root.querySelectorAll(".vt-keyframe-correspondence, .vt-keyframe-correspondence-note, .vt-keyframe-displacement-note, .vt-keyframe-mutual-note, .vt-keyframe-diagnostic-note").forEach(node => node.remove());
     for (let i = 1; i < images.length; i += 1) {
       const result = correspondenceDistribution(descriptors[i - 1], descriptors[i]);
       const card = images[i].closest(".vt-keyframe-card");
@@ -189,7 +233,18 @@
   };
 
   const schedule = () => { if (!timer) timer = requestAnimationFrame(render); };
-  new MutationObserver(schedule).observe(root, { childList: true, subtree: true });
+  const observer = new MutationObserver(records => {
+    if (shouldRefreshFromMutations(records)) schedule();
+  });
+  observer.observe(root, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["src"]
+  });
+  root.addEventListener("load", event => {
+    if (isRelevantImageLoad(event.target)) schedule();
+  }, true);
   document.getElementById("vt-language")?.addEventListener("change", schedule);
   schedule();
 })();
