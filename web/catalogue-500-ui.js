@@ -60,41 +60,69 @@
     zh:["已登记的研究计划 1000 项 · 贡献主题 606 项","科学登记库包含 1000 份研究档案。贡献界面另行展示 606 个精选主题。生成的 882 项和精选新增的 12 项均为研究计划，并非已证实的技术。"],
     hi:["1000 पंजीकृत अनुसंधान कार्यक्रम · 606 योगदान विषय","वैज्ञानिक रजिस्टर में 1000 अनुसंधान अभिलेख हैं। योगदान इंटरफ़ेस अलग से 606 चुने हुए विषय दिखाता है। 882 उत्पन्न प्रविष्टियाँ और बारह चयनित अतिरिक्त प्रविष्टियाँ अनुसंधान कार्यक्रम हैं, प्रमाणित तकनीकें नहीं。"]
   };
-  function apply() {
+  function updateCatalogueCopy() {
     const language = lang();
     const copy = catalogueCopy[language] || catalogueCopy.en;
     const count = document.getElementById("technology-catalogue-count");
     const note = document.querySelector(".technology-catalogue-note");
     if (count && count.textContent !== copy[0]) count.textContent = copy[0];
     if (note && note.textContent !== copy[1]) note.textContent = copy[1];
-    document.querySelectorAll("#bot-current-technology-title,.technology-card h3,[data-technology-title]").forEach(el => {
-      const original = el.dataset.ssswetOriginalTitle || el.textContent.trim();
-      if (!el.dataset.ssswetOriginalTitle) el.dataset.ssswetOriginalTitle = original;
-      const target = language === "fr" ? frenchTitle(original) : original;
-      if (el.textContent !== target) el.textContent = target;
-    });
-    document.querySelectorAll("body *:not(script):not(style)").forEach(el => {
-      if (el.children.length) return;
-      const text = el.textContent || "";
-      const next = text.replace(/64\s*\/\s*118/g, "64 / 512").replace(/\/\s*118(\s+programmes?\b)/gi, "/ 512$1");
-      if (next !== text) el.textContent = next;
-    });
   }
+
+  function translateTitle(element, language) {
+    if (!element || element.nodeType !== 1) return;
+    const original = element.dataset.ssswetOriginalTitle || element.textContent.trim();
+    if (!element.dataset.ssswetOriginalTitle) element.dataset.ssswetOriginalTitle = original;
+    const target = language === "fr" ? frenchTitle(original) : original;
+    if (element.textContent !== target) element.textContent = target;
+  }
+
+  function translateTitles(root, language) {
+    if (!root) return;
+    if (root.nodeType === 1 && root.matches("#bot-current-technology-title,.technology-card h3,[data-technology-title]")) {
+      translateTitle(root, language);
+    }
+    if (root.querySelectorAll) {
+      root.querySelectorAll("#bot-current-technology-title,.technology-card h3,[data-technology-title]")
+        .forEach(element => translateTitle(element, language));
+    }
+  }
+
+  function applyAll() {
+    const language = lang();
+    updateCatalogueCopy();
+    translateTitles(document.getElementById("technology-grid"), language);
+    translateTitles(document.getElementById("bot-current-technology-title"), language);
+    document.querySelectorAll("[data-technology-title]").forEach(element => translateTitle(element, language));
+  }
+
   const start = () => {
-    apply();
-    document.getElementById("language")?.addEventListener("change", () => setTimeout(apply, 0));
-    window.addEventListener("ssswet-language-changed", () => setTimeout(apply, 0));
-    let observerScheduled = false;
-    const observer = new MutationObserver(() => {
-      if (observerScheduled) return;
-      observerScheduled = true;
-      requestAnimationFrame(() => {
-        observerScheduled = false;
-        apply();
-      });
-    });
     const catalogue = document.getElementById("technology-grid");
-    if (catalogue) observer.observe(catalogue, {childList:true, subtree:true});
+    let observerScheduled = false;
+    let pendingRoots = new Set();
+
+    applyAll();
+    document.getElementById("language")?.addEventListener("change", () => setTimeout(applyAll, 0));
+    window.addEventListener("ssswet-language-changed", () => setTimeout(applyAll, 0));
+
+    if (catalogue) {
+      const observer = new MutationObserver(records => {
+        for (const record of records) {
+          for (const node of record.addedNodes) {
+            if (node.nodeType === 1) pendingRoots.add(node);
+          }
+        }
+        if (observerScheduled || pendingRoots.size === 0) return;
+        observerScheduled = true;
+        requestAnimationFrame(() => {
+          observerScheduled = false;
+          const language = lang();
+          for (const root of pendingRoots) translateTitles(root, language);
+          pendingRoots.clear();
+        });
+      });
+      observer.observe(catalogue, { childList: true, subtree: true });
+    }
   };
   if (document.body) start(); else document.addEventListener("DOMContentLoaded", start, {once:true});
 })();
