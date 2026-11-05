@@ -74,6 +74,11 @@ def page_metrics(page: object) -> dict:
         language_control: rect('.app-shell > .topbar .language-control'),
         language_select: rect('#language'),
         action_links: rect('.top-action-links'),
+        repair_slot: rect('.repair-project-slot'),
+        repair_button: rect('.repair-project-button'),
+        report_button: rect('#ssswet-report-button'),
+        virtual_time_travel: rect('#virtual-time-travel-launch'),
+        current_research_title: rect('#bot-current-technology-title'),
         command_hero: rect('.bot-command-hero'),
         command_visual: rect('.bot-command-visual')
       };
@@ -83,7 +88,9 @@ def page_metrics(page: object) -> dict:
       const layoutChecks = {
         language_select_height: languageHeight !== null && Math.abs(languageHeight - 42) <= 1,
         topbar_height: topbarHeight !== null && Math.abs(topbarHeight - expectedTopbarHeight) <= 1,
-        no_horizontal_overflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1
+        no_horizontal_overflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        repair_slot_height: Math.abs((geometry.repair_slot?.height ?? 0) - 44) <= 1,
+        report_button_height: Math.abs((geometry.report_button?.height ?? 0) - 44) <= 1
       };
       return {
         navigation: nav ? {
