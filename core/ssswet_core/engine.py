@@ -20,6 +20,7 @@ from .agent_identity import AgentIdentityRegistry
 from .review_assignment import IndependentReviewerSelector, ReviewerCandidate
 from .research_decision_ledger import ResearchDecisionLedger
 from .research_knowledge_graph import ResearchKnowledgeGraph
+from .research_continuity import ResearchContinuityService
 
 
 @dataclass
@@ -44,6 +45,7 @@ class SSSWETEngine:
         self.agent_identities = AgentIdentityRegistry(store) if store else None
         self.research_decisions = ResearchDecisionLedger(store) if store else None
         self.research_knowledge = ResearchKnowledgeGraph(store) if store else None
+        self.research_continuity = ResearchContinuityService(store) if store else None
         self.independent_reviewer_selector = IndependentReviewerSelector()
         self.technology_dependencies = TechnologyDependencyGraph(store) if store else None
         self.orchestrator = ResearchOrchestrator()
@@ -185,6 +187,45 @@ class SSSWETEngine:
         if self.research_knowledge is None:
             raise RuntimeError("A persistent research store is required for the research knowledge graph")
         return self.research_knowledge.impact(node_id, max_depth=max_depth, limit=limit)
+
+    def _continuity_service(self) -> ResearchContinuityService:
+        if self.research_continuity is None:
+            raise RuntimeError("A persistent research store is required for research continuity")
+        return self.research_continuity
+
+    def research_continuity_overview(self, *, campaign_id: str | None = None) -> dict:
+        return self._continuity_service().overview(campaign_id=campaign_id)
+
+    def search_persistent_research_memory(self, query: str, **filters) -> list[dict]:
+        return self._continuity_service().search(query, **filters)
+
+    def prepare_research_agent_handoff(self, query: str, **limits) -> dict:
+        return self._continuity_service().handoff(query, **limits)
+
+    def research_memory_duplicate_groups(self, **filters) -> list[dict]:
+        return self._continuity_service().duplicate_groups(**filters)
+
+    def research_memory_conflict_candidates(self, **filters) -> list[dict]:
+        return self._continuity_service().conflict_candidates(**filters)
+
+    def export_research_memory_snapshot(self, **filters) -> dict:
+        return self._continuity_service().snapshot(**filters)
+
+    @staticmethod
+    def validate_research_memory_snapshot(snapshot: dict) -> dict:
+        return ResearchContinuityService.validate_snapshot(snapshot)
+
+    @staticmethod
+    def query_research_timeline(observations, **filters) -> list[dict]:
+        return ResearchContinuityService.temporal_window(observations, **filters)
+
+    @staticmethod
+    def screen_research_observation_gaps(observations, **window) -> list[dict]:
+        return ResearchContinuityService.coverage_gaps(observations, **window)
+
+    @staticmethod
+    def compare_research_timelines(left, right) -> list[dict]:
+        return ResearchContinuityService.compare_timelines(left, right)
 
     def estimate_technology_costs(self, **pricing_inputs) -> dict:
         return build_agent_pricing_estimate(**pricing_inputs)

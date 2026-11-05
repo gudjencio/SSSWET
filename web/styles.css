@@ -342,6 +342,7 @@ button:hover { border-color: #5a5274; background: linear-gradient(115deg, rgba(4
 .technology-heading > p:last-child { color: #9692a3; font-size: 12px; line-height: 1.65; }
 .technology-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 11px; }
 .technology-card { position: relative; display: flex; flex-direction: column; min-width: 0; padding: 17px; border: 1px solid #292633; border-radius: 14px; background: linear-gradient(145deg,rgba(33,30,46,.56),rgba(8,10,14,.8)); }
+.technology-card { content-visibility: auto; contain-intrinsic-size: auto 220px; }
 .technology-number { color: #9385bf; font-size: 9px; letter-spacing: .16em; }
 .technology-card h3 { margin: 13px 0 7px; color: #e7e1f2; font-size: 14px; font-weight: 550; }
 .technology-card p { flex: 1; margin: 0 0 15px; color: #918d9b; font-size: 10px; line-height: 1.6; }
@@ -1186,7 +1187,7 @@ a { color: #9fdcf0; }
 .bot-stage-agent .agent-avatar {
   transform-origin: 50% 100%;
   animation: bot-agent-occasional-hop 7.2s ease-in-out infinite !important;
-  will-change: transform;
+  /* Avoid pinning every agent avatar to a dedicated compositor layer. */
 }
 .bot-stage-agent:nth-child(2n) .agent-avatar { animation-delay: -2.6s !important; }
 .bot-stage-agent:nth-child(3n) .agent-avatar { animation-delay: -4.8s !important; }

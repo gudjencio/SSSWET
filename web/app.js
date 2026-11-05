@@ -642,16 +642,36 @@
   });
   document.getElementById("priority-assessment-refresh")?.addEventListener("click", loadPriorityAssessments);
 
+  let statusPollTimer = null;
+  let statusFailureCount = 0;
+  let statusRefreshInFlight = false;
+
+  function scheduleStatusRefresh(delay) {
+    if (statusPollTimer !== null) window.clearTimeout(statusPollTimer);
+    statusPollTimer = null;
+    if (document.hidden) return;
+    statusPollTimer = window.setTimeout(() => {
+      statusPollTimer = null;
+      refreshStatus();
+    }, delay);
+  }
+
   async function refreshStatus() {
+    if (statusRefreshInFlight) return;
+    statusRefreshInFlight = true;
     const t = currentTranslations();
+    let nextDelay = 15000;
     try {
       const status = await apiGet("/api/status");
+      statusFailureCount = 0;
       agentCount.textContent = String(status.agents_total ?? 0).padStart(2, "0");
       systemStatus.textContent = t.statusOnline;
       systemStatus.dataset.connected = "true";
       const connectionPanel = document.getElementById("engine-connection");
       if (connectionPanel) connectionPanel.hidden = true;
     } catch (error) {
+      statusFailureCount = Math.min(statusFailureCount + 1, 4);
+      nextDelay = Math.min(30000 * (2 ** (statusFailureCount - 1)), 120000);
       agentCount.textContent = "—";
       systemStatus.textContent = t.statusOffline;
       systemStatus.dataset.connected = "false";
@@ -669,9 +689,21 @@
           : "";
         connectionDiagnostic.hidden = !detail;
       }
+    } finally {
+      statusRefreshInFlight = false;
+      scheduleStatusRefresh(nextDelay);
     }
   }
 
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      if (statusPollTimer !== null) window.clearTimeout(statusPollTimer);
+      statusPollTimer = null;
+    } else {
+      refreshStatus();
+    }
+  });
+  window.addEventListener("online", refreshStatus);
   function cleanDiscoverySummary(value) {
     let summary = String(value || "").trim();
     summary = summary.replace(/^\[UNVERIFIED\s*[·|]\s*[^\]]+\]\s*/i, "");
@@ -1646,7 +1678,7 @@ function classifyDiscovery(group) {
   voicePauseButton?.addEventListener("click", () => { speechSynthesisApi?.pause(); updateVoiceControls(); });
   voiceResumeButton?.addEventListener("click", () => { speechSynthesisApi?.resume(); updateVoiceControls(); });
   voiceStopButton?.addEventListener("click", () => { speechSynthesisApi?.cancel(); updateVoiceControls(); });
-  window.setInterval(updateVoiceControls, 500);
+  updateVoiceControls();
   voiceToggle?.addEventListener("click", () => {
     voiceEnabled = !voiceEnabled;
     voiceToggle.setAttribute("aria-pressed", voiceEnabled ? "true" : "false");
@@ -1692,7 +1724,6 @@ function classifyDiscovery(group) {
     foldout.append(summary, section);
   });
   document.getElementById("engine-connection-retry")?.addEventListener("click", refreshStatus);
-  window.setInterval(refreshStatus, 3000);
   refreshStatus();
   capitalizeInterfaceText(document.body);
 })();
