@@ -28,9 +28,17 @@ visitor's device.
 9. The capitalization MutationObserver now edits only the changed text node
    instead of rescanning its entire parent subtree for each character-data
    mutation.
-10. The browser benchmark now records navigation wait time separately from its
-    post-load observation delay and reports header/select geometry plus
-    horizontal-overflow diagnostics.
+10. The project action area now uses a predictable two-row grid rather than
+    allowing translated button labels to change its flex wrapping.
+11. The recovery and report controls have stable heights and bounded widths,
+    preventing the report button from forcing the research-stage link downward.
+12. The current research title reserves a two-line text area so late status
+    updates do not resize its surrounding layout.
+13. The browser benchmark records navigation wait time separately from its
+    post-load observation delay and reports header, action-control and
+    research-stage geometry plus horizontal-overflow diagnostics.
+14. The browser benchmark switches through French, German, Arabic and Japanese
+    when available, checking RTL/LTR geometry and overflow after localization.
 
 ## Validation
 
@@ -39,7 +47,12 @@ viewports. It records CLS and the first ten layout-shift sources, alongside
 header and selector dimensions. Geometry checks are advisory until repeated
 runs establish stable baselines.
 
-No performance improvement percentage is claimed until the updated benchmark
-completes and comparable measurements can be examined. No production
+The first updated run reduced median CLS from 0.248 to 0.038 on desktop and
+from 0.208 to 0.165 on the mobile viewport, compared with the immediately
+preceding benchmark on the same virtual runner family. These are three-trial
+laboratory medians, not field-user measurements. Mobile still has a substantial
+shift associated with responsive project action controls; the follow-up action
+row sizing and multilingual checks are intended to address and verify that
+remaining issue. No production
 deployment, payment flow, account operation or hosted-engine request is part
 of this change.
