@@ -344,6 +344,10 @@ class SQLiteResearchStore:
                 CREATE INDEX IF NOT EXISTS idx_collective_memory_topic ON collective_memory(topic);
                 CREATE INDEX IF NOT EXISTS idx_collective_memory_status ON collective_memory(status);
                 CREATE INDEX IF NOT EXISTS idx_collective_memory_campaign ON collective_memory(campaign_id);
+                CREATE INDEX IF NOT EXISTS idx_collective_memory_updated
+                    ON collective_memory(updated_at DESC);
+                CREATE INDEX IF NOT EXISTS idx_collective_memory_campaign_status_updated
+                    ON collective_memory(campaign_id, status, updated_at DESC);
                 CREATE TABLE IF NOT EXISTS scientific_memory_versions (
                     version_id TEXT PRIMARY KEY,
                     memory_key TEXT NOT NULL,
