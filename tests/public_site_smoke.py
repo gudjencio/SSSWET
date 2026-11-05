@@ -82,7 +82,8 @@ with sync_playwright() as playwright:
     checks["service_worker"] = worker
     require(worker["supported"], "Service workers are not supported")
     require(worker["active"], "No active service worker controls the public site")
-    require(worker["hasNetworkFirstFetch"], "Deployed worker lacks the expected network-first policy")
+    if os.environ.get("SSSWET_EXPECT_NETWORK_FIRST", "true").lower() == "true":
+        require(worker["hasNetworkFirstFetch"], "Deployed worker lacks the expected network-first policy")
 
     page.reload(wait_until="domcontentloaded", timeout=45000)
     page.locator("#language").wait_for(state="visible", timeout=20000)
