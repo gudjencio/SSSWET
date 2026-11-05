@@ -2,7 +2,7 @@ name: SSSWET Performance Benchmarks
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, perf/reproducible-browser-benchmarks-2026-11-05]
   workflow_dispatch:
   schedule:
     - cron: "23 5 * * 1"

@@ -63,6 +63,35 @@ def page_metrics(page: object) -> dict:
       const paint = Object.fromEntries(performance.getEntriesByType('paint').map(e => [e.name, e.startTime]));
       const bench = window.__ssswetBench || {};
       const cards = document.querySelectorAll('#technology-grid .technology-card').length;
+      const rect = selector => {
+        const element = document.querySelector(selector);
+        if (!element) return null;
+        const box = element.getBoundingClientRect();
+        return { x: box.x, y: box.y, width: box.width, height: box.height };
+      };
+      const geometry = {
+        topbar: rect('.app-shell > .topbar'),
+        language_control: rect('.app-shell > .topbar .language-control'),
+        language_select: rect('#language'),
+        action_links: rect('.top-action-links'),
+        repair_slot: rect('.repair-project-slot'),
+        repair_button: rect('.repair-project-button'),
+        report_button: rect('#ssswet-report-button'),
+        virtual_time_travel: rect('#virtual-time-travel-launch'),
+        current_research_title: rect('#bot-current-technology-title'),
+        command_hero: rect('.bot-command-hero'),
+        command_visual: rect('.bot-command-visual')
+      };
+      const languageHeight = geometry.language_select?.height ?? null;
+      const topbarHeight = geometry.topbar?.height ?? null;
+      const expectedTopbarHeight = window.matchMedia('(max-width: 600px)').matches ? 52 : 56;
+      const layoutChecks = {
+        language_select_height: languageHeight !== null && Math.abs(languageHeight - 42) <= 1,
+        topbar_height: topbarHeight !== null && Math.abs(topbarHeight - expectedTopbarHeight) <= 1,
+        no_horizontal_overflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        repair_slot_height: Math.abs((geometry.repair_slot?.height ?? 0) - 44) <= 1,
+        report_button_height: Math.abs((geometry.report_button?.height ?? 0) - 44) <= 1
+      };
       return {
         navigation: nav ? {
           dns_ms: nav.domainLookupEnd - nav.domainLookupStart,
@@ -82,7 +111,9 @@ def page_metrics(page: object) -> dict:
         layout_shift_diagnostics: (bench.layoutShifts || []).slice(0, 10),
         dom_node_count: document.getElementsByTagName('*').length,
         catalogue_card_count: cards,
-        document_ready_state: document.readyState
+        document_ready_state: document.readyState,
+        layout_geometry: geometry,
+        layout_checks: layoutChecks
       };
     }""")
 
@@ -126,20 +157,81 @@ def run_trial(browser: object, url: str, viewport: dict, trial: int) -> dict:
     page.add_init_script(OBSERVER_INIT)
     started = time.perf_counter()
     response = page.goto(url, wait_until="load", timeout=90000)
+    cold_navigation_wait_ms = round((time.perf_counter() - started) * 1000, 2)
     page.wait_for_timeout(1800)
     cold = page_metrics(page)
     cold["http_status"] = response.status if response else None
-    cold["wall_load_ms"] = round((time.perf_counter() - started) * 1000, 2)
+    cold["navigation_wait_ms"] = cold_navigation_wait_ms
+    cold["settle_observation_ms"] = 1800
     scales = catalogue_scale(page, [100, 500, 1000])
+    locale_layouts = []
+    # Synthetic translated-copy stress scenarios avoid triggering live-engine
+    # refreshes while checking longer labels and both writing directions.
+    locale_scenarios = [
+        {
+            "locale": "fr", "direction": "ltr",
+            "fund": "Soutenir les programmes de recherche et les technologies",
+            "repair": "Réparer le projet si son interface ne fonctionne plus",
+            "report": "Signaler", "virtual": "Explorer notre cartographie virtuelle du temps"
+        },
+        {
+            "locale": "de", "direction": "ltr",
+            "fund": "Forschungsprogramme und Technologien unterstützen",
+            "repair": "Projektoberfläche bei Problemen wiederherstellen",
+            "report": "Melden", "virtual": "Virtuelle Zeitreise-Kartierung erkunden"
+        },
+        {
+            "locale": "ar", "direction": "rtl",
+            "fund": "ادعم برامج البحث والتقنيات",
+            "repair": "إصلاح واجهة المشروع عند حدوث مشكلة",
+            "report": "إبلاغ", "virtual": "استكشف الخرائط الافتراضية للسفر عبر الزمن"
+        },
+        {
+            "locale": "ja", "direction": "ltr",
+            "fund": "研究プログラムと技術を支援する",
+            "repair": "問題が発生した場合にプロジェクトを修復",
+            "report": "報告", "virtual": "仮想タイムトラベルマッピングを探索"
+        }
+    ]
+    for scenario in locale_scenarios:
+        page.evaluate("() => { if (window.__ssswetBench) { window.__ssswetBench.cls = 0; window.__ssswetBench.layoutShifts = []; } }")
+        page.evaluate(
+            """spec => {
+                document.documentElement.lang = spec.locale;
+                document.documentElement.dir = spec.direction;
+                document.body.dir = spec.direction;
+                const setText = (selector, value) => {
+                    const element = document.querySelector(selector);
+                    if (element) element.textContent = value;
+                };
+                setText('#fund-techs-button', spec.fund);
+                setText('.repair-project-button', spec.repair);
+                setText('#ssswet-report-button', spec.report);
+                setText('#virtual-time-travel-launch', spec.virtual);
+            }""",
+            scenario
+        )
+        page.wait_for_timeout(150)
+        locale_metrics = page_metrics(page)
+        locale_layouts.append({
+            "locale_scenario": scenario["locale"],
+            "direction": scenario["direction"],
+            "synthetic_copy": True,
+            "layout_checks": locale_metrics["layout_checks"],
+            "layout_geometry": locale_metrics["layout_geometry"],
+            "cls_after_copy_change": locale_metrics["cls"]
+        })
     page.wait_for_timeout(100)
     # A second navigation in the same context provides a warm-cache observation.
     warm_started = time.perf_counter()
     page.reload(wait_until="load", timeout=90000)
+    warm_navigation_wait_ms = round((time.perf_counter() - warm_started) * 1000, 2)
     page.wait_for_timeout(1200)
     warm = page_metrics(page)
-    warm["wall_load_ms"] = round((time.perf_counter() - warm_started) * 1000, 2)
+    warm["navigation_wait_ms"] = warm_navigation_wait_ms
+    warm["settle_observation_ms"] = 1200
     context.close()
-    return {"trial": trial, "viewport": viewport, "cold": cold, "warm": warm, "catalogue_scale": scales}
+    return {"trial": trial, "viewport": viewport, "cold": cold, "warm": warm, "catalogue_scale": scales, "locale_layouts": locale_layouts}
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -155,7 +247,7 @@ def main() -> int:
         {"name": "mobile", "width": 390, "height": 844},
     ]
     results = {
-        "schema_version": 1,
+        "schema_version": 2,
         "project": "SSSWET",
         "measured_at": datetime.now(timezone.utc).isoformat(),
         "url": args.url,
@@ -190,7 +282,7 @@ def main() -> int:
     for viewport in viewports:
         group = [item for item in results["trials"] if item["viewport"]["name"] == viewport["name"]]
         for mode in ("cold", "warm"):
-            for metric in ("wall_load_ms", "fcp_ms", "lcp_ms", "cls", "long_task_total_ms", "dom_node_count"):
+            for metric in ("navigation_wait_ms", "fcp_ms", "lcp_ms", "cls", "long_task_total_ms", "dom_node_count"):
                 values = [item[mode].get(metric) for item in group if isinstance(item[mode].get(metric), (int, float))]
                 if values:
                     results.setdefault("summary", {}).setdefault(viewport["name"], {}).setdefault(mode, {})[metric] = {
@@ -198,6 +290,19 @@ def main() -> int:
                         "min": round(min(values), 3),
                         "max": round(max(values), 3)
                     }
+        for mode in ("cold", "warm"):
+            checks = [item[mode].get("layout_checks", {}) for item in group]
+            check_names = sorted({name for item in checks for name in item})
+            pass_rate = {}
+            for name in check_names:
+                observed = [item[name] for item in checks if name in item]
+                if observed:
+                    pass_rate[name] = {
+                        "passed": sum(bool(value) for value in observed),
+                        "total": len(observed),
+                        "rate": round(sum(bool(value) for value in observed) / len(observed), 3)
+                    }
+            results.setdefault("summary", {}).setdefault(viewport["name"], {}).setdefault(mode, {})["layout_check_pass_rate"] = pass_rate
 
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
