@@ -12,10 +12,7 @@ agent hand-offs and temporal evidence review.
 7. Bounded agent hand-off packets that preserve source IDs, provenance, review state and explicit safety/review constraints.
 8. ISO temporal parsing with UTC normalization, date-only precision labels and rejection of timezone-naive datetimes.
 9. Inclusive temporal-window retrieval with finite uncertainty checks and deterministic ordering.
-10. Cadence-based observation-gap screening with strict output bounds and no inference that an event did not occur.
-
-A further comparison helper reports timestamp deltas for shared source IDs and combined
-uncertainty without inferring causes.
+10. Temporal evidence review: bounded cadence-based observation-gap screening plus shared-source timeline comparison with combined uncertainty and no causal inference.
 
 ## Verification
 
