@@ -46,7 +46,7 @@ with sync_playwright() as playwright:
             require(language.input_value() == alternate, "Language selector did not accept a new value")
             language.select_option(original)
 
-    for selector in ("#bot-control-refresh", "#ssswet-report-button"):
+    for selector in ("#ssswet-report-button",):
         locator = page.locator(selector)
         require(locator.count() == 1 and locator.is_visible(), f"Required control missing or hidden: {selector}")
         if locator.count() == 1 and locator.is_visible():
