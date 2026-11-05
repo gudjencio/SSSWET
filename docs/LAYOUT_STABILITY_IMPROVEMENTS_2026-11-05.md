@@ -48,7 +48,7 @@ viewports. It records CLS and the first ten layout-shift sources, alongside
 header, selector and action-control dimensions. Geometry checks are advisory
 and are retained in the JSON artifact.
 
-After the header and action-row fixes, the three-trial median CLS was 0.011 on
+After the header and action-row fixes, the three-trial median CLS was 0.010 on
 desktop and 0.017 on the mobile viewport, compared with initial medians of
 0.248 and 0.208 respectively. That is approximately 96% lower CLS on desktop
 and 92% lower on mobile in this virtual Chromium test environment. First
