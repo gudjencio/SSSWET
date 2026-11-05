@@ -17,7 +17,7 @@ viewports. Each trial records:
 - append/layout stress probes with 100, 500 and 1,000 cloned catalogue cards;
 - environment, commit and workflow-run metadata.
 
-The JSON report is uploaded as a GitHub Actions artifact for 30 days. It can
+The JSON report is uploaded as a GitHub Actions artifact for 90 days. It can
 be downloaded from the workflow run's **Artifacts** section.
 
 ## Interpretation and safeguards
