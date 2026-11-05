@@ -165,33 +165,32 @@ def run_trial(browser: object, url: str, viewport: dict, trial: int) -> dict:
     cold["settle_observation_ms"] = 1800
     scales = catalogue_scale(page, [100, 500, 1000])
     locale_layouts = []
-    for locale in ("fr", "de", "ar", "ja"):
-        available = page.locator("#language option").evaluate_all(
-            "(options, code) => options.some(option => option.value === code)", locale
-        )
-        if not available:
-            continue
-        selected = page.locator("#language").evaluate(
-            """(select, code) => {
-                if (!Array.from(select.options).some(option => option.value === code)) return false;
-                select.value = code;
-                select.dispatchEvent(new Event('change', { bubbles: true }));
-                return true;
-            }""",
-            locale
-        )
-        if not selected:
-            continue
-        page.wait_for_timeout(250)
-        locale_metrics = page_metrics(page)
-        locale_layouts.append({
-            "locale": locale,
-            "document_language": page.locator("html").get_attribute("lang"),
-            "document_direction": page.locator("html").get_attribute("dir"),
-            "layout_checks": locale_metrics["layout_checks"],
-            "layout_geometry": locale_metrics["layout_geometry"],
-            "cls_after_locale_change": locale_metrics["cls"]
-        })
+    # Locale switching is exercised once per viewport, not once per timing
+    # repetition, because changing language intentionally refreshes live UI.
+    if trial == 1:
+        for locale in ("fr", "de", "ar", "ja"):
+            selected = page.evaluate(
+                """code => {
+                    const select = document.getElementById('language');
+                    if (!select || !Array.from(select.options).some(option => option.value === code)) return false;
+                    select.value = code;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                    return true;
+                }""",
+                locale
+            )
+            if not selected:
+                continue
+            page.wait_for_timeout(250)
+            locale_metrics = page_metrics(page)
+            locale_layouts.append({
+                "locale": locale,
+                "document_language": page.locator("html").get_attribute("lang"),
+                "document_direction": page.locator("html").get_attribute("dir"),
+                "layout_checks": locale_metrics["layout_checks"],
+                "layout_geometry": locale_metrics["layout_geometry"],
+                "cls_after_locale_change": locale_metrics["cls"]
+            })
     page.wait_for_timeout(100)
     # A second navigation in the same context provides a warm-cache observation.
     warm_started = time.perf_counter()
