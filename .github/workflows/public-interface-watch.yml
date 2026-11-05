@@ -36,11 +36,25 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install playwright
           python -m playwright install --with-deps chromium
-      - name: Visit and exercise the published interface
+      - name: Start pull-request preview
+        id: preview
+        if: github.event_name == 'pull_request'
+        run: |
+          python -m http.server 4173 --directory web > /tmp/ssswet-preview.log 2>&1 &
+          echo "url=http://127.0.0.1:4173/" >> "$GITHUB_OUTPUT"
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ssswet-preview.log
+          exit 1
+      - name: Visit and exercise the candidate or published interface
         id: smoke
         continue-on-error: true
         env:
-          SSSWET_PUBLIC_URL: https://gudjencio.github.io/SSSWET/
+          SSSWET_PUBLIC_URL: ${{ steps.preview.outputs.url || 'https://gudjencio.github.io/SSSWET/' }}
           SSSWET_EXPECT_NETWORK_FIRST: ${{ github.event_name != 'pull_request' }}
         run: python tests/public_site_smoke.py
       - name: Upload browser evidence
@@ -51,15 +65,15 @@ jobs:
           path: artifacts/
           if-no-files-found: warn
           retention-days: 14
-      - name: Create or update a public-site incident
-        if: steps.smoke.outcome == 'failure'
+      - name: Create or update a published-site incident
+        if: steps.smoke.outcome == 'failure' && github.event_name != 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const title = "Public SSSWET interface browser check failed";
             const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = [
-              "The scheduled real-browser smoke test detected a public-interface failure.",
+              "The scheduled or manually requested real-browser smoke test detected a published-interface failure.",
               "",
               "Public URL: https://gudjencio.github.io/SSSWET/",
               `Workflow run: ${runUrl}`,
@@ -83,6 +97,6 @@ jobs:
                 title, body
               });
             }
-      - name: Fail the workflow when the public interface is unhealthy
+      - name: Fail the workflow when the tested interface is unhealthy
         if: steps.smoke.outcome == 'failure'
         run: exit 1
