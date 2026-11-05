@@ -66,6 +66,7 @@ with sync_playwright() as playwright:
         require("virtual-time-travel.html" in (vtt.get_attribute("href") or ""), "Virtual Time Travel link target changed")
 
     worker = page.evaluate("""async () => {
+      await Promise.race([navigator.serviceWorker.ready, new Promise(resolve => setTimeout(resolve, 12000))]);
       const registration = await navigator.serviceWorker.getRegistration();
       const active = registration && registration.active;
       const response = await fetch('./sw.js', {cache: 'no-store'});
