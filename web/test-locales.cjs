@@ -385,6 +385,20 @@ console.log("Validated exactly 606 unique technology themes, eight categories, a
 const expansionSource = fs.readFileSync(new URL("./technology-expansion-ui.js", `file://${__filename}`), "utf8");
 new Function(expansionSource);
 if (!expansionSource.includes("researchSpace") || !expansionSource.includes("researchSociety")) throw new Error("The expanded technology interface is incomplete.");
+const expansionWindow = { SSSWET_TECHNOLOGIES: { curatedSentinel: { en: ["Curated", "Preserved"], fr: ["Sélection", "Conservée"] } } };
+new Function("window", expansionSource)(expansionWindow);
+const expandedEntries = Object.entries(expansionWindow.SSSWET_TECHNOLOGIES).filter(([key]) => key !== "curatedSentinel");
+const englishSuffix = ", with measurable performance, reliability, lifecycle impact, accessibility and independent evaluation. This is a research objective, not a validated technology.";
+const frenchSuffix = ", avec étude des performances mesurables, de la fiabilité, de l’impact sur le cycle de vie, de l’accessibilité et d’une évaluation indépendante. Il s’agit d’un objectif de recherche, pas d’une technologie validée.";
+if (expandedEntries.length !== 488 || expansionWindow.SSSWET_EXPANDED_TECHNOLOGY_COUNT !== 488 || !expansionWindow.SSSWET_TECHNOLOGIES.curatedSentinel) {
+  throw new Error("The compact research catalogue must preserve all 488 generated entries and existing curated data.");
+}
+for (const [key, item] of expandedEntries) {
+  const subject = item.en[0].toLowerCase();
+  if (item.en[1] !== "Research into " + subject + englishSuffix || item.fr[1] !== "Recherche sur " + subject + frenchSuffix) {
+    throw new Error("Generated catalogue description changed unexpectedly: " + key);
+  }
+}
 const botRoomSource = fs.readFileSync(new URL("./bot-live-room.js", `file://${__filename}`), "utf8");
 new Function(botRoomSource);
 if (!pageSource.includes('id="bot-free-question-form"') ||
