@@ -189,7 +189,15 @@ def build_agent_handoff(
     max_records = max(1, min(int(max_records), MAX_HANDOFF_LIMIT))
     max_chars = max(1_000, min(int(max_chars), MAX_HANDOFF_CHARS))
     matches = search_memory_records(records, query, limit=100, campaign_id=campaign_id)
+    constraints = [
+        "Treat retrieved statements as claims, not established facts.",
+        "Preserve source IDs and provenance groups in downstream work.",
+        "Keep rejected or superseded claims distinct from reviewed claims.",
+        "Escalate apparent contradictions for human review; do not silently resolve them.",
+        "Do not infer missing observations or present simulations as measurements.",
+    ]
     selected = []
+    source_ids: set[str] = set()
     for record in matches:
         compact = {
             key: record.get(key) for key in (
@@ -198,31 +206,29 @@ def build_agent_handoff(
                 "retrieval_score", "matched_terms",
             ) if key in record
         }
-        candidate = selected + [compact]
-        if len(json.dumps(candidate, ensure_ascii=False, separators=(",", ":"))) > max_chars:
+        candidate_sources = source_ids | {str(s) for s in compact.get("source_ids", [])}
+        candidate_records = selected + [compact]
+        candidate_packet = {
+            "schema_version": 1, "query": query, "campaign_id": campaign_id,
+            "records": candidate_records, "source_ids": sorted(candidate_sources),
+            "constraints": constraints, "human_review_required": True,
+            "truncated": len(candidate_records) < len(matches),
+        }
+        size = len(json.dumps(candidate_packet, ensure_ascii=False, separators=(",", ":")))
+        if size > max_chars:
             break
-        selected.append(compact)
+        selected = candidate_records
+        source_ids = candidate_sources
         if len(selected) >= max_records:
             break
     packet = {
-        "schema_version": 1,
-        "query": query,
-        "campaign_id": campaign_id,
-        "records": selected,
-        "source_ids": sorted({str(s) for r in selected for s in r.get("source_ids", [])}),
-        "constraints": [
-            "Treat retrieved statements as claims, not established facts.",
-            "Preserve source IDs and provenance groups in downstream work.",
-            "Keep rejected or superseded claims distinct from reviewed claims.",
-            "Escalate apparent contradictions for human review; do not silently resolve them.",
-            "Do not infer missing observations or present simulations as measurements.",
-        ],
-        "human_review_required": True,
+        "schema_version": 1, "query": query, "campaign_id": campaign_id,
+        "records": selected, "source_ids": sorted(source_ids),
+        "constraints": constraints, "human_review_required": True,
         "truncated": len(selected) < len(matches),
     }
     packet["character_count"] = len(json.dumps(packet, ensure_ascii=False, separators=(",", ":")))
     return packet
-
 
 def parse_temporal_instant(value: str) -> dict:
     """Parse ISO date or timezone-aware ISO datetime into a UTC instant."""
