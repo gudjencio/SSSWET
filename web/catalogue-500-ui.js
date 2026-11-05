@@ -70,7 +70,7 @@
     document.querySelectorAll("#bot-current-technology-title,.technology-card h3,[data-technology-title]").forEach(el => {
       const original = el.dataset.ssswetOriginalTitle || el.textContent.trim();
       if (!el.dataset.ssswetOriginalTitle) el.dataset.ssswetOriginalTitle = original;
-      const target = isFr ? frenchTitle(original) : original;
+      const target = language === "fr" ? frenchTitle(original) : original;
       if (el.textContent !== target) el.textContent = target;
     });
     document.querySelectorAll("body *:not(script):not(style)").forEach(el => {
@@ -84,8 +84,17 @@
     apply();
     document.getElementById("language")?.addEventListener("change", () => setTimeout(apply, 0));
     window.addEventListener("ssswet-language-changed", () => setTimeout(apply, 0));
-    const observer = new MutationObserver(() => apply());
-    observer.observe(document.body, {childList:true, subtree:true});
+    let observerScheduled = false;
+    const observer = new MutationObserver(() => {
+      if (observerScheduled) return;
+      observerScheduled = true;
+      requestAnimationFrame(() => {
+        observerScheduled = false;
+        apply();
+      });
+    });
+    const catalogue = document.getElementById("technology-grid");
+    if (catalogue) observer.observe(catalogue, {childList:true, subtree:true});
   };
   if (document.body) start(); else document.addEventListener("DOMContentLoaded", start, {once:true});
 })();
