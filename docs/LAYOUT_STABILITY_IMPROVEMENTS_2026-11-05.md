@@ -50,11 +50,11 @@ and are retained in the JSON artifact.
 
 After the header and action-row fixes, the three-trial median CLS was 0.011 on
 desktop and 0.017 on the mobile viewport, compared with initial medians of
-0.248 and 0.208 respectively. That is approximately 95% lower CLS on desktop
+0.248 and 0.208 respectively. That is approximately 96% lower CLS on desktop
 and 92% lower on mobile in this virtual Chromium test environment. First
-Contentful Paint medians also moved from 136 ms to 104 ms on desktop and from
-128 ms to 72 ms on mobile. These are laboratory comparisons, not field-user
-measurements or guarantees for physical devices.
+Contentful Paint varied between repeat runs, so no FCP gain is claimed. These
+are laboratory comparisons, not field-user measurements or guarantees for
+physical devices.
 
 The benchmark now resets its layout-shift accumulator before each synthetic
 locale scenario, so each scenario has an independent CLS observation. No
