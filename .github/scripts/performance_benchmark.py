@@ -25,7 +25,25 @@ OBSERVER_INIT = r"""
     new PerformanceObserver(list => {
       for (const entry of list.getEntries()) {
         if (!entry.hadRecentInput) window.__ssswetBench.cls += entry.value;
-        window.__ssswetBench.layoutShifts.push({ value: entry.value, startTime: entry.startTime });
+        window.__ssswetBench.layoutShifts.push({
+          value: entry.value,
+          startTime: entry.startTime,
+          sources: (entry.sources || []).slice(0, 5).map(source => ({
+            node: source.node ? {
+              tag: source.node.tagName || source.node.nodeName,
+              id: source.node.id || null,
+              class_name: typeof source.node.className === 'string' ? source.node.className : null
+            } : null,
+            previous_rect: source.previousRect ? {
+              x: source.previousRect.x, y: source.previousRect.y,
+              width: source.previousRect.width, height: source.previousRect.height
+            } : null,
+            current_rect: source.currentRect ? {
+              x: source.currentRect.x, y: source.currentRect.y,
+              width: source.currentRect.width, height: source.currentRect.height
+            } : null
+          }))
+        });
       }
     }).observe({ type: 'layout-shift', buffered: true });
   } catch (_) {}
@@ -61,6 +79,7 @@ def page_metrics(page: object) -> dict:
         long_task_total_ms: (bench.longTasks || []).reduce((n, x) => n + x.duration, 0),
         long_task_max_ms: Math.max(0, ...(bench.longTasks || []).map(x => x.duration)),
         layout_shift_count: (bench.layoutShifts || []).length,
+        layout_shift_diagnostics: (bench.layoutShifts || []).slice(0, 10),
         dom_node_count: document.getElementsByTagName('*').length,
         catalogue_card_count: cards,
         document_ready_state: document.readyState
