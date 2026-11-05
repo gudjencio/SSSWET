@@ -24,11 +24,11 @@ class MemoryStore:
 def service():
     records = [
         {"memory_id":"m1","campaign_id":"c1","topic":"Thermal coating",
-         "statement":"The coating retains strength after cycling",
+         "statement":"The coating is strong after cycling",
          "status":"reviewed","source_ids":["lab-a"],"provenance_group":"lab-a",
          "confidence":0.7,"review_note":"","created_at":"2026-01-01","updated_at":"2026-01-01"},
         {"memory_id":"m2","campaign_id":"c1","topic":"Thermal coating",
-         "statement":"The coating does not retain strength after cycling",
+         "statement":"The coating is not strong after cycling",
          "status":"candidate","source_ids":["lab-b"],"provenance_group":"lab-b",
          "confidence":0.4,"review_note":"","created_at":"2026-01-02","updated_at":"2026-01-02"},
         {"memory_id":"m3","campaign_id":"c2","topic":"Battery",
