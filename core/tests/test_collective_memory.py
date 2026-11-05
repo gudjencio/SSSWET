@@ -41,7 +41,7 @@ def test_memory_search_ranks_overlap_and_labels_lexical_method(tmp_path):
     )
 
     assert matches[0]["memory_id"] == "memory-wave"
-    assert matches[0]["retrieval_method"] == "lexical_overlap"
+    assert matches[0]["retrieval_method"] == "field_weighted_bm25"
     assert matches[0]["scientific_validity_established"] is False
 
 
