@@ -3,6 +3,7 @@
 
   const loaderScript = document.currentScript;
   const catalogueUrl = new URL("technology-expansion-ui.js", loaderScript.src);
+  const categoryUrl = new URL("technology-categories.js", loaderScript.src);
   const timing = {
     scheduledAt: performance.now(),
     startedAt: null,
@@ -23,6 +24,10 @@
     const detail = { loaded, durationMs: timing.completedAt - timing.startedAt };
     window.dispatchEvent(new CustomEvent("ssswet-catalogue-ready", { detail }));
     resolveReady(detail);
+    const categoryScript = document.createElement("script");
+    categoryScript.src = categoryUrl.href;
+    categoryScript.async = true;
+    document.head.appendChild(categoryScript);
   }
 
   function loadCatalogue() {
