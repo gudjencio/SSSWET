@@ -68,7 +68,7 @@ def page_metrics(page: object) -> dict:
     }""")
 
 def catalogue_scale(page: object, sizes: list[int]) -> list[dict]:
-    return page.evaluate("""sizes => {
+    return page.evaluate("""async sizes => {
       const grid = document.querySelector('#technology-grid');
       const template = grid && grid.querySelector('.technology-card');
       if (!grid || !template) return sizes.map(size => ({ cards: size, supported: false }));
@@ -83,16 +83,20 @@ def catalogue_scale(page: object, sizes: list[int]) -> list[dict]:
         const start = performance.now();
         grid.appendChild(fragment);
         const appendMs = performance.now() - start;
-        const frameStart = performance.now();
-        const frameMs = new Promise(resolve => requestAnimationFrame(() => resolve(performance.now() - frameStart)));
-        results.push({ cards: size, append_ms: appendMs });
-        // Force a layout read to include style/layout work for the inserted batch.
         const layoutStart = performance.now();
         void grid.getBoundingClientRect().height;
-        results[results.length - 1].layout_read_ms = performance.now() - layoutStart;
-        results[results.length - 1].next_frame_ms = null;
-        frameMs.then(value => { results[results.length - 1].next_frame_ms = value; });
+        const layoutReadMs = performance.now() - layoutStart;
+        const frameStart = performance.now();
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const nextFrameMs = performance.now() - frameStart;
+        results.push({
+          cards: size,
+          append_ms: appendMs,
+          layout_read_ms: layoutReadMs,
+          next_frame_ms: nextFrameMs
+        });
         grid.querySelectorAll('[data-benchmark-fixture="true"]').forEach(node => node.remove());
+        await new Promise(resolve => requestAnimationFrame(resolve));
       }
       return results;
     }""", sizes)
