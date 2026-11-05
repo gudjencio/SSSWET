@@ -35,6 +35,7 @@ jobs:
           node --check web/technology-feasibility.js
           node --check web/research-journal.js
           node --check web/app.js
+          node --check web/catalogue-500-ui.js
           node --check web/platform-downloads.js
           node --check web/donation.js
           node --check web/technology-categories.js
