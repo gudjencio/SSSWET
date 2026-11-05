@@ -165,32 +165,61 @@ def run_trial(browser: object, url: str, viewport: dict, trial: int) -> dict:
     cold["settle_observation_ms"] = 1800
     scales = catalogue_scale(page, [100, 500, 1000])
     locale_layouts = []
-    # Locale switching is exercised once per viewport, not once per timing
-    # repetition, because changing language intentionally refreshes live UI.
-    if trial == 1:
-        for locale in ("fr", "de", "ar", "ja"):
-            selected = page.evaluate(
-                """code => {
-                    const select = document.getElementById('language');
-                    if (!select || !Array.from(select.options).some(option => option.value === code)) return false;
-                    select.value = code;
-                    select.dispatchEvent(new Event('change', { bubbles: true }));
-                    return true;
-                }""",
-                locale
-            )
-            if not selected:
-                continue
-            page.wait_for_timeout(250)
-            locale_metrics = page_metrics(page)
-            locale_layouts.append({
-                "locale": locale,
-                "document_language": page.locator("html").get_attribute("lang"),
-                "document_direction": page.locator("html").get_attribute("dir"),
-                "layout_checks": locale_metrics["layout_checks"],
-                "layout_geometry": locale_metrics["layout_geometry"],
-                "cls_after_locale_change": locale_metrics["cls"]
-            })
+    # Synthetic translated-copy stress scenarios avoid triggering live-engine
+    # refreshes while checking longer labels and both writing directions.
+    locale_scenarios = [
+        {
+            "locale": "fr", "direction": "ltr",
+            "fund": "Soutenir les programmes de recherche et les technologies",
+            "repair": "Réparer le projet si son interface ne fonctionne plus",
+            "report": "Signaler", "virtual": "Explorer notre cartographie virtuelle du temps"
+        },
+        {
+            "locale": "de", "direction": "ltr",
+            "fund": "Forschungsprogramme und Technologien unterstützen",
+            "repair": "Projektoberfläche bei Problemen wiederherstellen",
+            "report": "Melden", "virtual": "Virtuelle Zeitreise-Kartierung erkunden"
+        },
+        {
+            "locale": "ar", "direction": "rtl",
+            "fund": "ادعم برامج البحث والتقنيات",
+            "repair": "إصلاح واجهة المشروع عند حدوث مشكلة",
+            "report": "إبلاغ", "virtual": "استكشف الخرائط الافتراضية للسفر عبر الزمن"
+        },
+        {
+            "locale": "ja", "direction": "ltr",
+            "fund": "研究プログラムと技術を支援する",
+            "repair": "問題が発生した場合にプロジェクトを修復",
+            "report": "報告", "virtual": "仮想タイムトラベルマッピングを探索"
+        }
+    ]
+    for scenario in locale_scenarios:
+        page.evaluate(
+            """spec => {
+                document.documentElement.lang = spec.locale;
+                document.documentElement.dir = spec.direction;
+                document.body.dir = spec.direction;
+                const setText = (selector, value) => {
+                    const element = document.querySelector(selector);
+                    if (element) element.textContent = value;
+                };
+                setText('#fund-techs-button', spec.fund);
+                setText('.repair-project-button', spec.repair);
+                setText('#ssswet-report-button', spec.report);
+                setText('#virtual-time-travel-launch', spec.virtual);
+            }""",
+            scenario
+        )
+        page.wait_for_timeout(150)
+        locale_metrics = page_metrics(page)
+        locale_layouts.append({
+            "locale_scenario": scenario["locale"],
+            "direction": scenario["direction"],
+            "synthetic_copy": True,
+            "layout_checks": locale_metrics["layout_checks"],
+            "layout_geometry": locale_metrics["layout_geometry"],
+            "cls_after_copy_change": locale_metrics["cls"]
+        })
     page.wait_for_timeout(100)
     # A second navigation in the same context provides a warm-cache observation.
     warm_started = time.perf_counter()
