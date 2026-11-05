@@ -50,6 +50,8 @@ with sync_playwright() as playwright:
         require(locator.count() == 1 and locator.is_visible(), f"Required control missing or hidden: {selector}")
         if locator.count() == 1 and locator.is_visible():
             locator.click(timeout=8000)
+            if selector == "#ssswet-report-button":
+                page.keyboard.press("Escape")
 
     tech = page.locator("#technology-grid button[data-tech]").first
     require(tech.count() == 1 and tech.is_visible(), "No usable technology-card action is visible")
