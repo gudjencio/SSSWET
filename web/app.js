@@ -305,19 +305,25 @@
       });
     }
   }
+  function capitalizeTextNode(node) {
+    if (!node || node.nodeType !== Node.TEXT_NODE) return;
+    const parent = node.parentElement;
+    if (!parent || parent.closest('script,style,textarea,pre,code,svg,a[href^="mailto:"]')) return;
+    const updated = capitalizeInitial(node.nodeValue);
+    if (updated !== node.nodeValue) node.nodeValue = updated;
+  }
+
   const capitalizationObserver = new MutationObserver(records => {
-    records.forEach(record => {
-      if (record.type === "characterData") capitalizeInterfaceText(record.target.parentElement);
-      else record.addedNodes.forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-          const parent = node.parentElement;
-          if (parent && !parent.closest('script,style,textarea,pre,code,svg,a[href^="mailto:"]')) {
-            const updated = capitalizeInitial(node.nodeValue);
-            if (updated !== node.nodeValue) node.nodeValue = updated;
-          }
-        } else if (node.nodeType === Node.ELEMENT_NODE) capitalizeInterfaceText(node);
-      });
-    });
+    for (const record of records) {
+      if (record.type === "characterData") {
+        capitalizeTextNode(record.target);
+        continue;
+      }
+      for (const node of record.addedNodes) {
+        if (node.nodeType === Node.TEXT_NODE) capitalizeTextNode(node);
+        else if (node.nodeType === Node.ELEMENT_NODE) capitalizeInterfaceText(node);
+      }
+    }
   });
   capitalizationObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
 
