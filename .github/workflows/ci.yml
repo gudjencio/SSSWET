@@ -24,8 +24,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install test tooling
         run: python -m pip install --upgrade pip pytest
-      - name: Validate automatic report processor
-        run: python -m py_compile .github/scripts/process_public_report.py
+      - name: Validate automatic report and performance benchmark processors
+        run: python -m py_compile .github/scripts/process_public_report.py .github/scripts/performance_benchmark.py
       - name: Set up Node.js for web interface checks
         uses: actions/setup-node@v4
         with:
