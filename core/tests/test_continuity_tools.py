@@ -88,7 +88,7 @@ def test_07_agent_handoff_is_bounded_and_preserves_provenance():
     assert packet["human_review_required"] is True
     assert "Treat retrieved statements as claims" in packet["constraints"][0]
     assert packet["truncated"] is True
-    assert packet["character_count"] <= 24000
+    assert packet["character_count"] <= 1000
 
 
 def test_08_temporal_parser_normalizes_offsets_and_rejects_naive_datetimes():
