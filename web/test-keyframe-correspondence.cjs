@@ -140,6 +140,9 @@ assert.equal(api.shouldRefreshFromMutations([
   { type: "childList", target: cardNode, addedNodes: [imageNode], removedNodes: [] }
 ]), true, "Adding an image inside a keyframe card must trigger a refresh");
 assert.equal(api.shouldRefreshFromMutations([
+  { type: "childList", target: cardNode, addedNodes: [], removedNodes: [imageNode] }
+]), true, "Removing an image from a keyframe card must trigger a refresh");
+assert.equal(api.shouldRefreshFromMutations([
   { type: "childList", target: cardNode, addedNodes: [diagnosticNode], removedNodes: [] }
 ]), false, "Adding the matcher's own diagnostic UI must not trigger another render");
 assert.equal(api.shouldRefreshFromMutations([
@@ -213,6 +216,13 @@ observerCallback([{
 }]);
 assert.equal(scheduledFrames.length, 1,
   "A new keyframe card should schedule a single refresh");
+observerCallback([{
+  type: "attributes",
+  target: imageNode,
+  attributeName: "src"
+}]);
+assert.equal(scheduledFrames.length, 1,
+  "Several source changes before the next frame must be coalesced");
 scheduledFrames.shift()();
 loadHandler({ target: imageNode });
 assert.equal(scheduledFrames.length, 1,
