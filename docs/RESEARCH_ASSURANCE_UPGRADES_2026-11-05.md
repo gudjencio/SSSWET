@@ -5,7 +5,7 @@ This change set adds ten independently useful, test-backed improvements to SSSWE
 ## Acceptance criteria and delivered behaviour
 
 1. **Dimension-safe units** — preserve all previously supported within-dimension conversions; reject cross-dimension conversions, booleans, NaN and infinity. The prior implementation silently returned a numeric ratio for incompatible dimensions such as metres-to-seconds.
-2. **Conservative source independence** — merge records only on DOI, canonical URL, explicit canonical/syndication identity, or exact publisher/title pairs. Publisher or domain alone no longer collapses distinct papers. Duplicate source IDs are rejected. This is a duplicate-candidate detector, not proof of independent authorship.
+2. **Conservative source independence** — the new analyze_sources audit merges records only on DOI, canonical URL, explicit canonical/syndication identity, or exact publisher/title pairs. Publisher or domain alone never collapses distinct papers. Duplicate source IDs are rejected. The legacy group_sources helper retains its prior publisher/DOI/domain metadata buckets for compatibility and must not be used as an independence count.
 3. **Evidence freshness assessment** — produce deterministic fresh, aging, stale, unknown_date and future_dated states from a supplied reference date and source-type half-life. Unknown/future records require review; no record is automatically excluded.
 4. **Prospective preregistration amendments** — verify snapshot fingerprints, record changed JSON-pointer paths, actor, reason and evidence references, and preserve the original snapshot. Identical or tampered prior snapshots cannot be amended.
 5. **Reproducibility manifest verification** — canonicalize dataset references, parameters and source identifiers; reject duplicate dataset references and non-finite JSON values; detect payload tampering by recomputing SHA-256.
@@ -18,7 +18,7 @@ This change set adds ten independently useful, test-backed improvements to SSSWE
 ## Regression risks and controls
 
 - Cross-dimension unit conversion now raises ValueError; callers that relied on the previous meaningless ratio must correct their units.
-- Source grouping becomes more conservative. Shared publishers/domains are retained as descriptive metadata, not used as duplicate proof.
+- Source independence is more conservative through analyze_sources. The compatibility helper group_sources preserves its historic publisher-first grouping and is not a valid corroboration metric.
 - Freshness classifications depend on the selected half-life and supplied timestamp. They are review cues, not evidence-quality scores.
 - Preregistration amendments are returned as immutable-by-convention snapshots; durable persistence is the caller's responsibility.
 - Manifest ordering is canonicalized, so the digest is stable for equivalent lists of dataset references and source IDs. It is not a digital signature.
@@ -29,4 +29,4 @@ This change set adds ten independently useful, test-backed improvements to SSSWE
 
 ## Verification
 
-core/tests/test_research_assurance_2026_11_05.py covers all ten improvements, including compatibility paths and negative cases. The tests assert exact conversion, grouping, freshness, fingerprint, leakage, placeholder, accessibility, traversal and routing outcomes. CI is required before merge. No payment, tax, refund, customer-data, credential, legal-policy or commercial-promise settings are changed.
+core/tests/test_research_assurance_2026_11_05.py covers all ten improvements, including compatibility paths and negative cases. Public-reader documentation is in this file. CI is required before merge. No payment, tax, refund, customer-data, credential, legal-policy or commercial-promise settings are changed.

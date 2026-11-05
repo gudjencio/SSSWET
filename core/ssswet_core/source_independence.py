@@ -1,8 +1,9 @@
 """Conservative detection of duplicated or syndicated research sources.
 
-Publisher or domain equality alone is not treated as evidence that two records
-are the same source. Only stable identifiers and exact publisher/title pairs
-form duplicate-candidate groups.
+analyze_sources is the preferred independence audit. group_sources remains a
+legacy metadata-bucket helper for callers that historically grouped by the
+first available publisher/DOI/domain field; those buckets must not be treated
+as evidence of independent corroboration.
 """
 from __future__ import annotations
 
@@ -137,5 +138,9 @@ def analyze_sources(sources: list[dict]) -> dict:
 
 
 def group_sources(sources: list[dict]) -> dict:
-    """Return deterministic duplicate-candidate groups for compatibility."""
-    return analyze_sources(sources)["group_map"]
+    """Preserve legacy publisher/DOI/domain metadata buckets for compatibility."""
+    groups = {}
+    for source in sources:
+        key = source.get("publisher") or source.get("doi") or source.get("domain") or source.get("id")
+        groups.setdefault(str(key).casefold(), []).append(source.get("id"))
+    return {key: sorted(value) for key, value in sorted(groups.items())}

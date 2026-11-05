@@ -38,7 +38,8 @@ def test_source_independence_uses_strong_identity_not_publisher_alone():
     assert result["independent_group_count"] == 3
     assert result["duplicate_candidate_count"] == 2
     assert result["domain_or_publisher_alone_used_to_merge"] is False
-    assert sorted(len(group) for group in group_sources(sources).values()) == [1, 1, 3]
+    assert sorted(len(group) for group in result["group_map"].values()) == [1, 1, 3]
+    assert group_sources([{"id": "b", "publisher": "X"}, {"id": "a", "publisher": "X"}])["x"] == ["a", "b"]
 
 
 def test_source_independence_rejects_duplicate_source_identifiers():
