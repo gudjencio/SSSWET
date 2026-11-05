@@ -110,6 +110,10 @@ SSSWET uses two complementary maintenance tracks:
 
 No update may knowingly reduce documented usefulness, performance, durability, efficiency, safety, maintainability, accessibility or evidence quality. Benchmark gains and claims about agent capability require repeatable measurements. Scientific, ethical, privacy, cybersecurity and legal safeguards remain mandatory.
 
+## Persistent research-continuity workflows
+
+The research-continuity service connects bounded retrieval, source-preserving agent hand-offs, duplicate and conflict review, checksummed memory exports, and uncertainty-aware timeline analysis directly to the persistent collective-memory store. Its overview API is read-only; it does not silently rewrite review states or decide scientific disagreements. See [Persistent research-continuity workflows](docs/PERSISTENT_RESEARCH_CONTINUITY.md).
+
 ## Cross-agent research memory
 
 The persistent agent memory layer supports bounded team-wide retrieval for shared research questions. Results preserve agent identity and source provenance, use deterministic ranking, and remain research notes rather than verified conclusions. See [Cross-agent memory retrieval](docs/CROSS_AGENT_MEMORY_RETRIEVAL.md).
