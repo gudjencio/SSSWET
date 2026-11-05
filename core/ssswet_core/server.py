@@ -125,6 +125,14 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                         self._json(order_registry.get_order(order_id))
                     except ValueError as exc:
                         self._json({"error": str(exc)}, 404)
+            elif path == "/api/research-continuity":
+                from .research_continuity import ResearchContinuityService
+                params = parse_qs(parsed.query)
+                campaign_id = params.get("campaign_id", [""])[0].strip() or None
+                try:
+                    self._json(ResearchContinuityService(store).overview(campaign_id=campaign_id))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/agent-identities":
                 from .agent_identity import AgentIdentityRegistry
                 self._json(AgentIdentityRegistry(store).overview())
