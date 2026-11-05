@@ -164,6 +164,24 @@ def run_trial(browser: object, url: str, viewport: dict, trial: int) -> dict:
     cold["navigation_wait_ms"] = cold_navigation_wait_ms
     cold["settle_observation_ms"] = 1800
     scales = catalogue_scale(page, [100, 500, 1000])
+    locale_layouts = []
+    for locale in ("fr", "de", "ar", "ja"):
+        available = page.locator("#language option").evaluate_all(
+            "(options, code) => options.some(option => option.value === code)", locale
+        )
+        if not available:
+            continue
+        page.locator("#language").select_option(locale)
+        page.wait_for_timeout(250)
+        locale_metrics = page_metrics(page)
+        locale_layouts.append({
+            "locale": locale,
+            "document_language": page.locator("html").get_attribute("lang"),
+            "document_direction": page.locator("html").get_attribute("dir"),
+            "layout_checks": locale_metrics["layout_checks"],
+            "layout_geometry": locale_metrics["layout_geometry"],
+            "cls_after_locale_change": locale_metrics["cls"]
+        })
     page.wait_for_timeout(100)
     # A second navigation in the same context provides a warm-cache observation.
     warm_started = time.perf_counter()
@@ -174,7 +192,7 @@ def run_trial(browser: object, url: str, viewport: dict, trial: int) -> dict:
     warm["navigation_wait_ms"] = warm_navigation_wait_ms
     warm["settle_observation_ms"] = 1200
     context.close()
-    return {"trial": trial, "viewport": viewport, "cold": cold, "warm": warm, "catalogue_scale": scales}
+    return {"trial": trial, "viewport": viewport, "cold": cold, "warm": warm, "catalogue_scale": scales, "locale_layouts": locale_layouts}
 
 def main() -> int:
     parser = argparse.ArgumentParser()
