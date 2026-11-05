@@ -6,6 +6,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 URL = os.environ.get("SSSWET_PUBLIC_URL", "https://gudjencio.github.io/SSSWET/")
+LOCAL_REQUEST_PREFIX = URL.rstrip("/") + "/"
 ARTIFACTS = Path("artifacts")
 ARTIFACTS.mkdir(exist_ok=True)
 failures, console_errors, page_errors, failed_local_requests = [], [], [], []
@@ -23,7 +24,7 @@ with sync_playwright() as playwright:
     page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
     page.on("pageerror", lambda error: page_errors.append(str(error)))
     page.on("requestfailed", lambda request: failed_local_requests.append(request.url)
-            if request.url.startswith("https://gudjencio.github.io/SSSWET/") else None)
+            if request.url.startswith(LOCAL_REQUEST_PREFIX) else None)
 
     response = page.goto(URL, wait_until="domcontentloaded", timeout=45000)
     checks["http_status"] = response.status if response else None
