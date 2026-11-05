@@ -373,7 +373,9 @@ if (!pageSource.includes('src="catalogue-loader.js"') ||
     !catalogueLoaderSource.includes('"technology-expansion-ui.js"') ||
     !catalogueLoaderSource.includes('"technology-categories.js"') ||
     !catalogueDonationSource.includes('"ssswet-catalogue-ready"') ||
-    !serviceWorkerCache.includes('"./technology-categories.js"')) {
+    !serviceWorkerCache.includes('"./technology-categories.js"') ||
+    !serviceWorkerCache.includes('"./catalogue-loader.js"') ||
+    serviceWorkerCache.includes('"./technology-expansion-ui.js"')) {
   throw new Error("The deferred catalogue loader, data, navigator and offline cache must remain connected.");
 }
 console.log("Validated exactly 606 unique technology themes, eight categories, and 15 translated taxonomies.");
