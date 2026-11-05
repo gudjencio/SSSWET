@@ -1,29 +1,21 @@
 /* SSSWET public-site service worker.
  * Network-first prevents an old cached shell from masking a published update.
- * Cached responses remain available as an offline fallback.
+ * The complete offline asset set is retained for disconnected visitors.
  */
 "use strict";
 
 const CACHE = "ssswet-web-v191";
-const CORE_ASSETS = [
-  "./",
-  "./index.html",
-  "./styles.css",
-  "./app.js",
-  "./locales.js"
-];
+const ASSETS = ["./", "./index.html", "./styles.css", "./bot-control-center.js", "./bot-live-room.js", "./bot-personality.js", "./locales.js", "./core-ui-locales.js", "./api-config.js", "./app.js", "./donation-config.js", "./payment-enhancement.js", "./research-equations.js", "./product-purchase-config.js", "./donation.js", "./new-technology-copy.js", "./technology-expansion-ui.js", "./technology-categories.js", "./interface-localization.js", "./evidence-center.js", "./evidence-center.css", "./parameter-sensitivity.js", "./parameter-sensitivity.css", "./lab-statistics.js", "./evidence-graph.js", "./evidence-graph.css", "./lab-discrepancies.js", "./lab-discrepancies.css", "./research-journal.js", "./research-journal.css", "./technology-feasibility.js", "./technology-feasibility.css", "./mobile-repair.css", "./repair-project.js", "./report-project.js", "./manifest.json", "./platform-downloads.js", "./version-center.js", "./service-worker-updates.js", "./language-center.css", "./ui-enhancements.js", "./platform-routing.js", "./catalogue-500-ui.js", "./virtual-time-travel.html", "./virtual-time-travel.css", "./virtual-time-travel.js", "./keyframe-continuity.js", "./keyframe-correspondence.js", "./virtual-time-travel-link.js", "./top-action-links.js", "./read-aloud.js", "./icons/ssswet-icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
-    // Cache each core asset independently: one optional/transient failure must
-    // not strand visitors on the previous worker version.
-    await Promise.allSettled(CORE_ASSETS.map(async (asset) => {
+    // Keep the full offline asset set, but fetch entries independently so one
+    // missing optional file cannot block installation of the new worker.
+    await Promise.allSettled(ASSETS.map(async (asset) => {
       const response = await fetch(new Request(asset, { cache: "reload" }));
       if (response.ok) await cache.put(asset, response);
     }));
-    // Activate the tested successor promptly instead of waiting indefinitely
-    // for every tab using the previous worker to close.
     await self.skipWaiting();
   })());
 });
@@ -41,15 +33,14 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
-
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
-      // Always ask the deployed origin first. This is essential for HTML,
-      // scripts and styles: an old cached file must never silently win.
+      // Always ask the deployed origin first. Old cached scripts/styles must
+      // not silently override a newly published version.
       const response = await fetch(request);
       if (response && response.ok && response.type !== "opaque") {
         await cache.put(request, response.clone());
@@ -68,7 +59,5 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SSSWET_SKIP_WAITING") {
-    self.skipWaiting();
-  }
+  if (event.data && event.data.type === "SSSWET_SKIP_WAITING") self.skipWaiting();
 });
