@@ -378,6 +378,7 @@ if (!pageSource.includes('src="catalogue-loader.js"') ||
     serviceWorkerCache.includes('"./technology-expansion-ui.js"')) {
   throw new Error("The deferred catalogue loader, data, navigator and offline cache must remain connected.");
 }
+// The large generated dataset is fetched at runtime and cached after successful use.
 console.log("Validated exactly 606 unique technology themes, eight categories, and 15 translated taxonomies.");
 
 
