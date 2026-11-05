@@ -123,6 +123,7 @@ def page_metrics(page: object) -> dict:
         dom_node_count: document.getElementsByTagName('*').length,
         catalogue_card_count: cards,
         catalogue_load: catalogueLoad,
+        catalogue_load_ms: catalogueLoad.duration_ms,
         document_ready_state: document.readyState,
         layout_geometry: geometry,
         layout_checks: layoutChecks
@@ -295,7 +296,7 @@ def main() -> int:
     for viewport in viewports:
         group = [item for item in results["trials"] if item["viewport"]["name"] == viewport["name"]]
         for mode in ("cold", "warm"):
-            for metric in ("navigation_wait_ms", "fcp_ms", "lcp_ms", "cls", "long_task_total_ms", "dom_node_count"):
+            for metric in ("navigation_wait_ms", "fcp_ms", "lcp_ms", "cls", "long_task_total_ms", "dom_node_count", "catalogue_load_ms"):
                 values = [item[mode].get(metric) for item in group if isinstance(item[mode].get(metric), (int, float))]
                 if values:
                     results.setdefault("summary", {}).setdefault(viewport["name"], {}).setdefault(mode, {})[metric] = {
