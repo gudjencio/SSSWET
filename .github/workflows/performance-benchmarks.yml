@@ -61,4 +61,4 @@ jobs:
           name: ssswet-performance-${{ github.run_id }}
           path: performance-results/
           if-no-files-found: warn
-          retention-days: 30
+          retention-days: 90
