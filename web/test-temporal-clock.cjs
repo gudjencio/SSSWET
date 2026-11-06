@@ -70,3 +70,9 @@ assert.match(app, /lastGpsWrite=-Infinity,lastMotionWrite=-Infinity,lastOrientat
 assert.doesNotMatch(app, /Date\.now\(\)-last(?:Gps|Motion|Orientation)Write/, "wall-clock time must not be used for sensor throttles");
 
 console.log("Temporal clock regression tests passed (synthetic clock probes; not a real-world clock-accuracy benchmark).");
+const html = fs.readFileSync(path.join(__dirname, "virtual-time-travel.html"), "utf8");
+assert.ok(html.indexOf('<script src="temporal-clock.js"></script>') < html.indexOf('<script src="virtual-time-travel.js"></script>'),
+  "the clock helper must load before the mapping application");
+const serviceWorker = fs.readFileSync(path.join(__dirname, "sw.js"), "utf8");
+assert.match(serviceWorker, /ssswet-web-v192/, "the service-worker cache must be bumped for the new asset");
+assert.match(serviceWorker, /\.\/temporal-clock\.js/, "the new clock helper must be precached");
