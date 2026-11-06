@@ -6,6 +6,7 @@ All operations are read-only and retain explicit source, experiment and graph li
 from __future__ import annotations
 
 import hashlib
+import heapq
 import hmac
 import json
 import math
@@ -351,6 +352,8 @@ def find_duplicate_memory_candidates(
         if tokens:
             prepared.append((item, tokens, normalized))
     candidates = []
+    candidate_count = 0
+    pair_index = 0
     for index, (left, left_tokens, left_normalized) in enumerate(prepared):
         for right, right_tokens, right_normalized in prepared[index + 1:]:
             if left.get("memory_key") == right.get("memory_key"):
@@ -362,7 +365,8 @@ def find_duplicate_memory_candidates(
                 continue
             left_sources = set(map(str, left.get("source_ids", [])))
             right_sources = set(map(str, right.get("source_ids", [])))
-            candidates.append({
+            candidate_count += 1
+            candidate = {
                 "version_ids": [left.get("version_id", ""), right.get("version_id", "")],
                 "memory_keys": [left.get("memory_key", ""), right.get("memory_key", "")],
                 "similarity": round(similarity, 6),
@@ -378,15 +382,23 @@ def find_duplicate_memory_candidates(
                 "review_only": True,
                 "automatic_merge": False,
                 "automatic_deletion": False,
-            })
-    candidates.sort(key=lambda item: (
+            }
+            priority = (int(exact), similarity, -pair_index)
+            pair_index += 1
+            entry = (priority, candidate)
+            if len(candidates) < limit:
+                heapq.heappush(candidates, entry)
+            elif priority > candidates[0][0]:
+                heapq.heapreplace(candidates, entry)
+    retained = [item[1] for item in candidates]
+    retained.sort(key=lambda item: (
         -int(item["exact_normalized_match"]),
         -item["similarity"],
         tuple(map(str, item["version_ids"])),
     ))
     return {
-        "candidates": candidates[:limit],
-        "candidate_count": len(candidates),
+        "candidates": retained,
+        "candidate_count": candidate_count,
         "current_record_count": len(current),
         "pairwise_comparison_cap": 500,
         "threshold": float(threshold),
@@ -410,6 +422,8 @@ def build_memory_conflict_review(records: list[dict], graph: dict, *, limit: int
     }
     current_ids = _current_version_ids(records)
     cases = []
+    case_count = 0
+    sequence = 0
     for record in records:
         if str(record.get("version_id", "")) not in current_ids:
             continue
@@ -424,7 +438,8 @@ def build_memory_conflict_review(records: list[dict], graph: dict, *, limit: int
             if not linked_id:
                 continue
             other_id = target_id if linked_id == source_id else source_id
-            cases.append({
+            case_count += 1
+            case = {
                 "version_id": record.get("version_id", ""),
                 "memory_key": record.get("memory_key", ""),
                 "topic": record.get("topic", ""),
@@ -446,11 +461,19 @@ def build_memory_conflict_review(records: list[dict], graph: dict, *, limit: int
                 ],
                 "automatic_status_change": False,
                 "automatic_adjudication": False,
-            })
-    cases.sort(key=lambda item: (str(item["edge_created_at"]), str(item["version_id"])), reverse=True)
+            }
+            priority = (str(case["edge_created_at"]), str(case["version_id"]), sequence)
+            sequence += 1
+            entry = (priority, case)
+            if len(cases) < limit:
+                heapq.heappush(cases, entry)
+            elif priority > cases[0][0]:
+                heapq.heapreplace(cases, entry)
+    retained = [item[1] for item in cases]
+    retained.sort(key=lambda item: (str(item["edge_created_at"]), str(item["version_id"])), reverse=True)
     return {
-        "cases": cases[:limit],
-        "case_count": len(cases),
+        "cases": retained,
+        "case_count": case_count,
         "review_required": bool(cases),
         "automatic_status_change": False,
         "automatic_adjudication": False,

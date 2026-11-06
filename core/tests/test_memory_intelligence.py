@@ -166,6 +166,28 @@ def test_duplicate_review_finds_candidates_without_merging_versions():
     assert candidate["automatic_deletion"] is False
 
 
+def test_duplicate_review_finds_near_matches_without_calling_them_exact():
+    records = [
+        record("near-a", "near-a", "Topic", "alpha beta gamma delta epsilon"),
+        record("near-b", "near-b", "Topic", "alpha beta gamma delta zeta"),
+    ]
+    report = find_duplicate_memory_candidates(records, threshold=0.6)
+    assert report["candidate_count"] == 1
+    assert report["candidates"][0]["exact_normalized_match"] is False
+    assert report["candidates"][0]["similarity"] == pytest.approx(4 / 6)
+
+
+def test_duplicate_review_bounds_retained_candidates_even_for_all_matching_pairs():
+    records = [
+        record(f"v-{index}", f"key-{index}", "Same topic", "alpha beta gamma delta epsilon")
+        for index in range(500)
+    ]
+    report = find_duplicate_memory_candidates(records, threshold=0.8, limit=5)
+    assert report["candidate_count"] == 500 * 499 // 2
+    assert len(report["candidates"]) == 5
+    assert report["current_record_count"] == 500
+
+
 def test_duplicate_review_validates_threshold_and_pairwise_bound():
     with pytest.raises(ValueError, match="threshold"):
         find_duplicate_memory_candidates([], threshold=0.2)
@@ -198,6 +220,25 @@ def test_conflict_review_includes_current_linked_memory_and_preserves_status():
     assert len(case["review_checklist"]) == 4
     assert case["automatic_status_change"] is False
     assert case["memory_status"] == "contested"
+
+
+def test_conflict_review_bounds_retained_cases_and_counts_all_reviews():
+    records = [
+        record(
+            f"v-{index}", f"key-{index}", "Claim", f"Statement {index}",
+            graph_node_ids=["claim-a"],
+            created_at=f"2026-01-01T00:{index // 60:02d}:{index % 60:02d}+00:00",
+        )
+        for index in range(500)
+    ]
+    graph = {
+        "nodes": [{"node_id": "claim-a", "label": "Claim A"}, {"node_id": "claim-b", "label": "Claim B"}],
+        "edges": [{"source_id": "claim-a", "target_id": "claim-b", "relation": "contradicts"}],
+    }
+    report = build_memory_conflict_review(records, graph, limit=10)
+    assert report["case_count"] == 500
+    assert len(report["cases"]) == 10
+    assert report["cases"][0]["version_id"] == "v-499"
 
 
 def test_snapshot_is_order_independent_and_detects_record_tampering():
