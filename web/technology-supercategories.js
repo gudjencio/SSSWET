@@ -44,7 +44,7 @@
     searchCaption.textContent=copy.search;search.setAttribute("aria-label",copy.search);
     if(count)count.textContent=copy.count;if(note)note.textContent=copy.note;
     const query=search.value.trim().toLocaleLowerCase(),fragment=document.createDocumentFragment();
-    let matches=0;
+    let matches=0,openedSearchGroup=false;
     groups.forEach(group=>{
       const matching=query?group.entries.filter(entry=>(entry.searchText||entry.key).toLocaleLowerCase().includes(query)):group.entries;
       if(query&&!matching.length)return;
