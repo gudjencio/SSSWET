@@ -16,6 +16,22 @@ assert.equal(second.monotonicElapsedMs - first.monotonicElapsedMs, 1250);
 assert.equal(second.clockStatus, "within_tolerance");
 assert.equal(second.clockSessionId, "test-session");
 
+let unstableMono = 20;
+let unstableWall = 90_000;
+const monotonicClamp = createSessionClock({ wallNow: () => unstableWall, monotonicNow: () => unstableMono, sessionId: "clamp" });
+monotonicClamp.capture();
+unstableMono += 500;
+unstableWall += 500;
+const beforeMonotonicRegression = monotonicClamp.capture();
+unstableMono -= 1000;
+unstableWall += 10;
+const afterMonotonicRegression = monotonicClamp.capture();
+assert.equal(afterMonotonicRegression.monotonicElapsedMs, beforeMonotonicRegression.monotonicElapsedMs,
+  "a non-increasing monotonic reading must be clamped rather than reversing elapsed time");
+assert.equal(afterMonotonicRegression.timestamp, beforeMonotonicRegression.timestamp,
+  "a non-increasing monotonic reading must not reorder the timeline");
+
+
 const beforeBackwardJump = second;
 mono += 5000;
 wall -= 60_000;
