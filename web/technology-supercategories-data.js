@@ -56,7 +56,7 @@
             fr:["Recherche : "+titleCase(family)+" — "+titleCase(capability),"Programme de recherche consacré à "+capability+" pour le domaine "+family.replace(/-/g," ")+", avec des méthodes reproductibles et une évaluation indépendante. Il s’agit d’un objectif de recherche, pas d’une technologie validée."]
           },
           meta:{category:domain,subcategory:subcategories[domain]},
-          searchText:(domain+" "+family+" "+capability+" "+titleCase(family)+" "+titleCase(capability)).toLocaleLowerCase(),
+          searchText:(domain+" "+family+" "+capability+" "+titleCase(family)+" "+titleCase(capability)+" "+titleCase(capability)+" "+("recherche "+family.replace(/-/g," ")+" "+capability)).toLocaleLowerCase(),
           generated:true
         });
         if (out.length===394) return out;
