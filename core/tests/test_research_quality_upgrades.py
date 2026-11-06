@@ -42,6 +42,16 @@ def test_provenance_graph_separates_cycle_members_from_downstream_blocked_nodes(
     assert report["blocked_by_cycles"] == ["c"]
 
 
+def test_provenance_graph_does_not_mistake_cross_edges_for_cycles():
+    report = build_provenance_graph(
+        [{"id": "a"}, {"id": "b"}, {"id": "c"}],
+        [("a", "b"), ("a", "c"), ("b", "c")],
+    )
+    assert report["is_acyclic"] is True
+    assert report["cycle_node_ids"] == []
+    assert report["topological_order"] == ["a", "b", "c"]
+
+
 def test_agent_capability_matching_is_ranked_versioned_and_non_executing():
     registry = AgentCapabilityRegistry()
     registry.register("agent-b", ["materials", "simulation"])
