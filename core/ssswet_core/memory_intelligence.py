@@ -106,6 +106,8 @@ def search_scientific_memory(
             },
             "retrieval_method": "weighted_fielded_lexical_v1",
             "is_current": is_current,
+            "ranking_score_is_probability": False,
+            "scientific_validity_established": False,
         })
         ranked.append(item)
 
