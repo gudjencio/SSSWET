@@ -299,8 +299,8 @@
     const times = events
       .filter(item => item && item.timestamp !== null && item.timestamp !== undefined && item.timestamp !== "")
       .map(item => Number(item.timestamp))
-      .filter(Number.isFinite)
-      .sort((a, b) => a - b);
+      .filter(Number.isFinite);
+    if (!options.assumeSorted) times.sort((a, b) => a - b);
     const intervals = [];
     const gaps = [];
     for (let index = 1; index < times.length; index++) {
@@ -367,7 +367,8 @@
         return false;
       }
       return item.timestamp !== null && item.timestamp !== undefined && item.timestamp !== "" && Number.isFinite(Number(item.timestamp));
-    }).sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+    });
+    if (!options.assumeSorted) accepted.sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
     const segments = [];
     let segment = [];
     const flush = () => {
@@ -400,6 +401,13 @@
     diagnostics.rejectedCount = gps.length - accepted.length;
     diagnostics.segmentCount = segments.length;
     return { accepted, segments, diagnostics, thresholds: { maxAccuracy, maxGapMs, maxJumpMeters, maxSpeedMps } };
+  }
+
+  function analyze(events, options = {}) {
+    return {
+      coverage: analyzeCoverage(events, options),
+      track: segmentGpsTrack(events, options)
+    };
   }
 
   function createPrivacySafeExport(events, options = {}) {
@@ -447,14 +455,15 @@
     });
   }
 
-  function render(events, locale) {
+  function render(events, locale, analysis) {
     const words = dictionary(locale);
     const summary = document.getElementById("vt-quality-summary");
     const gapsNode = document.getElementById("vt-quality-gaps");
     const trackNode = document.getElementById("vt-track-quality");
     if (!summary || !gapsNode || !trackNode) return;
-    const coverage = analyzeCoverage(events);
-    const track = segmentGpsTrack(events);
+    const report = analysis || analyze(events);
+    const coverage = report.coverage;
+    const track = report.track;
     if (!coverage.timestampedCount) {
       summary.textContent = words.qualityEmpty;
       gapsNode.replaceChildren();
@@ -497,6 +506,7 @@
   window.SSSWETTemporalQuality = {
     analyzeCoverage,
     segmentGpsTrack,
+    analyze,
     createPrivacySafeExport,
     localize,
     render

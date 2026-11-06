@@ -32,6 +32,15 @@ assert.equal(coverage.medianIntervalMs, 60000);
 assert.equal(coverage.gapCount, 1);
 assert.equal(coverage.longestGapMs, 1080000);
 assert.equal(coverage.interpolationPerformed, false);
+const combined = api.analyze([
+  { kind: "gps", timestamp: 0, coords: { latitude: 48, longitude: 2 }, accuracy: 5 },
+  { kind: "gps", timestamp: 1000, coords: { latitude: 48.0001, longitude: 2.0001 }, accuracy: 5 }
+], { assumeSorted: true });
+assert.equal(combined.coverage.timestampedCount, 2);
+assert.equal(combined.track.accepted.length, 2);
+assert.equal(combined.track.segments.length, 1);
+const unsorted = api.analyzeCoverage([{ timestamp: 2000 }, { timestamp: 1000 }]);
+assert.equal(unsorted.medianIntervalMs, 1000, "Unsorted external input must still be normalized by default");
 const missingTimestamp = api.analyzeCoverage([{ timestamp: null }, { timestamp: 1000 }]);
 assert.equal(missingTimestamp.timestampedCount, 1, "Missing timestamps must not be coerced to the Unix epoch");
 
@@ -50,6 +59,18 @@ assert.equal(track.diagnostics.lowAccuracy, 1);
 assert.equal(track.diagnostics.invalidCoordinates, 1);
 assert.equal(track.diagnostics.gapBreaks, 1);
 assert.equal(track.diagnostics.rejectedCount, 2);
+const jumpTrack = api.segmentGpsTrack([
+  { kind: "gps", timestamp: 0, coords: { latitude: 0, longitude: 0 }, accuracy: 5 },
+  { kind: "gps", timestamp: 10000, coords: { latitude: 0, longitude: 0.1 }, accuracy: 5 }
+]);
+assert.equal(jumpTrack.diagnostics.jumpBreaks, 1);
+assert.equal(jumpTrack.segments.length, 0);
+const speedTrack = api.segmentGpsTrack([
+  { kind: "gps", timestamp: 0, coords: { latitude: 0, longitude: 0 }, accuracy: 5 },
+  { kind: "gps", timestamp: 10000, coords: { latitude: 0, longitude: 0.01 }, accuracy: 5 }
+]);
+assert.equal(speedTrack.diagnostics.speedBreaks, 1);
+assert.equal(speedTrack.segments.length, 0);
 
 const original = {
   id: "private-id",
