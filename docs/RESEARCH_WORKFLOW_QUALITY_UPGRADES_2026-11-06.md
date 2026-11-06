@@ -1,6 +1,6 @@
 # Research workflow quality upgrades — 6 November 2026
 
-This release strengthens ten existing research-support modules. The comparison baseline is the immediately preceding implementation on the SSSWET feature branch before this change. Existing public interfaces and read-only research principles are retained; new report fields are additive.
+This release strengthens ten existing research-support modules. The comparison baseline is the immediately preceding implementation on the SSSWET main branch before this change. Existing public interfaces and read-only research principles are retained; new report fields are additive.
 
 ## Acceptance criteria and previous behaviour
 
@@ -13,7 +13,7 @@ This release strengthens ten existing research-support modules. The comparison b
 | 5 | Reproducibility manifests | Canonical manifest creation and top-level comparison. | Environment, random seed and input checksums are included; manifest digest can be verified; nested parameter differences are exposed; malformed or tampered manifests fail verification. |
 | 6 | Virtual Time Travel temporal alignment | One observation per source identifier and lexical timestamp ordering. | Distinct observations from the same source/time can coexist; timezone-aware clocks are normalized; naive clocks remain separate; uncertainty windows can be clustered without inferring shared event identity. |
 | 7 | Rescue resource allocation | One needs/stock pair was allocated independently, with permissive stock coercion. | Invalid quantities are rejected; multi-request planning honours explicit priority and max-min fairness within equal-priority groups; stock is never over-allocated; human dispatch remains required. |
-| 8 | Accessibility audit | Checked image alt attributes and the main landmark. | Adds deterministic checks for document language, accessible button/link names, form labels, duplicate IDs, broken aria-labelledby references, hidden focusable controls and heading-level skips. |
+| 8 | Accessibility audit | Checked image alt attributes and the main landmark. | Adds deterministic checks for document language, accessible button/link names, form labels, duplicate IDs, broken aria-labelledby references, hidden focusable controls and heading-level skips. HTML fragments remain supported without a false document-language warning. |
 | 9 | Internationalisation quality | Reported missing translation keys and overall coverage. | Adds locale-tag checks, placeholder parity, extra-key detection, likely untranslated strings and RTL direction hints; semantic translation quality remains a human review task. |
 | 10 | Evidence provenance review | Summarized source metadata, declared independence and review coverage. | Adds bounded declared-link resolution, duplicate identifier checks, reviewer-ID completeness and repeated-reviewer diagnostics; unresolved links are reported, not repaired or adjudicated. |
 
@@ -31,13 +31,19 @@ This release strengthens ten existing research-support modules. The comparison b
 
 ## Reproducible validation
 
-The Python test suite covers the new behaviour and backward-compatible output keys. CI also runs a deterministic synthetic latency probe over:
+The Python test suite covers the new behaviour and backward-compatible output keys. The 6 November 2026 GitHub Actions run passed all **550 tests** on Python 3.11, 3.12 and 3.13. The separate core-test workflow also passed all 550 tests.
 
-- 1,200 provenance nodes and 1,199 edges;
-- 1,500 temporal observations;
-- 300 source strings across 15 locale catalogues.
+The Python 3.12 CI performance probe measured five runs per workload:
 
-The p95 threshold is 2,000 ms per workload on the CI runner. This is a generous regression ceiling, not a performance claim for all hardware or production datasets. Synthetic workloads do not establish scientific validity, translation accuracy or increased agent intelligence.
+| Synthetic workload | Size | Median | p95 | Acceptance ceiling |
+|---|---:|---:|---:|---:|
+| Provenance graph | 1,200 nodes / 1,199 edges | 3.539 ms | 4.582 ms | 2,000 ms |
+| Temporal alignment | 1,500 observations | 9.400 ms | 10.527 ms | 2,000 ms |
+| Localization audit | 300 source strings / 15 locales | 13.911 ms | 14.162 ms | 2,000 ms |
+
+A representative metadata-only dataset record grew from 179 to 306 serialized JSON bytes after adding governance fields: **127 additional bytes per record** in that sample. This is a JSON serialization sample, not a measurement of SQLite page growth, indexes, compression or a production database. The CI workload used deterministic synthetic data and is a regression ceiling, not a universal performance guarantee.
+
+A synthetic evidence dossier with eight declared links resolved six and reported two dangling references (75% declared-link coverage). This validates the diagnostic path, not the completeness of any real dossier. No memory-retrieval or contradiction-scoring algorithm was changed in this revision, so no such improvement is claimed.
 
 ## Known limitations
 
@@ -51,6 +57,7 @@ The p95 threshold is 2,000 ms per workload on the CI runner. This is a generous 
 - HTML checks are static heuristics and may produce false positives or miss accessibility barriers.
 - Placeholder checks cover named braces and common printf tokens, not every ICU message format.
 - Provenance completeness measures declared references in the supplied dossier only; absent records outside the dossier remain unknown.
+- The pull request has not been merged, so the changes are not yet part of the deployed main-branch site or application.
 
 ## Run locally
 
