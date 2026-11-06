@@ -453,6 +453,7 @@ def build_memory_conflict_review(records: list[dict], graph: dict, *, limit: int
                 "edge_note": edge.get("note", edge.get("rationale", "")),
                 "edge_confidence": edge.get("confidence", 0.0),
                 "edge_created_at": edge.get("created_at", ""),
+                "memory_created_at": record.get("created_at", ""),
                 "review_checklist": [
                     "Compare source provenance and possible shared datasets",
                     "Check units, conditions, methods and measurement dates",
@@ -462,7 +463,12 @@ def build_memory_conflict_review(records: list[dict], graph: dict, *, limit: int
                 "automatic_status_change": False,
                 "automatic_adjudication": False,
             }
-            priority = (str(case["edge_created_at"]), str(case["version_id"]), sequence)
+            priority = (
+                str(case["edge_created_at"] or case["memory_created_at"]),
+                str(case["memory_created_at"]),
+                str(case["version_id"]),
+                sequence,
+            )
             sequence += 1
             entry = (priority, case)
             if len(cases) < limit:
@@ -470,7 +476,11 @@ def build_memory_conflict_review(records: list[dict], graph: dict, *, limit: int
             elif priority > cases[0][0]:
                 heapq.heapreplace(cases, entry)
     retained = [item[1] for item in cases]
-    retained.sort(key=lambda item: (str(item["edge_created_at"]), str(item["version_id"])), reverse=True)
+    retained.sort(key=lambda item: (
+        str(item["edge_created_at"] or item["memory_created_at"]),
+        str(item["memory_created_at"]),
+        str(item["version_id"]),
+    ), reverse=True)
     return {
         "cases": retained,
         "case_count": case_count,
