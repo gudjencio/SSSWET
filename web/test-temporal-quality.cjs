@@ -106,7 +106,9 @@ assert.equal("coords" in invalidLocation.observations[0], false, "Invalid coordi
 
 for (const locale of ["en", "fr", "es", "de", "it", "pt", "nl", "ru", "uk", "ar", "he", "ja", "ko", "zh", "hi"]) {
   assert.ok(source.includes(`${locale}: {`), `Missing temporal quality locale ${locale}`);
+  assert.ok(api.message(locale, "privacyDone").length > 10, `Missing localized export feedback for ${locale}`);
 }
+assert.ok(api.message("unknown", "privacyDone").length > 10, "Unknown locales must fall back to English");
 assert.throws(() => api.analyzeCoverage([], { maxGapMs: 0 }), /positive/);
 assert.throws(() => api.segmentGpsTrack(new Array(100001)), /100000/);
 assert.throws(() => api.createPrivacySafeExport(new Array(100001)), /100000/);

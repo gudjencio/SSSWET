@@ -447,6 +447,10 @@
     };
   }
 
+  function message(locale, key) {
+    return dictionary(locale)[key] || dictionary("en")[key] || key;
+  }
+
   function localize(locale) {
     const words = dictionary(locale);
     document.querySelectorAll("[data-tq]").forEach(node => {
@@ -508,6 +512,7 @@
     segmentGpsTrack,
     analyze,
     createPrivacySafeExport,
+    message,
     localize,
     render
   };
