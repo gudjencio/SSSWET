@@ -6,7 +6,7 @@
 .technology-supercategory{min-width:0;overflow:clip;border:1px solid #292633;border-radius:13px;background:linear-gradient(145deg,rgba(33,30,46,.45),rgba(8,10,14,.82))}
 .technology-supercategory>summary{display:grid;gap:6px;padding:15px 17px;cursor:pointer;list-style:none;text-align:left}
 .technology-supercategory>summary::-webkit-details-marker{display:none}
-.technology-supercategory>summary::after{content:"+";justify-self:end;grid-column:1;grid-row:1;color:#c5b4e8;font-size:17px}
+.technology-supercategory>summary::after{content:"+";justify-self:end;grid-column:2;grid-row:1;color:#c5b4e8;font-size:17px}
 .technology-supercategory[open]>summary::after{content:"−"}
 .technology-supercategory-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:18px}
 .technology-supercategory-heading strong{color:#e8e2f2;font-size:13px;font-weight:600}
