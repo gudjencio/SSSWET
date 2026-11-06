@@ -34,12 +34,14 @@ base=[...visibleIds].map(key=>{
  return {key,item:{en:[key,"Existing browser catalogue record."]},meta,searchText:key.toLowerCase()};
 });
 assert.equal(base.length,500,"the browser supplies 488 expansion and 12 curated programmes");
-assert.deepEqual(base.reduce((counts,entry)=>(counts[entry.meta.category]=(counts[entry.meta.category]||0)+1,counts),{}),{space:61,protection:62,energy:61,materials:61,life:61,environment:62,robotics:65,society:67},"browser domain distribution must match the current taxonomy");
 assert.equal([...coreIds].filter(id=>visibleIds.has(id)).length,0,"canonical records must not duplicate visible browser records");
 assert.deepEqual(new Set([...visibleIds,...coreIds]),new Set(taxonomyIds),"the 606 taxonomy IDs must be fully covered by the 500 browser and 106 canonical records");
 const canonical=coreCatalogueEntries();
 assert.equal(canonical.length,106,"the 106 canonical core records must be restored to the browser catalogue");
 assert.deepEqual(new Set(canonical.map(entry=>entry.key)),new Set(coreIds));
+const taxonomyDomainCounts=Object.fromEntries(Object.entries(taxonomy).map(([domain,subgroups])=>[domain,Object.values(subgroups).reduce((total,ids)=>total+ids.length,0)]));
+const coveredDomainCounts=base.concat(canonical).reduce((counts,entry)=>(counts[entry.meta.category]=(counts[entry.meta.category]||0)+1,counts),{});
+assert.deepEqual(coveredDomainCounts,taxonomyDomainCounts,"browser and canonical records must preserve each original domain count");
 const generated=generatedProgrammes();
 assert.equal(generated.length,394,"the deterministic generated expansion must match the core registry");
 assert.equal(generated[0].key,"programSpaceOrbitalNavigation");
