@@ -1,0 +1,19 @@
+/* Progressive disclosure for the 1,000-programme research catalogue. */
+.technology-supercategory-tools{max-width:680px;margin:18px auto 4px}
+.technology-supercategory-search{display:grid;gap:7px;color:#bcb5cc;font-size:11px;text-align:left}
+.technology-supercategory-search input{width:100%;min-height:42px;padding:10px 13px;border:1px solid #373142;border-radius:10px;outline-offset:3px;color:#eeeaf5;background:#0b0b10;font:inherit}
+.technology-supercategory-grid{display:grid!important;grid-template-columns:minmax(0,1fr);gap:9px;align-items:start}
+.technology-supercategory{min-width:0;overflow:clip;border:1px solid #292633;border-radius:13px;background:linear-gradient(145deg,rgba(33,30,46,.45),rgba(8,10,14,.82))}
+.technology-supercategory>summary{display:grid;gap:6px;padding:15px 17px;cursor:pointer;list-style:none;text-align:left}
+.technology-supercategory>summary::-webkit-details-marker{display:none}
+.technology-supercategory>summary::after{content:"+";justify-self:end;grid-column:1;grid-row:1;color:#c5b4e8;font-size:17px}
+.technology-supercategory[open]>summary::after{content:"−"}
+.technology-supercategory-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:18px}
+.technology-supercategory-heading strong{color:#e8e2f2;font-size:13px;font-weight:600}
+.technology-supercategory-count{flex:0 0 auto;color:#a99bc8;font-size:10px;white-space:nowrap}
+.technology-supercategory-description{color:#928c9f;font-size:10px;line-height:1.55}
+.technology-supercategory-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 12px 12px}
+.technology-supercategory-cards .technology-card{min-width:0}
+.technology-catalogue-empty{padding:18px;color:#aaa3b4;text-align:center}
+@media(max-width:900px){.technology-supercategory-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.technology-supercategory>summary{padding:13px}.technology-supercategory-heading{align-items:flex-start;flex-direction:column;gap:4px}.technology-supercategory-cards{grid-template-columns:minmax(0,1fr);padding:0 9px 9px}}
