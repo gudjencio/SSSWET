@@ -21,7 +21,7 @@ The browser originally exposed 500 entries (488 expansion programmes and 12 cura
 
 - All ten collections start collapsed.
 - A collection renders its cards only when opened.
-- Global search scans all 1,000 entries and opens only collections with matching records.
+- Global search scans all 1,000 entries, displays only collections with matches, and opens the first matching collection; other matching collections remain available to expand.
 - Search results retain the existing data-tech action contract used by the contribution dialog.
 - The existing catalogue remains in place if the grouping integrity check fails.
 - The interface reports the count as research programmes, not validated technologies.
