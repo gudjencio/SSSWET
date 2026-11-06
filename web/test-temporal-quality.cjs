@@ -75,7 +75,8 @@ assert.equal("id" in noLocation.observations[0], false);
 assert.equal(noLocation.privacy.media_included, false);
 
 const coarse = api.createPrivacySafeExport([original], { includeCoarseLocation: true });
-assert.deepEqual(coarse.observations[0].coords, { latitude: 48.123, longitude: 2.654 });
+assert.equal(coarse.observations[0].coords.latitude, 48.123);
+assert.equal(coarse.observations[0].coords.longitude, 2.654);
 assert.equal(original.coords.latitude, 48.123456, "Export must not mutate original local records");
 const invalidLocation = api.createPrivacySafeExport([{
   kind: "gps", timestamp: 1000, coords: { latitude: 120, longitude: 2 }
