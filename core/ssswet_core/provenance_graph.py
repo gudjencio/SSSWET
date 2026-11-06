@@ -12,19 +12,19 @@ def _cyclic_nodes(identifiers: set[str], outgoing: dict[str, list[str]], incomin
     for start in sorted(identifiers):
         if start in visited:
             continue
-        stack = [(start, False)]
+        visited.add(start)
+        stack = [(start, iter(outgoing[start]))]
         while stack:
-            node_id, expanded = stack.pop()
-            if expanded:
+            node_id, children = stack[-1]
+            try:
+                child = next(children)
+            except StopIteration:
                 finish.append(node_id)
+                stack.pop()
                 continue
-            if node_id in visited:
-                continue
-            visited.add(node_id)
-            stack.append((node_id, True))
-            for child in reversed(outgoing[node_id]):
-                if child not in visited:
-                    stack.append((child, False))
+            if child not in visited:
+                visited.add(child)
+                stack.append((child, iter(outgoing[child])))
     assigned, cycles = set(), set()
     for start in reversed(finish):
         if start in assigned:
