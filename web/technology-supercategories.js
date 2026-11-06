@@ -70,7 +70,7 @@
       if(details.open)fillCards();
       fragment.append(details);
     });
-    root.replaceChildren(fragment);root.classList.add("technology-supercategory-grid");
+    root.replaceChildren(fragment);root.classList.add("technology-supercategory-grid");window.SSSWET_RENDER_PORTFOLIO?.();
     if(query&&!matches){const empty=document.createElement("p");empty.className="technology-catalogue-empty";empty.textContent=copy.empty;root.append(empty);}
   }
   let searchTimer=0;
