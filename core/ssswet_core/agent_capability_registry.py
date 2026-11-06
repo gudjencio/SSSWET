@@ -40,10 +40,10 @@ class AgentCapabilityRegistry:
         self._versions[agent_id] = version
         self._capabilities[agent_id] = cleaned
         record = {"agent_id": agent_id, "version": version, "capabilities": sorted(cleaned)}
-        self._history.append(record.copy())
+        self._history.append({**record, "capabilities": list(record["capabilities"])})
         if len(self._history) > MAX_HISTORY:
             del self._history[:len(self._history) - MAX_HISTORY]
-        return record
+        return {**record, "capabilities": list(record["capabilities"])}
 
     def eligible(self, capability: str) -> list[str]:
         requested = self._identifier(capability, "capability").casefold()
@@ -87,4 +87,7 @@ class AgentCapabilityRegistry:
     def history(self, *, limit: int = 200) -> list[dict]:
         if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= MAX_HISTORY:
             raise ValueError(f"limit must be between 1 and {MAX_HISTORY}")
-        return [item.copy() for item in self._history[-limit:]]
+        return [
+            {**item, "capabilities": list(item["capabilities"])}
+            for item in self._history[-limit:]
+        ]
