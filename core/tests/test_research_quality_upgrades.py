@@ -74,6 +74,15 @@ def test_agent_capability_forbidden_scope_excludes_candidate():
     assert report["excluded_agents"][0]["agent_id"] == "agent-excluded"
 
 
+def test_agent_capability_history_isolated_from_caller_mutation():
+    registry = AgentCapabilityRegistry()
+    returned = registry.register("agent-a", ["materials", "simulation"])
+    returned["capabilities"].append("weapons")
+    snapshot = registry.history()
+    snapshot[0]["capabilities"].append("tampered")
+    assert registry.history()[0]["capabilities"] == ["materials", "simulation"]
+
+
 def test_dataset_governance_flags_missing_controls_and_accepts_declared_review_metadata():
     legacy = {"license": "CC-BY-4.0", "privacy_classification": "unspecified",
               "consent_status": "not_recorded", "retention_policy": "not_recorded", "access_scope": "restricted"}
