@@ -43,7 +43,7 @@ The Python 3.12 CI performance probe measured five runs per workload:
 
 A representative metadata-only dataset record grew from 179 to 306 serialized JSON bytes after adding governance fields: **127 additional bytes per record** in that sample. This is a JSON serialization sample, not a measurement of SQLite page growth, indexes, compression or a production database. The CI workload used deterministic synthetic data and is a regression ceiling, not a universal performance guarantee.
 
-A synthetic evidence dossier with eight declared links resolved six and reported two dangling references (75% declared-link coverage). This validates the diagnostic path, not the completeness of any real dossier. No memory-retrieval or contradiction-scoring algorithm was changed in this revision, so no such improvement is claimed.
+A synthetic evidence dossier with nine declared links resolved seven and reported two dangling references (77.8% declared-link coverage). This validates the diagnostic path, not the completeness of any real dossier. No memory-retrieval or contradiction-scoring algorithm was changed in this revision, so no such improvement is claimed.
 
 ## Known limitations
 

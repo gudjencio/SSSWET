@@ -67,22 +67,28 @@ class EvidenceQualityMatrix:
 
         for item in collections["sources"][0]:
             if isinstance(item, dict):
-                check(str(item.get("source_id", "")), "related_source_ids", "sources", item.get("related_source_ids", []))
+                owner = str(item.get("source_id", ""))
+                check(owner, "related_source_ids", "sources", item.get("related_source_ids", []))
+                check(owner, "dataset_ids", "datasets", item.get("dataset_ids", []))
         for item in collections["protocols"][0]:
             if isinstance(item, dict):
-                check(str(item.get("protocol_id", "")), "source_ids", "sources", item.get("source_ids", []))
+                owner = str(item.get("protocol_id", ""))
+                check(owner, "source_ids", "sources", item.get("source_ids", []))
+                check(owner, "dataset_ids", "datasets", item.get("dataset_ids", []))
         for item in collections["runs"][0]:
             if isinstance(item, dict):
-                check(str(item.get("run_id", "")), "protocol_id", "protocols", item.get("protocol_id"))
-                check(str(item.get("run_id", "")), "source_ids", "sources", item.get("source_ids", []))
-                check(str(item.get("run_id", "")), "dataset_ids", "datasets", item.get("dataset_ids", []))
+                owner = str(item.get("run_id", ""))
+                check(owner, "protocol_id", "protocols", item.get("protocol_id"))
+                check(owner, "source_ids", "sources", item.get("source_ids", []))
+                check(owner, "dataset_ids", "datasets", item.get("dataset_ids", []))
         for item in collections["datasets"][0]:
             if isinstance(item, dict):
                 check(str(item.get("dataset_id", "")), "source_ids", "sources", item.get("source_ids", []))
         for item in collections["comparisons"][0]:
             if isinstance(item, dict):
-                check(str(item.get("comparison_id", "")), "left_run_id", "runs", item.get("left_run_id"))
-                check(str(item.get("comparison_id", "")), "right_run_id", "runs", item.get("right_run_id"))
+                owner = str(item.get("comparison_id", ""))
+                check(owner, "left_run_id", "runs", item.get("left_run_id"))
+                check(owner, "right_run_id", "runs", item.get("right_run_id"))
         return {
             "declared_reference_count": declared, "resolved_reference_count": resolved,
             "unresolved_reference_count": len(unresolved), "unresolved_references": unresolved,
@@ -97,6 +103,10 @@ class EvidenceQualityMatrix:
             raise ValueError("dossier must be a dictionary")
         if not isinstance(reviews, list) or len(reviews) > MAX_REVIEW_RECORDS or any(not isinstance(item, dict) for item in reviews):
             raise ValueError(f"reviews must be a list of at most {MAX_REVIEW_RECORDS} dictionaries")
+        for name in ("protocols", "runs", "datasets", "comparisons", "peer_reviews"):
+            records = dossier.get(name, [])
+            if not isinstance(records, list) or len(records) > MAX_DOSSIER_RECORDS:
+                raise ValueError(f"dossier {name} must be a list of at most {MAX_DOSSIER_RECORDS} records")
         raw_sources = dossier.get("sources", [])
         if not isinstance(raw_sources, list) or len(raw_sources) > MAX_DOSSIER_RECORDS or any(not isinstance(item, dict) for item in raw_sources):
             raise ValueError(f"dossier sources must be a list of at most {MAX_DOSSIER_RECORDS} dictionaries")
@@ -114,7 +124,10 @@ class EvidenceQualityMatrix:
             })
         independence = analyze_source_independence(raw_sources)
         verdicts = sorted({str(item.get("verdict", "unknown")) for item in reviews})
-        reviewer_ids = [str(item.get("reviewer_id", "")).strip() for item in reviews]
+        reviewer_ids = [
+            item.get("reviewer_id", "").strip() if isinstance(item.get("reviewer_id"), str) else ""
+            for item in reviews
+        ]
         nonempty_reviewers = [item for item in reviewer_ids if item]
         review_coverage = {
             "review_count": len(reviews), "reviewer_count": len(set(nonempty_reviewers)),

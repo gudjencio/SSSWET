@@ -232,7 +232,7 @@ def test_evidence_matrix_audits_declared_provenance_links_and_repeated_reviewer_
     dossier = {
         "dossier_id": "dossier-1",
         "sources": [{"source_id": "s1", "title": "Paper", "url": "https://example.org/paper",
-                     "source_type": "paper", "related_source_ids": ["missing-source"]}],
+                     "source_type": "paper", "related_source_ids": ["missing-source"], "dataset_ids": ["d1"]}],
         "protocols": [{"protocol_id": "p1", "source_ids": ["s1"]}],
         "runs": [{"run_id": "r1", "protocol_id": "p1", "source_ids": ["s1"], "dataset_ids": ["d1"]}],
         "datasets": [{"dataset_id": "d1", "source_ids": ["s1"]}],
@@ -241,11 +241,14 @@ def test_evidence_matrix_audits_declared_provenance_links_and_repeated_reviewer_
     reviews = [
         {"reviewer_id": "reviewer-a", "verdict": "supports", "conflict_status": "none_declared"},
         {"reviewer_id": "reviewer-a", "verdict": "challenges", "conflict_status": "potential"},
+        {"reviewer_id": None, "verdict": "unknown"},
     ]
     report = EvidenceQualityMatrix().analyze(dossier, reviews)
     provenance = report["provenance_integrity"]
-    assert provenance["declared_reference_count"] == 8
+    assert provenance["declared_reference_count"] == 9
     assert provenance["unresolved_reference_count"] == 2
-    assert provenance["provenance_completeness"] == 0.75
+    assert provenance["provenance_completeness"] == 7 / 9
     assert report["review_coverage"]["repeated_reviewer_id_count"] == 1
+    assert report["review_coverage"]["missing_reviewer_id_count"] == 1
+    assert report["review_coverage"]["conflict_declarations_complete"] is False
     assert report["scientific_validity_established"] is False
