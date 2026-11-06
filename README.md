@@ -133,3 +133,8 @@ Agent memories now carry explicit, append-only source-review states. Researchers
 ## Research knowledge graph
 
 The research knowledge graph connects individual memories, claims, decisions, experiments, evidence, technology dossiers and hypotheses through explicit, provenance-linked relationships. Bounded impact tracing helps identify downstream artefacts that may need review when upstream evidence or interpretations change. It complements the technology dependency graph rather than replacing it. See [Research Knowledge Graph](docs/RESEARCH_KNOWLEDGE_GRAPH.md).
+
+
+## Scientific-memory intelligence and temporal data quality
+
+The research API now provides bounded, explainable scientific-memory retrieval, provenance-preserving agent context packets, evidence-link audits, non-destructive duplicate review, contradiction dossiers and checksum-verified snapshots. Virtual Time Travel Mapping also reports observation gaps, explains GPS track segmentation and offers an optional privacy-reduced export. These tools do not certify scientific truth or guarantee anonymization. See [Scientific-memory intelligence and temporal-quality workflows](docs/MEMORY_INTELLIGENCE_AND_TEMPORAL_QUALITY.md) for endpoint bounds, interpretation safeguards and validation criteria.

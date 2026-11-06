@@ -41,6 +41,7 @@ jobs:
           node --check web/donation-config.js
           node --check web/product-purchase-config.js
           node --check web/virtual-time-travel.js
+          node --check web/temporal-quality.js
           node --check web/keyframe-continuity.js
           node --check web/keyframe-correspondence.js
           node --check web/virtual-time-travel-link.js
@@ -54,6 +55,7 @@ jobs:
           node web/test-keyframe-continuity.cjs
           node web/test-keyframe-correspondence.cjs
           node web/test-keyframe-spatial-distribution.cjs
+          node web/test-temporal-quality.cjs
           node web/test-bot-personality.cjs
       - name: Run core tests
         working-directory: core
