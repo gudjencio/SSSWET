@@ -3,13 +3,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const {buildSupercategories,generatedProgrammes,coreCatalogueEntries,domains}=require("./technology-supercategories-data.js");
-const domainCounts={space:61,protection:62,energy:61,materials:61,life:61,environment:62,robotics:65,society:67};
-const base=[];
-for(const domain of domains)for(let index=0;index<domainCounts[domain];index++){
- const key="expanded_"+domain+"_"+String(index).padStart(3,"0"),title=domain+" expansion "+index;
- base.push({key,item:{en:[title,"Synthetic baseline record for taxonomy validation."]},meta:{category:domain,subcategory:"baseline"},searchText:(key+" "+title).toLowerCase()});
-}
-assert.equal(base.length,500,"the browser supplies 488 expanded and 12 curated programmes");
+let base=[];
 const taxonomySource=fs.readFileSync(path.join(__dirname,"technology-categories.js"),"utf8");
 const taxonomyMatch=taxonomySource.match(/const groups = (\{[\s\S]*?\});\n/);
 assert.ok(taxonomyMatch,"the current public taxonomy must be readable");
@@ -32,6 +26,15 @@ const coreIds=[...coreSource.matchAll(/"technology_id":\s*"([^"]+)"/g)].map(matc
 assert.equal(coreIds.length,106);
 const visibleIds=new Set([...expansionIds,...curatedIds]);
 assert.equal(visibleIds.size,500,"the browser source must provide exactly 500 non-canonical programmes");
+const taxonomyMeta=new Map();
+Object.entries(taxonomy).forEach(([domain,subgroups])=>Object.entries(subgroups).forEach(([subcategory,ids])=>ids.forEach(id=>taxonomyMeta.set(id,{category:domain,subcategory}))));
+base=[...visibleIds].map(key=>{
+ const meta=taxonomyMeta.get(key);
+ assert.ok(meta,"every browser programme must have taxonomy metadata: "+key);
+ return {key,item:{en:[key,"Existing browser catalogue record."]},meta,searchText:key.toLowerCase()};
+});
+assert.equal(base.length,500,"the browser supplies 488 expansion and 12 curated programmes");
+assert.deepEqual(base.reduce((counts,entry)=>(counts[entry.meta.category]=(counts[entry.meta.category]||0)+1,counts),{}),{space:61,protection:62,energy:61,materials:61,life:61,environment:62,robotics:65,society:67},"browser domain distribution must match the current taxonomy");
 assert.equal([...coreIds].filter(id=>visibleIds.has(id)).length,0,"canonical records must not duplicate visible browser records");
 assert.deepEqual(new Set([...visibleIds,...coreIds]),new Set(taxonomyIds),"the 606 taxonomy IDs must be fully covered by the 500 browser and 106 canonical records");
 const canonical=coreCatalogueEntries();
@@ -41,6 +44,9 @@ const generated=generatedProgrammes();
 assert.equal(generated.length,394,"the deterministic generated expansion must match the core registry");
 assert.equal(generated[0].key,"programSpaceOrbitalNavigation");
 assert.equal(generated[393].meta.category,"society");
+const generatedIds=new Set(generated.map(entry=>entry.key));
+assert.equal([...generatedIds].filter(id=>visibleIds.has(id)||coreIds.includes(id)).length,0,"generated IDs must not overlap the canonical or browser catalogues");
+assert.equal(new Set([...visibleIds,...coreIds,...generatedIds]).size,1000,"all source registries must cover exactly 1,000 unique IDs");
 const groups=buildSupercategories(base);
 assert.equal(groups.length,10);
 assert.deepEqual(groups.map(group=>group.entries.length),Array(10).fill(100));
