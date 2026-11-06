@@ -525,8 +525,8 @@ for (const locale of ["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja
 
 
 const virtualTimeSource = fs.readFileSync(new URL("./virtual-time-travel.js", `file://${__filename}`), "utf8");
-if (!virtualTimeSource.includes("lastOrientationWrite=0")) throw new Error("Virtual time capture must track orientation sampling independently.");
-if (!virtualTimeSource.includes("Date.now()-lastOrientationWrite<900") || !virtualTimeSource.includes("Date.now()-lastMotionWrite<900")) throw new Error("Motion and orientation sampling must each have independent throttling.");
+if (!virtualTimeSource.includes("lastOrientationWrite=-Infinity")) throw new Error("Virtual time capture must track orientation sampling independently.");
+if (!virtualTimeSource.includes("elapsedNow-lastOrientationWrite<900") || !virtualTimeSource.includes("elapsedNow-lastMotionWrite<900")) throw new Error("Motion and orientation sampling must each have independent throttling.");
 if (!catalogueUiSource.includes("606 contribution themes") || !catalogueUiSource.includes("1000 research dossiers") || !catalogueUiSource.includes("IA sentiente")) throw new Error("Public catalogue counts or Sentient AI French title are out of date.");
 console.log("Validated Sentient AI and Human-like Robots registration, 15 translations, catalogue counts and independent motion/orientation sampling.");
 

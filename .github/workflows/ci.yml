@@ -38,6 +38,9 @@ jobs:
           node --check web/platform-downloads.js
           node --check web/donation.js
           node --check web/technology-categories.js
+          node --check web/technology-supercategories-data.js
+          node --check web/technology-supercategories.js
+          node web/test-technology-supercategories.cjs
           node --check web/donation-config.js
           node --check web/product-purchase-config.js
           node --check web/temporal-clock.js
