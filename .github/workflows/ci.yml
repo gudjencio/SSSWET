@@ -60,3 +60,6 @@ jobs:
       - name: Run core tests
         working-directory: core
         run: python -m pytest -q
+      - name: Measure bounded scientific-memory retrieval
+        if: matrix.python-version == '3.12'
+        run: python .github/scripts/benchmark_memory_retrieval.py

@@ -51,6 +51,19 @@ GET /api/scientific-memory/duplicates?threshold=0.82&limit=50
 - GPS segmentation uses the prior map thresholds and adds coordinate validation. It does not create interpolated route points. The temporal-quality module accepts already-sorted local records to avoid redundant sorting, while normalizing unsorted external inputs by default.
 - Privacy-safe export is an additional path; the full export and local IndexedDB records are not modified.
 
+## Possible regressions considered
+
+- **Ranking changes:** the legacy overview endpoint and its lexical behaviour are untouched; the new weighted search has a separate route and exposes its score components and limitations.
+- **False duplicate matches:** Jaccard similarity is only a review lead. Candidates are bounded and no automatic merge or deletion exists.
+- **False contradiction conclusions:** graph edges remain declared relationships. Review cases never change workflow state or decide which claim is correct.
+- **Incomplete provenance windows:** local identifiers are checked against bounded experiment and graph views; a missing link can mean the referenced record lies outside the view or is unavailable, not that the source is invalid.
+- **Context truncation:** whole records are included or omitted; source and graph identifiers are never silently cut to meet the approximate token budget.
+- **Snapshot misinterpretation:** the checksum detects content changes but is not a digital signature, provenance attestation or scientific validation.
+- **Temporal gaps:** gaps are labelled as unrecorded intervals, never as evidence of an event or a basis for interpolation.
+- **Track changes:** existing thresholds are retained, invalid coordinates are rejected, and map diagnostics expose each rejection/break category.
+- **Privacy export:** the full export remains intact; the reduced export removes locations by default and explicitly warns that coarse location is not anonymization.
+- **Storage and migration:** no database schema, persisted research record or IndexedDB record is changed; the new analysis features add zero persistent storage growth.
+
 ## Validation
 
 The repository CI now runs:
@@ -61,6 +74,7 @@ python -m pytest -q tests/test_memory_intelligence.py tests/test_memory_intellig
 cd ..
 node --check web/temporal-quality.js
 node web/test-temporal-quality.cjs
+python .github/scripts/benchmark_memory_retrieval.py
 ```
 
-The complete CI matrix remains responsible for the full Python and JavaScript regression suites. Latency values are environment-dependent and should be compared on the same runner, Python version and dataset size. No performance or intelligence gain should be claimed without repeated, comparable measurements.
+The complete CI matrix remains responsible for the full Python and JavaScript regression suites. The Python 3.12 CI job also runs `.github/scripts/benchmark_memory_retrieval.py`, which measures median and p95 in-process latency over 500 deterministic synthetic records, five queries and five repeats. Latency values are environment-dependent and should be compared on the same runner, Python version and dataset size. No performance or intelligence gain should be claimed without repeated, comparable measurements.
