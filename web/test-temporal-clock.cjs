@@ -36,8 +36,16 @@ assert.equal(afterForwardJump.clockOffsetMs, 55_000);
 assert.equal(afterForwardJump.clockStatus, "wall_clock_diverged");
 assert.match(describe(afterForwardJump, "en"), /\+55000 ms/);
 
-const boundary = createSessionClock({ wallNow: () => 10_000, monotonicNow: () => 0, toleranceMs: 2000 });
-assert.equal(boundary.capture().clockStatus, "within_tolerance", "the tolerance boundary is inclusive");
+assert.equal(DEFAULT_TOLERANCE_MS, 2000, "the documented default diagnostic tolerance must remain 2 seconds");
+let boundaryWall = 10_000;
+const boundary = createSessionClock({ wallNow: () => boundaryWall, monotonicNow: () => 0, toleranceMs: 2000 });
+boundary.capture();
+boundaryWall += 2000;
+const atBoundary = boundary.capture();
+assert.equal(atBoundary.clockOffsetMs, 2000);
+assert.equal(atBoundary.clockStatus, "within_tolerance", "the tolerance boundary is inclusive");
+boundaryWall += 1;
+assert.equal(boundary.capture().clockStatus, "wall_clock_diverged", "an offset beyond tolerance must be flagged");
 
 let fallbackWall = 50_000;
 const fallback = createSessionClock({ wallNow: () => fallbackWall, monotonicNow: () => NaN, sessionId: "fallback" });
@@ -69,10 +77,11 @@ assert.match(app, /clockDescription\(e\)/, "timeline details must expose the clo
 assert.match(app, /lastGpsWrite=-Infinity,lastMotionWrite=-Infinity,lastOrientationWrite=-Infinity/, "first sensor samples must not be suppressed by the monotonic clock origin");
 assert.doesNotMatch(app, /Date\.now\(\)-last(?:Gps|Motion|Orientation)Write/, "wall-clock time must not be used for sensor throttles");
 
-console.log("Temporal clock regression tests passed (synthetic clock probes; not a real-world clock-accuracy benchmark).");
 const html = fs.readFileSync(path.join(__dirname, "virtual-time-travel.html"), "utf8");
 assert.ok(html.indexOf('<script src="temporal-clock.js"></script>') < html.indexOf('<script src="virtual-time-travel.js"></script>'),
   "the clock helper must load before the mapping application");
 const serviceWorker = fs.readFileSync(path.join(__dirname, "sw.js"), "utf8");
 assert.match(serviceWorker, /ssswet-web-v192/, "the service-worker cache must be bumped for the new asset");
 assert.match(serviceWorker, /\.\/temporal-clock\.js/, "the new clock helper must be precached");
+
+console.log("Temporal clock regression tests passed (synthetic clock probes; not a real-world clock-accuracy benchmark).");
