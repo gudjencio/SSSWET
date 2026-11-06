@@ -49,7 +49,8 @@
       const matching=query?group.entries.filter(entry=>(entry.searchText||entry.key).toLocaleLowerCase().includes(query)):group.entries;
       if(query&&!matching.length)return;
       matches+=matching.length;
-      const details=document.createElement("details");details.className="technology-supercategory";details.dataset.supercategory=group.id;details.open=Boolean(query);
+      const details=document.createElement("details");details.className="technology-supercategory";details.dataset.supercategory=group.id;details.open=Boolean(query&&matching.length&&!openedSearchGroup);
+      if(details.open)openedSearchGroup=true;
       const summary=document.createElement("summary"),headingLine=document.createElement("span");headingLine.className="technology-supercategory-heading";
       const title=document.createElement("strong");title.textContent=language==="fr"?group.titleFr:group.title;
       const quantity=document.createElement("span");quantity.className="technology-supercategory-count";quantity.textContent=query?matching.length+" "+copy.result:copy.all;
