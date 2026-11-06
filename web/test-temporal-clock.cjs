@@ -81,7 +81,13 @@ assert.equal(clock.durationBetween(first, otherA), Math.max(0, otherA.timestamp 
 assert.equal(locales.length, 15, "clock diagnostics must cover all 15 module locales");
 for (const locale of locales) {
   const message = describe({ clockStatus: "wall_clock_diverged", clockOffsetMs: 321, clockToleranceMs: 2000 }, locale);
+  const stable = describe({ clockStatus: "within_tolerance", clockToleranceMs: 2000 }, locale);
+  const unavailable = describe({ clockStatus: "monotonic_unavailable" }, locale);
   assert.ok(message && message.includes("321"), "missing localized divergence diagnostic for " + locale);
+  assert.ok(stable && stable.includes("2000"), "missing localized tolerance diagnostic for " + locale);
+  assert.ok(unavailable, "missing localized fallback diagnostic for " + locale);
+  if (locale !== "en") assert.notEqual(message, describe({ clockStatus: "wall_clock_diverged", clockOffsetMs: 321 }, "en"),
+    "locale " + locale + " must not silently fall back to English");
 }
 
 const appPath = path.join(__dirname, "virtual-time-travel.js");
