@@ -1,6 +1,6 @@
 import pytest
 from ssswet_core.engine import SSSWETEngine
-from ssswet_core.server import public_status, public_events
+from ssswet_core.server import make_handler, public_status, public_events
 
 
 def test_public_status_reports_real_empty_engine_state():
