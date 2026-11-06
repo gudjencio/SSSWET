@@ -37,7 +37,12 @@
     const values=localized(entry,language),card=document.createElement("article");
     card.className="technology-card";
     const number=document.createElement("span");number.className="technology-number";number.textContent=String(index+1).padStart(3,"0");
-    const meta=document.createElement("small");meta.className="technology-category-tag";meta.textContent=language==="fr"?group.titleFr:group.title;
+    const meta=document.createElement("small");meta.className="technology-category-tag";
+    const domainLabels={en:{space:"Space",protection:"Protection",energy:"Energy",materials:"Materials",life:"Life sciences",environment:"Environment",robotics:"Robotics",society:"Computing & knowledge"},fr:{space:"Espace",protection:"Protection",energy:"Énergie",materials:"Matériaux",life:"Sciences du vivant",environment:"Environnement",robotics:"Robotique",society:"Calcul et connaissances"}};
+    const domainLabel=(domainLabels[language]||domainLabels.en)[entry.meta.category]||entry.meta.category;
+    const subcategoryLabel=(entry.meta.subcategory||"").replace(/([a-z0-9])([A-Z])/g,"$1 $2").replace(/\b[a-z]/g,letter=>letter.toUpperCase());
+    const supercategoryLabel=language==="fr"?group.titleFr:group.title;
+    meta.textContent=supercategoryLabel+((group.id==="sensing"||group.id==="systems")?" · "+domainLabel:"")+" · "+subcategoryLabel;
     const title=document.createElement("h3");title.textContent=values[0]||entry.key;
     const description=document.createElement("p");description.textContent=values[1]||"";
     const action=document.createElement("button");action.type="button";action.dataset.tech=entry.key;action.textContent=copy.explore;
@@ -50,7 +55,7 @@
     const query=search.value.trim().toLocaleLowerCase(),fragment=document.createDocumentFragment();
     let matches=0,openedSearchGroup=false;
     groups.forEach(group=>{
-      const matching=query?group.entries.filter(entry=>(entry.searchText||entry.key).toLocaleLowerCase().includes(query)):group.entries;
+      const matching=query?group.entries.filter(entry=>((entry.searchText||entry.key)+" "+entry.meta.category+" "+entry.meta.subcategory).toLocaleLowerCase().includes(query)):group.entries;
       if(query&&!matching.length)return;
       matches+=matching.length;
       const details=document.createElement("details");details.className="technology-supercategory";details.dataset.supercategory=group.id;details.open=Boolean(query&&matching.length&&!openedSearchGroup);
