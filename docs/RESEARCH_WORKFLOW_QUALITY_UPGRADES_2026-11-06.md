@@ -6,8 +6,8 @@ This release strengthens ten existing research-support modules. The comparison b
 
 | # | Improvement | Previous behaviour | Acceptance criteria for this revision |
 |---|---|---|---|
-| 1 | Provenance graph integrity | Returned nodes, edges, roots and an invalid-edge count; cycles and duplicate identifiers were not distinguished. | Deterministic topological order for acyclic graphs; explicit cycle nodes, duplicate node/edge counts, disconnected-component count and malformed-node/link diagnostics. No broken edge is silently repaired. |
-| 2 | Agent capability support | Exact single-capability eligibility and a missing-capability summary. | Versioned registration history; deterministic multi-capability recommendations; forbidden-scope exclusion; partial coverage shown explicitly; no automatic assignment or execution. |
+| 1 | Provenance graph integrity | Returned nodes, edges, roots and an invalid-edge count; cycles and duplicate identifiers were not distinguished. | Deterministic topological order for acyclic graphs; explicit cycle nodes, duplicate node/edge counts, disconnected-component count and malformed-node/link diagnostics. A DAG cross-edge regression must not be misclassified as a cycle. No broken edge is silently repaired. |
+| 2 | Agent capability support | Exact single-capability eligibility and a missing-capability summary. | Versioned registration history with mutation-isolated snapshots; deterministic multi-capability recommendations; forbidden-scope exclusion; partial coverage shown explicitly; no automatic assignment or execution. |
 | 3 | Dataset governance metadata | Version fingerprints, parent links and same-digest candidates. | Privacy class, consent status, retention policy and access scope are retained; incomplete or risky declarations produce review flags; no automatic deletion, publication or legal-compliance claim. |
 | 4 | Preregistration deviations | A complete plan could be frozen and fingerprinted. | Frozen snapshots can be verified; nested changes are enumerated; deviations retain the original fingerprint and require a reason and reviewer identifier; approval is never inferred. |
 | 5 | Reproducibility manifests | Canonical manifest creation and top-level comparison. | Environment, random seed and input checksums are included; manifest digest can be verified; nested parameter differences are exposed; malformed or tampered manifests fail verification. |
@@ -20,7 +20,8 @@ This release strengthens ten existing research-support modules. The comparison b
 ## Regression and safety controls
 
 - Existing dataset registration fields and endpoints remain available. New governance fields have conservative defaults so historical records remain readable and are flagged for review rather than rejected.
-- Existing provenance graph keys (nodes, edges, roots, invalid_edge_count) remain present.
+- Existing provenance graph keys (nodes, edges, roots, invalid_edge_count) remain present. Iterative strongly connected component traversal retains true depth-first finish order; a cross-edge DAG regression test prevents false cycle reports.
+- Agent capability registration history returns detached capability lists, so mutating a returned registration or history snapshot cannot rewrite retained audit history.
 - Existing single-request rescue allocation output remains available; invalid boolean, negative, non-integer or excessive stock values are now rejected rather than coerced.
 - Existing translation coverage fields remain present.
 - Evidence rubric scores remain metadata assessments, not probabilities of truth. Reviewer counts do not prove independence.
@@ -31,15 +32,15 @@ This release strengthens ten existing research-support modules. The comparison b
 
 ## Reproducible validation
 
-The Python test suite covers the new behaviour and backward-compatible output keys. The 6 November 2026 GitHub Actions run passed all **550 tests** on Python 3.11, 3.12 and 3.13. The separate core-test workflow also passed all 550 tests.
+The Python test suite covers the new behaviour and backward-compatible output keys. The 6 November 2026 GitHub Actions run passed all **553 tests** on Python 3.11, 3.12 and 3.13. The separate core-test workflow also passed all 553 tests.
 
 The Python 3.12 CI performance probe measured five runs per workload:
 
 | Synthetic workload | Size | Median | p95 | Acceptance ceiling |
 |---|---:|---:|---:|---:|
-| Provenance graph | 1,200 nodes / 1,199 edges | 3.539 ms | 4.582 ms | 2,000 ms |
-| Temporal alignment | 1,500 observations | 9.400 ms | 10.527 ms | 2,000 ms |
-| Localization audit | 300 source strings / 15 locales | 13.911 ms | 14.162 ms | 2,000 ms |
+| Provenance graph | 1,200 nodes / 1,199 edges | 3.702 ms | 4.396 ms | 2,000 ms |
+| Temporal alignment | 1,500 observations | 7.792 ms | 8.341 ms | 2,000 ms |
+| Localization audit | 300 source strings / 15 locales | 12.040 ms | 12.413 ms | 2,000 ms |
 
 A representative metadata-only dataset record grew from 179 to 306 serialized JSON bytes after adding governance fields: **127 additional bytes per record** in that sample. This is a JSON serialization sample, not a measurement of SQLite page growth, indexes, compression or a production database. The CI workload used deterministic synthetic data and is a regression ceiling, not a universal performance guarantee.
 
