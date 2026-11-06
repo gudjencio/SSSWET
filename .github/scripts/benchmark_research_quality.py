@@ -54,11 +54,31 @@ def main() -> None:
     locale = measure(lambda: audit_translation_catalogue(source, translations))
     assert locale["p95_ms"] < 2000
 
+    legacy_dataset_record = {
+        "dataset_id": "benchmark-dataset", "version": 1, "title": "Sample",
+        "description": "Synthetic metadata record", "campaign_id": "benchmark",
+        "license": "CC-BY-4.0", "source_ids": ["source-1"],
+    }
+    governed_dataset_record = {
+        **legacy_dataset_record, "privacy_classification": "public",
+        "consent_status": "not_required", "retention_policy": "review annually",
+        "access_scope": "public",
+    }
+    legacy_bytes = len(json.dumps(legacy_dataset_record, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+    governed_bytes = len(json.dumps(governed_dataset_record, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+    metadata_delta = governed_bytes - legacy_bytes
+
     print(json.dumps({
         "workloads": {
             "provenance_graph": {"nodes": len(nodes), "edges": len(edges), **graph},
             "temporal_mapping": {"observations": 1500, **temporal},
             "localization_audit": {"source_keys": len(source), "locales": len(translations), **locale},
+        },
+        "dataset_governance_metadata": {
+            "legacy_json_bytes": legacy_bytes,
+            "governed_json_bytes": governed_bytes,
+            "additional_json_bytes_per_record": metadata_delta,
+            "sample_only_not_a_database_measurement": True,
         },
         "acceptance_threshold_ms_p95": 2000,
         "synthetic_benchmark_only": True,

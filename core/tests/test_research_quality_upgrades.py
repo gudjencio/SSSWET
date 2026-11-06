@@ -37,10 +37,7 @@ def test_provenance_graph_surfaces_cycles_duplicates_and_broken_links():
 
 
 def test_provenance_graph_separates_cycle_members_from_downstream_blocked_nodes():
-    report = build_provenance_graph(
-        [{"id": "a"}, {"id": "b"}, {"id": "c"}],
-        [("a", "b"), ("b", "a"), ("b", "c")],
-    )
+    report = build_provenance_graph([{"id": "a"}, {"id": "b"}, {"id": "c"}], [("a", "b"), ("b", "a"), ("b", "c")])
     assert report["cycle_node_ids"] == ["a", "b"]
     assert report["blocked_by_cycles"] == ["c"]
 
@@ -205,6 +202,14 @@ def test_accessibility_audit_accepts_named_controls_and_decorative_images():
             '</main></body></html>')
     report = audit_html(html)
     assert report["issue_count"] == 0
+
+
+def test_accessibility_audit_flags_missing_language_only_for_full_documents():
+    report = audit_html("<html><body><main></main></body></html>")
+    assert "document-lang" in {item["rule"] for item in report["issues"]}
+    fragment = audit_html("<main><img src='x'></main>")
+    assert fragment["issue_count"] == 1
+    assert fragment["document_fragment"] is True
 
 
 def test_localization_audit_checks_coverage_placeholders_extras_and_rtl():

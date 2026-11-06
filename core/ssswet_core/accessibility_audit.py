@@ -14,6 +14,7 @@ class _AuditParser(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.issues = []
         self.images = self.buttons = self.main_landmarks = 0
+        self.html_seen = False
         self.html_lang = ""
         self.ids = Counter()
         self.labels_for = set()
@@ -32,6 +33,7 @@ class _AuditParser(HTMLParser):
         if element_id:
             self.ids[element_id] += 1
         if tag == "html":
+            self.html_seen = True
             self.html_lang = values.get("lang", "").strip()
         if tag == "main" or role == "main":
             self.main_landmarks += 1
@@ -93,7 +95,7 @@ def audit_html(html: str) -> dict:
     parser = _AuditParser()
     parser.feed(html)
     parser.close()
-    if not parser.html_lang:
+    if parser.html_seen and not parser.html_lang:
         parser.issue("document-lang", "The HTML document is missing a language declaration.")
     if parser.buttons and not parser.main_landmarks:
         parser.issue("landmark-main", "Interactive content should be contained in a main landmark.")
@@ -121,6 +123,7 @@ def audit_html(html: str) -> dict:
         "issue_count": len(parser.issues), "issues": parser.issues,
         "images_checked": parser.images, "buttons_checked": parser.buttons,
         "form_controls_checked": len(parser.controls), "headings_checked": len(parser.headings),
+        "document_fragment": not parser.html_seen,
         "automated_audit_is_not_a_full_accessibility_review": True,
         "contrast_and_keyboard_interaction_manually_verified": False,
     }
