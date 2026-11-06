@@ -42,6 +42,24 @@ def test_dataset_version_is_fingerprinted_and_persisted(tmp_path):
     assert registry.overview()["integrity"]["all_intact"] is True
 
 
+def test_dataset_governance_fields_persist_and_surface_review_flags(tmp_path):
+    store, registry = setup(tmp_path)
+    dataset = DatasetVersion(
+        "governed-dataset", 1, "Consented study metadata", "Metadata-only research record",
+        "campaign-a", "CC-BY-4.0", ("source-paper-1",), "c" * 64,
+        privacy_classification="personal_data", consent_status="pending",
+        retention_policy="Review after 90 days", access_scope="restricted",
+    )
+    saved = registry.register_version(dataset)
+    assert saved["privacy_classification"] == "personal_data"
+    assert saved["consent_status"] == "pending"
+    assert saved["retention_policy"] == "Review after 90 days"
+    assert saved["access_scope"] == "restricted"
+    report = registry.overview()
+    assert "consent_review_pending" in report["governance"]["versions"][0]["issues"]
+    assert report["governance"]["legal_compliance_established"] is False
+
+
 def test_dataset_versions_must_be_sequential_and_linked(tmp_path):
     _, registry = setup(tmp_path)
     registry.register_version(make_dataset())

@@ -58,3 +58,6 @@ jobs:
       - name: Run core tests
         working-directory: core
         run: python -m pytest -q
+      - name: Benchmark bounded research workflow utilities
+        if: matrix.python-version == '3.12'
+        run: python .github/scripts/benchmark_research_quality.py

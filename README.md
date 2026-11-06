@@ -105,7 +105,7 @@ The public interface offers **300 selectable language entries**. The catalogue i
 SSSWET uses two complementary maintenance tracks:
 
 - Daily maintenance reviews reproducible defects, security, accessibility, links, tests and deployment health, and applies low-risk corrections with regression tests.
-- Daily feature development targets three substantial improvements to research workflows, scientific memory, agent coordination, accessibility, reliability, performance or protective technology. Each proposed change must be compared with the previous version and must pass its acceptance tests before it is described as an improvement.
+- Each scheduled feature run targets ten substantial improvements to research workflows, scientific memory, agent coordination, accessibility, reliability, performance or protective technology when all can meet their acceptance criteria. A shortfall is reported rather than padded with cosmetic edits.
 - An hourly GitHub Actions regression watch runs Python and JavaScript checks and the core test suite. It detects regressions; it does not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
 
 No update may knowingly reduce documented usefulness, performance, durability, efficiency, safety, maintainability, accessibility or evidence quality. Benchmark gains and claims about agent capability require repeatable measurements. Scientific, ethical, privacy, cybersecurity and legal safeguards remain mandatory.
@@ -133,3 +133,7 @@ Agent memories now carry explicit, append-only source-review states. Researchers
 ## Research knowledge graph
 
 The research knowledge graph connects individual memories, claims, decisions, experiments, evidence, technology dossiers and hypotheses through explicit, provenance-linked relationships. Bounded impact tracing helps identify downstream artefacts that may need review when upstream evidence or interpretations change. It complements the technology dependency graph rather than replacing it. See [Research Knowledge Graph](docs/RESEARCH_KNOWLEDGE_GRAPH.md).
+
+## Research workflow quality
+
+The core research toolkit now adds deterministic provenance-graph diagnostics, versioned agent-capability matching, dataset governance review flags, preregistration deviation records, verifiable reproducibility manifests, uncertainty-aware temporal alignment, fair civil-rescue resource allocation, static accessibility checks, localization QA and dossier-level provenance audits. These are decision-support and review tools; they do not automate scientific approval, legal compliance, dispatch or real-world operations. See [Research workflow quality upgrades](docs/RESEARCH_WORKFLOW_QUALITY_UPGRADES_2026-11-06.md).
