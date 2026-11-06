@@ -225,6 +225,77 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                         limit=limit,
                     ),
                 })
+            elif path == "/api/scientific-memory/search":
+                from .scientific_memory import ScientificMemoryService
+                from .memory_intelligence import search_scientific_memory
+                params = parse_qs(parsed.query)
+                query = params.get("q", [""])[0]
+                try:
+                    limit = int(params.get("limit", ["20"])[0])
+                    include_history = params.get("include_history", ["false"])[0].strip().lower() in {"1", "true", "yes"}
+                    if not query.strip():
+                        raise ValueError("A non-empty q parameter is required")
+                    overview = ScientificMemoryService(store).overview(limit=500)
+                    self._json(search_scientific_memory(
+                        overview["versions"], query, limit=limit, include_history=include_history
+                    ))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
+            elif path == "/api/scientific-memory/context":
+                from .scientific_memory import ScientificMemoryService
+                from .memory_intelligence import build_agent_context_packet
+                params = parse_qs(parsed.query)
+                query = params.get("q", [""])[0]
+                try:
+                    token_budget = int(params.get("token_budget", ["1200"])[0])
+                    max_items = int(params.get("max_items", ["12"])[0])
+                    include_history = params.get("include_history", ["false"])[0].strip().lower() in {"1", "true", "yes"}
+                    if not query.strip():
+                        raise ValueError("A non-empty q parameter is required")
+                    overview = ScientificMemoryService(store).overview(limit=500)
+                    self._json(build_agent_context_packet(
+                        overview["versions"], query, token_budget=token_budget,
+                        max_items=max_items, include_history=include_history,
+                    ))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
+            elif path == "/api/scientific-memory/integrity":
+                from .scientific_memory import ScientificMemoryService
+                from .memory_intelligence import audit_memory_integrity
+                overview = ScientificMemoryService(store).overview(limit=500)
+                self._json(audit_memory_integrity(
+                    overview["versions"], store._all_source_records(),
+                    store.experiment_overview(limit=500), store.knowledge_graph(limit=2000),
+                ))
+            elif path == "/api/scientific-memory/duplicates":
+                from .scientific_memory import ScientificMemoryService
+                from .memory_intelligence import find_duplicate_memory_candidates
+                params = parse_qs(parsed.query)
+                try:
+                    threshold = float(params.get("threshold", ["0.82"])[0])
+                    limit = int(params.get("limit", ["100"])[0])
+                    overview = ScientificMemoryService(store).overview(limit=500)
+                    self._json(find_duplicate_memory_candidates(
+                        overview["versions"], threshold=threshold, limit=limit
+                    ))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
+            elif path == "/api/scientific-memory/conflicts":
+                from .scientific_memory import ScientificMemoryService
+                from .memory_intelligence import build_memory_conflict_review
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["100"])[0])
+                    overview = ScientificMemoryService(store).overview(limit=500)
+                    self._json(build_memory_conflict_review(
+                        overview["versions"], store.knowledge_graph(limit=2000), limit=limit
+                    ))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
+            elif path == "/api/scientific-memory/snapshot":
+                from .memory_intelligence import create_memory_snapshot
+                records = store.scientific_memory_history(limit=500)
+                self._json(create_memory_snapshot(records, complete=len(records) < 500))
             elif path == "/api/scientific-memory/lineage":
                 from .scientific_memory import ScientificMemoryService
                 params = parse_qs(parsed.query)

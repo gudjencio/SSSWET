@@ -33,7 +33,7 @@ function localize(){
  const lang=$("vt-language").value;locale=languages[lang]?lang:"en";
  document.documentElement.lang=locale;document.documentElement.dir=["ar","he"].includes(locale)?"rtl":"ltr";document.title=(t().brand||"Virtual Time Travel Mapping")+" · "+(t().acronym||"SSSWET");$("vt-language").setAttribute("aria-label",t().language);const description=document.querySelector('meta[name="description"]');if(description)description.content=t().intro;document.querySelectorAll("[data-a]").forEach(node=>{const value=(extraCopy[locale]||extraCopy.en)[node.dataset.a];if(value)node.setAttribute("aria-label",value)});const horizon=$("vt-horizon");if(horizon){const words=extraCopy[locale]||extraCopy.en;horizon.options[0].textContent=words.m1;horizon.options[1].textContent=words.m5;horizon.options[2].textContent=words.m15;}
  document.querySelectorAll("[data-i]").forEach(node=>{const value=t()[node.dataset.i];if(value)node.textContent=value});
- document.querySelectorAll("[data-ph]").forEach(node=>{const value=t()[node.dataset.ph];if(value)node.placeholder=value});refreshStorage();document.querySelectorAll("[data-x]").forEach(node=>{const value=(extraCopy[locale]||extraCopy.en)[node.dataset.x];if(value)node.textContent=value});localizeMapControls();if(keyframeCandidates.length)renderKeyframeCandidates();
+ document.querySelectorAll("[data-ph]").forEach(node=>{const value=t()[node.dataset.ph];if(value)node.placeholder=value});refreshStorage();document.querySelectorAll("[data-x]").forEach(node=>{const value=(extraCopy[locale]||extraCopy.en)[node.dataset.x];if(value)node.textContent=value});localizeMapControls();if(window.SSSWETTemporalQuality){window.SSSWETTemporalQuality.localize(locale)}if(keyframeCandidates.length)renderKeyframeCandidates();
  
 }
 function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open("ssswet-virtual-time-map",1);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains("events"))d.createObjectStore("events",{keyPath:"id"});if(!d.objectStoreNames.contains("media"))d.createObjectStore("media",{keyPath:"id"});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
@@ -44,9 +44,11 @@ function removeAll(name){return new Promise((resolve,reject)=>{const req=store(n
 function newId(){return Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9)}
 async function saveEvent(kind,data={}){const entry={id:newId(),timestamp:Date.now(),kind,...data};await put("events",entry);events.push(entry);events.sort((a,b)=>a.timestamp-b.timestamp);$("vt-time").value=events.length-1;refreshTimeline();refreshStorage();updateMap();return entry}
 function refreshStorage(){const words=extraCopy[locale]||extraCopy.en;$("vt-storage-count").textContent=events.length+" "+words.obs+" · "+media.length+" "+words.clips;refreshKeyframeClips();}
+function refreshQuality(){if(window.SSSWETTemporalQuality){temporalQualityCache=window.SSSWETTemporalQuality.analyze(events,{assumeSorted:true});window.SSSWETTemporalQuality.render(events,locale,temporalQualityCache)}}
 function eventLabel(kind){return t()[kind]||kind}
 function formatTime(ts){return new Date(ts).toLocaleString(locale,{dateStyle:"medium",timeStyle:"medium"})}
 function refreshTimeline(){
+ refreshQuality();
  const slider=$("vt-time");slider.max=Math.max(0,events.length-1);slider.value=events.length?Math.min(Number(slider.value),events.length-1):0;
  $("vt-timeline-range").textContent=events.length?formatTime(events[0].timestamp)+" — "+formatTime(events[events.length-1].timestamp):"—";
  if(!events.length){$("vt-selected").textContent=t().noObservations;return}
@@ -64,43 +66,29 @@ function showEvent(index){
  if(clip?.blob){const video=$("vt-playback");if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(clip.blob);video.src=objectUrl;video.hidden=false;}else{$("vt-playback").hidden=true;}
 }
 function reliableGpsEvents(){
- const raw=events.filter(e=>e.kind==="gps"&&e.coords&&(!Number.isFinite(e.accuracy)||e.accuracy<=150)).sort((a,b)=>a.timestamp-b.timestamp);
- const accepted=[];
- for(const item of raw){
-  const previous=accepted[accepted.length-1];
-  if(previous&&item.timestamp-previous.timestamp<60000&&distanceMeters(previous.coords,item.coords)>5000)continue;
-  accepted.push(item);
- }
- return accepted;
+  if(temporalQualityCache)return temporalQualityCache.track.accepted;
+  if(window.SSSWETTemporalQuality)return window.SSSWETTemporalQuality.segmentGpsTrack(events).accepted;
+  return events.filter(e=>e.kind==="gps"&&e.coords&&(!Number.isFinite(e.accuracy)||e.accuracy<=150)).sort((a,b)=>a.timestamp-b.timestamp);
 }
 function geoFeatures(){
- const gps=reliableGpsEvents(),features=[],zones=new Map(),segments=[],markers=[],markerBuckets=new Map();
- let segment=[];
- const flushSegment=()=>{if(segment.length>1)segments.push(segment);segment=[]};
- gps.forEach((event,index)=>{
-  const coord=[event.coords.longitude,event.coords.latitude];
-  const previous=gps[index-1];
-  if(previous){
-   const elapsed=event.timestamp-previous.timestamp;
-   const distance=distanceMeters(previous.coords,event.coords);
-   if(elapsed<=0||elapsed>15*60*1000||distance>5000||distance/Math.max(elapsed/1000,1)>70)flushSegment();
-  }
-  segment.push(coord);
-  const zoneKey=event.coords.latitude.toFixed(3)+":"+event.coords.longitude.toFixed(3);
-  if(!zones.has(zoneKey))zones.set(zoneKey,event.coords);
-  const latCell=Math.floor(event.coords.latitude/0.00018),lonScale=Math.max(Math.cos(event.coords.latitude*Math.PI/180),0.1),lonCell=Math.floor(event.coords.longitude/(0.00018/lonScale));
-  let duplicate=false;
-  for(let dy=-1;dy<=1&&!duplicate;dy++)for(let dx=-1;dx<=1&&!duplicate;dx++){
-   const bucket=markerBuckets.get((latCell+dy)+":"+(lonCell+dx))||[];
-   duplicate=bucket.some(marker=>event.timestamp-marker.timestamp<=5*60*1000&&distanceMeters(marker.coords,event.coords)<20);
-  }
-  if(!duplicate){markers.push(event);const key=latCell+":"+lonCell;if(!markerBuckets.has(key))markerBuckets.set(key,[]);markerBuckets.get(key).push(event);}
- });
- flushSegment();
- segments.forEach(coordinates=>features.push({type:"Feature",geometry:{type:"LineString",coordinates},properties:{kind:"recorded-track"}}));
- zones.forEach(center=>{const ring=[];for(let step=0;step<=36;step++){const point=destination(center,step*Math.PI/18,40);ring.push([point.longitude,point.latitude])}features.push({type:"Feature",geometry:{type:"Polygon",coordinates:[ring]},properties:{kind:"visited-zone"}})});
- markers.forEach(event=>features.push({type:"Feature",geometry:{type:"Point",coordinates:[event.coords.longitude,event.coords.latitude]},properties:{kind:event.kind,timestamp:event.timestamp,accuracy:event.accuracy??null}}));
- return {type:"FeatureCollection",features};
+  const trackAnalysis=temporalQualityCache?temporalQualityCache.track:(window.SSSWETTemporalQuality?window.SSSWETTemporalQuality.segmentGpsTrack(events):null);
+  const gps=trackAnalysis?trackAnalysis.accepted:reliableGpsEvents();
+  const features=[],zones=new Map(),segments=trackAnalysis?trackAnalysis.segments.map(segment=>segment.map(event=>[event.coords.longitude,event.coords.latitude])):[],markers=[],markerBuckets=new Map();
+  gps.forEach(event=>{
+   const zoneKey=event.coords.latitude.toFixed(3)+":"+event.coords.longitude.toFixed(3);
+   if(!zones.has(zoneKey))zones.set(zoneKey,event.coords);
+   const latCell=Math.floor(event.coords.latitude/0.00018),lonScale=Math.max(Math.cos(event.coords.latitude*Math.PI/180),0.1),lonCell=Math.floor(event.coords.longitude/(0.00018/lonScale));
+   let duplicate=false;
+   for(let dy=-1;dy<=1&&!duplicate;dy++)for(let dx=-1;dx<=1&&!duplicate;dx++){
+    const bucket=markerBuckets.get((latCell+dy)+":"+(lonCell+dx))||[];
+    duplicate=bucket.some(marker=>event.timestamp-marker.timestamp<=5*60*1000&&distanceMeters(marker.coords,event.coords)<20);
+   }
+   if(!duplicate){markers.push(event);const key=latCell+":"+lonCell;if(!markerBuckets.has(key))markerBuckets.set(key,[]);markerBuckets.get(key).push(event);}
+  });
+  segments.forEach(coordinates=>features.push({type:"Feature",geometry:{type:"LineString",coordinates},properties:{kind:"recorded-track"}}));
+  zones.forEach(center=>{const ring=[];for(let step=0;step<=36;step++){const point=destination(center,step*Math.PI/18,40);ring.push([point.longitude,point.latitude])}features.push({type:"Feature",geometry:{type:"Polygon",coordinates:[ring]},properties:{kind:"visited-zone"}})});
+  markers.forEach(event=>features.push({type:"Feature",geometry:{type:"Point",coordinates:[event.coords.longitude,event.coords.latitude]},properties:{kind:event.kind,timestamp:event.timestamp,accuracy:event.accuracy??null}}));
+  return {type:"FeatureCollection",features};
 }
 function updateMap(){if(!map||!map.isStyleLoaded())return;const source=map.getSource("vt-observations");if(source)source.setData(geoFeatures());}
 function localizeMapControls(){
@@ -188,6 +176,7 @@ function runModel(){
 }
 
 let keyframeCandidates=[];
+let temporalQualityCache=null;
 function refreshKeyframeClips(){
  const select=$("vt-keyframe-clip"),button=$("vt-keyframe-analyze");if(!select||!button)return;
  const previous=select.value;select.replaceChildren();
@@ -267,6 +256,7 @@ function downloadKeyframe(index){
 async function addAnnotation(){const description=$("vt-event-description").value.trim();if(!description){$("vt-event-feedback").textContent=t().eventMissing;return}const coords=currentPosition?{latitude:currentPosition.coords.latitude,longitude:currentPosition.coords.longitude}:null;await saveEvent("annotation",{eventType:$("vt-event-type").value,description,coords});$("vt-event-description").value="";$("vt-event-feedback").textContent=t().eventSaved}
 function playTimeline(){if(playbackTimer){clearInterval(playbackTimer);playbackTimer=null;$("vt-play").textContent=t().play;return}if(!events.length)return;$("vt-play").textContent=t().pause;playbackTimer=setInterval(()=>{let i=Number($("vt-time").value)+1;if(i>=events.length){clearInterval(playbackTimer);playbackTimer=null;$("vt-play").textContent=t().play;i=events.length-1}showEvent(i)},750)}
 async function exportIndex(){const payload={format:"ssswet-virtual-time-map-index-v1",exported_at:new Date().toISOString(),observations:events};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="ssswet-observation-index.json";a.click();URL.revokeObjectURL(url);$("vt-data-feedback").textContent=t().exported}
+async function exportPrivacySafeIndex(){const payload=window.SSSWETTemporalQuality.createPrivacySafeExport(events,{includeCoarseLocation:$("vt-private-coarse-location").checked});const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="ssswet-observation-index-privacy-safe.json";a.click();URL.revokeObjectURL(url);$("vt-data-feedback").textContent=window.SSSWETTemporalQuality.message(locale,"privacyDone")}
 async function deleteData(){if(!confirm(t().deleteConfirm))return;stopScan();await removeAll("events");await removeAll("media");events=[];media=[];mediaBytes=0;refreshTimeline();refreshStorage();updateMap();$("vt-data-feedback").textContent=t().deleted}
 async function init(){
  const browserLocales=[...(navigator.languages||[]),navigator.language].filter(Boolean).map(value=>value.toLowerCase());
@@ -274,7 +264,7 @@ async function init(){
  const parisTimezone=Intl.DateTimeFormat().resolvedOptions().timeZone==="Europe/Paris";
  $("vt-language").value=(browserLocales.some(value=>value==="fr"||value.startsWith("fr-"))||parisTimezone)?"fr":(detected||"en");
  localize();$("vt-language").addEventListener("change",()=>{localize();refreshTimeline()});db=await openDb();events=await all("events");media=await all("media");mediaBytes=media.reduce((total,item)=>total+(item.blob?.size||0),0);events.sort((a,b)=>a.timestamp-b.timestamp);media.sort((a,b)=>a.timestamp-b.timestamp);refreshStorage();refreshTimeline();initMap();
- $("vt-locate").addEventListener("click",locate);$("vt-start").addEventListener("click",startScan);$("vt-stop").addEventListener("click",stopScan);$("vt-add-event").addEventListener("click",()=>addAnnotation().catch(()=>{}));$("vt-time").addEventListener("input",e=>showEvent(Number(e.target.value)));$("vt-prev").addEventListener("click",()=>showEvent(Number($("vt-time").value)-1));$("vt-next").addEventListener("click",()=>showEvent(Number($("vt-time").value)+1));$("vt-play").addEventListener("click",playTimeline);$("vt-model").addEventListener("click",runModel);$("vt-keyframe-analyze").addEventListener("click",()=>analyzeKeyframes().catch(()=>{}));$("vt-keyframe-results").addEventListener("click",event=>{const button=event.target.closest("[data-keyframe-download]");if(button)downloadKeyframe(Number(button.dataset.keyframeDownload))});$("vt-export").addEventListener("click",exportIndex);$("vt-delete").addEventListener("click",()=>deleteData().catch(()=>{}));window.addEventListener("beforeunload",()=>{if(scanActive)stopScan()});
+ $("vt-locate").addEventListener("click",locate);$("vt-start").addEventListener("click",startScan);$("vt-stop").addEventListener("click",stopScan);$("vt-add-event").addEventListener("click",()=>addAnnotation().catch(()=>{}));$("vt-time").addEventListener("input",e=>showEvent(Number(e.target.value)));$("vt-prev").addEventListener("click",()=>showEvent(Number($("vt-time").value)-1));$("vt-next").addEventListener("click",()=>showEvent(Number($("vt-time").value)+1));$("vt-play").addEventListener("click",playTimeline);$("vt-model").addEventListener("click",runModel);$("vt-keyframe-analyze").addEventListener("click",()=>analyzeKeyframes().catch(()=>{}));$("vt-keyframe-results").addEventListener("click",event=>{const button=event.target.closest("[data-keyframe-download]");if(button)downloadKeyframe(Number(button.dataset.keyframeDownload))});$("vt-export").addEventListener("click",exportIndex);$("vt-export-private").addEventListener("click",()=>exportPrivacySafeIndex().catch(()=>{}));$("vt-delete").addEventListener("click",()=>deleteData().catch(()=>{}));window.addEventListener("beforeunload",()=>{if(scanActive)stopScan()});
 }
 init().catch(()=>setStatus("needPermission"));
 })();

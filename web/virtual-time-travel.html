@@ -26,6 +26,13 @@
     <div id="vt-selected" class="vt-selected" aria-live="polite" data-i="noObservations">No observations recorded yet.</div>
     <video id="vt-playback" controls playsinline hidden></video>
   </section>
+  <section class="vt-panel vt-quality" aria-labelledby="vt-quality-title">
+    <h2 id="vt-quality-title" data-tq="qualityTitle">Temporal coverage and data quality</h2>
+    <p data-tq="qualityIntro">Review the spacing of recorded observations. A gap means no observation was stored in that interval.</p>
+    <div id="vt-quality-summary" role="status" aria-live="polite">No timestamped observations are available yet.</div>
+    <ul id="vt-quality-gaps" aria-live="polite"></ul>
+    <p id="vt-track-quality" class="vt-small" role="status" aria-live="polite"></p>
+  </section>
   </section>
   <section class="vt-grid">
     <article class="vt-panel"><h2 data-i="captureTitle">Capture a new visit</h2><p data-i="captureIntro">All capture is optional. Nothing is uploaded to SSSWET servers; observations and media stay in this browser's local storage.</p>
@@ -66,13 +73,16 @@
       <div id="vt-model-result" class="vt-model-result" role="status" aria-live="polite" data-i="modelPlaceholder">A scenario will appear here with its assumptions and uncertainty.</div>
     </article>
     <article class="vt-panel"><h2 data-i="dataTitle">Your data and privacy</h2><p data-i="dataIntro">Data is stored in this browser's IndexedDB. It is not sent to the project or another server by this application.</p>
-      <div class="vt-actions"><button id="vt-export" class="secondary" type="button" data-i="export">Export observation index</button><button id="vt-delete" class="danger" type="button" data-i="delete">Delete all local data</button></div>
+      <div class="vt-actions"><button id="vt-export" class="secondary" type="button" data-i="export">Export observation index</button><button id="vt-export-private" class="secondary" type="button" data-tq="privacyExport">Export privacy-safe copy</button><button id="vt-delete" class="danger" type="button" data-i="delete">Delete all local data</button></div>
+      <label class="vt-privacy-option"><input id="vt-private-coarse-location" type="checkbox"><span data-tq="coarseLocation">Include approximate locations (about 100 m); otherwise remove locations</span></label>
       <p class="vt-small" data-i="privacyNote">Export includes sensor and annotation metadata, not recorded media. Keep exported files secure. Clearing browser data may remove your local map and recordings.</p>
+      <p class="vt-small" data-tq="privacyNote">The privacy-safe export rounds timestamps to the nearest minute, omits descriptions and sensor values, and excludes media.</p>
       <div id="vt-data-feedback" class="vt-feedback" role="status" aria-live="polite"></div>
     </article>
   </section>
   <footer class="vt-footer"><span data-i="footer">SSSWET research prototype · Recorded observations, estimates and simulations are kept distinct.</span><a href="https://github.com/gudjencio/SSSWET" target="_blank" rel="noopener noreferrer">GitHub</a></footer>
 </main>
+<script src="temporal-quality.js"></script>
 <script src="virtual-time-travel.js"></script>
 <script src="keyframe-continuity.js"></script>
 <script src="keyframe-correspondence.js"></script>
