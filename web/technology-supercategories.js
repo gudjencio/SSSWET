@@ -9,6 +9,10 @@
   let groups;
   try{groups=data.buildSupercategories(baseEntries);}
   catch(error){console.error("SSSWET grouped catalogue was not activated; the original catalogue remains available.",error);return;}
+  const technologyStore=window.SSSWET_TECHNOLOGIES||(window.SSSWET_TECHNOLOGIES={});
+  data.coreCatalogueEntries().concat(data.generatedProgrammes()).forEach(entry=>{
+    if(!technologyStore[entry.key])technologyStore[entry.key]=entry.item;
+  });
 
   heading.querySelector(".technology-catalogue-controls")?.remove();
   if(root.nextElementSibling?.classList.contains("technology-pagination"))root.nextElementSibling.remove();
