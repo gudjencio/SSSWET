@@ -192,11 +192,11 @@ function distanceMeters(a,b){const R=6371000,p1=a.latitude*Math.PI/180,p2=b.lati
 function bearing(a,b){const p1=a.latitude*Math.PI/180,p2=b.latitude*Math.PI/180,dl=(b.longitude-a.longitude)*Math.PI/180;return Math.atan2(Math.sin(dl)*Math.cos(p2),Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl))}
 function destination(a,brng,d){const R=6371000,p1=a.latitude*Math.PI/180,l1=a.longitude*Math.PI/180,ad=d/R,p2=Math.asin(Math.sin(p1)*Math.cos(ad)+Math.cos(p1)*Math.sin(ad)*Math.cos(brng)),l2=l1+Math.atan2(Math.sin(brng)*Math.sin(ad)*Math.cos(p1),Math.cos(ad)-Math.sin(p1)*Math.sin(p2));return {latitude:p2*180/Math.PI,longitude:((l2*180/Math.PI+540)%360)-180}}
 function runModel(){
- const gps=reliableGpsEvents(),kind=$("vt-scenario").value,seconds=Number($("vt-horizon").value);
+ const gps=reliableGpsEvents(),kind=$("vt-scenario").value,seconds=Number($("vt-horizon").value),words=extraCopy[locale]||extraCopy.en;
  const estimate=window.SSSWETGpsScenarioModel?.estimate(gps,{kind,horizonSeconds:seconds});
- if(!estimate){$("vt-model-result").textContent=t().modelNeedQualityData;const source=map?.getSource("vt-scenario");if(source)source.setData({type:"FeatureCollection",features:[]});return}
+ if(!estimate){$("vt-model-result").textContent=words.modelNeedQualityData;const source=map?.getSource("vt-scenario");if(source)source.setData({type:"FeatureCollection",features:[]});return}
  const number=value=>new Intl.NumberFormat(locale,{maximumFractionDigits:1}).format(value);
- const result=t().modelQualityDetails
+ const result=words.modelQualityDetails
   .replace("{distance}",String(Math.round(estimate.distanceM)))
   .replace("{uncertainty}",String(estimate.uncertaintyRadiusM))
   .replace("{samples}",String(estimate.sampleCount))
