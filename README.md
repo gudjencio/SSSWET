@@ -83,6 +83,10 @@ The code license and the project name are separate matters. See [NOTICE.md](NOTI
 
 Please do not publish credentials, private data or suspected vulnerabilities in public issues. See [SECURITY.md](SECURITY.md) for responsible reporting.
 
+## Bounded research toolkit
+
+The core now provides ten reusable research-support tools: provenance-preserving memory retrieval with labelled evaluation, reviewer-scored agent capability benchmarks, aggregate-only dataset drift checks, quality-gated Virtual Time Travel spatial mapping, freshness-aware civil-rescue inventory planning, matched-condition protective-equipment test comparison, preregistration completeness review, read-only SQLite health and verified backups, WCAG contrast checks, and BCP-47 locale fallback. These tools are bounded and non-adjudicative; they do not establish scientific truth, certification, ethics approval, dispatch authority or general agent intelligence. The local server exposes their catalogue and a loopback-only dispatcher. See [Research Toolkit Upgrades (7 November 2026)](docs/RESEARCH_TOOLKIT_UPGRADES_2026-11-07.md).
+
 ## Project links
 
 - Website: https://gudjencio.github.io/SSSWET/
