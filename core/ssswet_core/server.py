@@ -68,6 +68,11 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             if origin in ALLOWED_WEB_ORIGINS and self.path.startswith("/api/"):
                 self.send_header("Access-Control-Allow-Origin", origin)
                 self.send_header("Vary", "Origin")
+            elif self.path.startswith("/api/research-toolkit") and origin:
+                from urllib.parse import urlsplit
+                if urlsplit(origin).hostname in {"localhost", "127.0.0.1", "::1"}:
+                    self.send_header("Access-Control-Allow-Origin", origin)
+                    self.send_header("Vary", "Origin")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.end_headers()
             self.wfile.write(body)
@@ -89,7 +94,11 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             from urllib.parse import urlsplit
             origin = self.headers.get("Origin", "")
             path = urlsplit(self.path).path
-            if origin not in ALLOWED_WEB_ORIGINS or not path.startswith("/api/"):
+            if path == "/api/research-toolkit":
+                if origin and urlsplit(origin).hostname not in {"localhost", "127.0.0.1", "::1"}:
+                    self.send_error(403, "The research toolkit is available only to local browser clients")
+                    return
+            elif origin not in ALLOWED_WEB_ORIGINS or not path.startswith("/api/"):
                 self.send_error(403, "Origin is not allowed")
                 return
             self.send_response(204)
@@ -563,6 +572,9 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                 campaign_id = path[len("/api/collaboration/campaign/"):-len("/conflicts")].strip("/")
                 from urllib.parse import unquote
                 self._json(store.campaign_conflict_report(unquote(campaign_id)))
+            elif path == "/api/research-toolkit":
+                from .research_toolkit import toolkit_catalogue
+                self._json(toolkit_catalogue())
             elif path == "/health":
                 self._json({"status": "ok"})
             elif path.startswith("/api/"):
@@ -585,6 +597,11 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             elif self.client_address[0] not in {"127.0.0.1", "::1"}:
                 self.send_error(403, "Verification reviews are restricted to the local machine")
                 return
+            if request_path == "/api/research-toolkit":
+                origin = self.headers.get("Origin")
+                if origin and urlsplit(origin).hostname not in {"localhost", "127.0.0.1", "::1"}:
+                    self._json({"error": "The research toolkit is available only to local browser clients"}, 403)
+                    return
             if request_path == "/api/research-priority-assessments":
                 origin = self.headers.get("Origin")
                 if origin and origin not in ALLOWED_WEB_ORIGINS and urlsplit(origin).hostname not in {"localhost", "127.0.0.1", "::1"}:
@@ -598,18 +615,22 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             if private_order_write and not self._private_admin_allowed():
                 self._json({"error": "Local administrator authentication required"}, 401)
                 return
-            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks", "/api/research-journal", "/api/research-priority-assessments", "/api/project-reports"} and not private_order_write:
+            if request_path not in {"/api/lab-verification-events", "/api/scientific-review-board/reviews", "/api/research-integrity/risks", "/api/research-journal", "/api/research-priority-assessments", "/api/project-reports", "/api/research-toolkit"} and not private_order_write:
                 self.send_error(405, "Unsupported write operation")
                 return
             try:
                 length = int(self.headers.get("Content-Length", "0"))
-                if length < 1 or length > 8192:
-                    self._json({"error": "Request body must be between 1 and 8192 bytes"}, 400)
+                maximum_body_bytes = 65536 if request_path == "/api/research-toolkit" else 8192
+                if length < 1 or length > maximum_body_bytes:
+                    self._json({"error": f"Request body must be between 1 and {maximum_body_bytes} bytes"}, 400)
                     return
                 payload = json.loads(self.rfile.read(length))
                 if not isinstance(payload, dict):
                     raise ValueError("A JSON object is required")
-                if request_path == "/api/project-reports":
+                if request_path == "/api/research-toolkit":
+                    from .research_toolkit import execute_toolkit
+                    self._json(execute_toolkit(payload, database_path=store.path))
+                elif request_path == "/api/project-reports":
                     from .project_reports import create_project_report
                     result = create_project_report(payload)
                     self._json(result, 201)
