@@ -54,6 +54,8 @@ def test_agent_benchmark_is_versioned_auditable_and_compares_like_for_like():
     assert changed["case_set_sha256"] != first["case_set_sha256"]
     assert first["weighted_score"] == pytest.approx(2 / 3)
     assert first["coverage"] == 1
+    assert first["capability_scores"]["materials"]["weighted_score"] == 1
+    assert first["capability_scores"]["statistics"]["coverage"] == 1
     assert first["general_intelligence_or_real_world_competence_claim"] is False
     diff = compare_benchmark_reports(first, second)
     assert diff["comparison_is_like_for_like"] is True
@@ -89,6 +91,8 @@ def test_spatiotemporal_mapping_segments_bad_gaps_and_only_interpolates_inside_i
     assert point["source_refs"] == ["source:a", "source:b"]
     with pytest.raises(ValueError, match="strictly between"):
         interpolate_between(a, b, "2026-11-07T10:00:00Z")
+    with pytest.raises(ValueError, match="max_gap_seconds"):
+        interpolate_between(a, b, "2026-11-07T10:00:30Z", max_gap_seconds=float("nan"))
     with pytest.raises(ValueError, match="timezone-naive"):
         _observation("naive", 48, 2, "2026-11-07T10:00:00")
 
@@ -171,6 +175,8 @@ def test_locale_fallback_is_bcp47_aware_and_preserves_rtl_direction():
 def test_local_toolkit_dispatch_exposes_exactly_ten_operations_and_is_non_mutating(tmp_path):
     catalogue = toolkit_catalogue()
     assert catalogue["operation_count"] == 10
+    catalogue["operations"].clear()
+    assert toolkit_catalogue()["operation_count"] == 10
     result = execute_toolkit({"tool": "locale_resolve", "requested": "fr-CA", "available": ["en", "fr"]})
     assert result["resolved"] == "fr"
     db = tmp_path / "health.sqlite3"
