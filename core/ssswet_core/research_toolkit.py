@@ -25,7 +25,7 @@ TOOLKIT_OPERATIONS = {
 }
 
 def toolkit_catalogue() -> dict:
-    return {"operations": TOOLKIT_OPERATIONS, "operation_count": len(TOOLKIT_OPERATIONS),
+    return {"operations": dict(TOOLKIT_OPERATIONS), "operation_count": len(TOOLKIT_OPERATIONS),
             "local_only": True, "mutates_research_records": False, "scientific_validity_established": False}
 
 def execute_toolkit(payload: dict, *, database_path=None) -> dict:
