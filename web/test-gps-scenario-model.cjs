@@ -1,0 +1,50 @@
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const path=require("node:path");
+const {estimate,constants}=require("./gps-scenario-model.js");
+const R=6371000;
+function lonForEast(m,lat=0){return m/(R*Math.cos(lat*Math.PI/180))*180/Math.PI;}
+function fixes(offsets,options={}){const interval=options.intervalMs??60000,lat=options.latitude??0,accuracy=options.accuracy??5;return offsets.map((east,i)=>({id:"fix-"+i,kind:"gps",timestamp:i*interval,accuracy:typeof accuracy==="function"?accuracy(i):accuracy,coords:{latitude:lat,longitude:lonForEast(east,lat)}}));}
+function distance(a,b){const p1=a.latitude*Math.PI/180,p2=b.latitude*Math.PI/180,dp=(b.latitude-a.latitude)*Math.PI/180,dl=(b.longitude-a.longitude)*Math.PI/180,h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));}
+const straight=fixes([0,100,200]),future=estimate(straight,{kind:"future",horizonSeconds:60});
+assert.ok(future,"three consecutive quality fixes must produce a scenario");
+assert.equal(future.sampleCount,3);assert.equal(future.segmentCount,2);
+assert.ok(Math.abs(future.speedMps-100/60)<0.002);assert.ok(Math.abs(future.distanceM-100)<0.1);
+assert.ok(Math.abs(distance(future.origin,future.target)-100)<0.1);
+assert.equal(future.anchorAccuracyM,5);assert.equal(future.medianVelocityResidualMps,0);
+assert.ok(Math.abs(future.accuracySensitivityMps-10/60)<0.0001);
+assert.equal(future.uncertaintyRadiusM,15,"envelope must equal anchor accuracy plus the two explicit horizon terms");
+const past=estimate(straight,{kind:"past",horizonSeconds:60});
+assert.ok(past);assert.ok(Math.abs(distance(past.origin,past.target)-100)<0.1);
+assert.ok(past.target.longitude<past.origin.longitude,"past scenario must extend opposite observed median velocity");
+const robust=estimate(fixes([0,100,200,2300]),{kind:"future",horizonSeconds:60});
+assert.ok(robust);assert.ok(Math.abs(robust.distanceM-100)<0.2,"component-wise median must resist one plausible extreme segment");
+assert.equal(robust.sampleCount,4);
+assert.equal(estimate(fixes([0,100]),{horizonSeconds:60}),null,"two fixes cannot estimate velocity variability");
+assert.equal(estimate(fixes([0,100,200],{accuracy:i=>i===1?NaN:5}),{horizonSeconds:60}),null,"all selected fixes need finite reported accuracy");
+assert.equal(estimate(fixes([0,100,200],{accuracy:151}),{horizonSeconds:60}),null,"fixes above the 150 m threshold must be excluded");
+assert.equal(estimate(fixes([0,100,200]),{horizonSeconds:901}),null,"horizon must remain bounded to 15 minutes");
+assert.equal(estimate(fixes([0,100,200]),{horizonSeconds:0}),null);
+const gap=[...fixes([0,100]),{...fixes([200])[0],id:"after-gap",timestamp:20*60*1000}];
+assert.equal(estimate(gap,{horizonSeconds:60}),null,"a gap over 15 minutes must split the track");
+assert.equal(estimate(fixes([0,100,6000]),{horizonSeconds:60}),null,"a segment over 5 km must split the track");
+const duplicate=fixes([0,100,200]);duplicate[1].timestamp=duplicate[0].timestamp;
+assert.equal(estimate(duplicate,{horizonSeconds:60}),null,"non-increasing timestamps must split the run");
+const invalid=fixes([0,100,200]);invalid[1].coords.latitude=91;
+assert.equal(estimate(invalid,{horizonSeconds:60}),null);
+const longTrack=fixes([0,100,200,300,400,500,600,700]),bounded=estimate(longTrack,{horizonSeconds:60});
+assert.equal(bounded.sampleCount,constants.MAX_FIXES,"scenario window must be capped at six fixes");
+assert.deepEqual(bounded.sourceObservationIds,["fix-2","fix-3","fix-4","fix-5","fix-6","fix-7"]);
+assert.deepEqual(estimate(straight,{kind:"future",horizonSeconds:60}),future,"identical inputs must be deterministic");
+assert.equal(constants.MIN_FIXES,3);assert.equal(constants.MAX_ACCURACY_M,150);
+const app=fs.readFileSync(path.join(__dirname,"virtual-time-travel.js"),"utf8");
+assert.match(app,/SSSWETGpsScenarioModel\?\.estimate/);assert.match(app,/modelQualityDetails/);assert.match(app,/modelNeedQualityData/);
+const html=fs.readFileSync(path.join(__dirname,"virtual-time-travel.html"),"utf8");
+assert.ok(html.indexOf('<script src="gps-scenario-model.js"></script>')<html.indexOf('<script src="virtual-time-travel.js"></script>'));
+const sw=fs.readFileSync(path.join(__dirname,"sw.js"),"utf8");assert.match(sw,/ssswet-web-v193/);assert.match(sw,/\.\/gps-scenario-model\.js/);
+const extraStart=app.indexOf("const extraCopy=")+ "const extraCopy=".length,extraEnd=app.indexOf(";\n",extraStart),extra=JSON.parse(app.slice(extraStart,extraEnd));
+const locales=["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"];
+assert.deepEqual(Object.keys(extra),locales);
+for(const locale of locales){for(const key of ["modelNeedQualityData","modelQualityDetails"])assert.ok(extra[locale][key],"missing "+key+" translation for "+locale);for(const token of ["{distance}","{uncertainty}","{samples}","{speed}","{spread}","{sensitivity}"])assert.ok(extra[locale].modelQualityDetails.includes(token),"missing "+token+" in "+locale);}
+console.log("GPS scenario-model regression tests passed (synthetic tracks; not a real-world positioning or forecast accuracy benchmark).");
