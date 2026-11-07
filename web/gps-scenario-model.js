@@ -83,7 +83,7 @@
     }
     const medianEastMps=median(velocities.map(item=>item.east)),medianNorthMps=median(velocities.map(item=>item.north));
     const speedMps=Math.hypot(medianEastMps,medianNorthMps);
-    const medianVelocityResidualMps=median(velocities.map(item=>Math.hypot(item.east-medianEastMps,item.north-medianNorthMps)));
+    const medianVelocityResidualMps=median(velocities.map(item=>{const residual=Math.hypot(item.east-medianEastMps,item.north-medianNorthMps);return residual<1e-9?0:residual;}));
     const accuracySensitivityMps=median(accuracySensitivityRates);
     const anchor=kind==="past"?fixes[0]:fixes[fixes.length-1],direction=kind==="past"?-1:1;
     const target=offsetPoint(anchor.coords,medianEastMps*horizonSeconds*direction,medianNorthMps*horizonSeconds*direction);
