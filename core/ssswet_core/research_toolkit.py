@@ -4,7 +4,7 @@ from .accessibility_contrast import audit_contrast_pairs
 from .agent_benchmark import evaluate_agent_benchmark
 from .dataset_drift import compare_dataset_summaries
 from .locale_fallback import resolve_locale
-from .memory_retrieval import rank_memories, evaluate_retrieval, benchmark_retrieval
+from .memory_revision_diff import compare_memory_revisions
 from .protective_test_comparison import compare_protective_tests
 from .protocol_quality import assess_protocol_quality
 from .rescue_inventory import plan_fresh_inventory
@@ -12,7 +12,7 @@ from .spatiotemporal_mapping import SpatialObservation, segment_track, interpola
 from .storage_health import inspect_sqlite
 
 TOOLKIT_OPERATIONS = {
-    "memory_retrieval": "Bounded, provenance-preserving search and labelled retrieval evaluation.",
+    "memory_revision_diff": "Bounded scientific-memory snapshot comparison with field and provenance deltas.",
     "agent_benchmark": "Reviewer-scored, versioned capability benchmark with calibration metrics.",
     "dataset_drift": "Aggregate-only numeric and categorical distribution drift review.",
     "spatiotemporal_track": "GPS quality segmentation and bounded interpolation between observations.",
@@ -34,13 +34,8 @@ def execute_toolkit(payload: dict, *, database_path=None) -> dict:
     operation = payload.get("tool")
     if operation not in TOOLKIT_OPERATIONS:
         raise ValueError("unknown research-toolkit operation")
-    if operation == "memory_retrieval":
-        if payload.get("mode", "search") == "evaluate":
-            return evaluate_retrieval(payload.get("cases"), k=payload.get("k", 10))
-        records, queries = payload.get("records"), payload.get("queries")
-        if isinstance(queries, list):
-            return benchmark_retrieval(records, queries, repeats=payload.get("repeats", 5), limit=payload.get("limit", 20))
-        return rank_memories(records, payload.get("query", ""), limit=payload.get("limit", 20))
+    if operation == "memory_revision_diff":
+        return compare_memory_revisions(payload.get("previous"), payload.get("current"))
     if operation == "agent_benchmark":
         return evaluate_agent_benchmark(benchmark_id=payload.get("benchmark_id", ""), version=payload.get("version", ""),
                                        cases=payload.get("cases"), reviews=payload.get("reviews", []))

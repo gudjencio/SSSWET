@@ -44,24 +44,43 @@ def compare_protective_tests(records: list[dict]) -> dict:
             raise ValueError(f"unsupported unit: {unit}")
         dimension, factor = _UNITS[unit]
         value = _finite(record["value"], "value") * factor
-        uncertainty = _finite(record.get("uncertainty", 0), "uncertainty", minimum=0) * factor
+        uncertainty_declared = "uncertainty" in record and record["uncertainty"] is not None
+        uncertainty = _finite(record["uncertainty"], "uncertainty", minimum=0) * factor if uncertainty_declared else None
         replicates = record["replicates"]
         if isinstance(replicates, bool) or not isinstance(replicates, int) or not 1 <= replicates <= 10000:
             raise ValueError("replicates must be an integer from 1 to 10000")
         key = (record["test_method"], record["configuration"], record["conditioning"], record["orientation"], record["metric"], dimension)
-        groups.setdefault(key, []).append({"test_id": test_id, "value_base_unit": value,
-            "uncertainty_base_unit": uncertainty, "replicates": replicates, "source_ref": record["source_ref"]})
+        groups.setdefault(key, []).append({
+            "test_id": test_id, "value_base_unit": value,
+            "uncertainty_base_unit": uncertainty, "uncertainty_declared": uncertainty_declared,
+            "replicates": replicates, "source_ref": record["source_ref"],
+        })
     reports = []
     for key, values in sorted(groups.items()):
         observed = [item["value_base_unit"] for item in values]
+        replicate_count = sum(item["replicates"] for item in values)
+        weighted_mean = sum(item["value_base_unit"] * item["replicates"] for item in values) / replicate_count if replicate_count else None
+        declared = [item for item in values if item["uncertainty_declared"]]
+        declared_replicates = sum(item["replicates"] for item in declared)
+        weighted_uncertainty = (
+            sum(item["uncertainty_base_unit"] * item["replicates"] for item in declared) / declared_replicates
+            if declared_replicates else None
+        )
         reports.append({
-            "conditions": {"test_method": key[0], "configuration": key[1], "conditioning": key[2],
-                           "orientation": key[3], "metric": key[4], "unit_dimension": key[5]},
-            "test_ids": [item["test_id"] for item in values], "source_refs": [item["source_ref"] for item in values],
-            "record_count": len(values), "replicate_count": sum(item["replicates"] for item in values),
-            "mean_base_unit": round(mean(observed), 8),
+            "conditions": {
+                "test_method": key[0], "configuration": key[1], "conditioning": key[2],
+                "orientation": key[3], "metric": key[4], "unit_dimension": key[5],
+            },
+            "test_ids": [item["test_id"] for item in values],
+            "source_refs": [item["source_ref"] for item in values],
+            "record_count": len(values), "replicate_count": replicate_count,
+            "mean_base_unit": round(weighted_mean, 8) if weighted_mean is not None else None,
+            "mean_record_value_base_unit": round(mean(observed), 8) if observed else None,
             "between_record_sample_sd_base_unit": round(stdev(observed), 8) if len(observed) > 1 else None,
-            "mean_declared_measurement_uncertainty_base_unit": round(mean(item["uncertainty_base_unit"] for item in values), 8),
+            "mean_declared_measurement_uncertainty_base_unit": round(weighted_uncertainty, 8) if weighted_uncertainty is not None else None,
+            "uncertainty_declared_record_count": len(declared),
+            "uncertainty_declared_for_all_records": len(declared) == len(values),
+            "replicate_weighting_uses_reported_counts_not_raw_replicate_data": True,
             "comparable_records_present": len(values) > 1,
         })
     return {

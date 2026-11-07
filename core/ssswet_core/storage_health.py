@@ -13,6 +13,13 @@ def _readonly_connection(path: Path) -> sqlite3.Connection:
     uri_path = quote(path.resolve().as_posix(), safe="/:")
     return sqlite3.connect(f"file:{uri_path}?mode=ro", uri=True, timeout=2.0)
 
+def _file_sha256(path: Path) -> str:
+    digest = sha256()
+    with path.open("rb") as source:
+        while chunk := source.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
 def inspect_sqlite(path: str | Path) -> dict:
     database = Path(path)
     connection = _readonly_connection(database)
@@ -64,7 +71,8 @@ def backup_sqlite(source_path: str | Path, destination_path: str | Path) -> dict
             source_connection.close()
         if check != ["ok"]:
             raise RuntimeError("backup integrity verification failed")
-        digest = sha256(temporary.read_bytes()).hexdigest()
+        digest = _file_sha256(temporary)
+        temporary_size = temporary.stat().st_size
         try:
             os.link(temporary, destination)
         except FileExistsError:
@@ -80,11 +88,17 @@ def backup_sqlite(source_path: str | Path, destination_path: str | Path) -> dict
             except Exception:
                 destination.unlink(missing_ok=True)
                 raise
+        destination_digest = _file_sha256(destination)
+        destination_size = destination.stat().st_size
+        if destination_digest != digest or destination_size != temporary_size:
+            destination.unlink(missing_ok=True)
+            raise RuntimeError("backup destination hash verification failed")
         temporary.unlink()
         return {
-            "backup_path": str(destination), "sha256": digest, "size_bytes": destination.stat().st_size,
-            "integrity_check": check, "verified": True, "source_modified": False,
-            "existing_backup_overwritten": False, "automatic_retention_deletion": False,
+            "backup_path": str(destination), "sha256": digest, "size_bytes": destination_size,
+            "integrity_check": check, "verified": True, "destination_hash_verified": True,
+            "source_modified": False, "existing_backup_overwritten": False,
+            "automatic_retention_deletion": False,
         }
     finally:
         if temporary.exists():

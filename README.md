@@ -34,6 +34,8 @@ The project also adopts a **persistence principle**. A failed experiment, blocke
 
 Persistence does not override safety, ethics, biosafety, human-subject protections, environmental protections, applicable law or scientific evidence. The project must never make a technology less safe merely to preserve a performance score, and it must never hide a regression or fabricate an improvement.
 
+The [bounded research toolkit](docs/RESEARCH_TOOLKIT_UPGRADES_2026-11-07.md) adds ten independently testable, local research-support capabilities for memory continuity, evidence comparison, rescue planning, protective-test review, accessibility and reliability.
+
 ## Applications
 
 Install SSSWET on supported mobile devices from the website, or download the Windows, macOS and Linux desktop builds from [official releases](https://github.com/gudjencio/SSSWET/releases). Mobile installation and package availability are explained in [Application distribution](docs/APP_DISTRIBUTION.md).
@@ -58,86 +60,3 @@ The project may change its public descriptions and availability as research, rev
 - Treat negative results as reusable scientific knowledge.
 - Continue research after setbacks through safer, better-supported and independently reviewed routes.
 - Require appropriate human, scientific, safety and legal review before real-world use.
-- Protect personal information, credentials and confidential material from publication.
-- Record declared risks and uncertainties without inventing probability, impact or safety conclusions; see [Research Risk & Uncertainty Register](docs/RESEARCH_RISK_UNCERTAINTY_REGISTER.md).
-- For protective systems, distinguish design targets from observed and independently verified performance.
-- Do not describe equipment as certified, bulletproof, blast-proof, chemical-proof, radiation-proof or military-grade without configuration-specific independent evidence.
-
-## Contributions
-
-Voluntary research support and general contribution information are described in [Research contributions](docs/CONTRIBUTIONS.md). A contribution is not a purchase, reservation or guarantee of a future product.
-
-## Publication and intellectual property
-
-Read the [Public information and disclosure policy](docs/PUBLICATION_POLICY.md) before reusing, submitting or publishing project material. Public availability does not make confidential or unpublished material suitable for disclosure. The repository's current license governs reuse of the files it covers; it does not grant rights to trademarks, patents, confidential know-how or third-party material.
-
-## Copyright and project identity
-
-Copyright © 2026 Gudjencio MARTIN. All rights reserved in the SSSWET project identity, including its name, acronym, logo and official branding, except where a separate written permission applies.
-
-The name **SSSWET**, its acronym and official visual identity may not be used to present an independent copy, fork, derivative project or service as the official SSSWET project, or to imply endorsement or affiliation. A copy or fork must use a clearly distinct name and branding and must identify its own maintainers.
-
-The code license and the project name are separate matters. See [NOTICE.md](NOTICE.md) for attribution and project-identity guidance. This notice does not claim that a trademark registration exists.
-
-## Security
-
-Please do not publish credentials, private data or suspected vulnerabilities in public issues. See [SECURITY.md](SECURITY.md) for responsible reporting.
-
-## Bounded research toolkit
-
-The core now provides ten reusable research-support tools: provenance-preserving memory retrieval with labelled evaluation, reviewer-scored agent capability benchmarks, aggregate-only dataset drift checks, quality-gated Virtual Time Travel spatial mapping, freshness-aware civil-rescue inventory planning, matched-condition protective-equipment test comparison, preregistration completeness review, read-only SQLite health and verified backups, WCAG contrast checks, and BCP-47 locale fallback. These tools are bounded and non-adjudicative; they do not establish scientific truth, certification, ethics approval, dispatch authority or general agent intelligence. The local server exposes their catalogue and a loopback-only dispatcher. See [Research Toolkit Upgrades (7 November 2026)](docs/RESEARCH_TOOLKIT_UPGRADES_2026-11-07.md).
-
-## Project links
-
-- Website: https://gudjencio.github.io/SSSWET/
-- Google Sites mirror: https://sites.google.com/view/ssswet
-- X: https://x.com/ssswetech
-- Instagram: https://www.instagram.com/ssswetech
-- YouTube: https://www.youtube.com/@ssswetech
-- Contact: ssswetindustries@gmail.com
-
----
-
-SSSWET is an evolving research initiative. Public summaries are informational and do not constitute technical, medical, legal, investment or product advice.
-
-## Language availability
-
-The public interface offers **300 selectable language entries**. The catalogue includes all **190 unique language codes** in the project's current reference list, covering the named languages, regional varieties and grouped language families. Each option has a language code and a native-language label. This confirms selector availability, not complete translation: the principal interface is maintained in a limited set of core locales, selected additional sections have further translations, and untranslated strings use the English fallback. Language availability must not be mistaken for a complete professional translation. Contributions from qualified native speakers are welcome, especially for scientific, medical, safety and accessibility terminology.
-
-## Continuous improvement and regression monitoring
-
-SSSWET uses two complementary maintenance tracks:
-
-- Daily maintenance reviews reproducible defects, security, accessibility, links, tests and deployment health, and applies low-risk corrections with regression tests.
-- Each scheduled feature run targets ten substantial improvements to research workflows, scientific memory, agent coordination, accessibility, reliability, performance or protective technology when all can meet their acceptance criteria. A shortfall is reported rather than padded with cosmetic edits.
-- An hourly GitHub Actions regression watch runs Python and JavaScript checks and the core test suite. It detects regressions; it does not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
-
-No update may knowingly reduce documented usefulness, performance, durability, efficiency, safety, maintainability, accessibility or evidence quality. Benchmark gains and claims about agent capability require repeatable measurements. Scientific, ethical, privacy, cybersecurity and legal safeguards remain mandatory.
-
-## Cross-agent research memory
-
-The persistent agent memory layer supports bounded team-wide retrieval for shared research questions. Results preserve agent identity and source provenance, use deterministic ranking, and remain research notes rather than verified conclusions. See [Cross-agent memory retrieval](docs/CROSS_AGENT_MEMORY_RETRIEVAL.md).
-
-## Context-aware claim comparison
-
-Context-aware claim comparison separates differences in scope, conditions, units and observation dates before flagging review leads. See [Context-aware research claim comparison](docs/CONTEXT_AWARE_CLAIM_COMPARISON.md).
-
-## Independent reviewer selection
-
-SSSWET can prepare auditable reviewer-panel proposals that exclude prior reviewers and declared conflicts, avoid repeated campaigns, and flag shared evidence sources for disclosure. Proposals do not execute assignments or certify independence. See [Independent reviewer selection safeguards](docs/INDEPENDENT_REVIEWER_SELECTION.md).
-
-## Research decision lineage
-
-The persistent research decision ledger preserves decision rationales, evidence references, reviewer identifiers and constrained review-state changes. Corrections create new linked decisions rather than overwriting earlier records, so abandoned interpretations and negative findings remain traceable. Recorded statuses are review history, not scientific truth or certification. See [Research decision lineage](docs/RESEARCH_DECISION_LINEAGE.md).
-
-## Agent memory evidence review
-
-Agent memories now carry explicit, append-only source-review states. Researchers can flag a note for reassessment, record a referenced recheck, or mark it superseded or withdrawn. Search results expose the latest review status and reviewer provenance; unreviewed notes remain visibly unreviewed. These workflow annotations do not establish scientific truth or infer staleness from age. See [Agent memory evidence review](docs/AGENT_MEMORY_EVIDENCE_REVIEW.md).
-
-## Research knowledge graph
-
-The research knowledge graph connects individual memories, claims, decisions, experiments, evidence, technology dossiers and hypotheses through explicit, provenance-linked relationships. Bounded impact tracing helps identify downstream artefacts that may need review when upstream evidence or interpretations change. It complements the technology dependency graph rather than replacing it. See [Research Knowledge Graph](docs/RESEARCH_KNOWLEDGE_GRAPH.md).
-
-## Research workflow quality
-
-The core research toolkit now adds deterministic provenance-graph diagnostics, versioned agent-capability matching, dataset governance review flags, preregistration deviation records, verifiable reproducibility manifests, uncertainty-aware temporal alignment, fair civil-rescue resource allocation, static accessibility checks, localization QA and dossier-level provenance audits. These are decision-support and review tools; they do not automate scientific approval, legal compliance, dispatch or real-world operations. See [Research workflow quality upgrades](docs/RESEARCH_WORKFLOW_QUALITY_UPGRADES_2026-11-06.md).

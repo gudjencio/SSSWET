@@ -27,21 +27,23 @@ def evaluate_agent_benchmark(*, benchmark_id: str, version: str, cases: list[dic
         if not isinstance(case, dict):
             raise ValueError("each case must be an object")
         case_id, capability, weight = case.get("case_id"), case.get("capability"), case.get("weight", 1)
-        if not isinstance(case_id, str) or not case_id.strip() or case_id in normalized_cases:
-            raise ValueError("case IDs must be unique non-empty strings")
-        if not isinstance(capability, str) or not capability.strip():
-            raise ValueError("each case must name a capability")
+        if not isinstance(case_id, str) or not case_id.strip() or len(case_id) > 120 or case_id in normalized_cases:
+            raise ValueError("case IDs must be unique non-empty strings of at most 120 characters")
+        if not isinstance(capability, str) or not capability.strip() or len(capability) > 120:
+            raise ValueError("each case must name a capability of at most 120 characters")
         if isinstance(weight, bool) or not isinstance(weight, (int, float)) or not isfinite(weight) or not 0 < weight <= 100:
             raise ValueError("case weight must be finite and between 0 and 100")
         try:
-            case_fingerprint = sha256(_canonical(case).encode("utf-8")).hexdigest()
             canonical_case = _canonical(case)
         except (TypeError, ValueError) as exc:
             raise ValueError("benchmark cases must contain finite JSON-compatible values") from exc
         if len(canonical_case) > 10_000:
             raise ValueError("each benchmark case must be at most 10000 characters")
-        normalized_cases[case_id] = {"case_id": case_id, "capability": capability.strip(),
-                                     "weight": float(weight), "case_fingerprint": case_fingerprint}
+        case_fingerprint = sha256(canonical_case.encode("utf-8")).hexdigest()
+        normalized_cases[case_id] = {
+            "case_id": case_id, "capability": capability.strip(),
+            "weight": float(weight), "case_fingerprint": case_fingerprint,
+        }
     normalized_reviews = {}
     for review in reviews:
         if not isinstance(review, dict):
@@ -72,20 +74,29 @@ def evaluate_agent_benchmark(*, benchmark_id: str, version: str, cases: list[dic
                 abstained += 1
             else:
                 brier_total += (review["confidence"] - score) ** 2
-        bucket = capability_totals.setdefault(case["capability"], {"case_count": 0, "reviewed_count": 0, "weighted_score": 0.0, "weight": 0.0})
+        bucket = capability_totals.setdefault(case["capability"], {
+            "case_count": 0, "reviewed_count": 0, "weighted_score": 0.0, "weight": 0.0,
+        })
         bucket["case_count"] += 1
         if review:
             bucket["reviewed_count"] += 1
             bucket["weighted_score"] += case["weight"] * score
             bucket["weight"] += case["weight"]
-        case_results.append({"case_id": case_id, "capability": case["capability"], "outcome": outcome,
-                             "score": score, "weight": case["weight"],
-                             "reviewer_id": review["reviewer_id"] if review else None})
-    capability_scores = {name: {
-        "case_count": item["case_count"], "reviewed_count": item["reviewed_count"],
-        "coverage": round(item["reviewed_count"] / item["case_count"], 6),
-        "weighted_score": round(item["weighted_score"] / item["weight"], 6) if item["weight"] else None,
-    } for name, item in sorted(capability_totals.items())}
+        case_results.append({
+            "case_id": case_id, "capability": case["capability"], "outcome": outcome,
+            "score": score, "weight": case["weight"],
+            "case_fingerprint": case["case_fingerprint"],
+            "reviewer_id": review["reviewer_id"] if review else None,
+        })
+    capability_scores = {
+        name: {
+            "case_count": item["case_count"],
+            "reviewed_count": item["reviewed_count"],
+            "coverage": round(item["reviewed_count"] / item["case_count"], 6),
+            "weighted_score": round(item["weighted_score"] / item["weight"], 6) if item["weight"] else None,
+        }
+        for name, item in sorted(capability_totals.items())
+    }
     canonical_cases = [normalized_cases[key] for key in sorted(normalized_cases)]
     return {
         "benchmark_id": benchmark_id.strip(), "version": version.strip(),
@@ -105,18 +116,46 @@ def evaluate_agent_benchmark(*, benchmark_id: str, version: str, cases: list[dic
 def compare_benchmark_reports(previous: dict, current: dict) -> dict:
     if not isinstance(previous, dict) or not isinstance(current, dict) or previous.get("benchmark_id") != current.get("benchmark_id"):
         raise ValueError("reports must belong to the same benchmark")
-    before = {item["case_id"]: item for item in previous.get("case_results", [])}
-    after = {item["case_id"]: item for item in current.get("case_results", [])}
+    before_items, after_items = previous.get("case_results"), current.get("case_results")
+    if not isinstance(before_items, list) or not isinstance(after_items, list):
+        raise ValueError("reports must contain case_results lists")
+    before, after = {}, {}
+    for target, items in ((before, before_items), (after, after_items)):
+        for item in items:
+            if not isinstance(item, dict) or not isinstance(item.get("case_id"), str) or not item["case_id"]:
+                raise ValueError("case_results must contain unique case IDs")
+            if item["case_id"] in target:
+                raise ValueError("case_results must not contain duplicate case IDs")
+            target[item["case_id"]] = item
     shared = sorted(set(before) & set(after))
-    changes = [{"case_id": key, "previous": before[key]["outcome"], "current": after[key]["outcome"],
-                "score_delta": round(after[key]["score"] - before[key]["score"], 6)}
-               for key in shared if before[key]["outcome"] != after[key]["outcome"]]
+    changes = [
+        {"case_id": key, "previous": before[key].get("outcome"), "current": after[key].get("outcome"),
+         "score_delta": round(after[key].get("score", 0) - before[key].get("score", 0), 6)}
+        for key in shared if before[key].get("outcome") != after[key].get("outcome")
+    ]
+    changed_definitions = [
+        key for key in shared
+        if before[key].get("case_fingerprint") != after[key].get("case_fingerprint")
+    ]
+    same_case_set = (
+        isinstance(previous.get("case_set_sha256"), str)
+        and previous.get("case_set_sha256") == current.get("case_set_sha256")
+        and not (set(after) ^ set(before))
+    )
+    before_score, after_score = previous.get("weighted_score"), current.get("weighted_score")
+    score_delta = None
+    if same_case_set and isinstance(before_score, (int, float)) and isinstance(after_score, (int, float)):
+        if isfinite(before_score) and isfinite(after_score):
+            score_delta = round(after_score - before_score, 6)
     return {
-        "benchmark_id": previous["benchmark_id"], "shared_case_count": len(shared),
-        "added_case_ids": sorted(set(after) - set(before)), "removed_case_ids": sorted(set(before) - set(after)),
+        "benchmark_id": previous["benchmark_id"],
+        "shared_case_count": len(shared),
+        "added_case_ids": sorted(set(after) - set(before)),
+        "removed_case_ids": sorted(set(before) - set(after)),
         "changed_cases": changes,
-        "weighted_score_delta": round(current["weighted_score"] - previous["weighted_score"], 6)
-        if isinstance(current.get("weighted_score"), (int, float)) and isinstance(previous.get("weighted_score"), (int, float)) else None,
-        "comparison_is_like_for_like": not (set(after) ^ set(before)),
+        "changed_case_definition_ids": changed_definitions,
+        "case_set_sha256_matches": same_case_set,
+        "weighted_score_delta": score_delta,
+        "comparison_is_like_for_like": same_case_set,
         "does_not_establish_general_intelligence": True,
     }

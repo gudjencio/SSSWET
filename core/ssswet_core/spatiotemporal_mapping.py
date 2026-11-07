@@ -6,7 +6,7 @@ never extrapolated, and retain the endpoint observation references.
 from __future__ import annotations
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from math import acos, asin, atan2, cos, degrees, radians, sin, sqrt
+from math import acos, asin, atan2, cos, degrees, isfinite, radians, sin, sqrt
 from typing import Iterable
 
 MAX_OBSERVATIONS = 5000
@@ -23,6 +23,17 @@ def _timestamp(value: str) -> datetime:
         raise ValueError("timezone-naive timestamps are not accepted")
     return parsed.astimezone(timezone.utc)
 
+def _positive_finite(value, field):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{field} must be a positive finite number")
+    try:
+        numeric = float(value)
+    except (OverflowError, ValueError):
+        raise ValueError(f"{field} must be a positive finite number") from None
+    if not isfinite(numeric) or not 0 < numeric <= 1_000_000:
+        raise ValueError(f"{field} must be a positive finite number")
+    return numeric
+
 @dataclass(frozen=True)
 class SpatialObservation:
     observation_id: str
@@ -38,10 +49,10 @@ class SpatialObservation:
         if not isinstance(self.source_ref, str) or not self.source_ref.strip():
             raise ValueError("source_ref is required")
         for value, field, low, high in ((self.latitude, "latitude", -90, 90), (self.longitude, "longitude", -180, 180)):
-            if isinstance(value, bool) or not isinstance(value, (int, float)) or not -float("inf") < value < float("inf") or not low <= value <= high:
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not isfinite(value) or not low <= value <= high:
                 raise ValueError(f"{field} is outside its valid range")
-        if isinstance(self.accuracy_m, bool) or not isinstance(self.accuracy_m, (int, float)) or not 0 <= self.accuracy_m <= 10000:
-            raise ValueError("accuracy_m must be between 0 and 10000")
+        if isinstance(self.accuracy_m, bool) or not isinstance(self.accuracy_m, (int, float)) or not isfinite(self.accuracy_m) or not 0 <= self.accuracy_m <= 10000:
+            raise ValueError("accuracy_m must be finite and between 0 and 10000")
         _timestamp(self.timestamp)
 
     def utc_datetime(self):
@@ -55,16 +66,22 @@ def haversine_m(a: SpatialObservation, b: SpatialObservation) -> float:
     return 2 * EARTH_RADIUS_M * asin(min(1.0, sqrt(value)))
 
 def segment_track(observations: Iterable[SpatialObservation], *, max_gap_seconds: float = 900, max_accuracy_m: float = 150, max_jump_m: float = 5000, max_speed_mps: float = 70) -> dict:
-    values = list(observations)
-    if len(values) > MAX_OBSERVATIONS:
-        raise ValueError(f"at most {MAX_OBSERVATIONS} observations are supported")
+    values = []
+    try:
+        for item in observations:
+            if len(values) >= MAX_OBSERVATIONS:
+                raise ValueError(f"at most {MAX_OBSERVATIONS} observations are supported")
+            values.append(item)
+    except TypeError as exc:
+        raise ValueError("observations must be an iterable of SpatialObservation instances") from exc
     if any(not isinstance(item, SpatialObservation) for item in values):
         raise ValueError("all observations must be SpatialObservation instances")
     if len({item.observation_id for item in values}) != len(values):
         raise ValueError("observation IDs must be unique")
-    for value, field in ((max_gap_seconds, "max_gap_seconds"), (max_accuracy_m, "max_accuracy_m"), (max_jump_m, "max_jump_m"), (max_speed_mps, "max_speed_mps")):
-        if isinstance(value, bool) or not isinstance(value, (int, float)) or not 0 < value <= 1_000_000:
-            raise ValueError(f"{field} must be a positive finite number")
+    max_gap_seconds = _positive_finite(max_gap_seconds, "max_gap_seconds")
+    max_accuracy_m = _positive_finite(max_accuracy_m, "max_accuracy_m")
+    max_jump_m = _positive_finite(max_jump_m, "max_jump_m")
+    max_speed_mps = _positive_finite(max_speed_mps, "max_speed_mps")
     ordered = sorted(values, key=lambda item: (item.utc_datetime(), item.observation_id))
     accepted, rejected = [], []
     for item in ordered:
@@ -110,8 +127,7 @@ def segment_track(observations: Iterable[SpatialObservation], *, max_gap_seconds
 def interpolate_between(left: SpatialObservation, right: SpatialObservation, timestamp: str, *, max_gap_seconds: float = 300) -> dict:
     if not isinstance(left, SpatialObservation) or not isinstance(right, SpatialObservation):
         raise ValueError("left and right must be SpatialObservation instances")
-    if isinstance(max_gap_seconds, bool) or not isinstance(max_gap_seconds, (int, float)) or not 0 < max_gap_seconds <= 1_000_000:
-        raise ValueError("max_gap_seconds must be a positive finite number")
+    max_gap_seconds = _positive_finite(max_gap_seconds, "max_gap_seconds")
     if left.observation_id == right.observation_id:
         raise ValueError("interpolation endpoints must be distinct observations")
     start, end, target = left.utc_datetime(), right.utc_datetime(), _timestamp(timestamp)
