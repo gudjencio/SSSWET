@@ -2,6 +2,7 @@
 from __future__ import annotations
 from hashlib import sha256
 from pathlib import Path
+from urllib.parse import quote
 import os
 import sqlite3
 import tempfile
@@ -9,7 +10,8 @@ import tempfile
 def _readonly_connection(path: Path) -> sqlite3.Connection:
     if not path.is_file():
         raise ValueError("database file does not exist")
-    return sqlite3.connect(f"file:{path.resolve().as_posix()}?mode=ro", uri=True, timeout=2.0)
+    uri_path = quote(path.resolve().as_posix(), safe="/:")
+    return sqlite3.connect(f"file:{uri_path}?mode=ro", uri=True, timeout=2.0)
 
 def inspect_sqlite(path: str | Path) -> dict:
     database = Path(path)
