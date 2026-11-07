@@ -185,35 +185,68 @@ class ResearchKnowledgeGraph:
             "created_at": row["created_at"],
         }
 
-    def impact(self, node_id, *, max_depth=5, limit=100):
+    def impact(self, node_id, *, max_depth=5, limit=100, direction="outgoing", relations=None):
+        """Trace bounded graph impact in either direction with optional relation filters.
+
+        Outgoing-only traversal remains the default for backwards compatibility.
+        """
         node_id = self._identifier(node_id, "node_id")
         if not isinstance(max_depth, int) or isinstance(max_depth, bool) or not 0 <= max_depth <= 20:
             raise ValueError("max_depth must be between 0 and 20")
         if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 500:
             raise ValueError("limit must be between 1 and 500")
+        if direction not in {"outgoing", "incoming", "both"}:
+            raise ValueError("direction must be outgoing, incoming or both")
+        if relations is not None:
+            if not isinstance(relations, (list, tuple, set)) or not relations or any(item not in RELATIONS for item in relations):
+                raise ValueError("relations must contain supported relationship types")
+            relation_filter = set(relations)
+        else:
+            relation_filter = None
+
         self.get_node(node_id)
         results = []
         queue = [(node_id, 0, [node_id], [])]
         visited = {node_id}
         with self.store._connect() as connection:
             while queue and len(results) < limit:
-                current, depth, path, relations = queue.pop(0)
+                current, depth, path, path_relations = queue.pop(0)
                 if depth >= max_depth:
                     continue
-                rows = connection.execute(
-                    "SELECT * FROM research_knowledge_edges WHERE source_id=? AND state!='withdrawn' ORDER BY rowid",
-                    (current,),
-                ).fetchall()
-                for row in rows:
-                    target = row["target_id"]
-                    if target in visited:
+                rows = []
+                if direction in {"outgoing", "both"}:
+                    rows.extend((row, row["target_id"], "outgoing") for row in connection.execute(
+                        "SELECT * FROM research_knowledge_edges WHERE source_id=? AND state!='withdrawn' ORDER BY rowid",
+                        (current,),
+                    ).fetchall())
+                if direction in {"incoming", "both"}:
+                    rows.extend((row, row["source_id"], "incoming") for row in connection.execute(
+                        "SELECT * FROM research_knowledge_edges WHERE target_id=? AND state!='withdrawn' ORDER BY rowid",
+                        (current,),
+                    ).fetchall())
+                for row, target, traversal in rows:
+                    if target in visited or (relation_filter is not None and row["relation"] not in relation_filter):
                         continue
                     visited.add(target)
                     next_depth = depth + 1
                     next_path = path + [target]
-                    next_relations = relations + [row["relation"]]
-                    results.append({"node": self.get_node(target), "depth": next_depth,
-                                    "path": next_path, "relations": next_relations, "edge_id": row["edge_id"]})
+                    next_relations = path_relations + [row["relation"]]
+                    node_row = connection.execute(
+                        "SELECT * FROM research_knowledge_nodes WHERE node_id=?", (target,)
+                    ).fetchone()
+                    if node_row is None:
+                        continue
+                    node = {
+                        "node_id": node_row["node_id"], "node_type": node_row["node_type"],
+                        "label": node_row["label"], "source_refs": json.loads(node_row["source_refs_json"]),
+                        "metadata": json.loads(node_row["metadata_json"]),
+                        "created_at": node_row["created_at"], "actor_id": node_row["actor_id"],
+                    }
+                    results.append({
+                        "node": node, "depth": next_depth, "path": next_path,
+                        "relations": next_relations, "edge_id": row["edge_id"],
+                        "traversal": traversal,
+                    })
                     if next_depth < max_depth:
                         queue.append((target, next_depth, next_path, next_relations))
                     if len(results) >= limit:

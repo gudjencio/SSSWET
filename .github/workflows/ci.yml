@@ -38,8 +38,12 @@ jobs:
           node --check web/platform-downloads.js
           node --check web/donation.js
           node --check web/technology-categories.js
+          node --check web/technology-supercategories-data.js
+          node --check web/technology-supercategories.js
+          node web/test-technology-supercategories.cjs
           node --check web/donation-config.js
           node --check web/product-purchase-config.js
+          node --check web/temporal-clock.js
           node --check web/virtual-time-travel.js
           node --check web/keyframe-continuity.js
           node --check web/keyframe-correspondence.js
@@ -53,8 +57,12 @@ jobs:
           node web/test-locales.cjs
           node web/test-keyframe-continuity.cjs
           node web/test-keyframe-correspondence.cjs
+          node web/test-temporal-clock.cjs
           node web/test-keyframe-spatial-distribution.cjs
           node web/test-bot-personality.cjs
       - name: Run core tests
         working-directory: core
         run: python -m pytest -q
+      - name: Benchmark bounded research workflow utilities
+        if: matrix.python-version == '3.12'
+        run: python .github/scripts/benchmark_research_quality.py

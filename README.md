@@ -9,10 +9,10 @@ The project is exploratory. Public descriptions are intentionally high-level and
 
 ## Research catalogue
 
-The latest expansion adds ten curated programmes, including [Virtual Time Travel Mapping](docs/VIRTUAL_TIME_TRAVEL_MAPPING.md). This is a local-first research concept for consented 3D spatial capture, replay of recorded observations, and explicitly uncertain modelling of unrecorded past or future scenarios. It does not recover unrecorded history or predict the future with certainty.
+The catalogue includes [Virtual Time Travel Mapping](docs/VIRTUAL_TIME_TRAVEL_MAPPING.md), a local-first research concept for consented 3D spatial capture, replay of recorded observations, and explicitly uncertain modelling of unrecorded past or future scenarios. It does not recover unrecorded history or predict the future with certainty.
 
 
-The public catalogue defines **1,000 research programmes** across eight categories; the contribution interface separately presents **606 selected themes**. These entries are research scopes, not demonstrated technologies. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md), the [protective systems and exoskeleton portfolio](docs/PROTECTIVE_SYSTEMS_AND_EXOSKELETON_PORTFOLIO.md), and the [protective system technical specification framework](docs/PROTECTIVE_SYSTEM_TECHNICAL_SPECIFICATION_FRAMEWORK.md).
+The public catalogue defines **1,000 research programmes** organized into ten super-categories while preserving eight source domains; the contribution interface separately presents **606 selected themes**. These entries are research scopes, not demonstrated technologies. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md), the [protective systems and exoskeleton portfolio](docs/PROTECTIVE_SYSTEMS_AND_EXOSKELETON_PORTFOLIO.md), and the [protective system technical specification framework](docs/PROTECTIVE_SYSTEM_TECHNICAL_SPECIFICATION_FRAMEWORK.md).
 
 The cellular programme now includes dedicated draft workstreams covering cellular recovery, tissue and organ preservation, neural preservation and post-mortem biological limits. These remain research proposals and do not claim that human resurrection is currently possible.
 
@@ -105,8 +105,8 @@ The public interface offers **300 selectable language entries**. The catalogue i
 SSSWET uses two complementary maintenance tracks:
 
 - Daily maintenance reviews reproducible defects, security, accessibility, links, tests and deployment health, and applies low-risk corrections with regression tests.
-- Daily feature development targets ten substantial improvements per run across research workflows, scientific memory, agent coordination, accessibility, reliability, performance and protective technology. Each proposed change must be compared with the previous version and pass its acceptance tests before it is described as an improvement. If fewer than ten can safely meet measurable acceptance criteria, the shortfall is reported rather than padded.
-- 30-minute and hourly GitHub Actions regression watches run Python and JavaScript checks and the core test suite. They detect regressions; they do not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
+- Feature development has a quality-gated target of ten substantial improvements per development run across research workflows, scientific memory, agent coordination, accessibility, reliability, performance and protective technology. This is an objective, not a guaranteed output; a shortfall is reported rather than padded with cosmetic edits.
+- The repository defines 30-minute and hourly GitHub Actions regression watches for Python, JavaScript and the core test suite. GitHub may delay scheduled events; consult the Actions run history for actual execution records. The watches detect regressions and do not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
 
 No update may knowingly reduce documented usefulness, performance, durability, efficiency, safety, maintainability, accessibility or evidence quality. Benchmark gains and claims about agent capability require repeatable measurements. Scientific, ethical, privacy, cybersecurity and legal safeguards remain mandatory.
 
@@ -133,3 +133,7 @@ Agent memories now carry explicit, append-only source-review states. Researchers
 ## Research knowledge graph
 
 The research knowledge graph connects individual memories, claims, decisions, experiments, evidence, technology dossiers and hypotheses through explicit, provenance-linked relationships. Bounded impact tracing helps identify downstream artefacts that may need review when upstream evidence or interpretations change. It complements the technology dependency graph rather than replacing it. See [Research Knowledge Graph](docs/RESEARCH_KNOWLEDGE_GRAPH.md).
+
+## Research workflow quality
+
+The core research toolkit now adds deterministic provenance-graph diagnostics, versioned agent-capability matching, dataset governance review flags, preregistration deviation records, verifiable reproducibility manifests, uncertainty-aware temporal alignment, fair civil-rescue resource allocation, static accessibility checks, localization QA and dossier-level provenance audits. These are decision-support and review tools; they do not automate scientific approval, legal compliance, dispatch or real-world operations. See [Research workflow quality upgrades](docs/RESEARCH_WORKFLOW_QUALITY_UPGRADES_2026-11-06.md).

@@ -200,6 +200,7 @@
   const catalogueCount = entries.length;
   const countElement = document.getElementById("technology-catalogue-count");
   if (countElement) countElement.dataset.catalogueCount = String(catalogueCount);
+  window.SSSWET_TECHNOLOGY_ENTRIES = entries;
   window.SSSWET_TECHNOLOGY_TAXONOMY = {groups, count:catalogueCount, pageSize};
 
 })();
