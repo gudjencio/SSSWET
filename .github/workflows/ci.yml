@@ -66,3 +66,6 @@ jobs:
       - name: Benchmark bounded research workflow utilities
         if: matrix.python-version == '3.12'
         run: python .github/scripts/benchmark_research_quality.py
+      - name: Benchmark the ten-feature research toolkit
+        if: matrix.python-version == '3.12'
+        run: python .github/scripts/benchmark_research_toolkit.py
