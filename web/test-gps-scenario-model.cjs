@@ -43,7 +43,7 @@ assert.deepEqual(bounded.sourceObservationIds,["fix-2","fix-3","fix-4","fix-5","
 assert.deepEqual(estimate(straight,{kind:"future",horizonSeconds:60}),future,"identical inputs must be deterministic");
 assert.equal(constants.MIN_FIXES,3);assert.equal(constants.MAX_ACCURACY_M,150);
 const app=fs.readFileSync(path.join(__dirname,"virtual-time-travel.js"),"utf8");
-assert.match(app,/SSSWETGpsScenarioModel\?\.estimate/);assert.match(app,/modelQualityDetails/);assert.match(app,/modelNeedQualityData/);
+assert.match(app,/SSSWETGpsScenarioModel\?\.estimate/);assert.match(app,/modelQualityDetails/);assert.match(app,/modelNeedQualityData/);assert.match(app,/words\.modelQualityDetails/);assert.match(app,/words\.modelNeedQualityData/);assert.doesNotMatch(app,/t\(\)\.modelQualityDetails|t\(\)\.modelNeedQualityData/);
 const html=fs.readFileSync(path.join(__dirname,"virtual-time-travel.html"),"utf8");
 assert.ok(html.indexOf('<script src="gps-scenario-model.js"></script>')<html.indexOf('<script src="virtual-time-travel.js"></script>'));
 const sw=fs.readFileSync(path.join(__dirname,"sw.js"),"utf8");assert.match(sw,/ssswet-web-v193/);assert.match(sw,/\.\/gps-scenario-model\.js/);
