@@ -17,14 +17,20 @@ from .persistence import SQLiteResearchStore
 WEB_ROOT = Path(__file__).resolve().parents[2] / "web"
 DEFAULT_WEB_ORIGINS = {
     "https://gudjencio.github.io",
-    "https://sites.google.com",
-    "http://sites.google.com",
 }
 ALLOWED_WEB_ORIGINS = {
     origin.strip()
     for origin in os.environ.get("SSSWET_ALLOWED_ORIGINS", "").split(",")
     if origin.strip()
 } or DEFAULT_WEB_ORIGINS
+DEFAULT_WRITE_ORIGINS = {
+    "https://gudjencio.github.io",
+}
+ALLOWED_WRITE_ORIGINS = {
+    origin.strip()
+    for origin in os.environ.get("SSSWET_ALLOWED_WRITE_ORIGINS", "").split(",")
+    if origin.strip()
+} or DEFAULT_WRITE_ORIGINS
 
 
 def public_status(engine: SSSWETEngine, store: SQLiteResearchStore | None = None) -> dict[str, Any]:
@@ -570,13 +576,40 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             else:
                 super().do_GET()
 
+        def _public_browser_origin_allowed(self, origin: str | None) -> bool:
+            """Allow browser writes only from dedicated trusted origins or the local UI."""
+            if not origin:
+                return False
+            from urllib.parse import urlsplit
+            try:
+                parsed = urlsplit(origin)
+                hostname = parsed.hostname
+            except ValueError:
+                return False
+            if (
+                parsed.scheme not in {"http", "https"}
+                or not hostname
+                or parsed.username is not None
+                or parsed.password is not None
+                or parsed.path
+                or parsed.query
+                or parsed.fragment
+            ):
+                return False
+            # Google Sites shares one origin across unrelated sites; it cannot
+            # identify this project and is never a trusted write origin.
+            if hostname.lower() == "sites.google.com":
+                return False
+            if origin in ALLOWED_WRITE_ORIGINS:
+                return True
+            return hostname.lower() in {"localhost", "127.0.0.1", "::1"}
+
         def do_POST(self) -> None:
             from urllib.parse import urlsplit
             request_path = urlsplit(self.path).path
             if request_path == "/api/project-reports":
-                origin = self.headers.get("Origin")
-                if origin not in ALLOWED_WEB_ORIGINS:
-                    self._json({"error": "Origin is not allowed to submit project reports"}, 403)
+                if not self._public_browser_origin_allowed(self.headers.get("Origin")):
+                    self._json({"error": "A dedicated approved browser origin is required to submit project reports"}, 403)
                     return
                 token = os.environ.get("SSSWET_GITHUB_TOKEN", "").strip()
                 if not token:
@@ -585,11 +618,18 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             elif self.client_address[0] not in {"127.0.0.1", "::1"}:
                 self.send_error(403, "Verification reviews are restricted to the local machine")
                 return
-            if request_path == "/api/research-priority-assessments":
-                origin = self.headers.get("Origin")
-                if origin and origin not in ALLOWED_WEB_ORIGINS and urlsplit(origin).hostname not in {"localhost", "127.0.0.1", "::1"}:
-                    self._json({"error": "Origin is not allowed to submit local priority assessments"}, 403)
-                    return
+            public_write_paths = {
+                "/api/lab-verification-events",
+                "/api/scientific-review-board/reviews",
+                "/api/research-integrity/risks",
+                "/api/research-journal",
+                "/api/research-priority-assessments",
+            }
+            if request_path in public_write_paths and not self._public_browser_origin_allowed(
+                self.headers.get("Origin")
+            ):
+                self._json({"error": "An approved browser origin is required for this write operation"}, 403)
+                return
             private_order_write = (
                 request_path == "/api/private/orders"
                 or request_path.endswith("/payments")
