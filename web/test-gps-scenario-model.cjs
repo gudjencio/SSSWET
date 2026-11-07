@@ -23,6 +23,10 @@ assert.ok(robust);assert.ok(Math.abs(robust.distanceM-100)<0.2,"component-wise m
 assert.equal(robust.sampleCount,4);
 assert.equal(estimate(fixes([0,100]),{horizonSeconds:60}),null,"two fixes cannot estimate velocity variability");
 assert.equal(estimate(fixes([0,100,200],{accuracy:i=>i===1?NaN:5}),{horizonSeconds:60}),null,"all selected fixes need finite reported accuracy");
+const nullAccuracy=fixes([0,100,200]);nullAccuracy[1].accuracy=null;
+assert.equal(estimate(nullAccuracy,{horizonSeconds:60}),null,"null accuracy metadata must not be coerced to a false zero-metre fix");
+const emptyAccuracy=fixes([0,100,200]);emptyAccuracy[1].accuracy="";
+assert.equal(estimate(emptyAccuracy,{horizonSeconds:60}),null,"empty accuracy metadata must not be coerced to a false zero-metre fix");
 assert.equal(estimate(fixes([0,100,200],{accuracy:151}),{horizonSeconds:60}),null,"fixes above the 150 m threshold must be excluded");
 assert.equal(estimate(fixes([0,100,200]),{horizonSeconds:901}),null,"horizon must remain bounded to 15 minutes");
 assert.equal(estimate(fixes([0,100,200]),{horizonSeconds:0}),null);
