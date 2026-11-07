@@ -103,7 +103,7 @@ const html = fs.readFileSync(path.join(__dirname, "virtual-time-travel.html"), "
 assert.ok(html.indexOf('<script src="temporal-clock.js"></script>') < html.indexOf('<script src="virtual-time-travel.js"></script>'),
   "the clock helper must load before the mapping application");
 const serviceWorker = fs.readFileSync(path.join(__dirname, "sw.js"), "utf8");
-assert.match(serviceWorker, /ssswet-web-v192/, "the service-worker cache must be bumped for the new asset");
+assert.match(serviceWorker, /ssswet-web-v193/, "the service-worker cache must be bumped for the new asset");
 assert.match(serviceWorker, /\.\/temporal-clock\.js/, "the new clock helper must be precached");
 
 console.log("Temporal clock regression tests passed (synthetic clock probes; not a real-world clock-accuracy benchmark).");
