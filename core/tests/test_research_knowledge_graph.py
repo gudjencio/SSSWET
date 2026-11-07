@@ -72,3 +72,41 @@ def test_impact_validates_bounds(tmp_path):
         graph.impact("claim", max_depth=21)
     with pytest.raises(ValueError, match="limit"):
         graph.impact("claim", limit=0)
+
+
+def test_impact_supports_incoming_and_bidirectional_paths(tmp_path):
+    graph = make_graph(tmp_path)
+    node(graph, "source")
+    node(graph, "middle")
+    node(graph, "target")
+    graph.link(source_id="source", target_id="middle", relation="supports",
+               actor_id="mira", rationale="Source supports middle.",
+               evidence_refs=["source:1"])
+    graph.link(source_id="middle", target_id="target", relation="contradicts",
+               actor_id="mira", rationale="Middle challenges target.",
+               evidence_refs=["source:2"])
+    incoming = graph.impact("target", direction="incoming")
+    assert [item["node"]["node_id"] for item in incoming] == ["middle", "source"]
+    assert all(item["traversal"] == "incoming" for item in incoming)
+    both = graph.impact("middle", direction="both")
+    assert {item["node"]["node_id"] for item in both} == {"source", "target"}
+
+
+def test_impact_filters_relationship_types_and_validates_direction(tmp_path):
+    graph = make_graph(tmp_path)
+    node(graph, "a")
+    node(graph, "b")
+    node(graph, "c")
+    graph.link(source_id="a", target_id="b", relation="supports",
+               actor_id="mira", rationale="Support relation.",
+               evidence_refs=["source:ab"])
+    graph.link(source_id="a", target_id="c", relation="contradicts",
+               actor_id="mira", rationale="Contradiction relation.",
+               evidence_refs=["source:ac"])
+    filtered = graph.impact("a", relations=["supports"])
+    assert [item["node"]["node_id"] for item in filtered] == ["b"]
+    import pytest
+    with pytest.raises(ValueError, match="direction"):
+        graph.impact("a", direction="sideways")
+    with pytest.raises(ValueError, match="relations"):
+        graph.impact("a", relations=["unknown"])
