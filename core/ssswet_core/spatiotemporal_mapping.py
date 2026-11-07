@@ -110,6 +110,10 @@ def segment_track(observations: Iterable[SpatialObservation], *, max_gap_seconds
 def interpolate_between(left: SpatialObservation, right: SpatialObservation, timestamp: str, *, max_gap_seconds: float = 300) -> dict:
     if not isinstance(left, SpatialObservation) or not isinstance(right, SpatialObservation):
         raise ValueError("left and right must be SpatialObservation instances")
+    if isinstance(max_gap_seconds, bool) or not isinstance(max_gap_seconds, (int, float)) or not 0 < max_gap_seconds <= 1_000_000:
+        raise ValueError("max_gap_seconds must be a positive finite number")
+    if left.observation_id == right.observation_id:
+        raise ValueError("interpolation endpoints must be distinct observations")
     start, end, target = left.utc_datetime(), right.utc_datetime(), _timestamp(timestamp)
     gap = (end - start).total_seconds()
     if gap <= 0 or gap > max_gap_seconds:
