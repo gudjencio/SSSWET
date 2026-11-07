@@ -72,16 +72,20 @@ def evaluate_agent_benchmark(*, benchmark_id: str, version: str, cases: list[dic
                 abstained += 1
             else:
                 brier_total += (review["confidence"] - score) ** 2
-        bucket = capability_totals.setdefault(case["capability"], {"case_count": 0, "weighted_score": 0.0, "weight": 0.0})
+        bucket = capability_totals.setdefault(case["capability"], {"case_count": 0, "reviewed_count": 0, "weighted_score": 0.0, "weight": 0.0})
         bucket["case_count"] += 1
-        bucket["weighted_score"] += case["weight"] * score
-        bucket["weight"] += case["weight"]
+        if review:
+            bucket["reviewed_count"] += 1
+            bucket["weighted_score"] += case["weight"] * score
+            bucket["weight"] += case["weight"]
         case_results.append({"case_id": case_id, "capability": case["capability"], "outcome": outcome,
                              "score": score, "weight": case["weight"],
                              "reviewer_id": review["reviewer_id"] if review else None})
-    capability_scores = {name: {"case_count": item["case_count"],
-                                 "weighted_score": round(item["weighted_score"] / item["weight"], 6)}
-                         for name, item in sorted(capability_totals.items())}
+    capability_scores = {name: {
+        "case_count": item["case_count"], "reviewed_count": item["reviewed_count"],
+        "coverage": round(item["reviewed_count"] / item["case_count"], 6),
+        "weighted_score": round(item["weighted_score"] / item["weight"], 6) if item["weight"] else None,
+    } for name, item in sorted(capability_totals.items())}
     canonical_cases = [normalized_cases[key] for key in sorted(normalized_cases)]
     return {
         "benchmark_id": benchmark_id.strip(), "version": version.strip(),
