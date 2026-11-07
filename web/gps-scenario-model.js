@@ -23,12 +23,15 @@
     const sorted=values.slice().sort((a,b)=>a-b),middle=Math.floor(sorted.length/2);
     return sorted.length%2?sorted[middle]:(sorted[middle-1]+sorted[middle])/2;
   }
+  function hasFiniteNumber(value) {
+    return value!==null&&value!==undefined&&value!==""&&Number.isFinite(Number(value));
+  }
   function validFix(event) {
     if(!event||(event.kind&&event.kind!=="gps")||!event.coords)return false;
     const latitude=Number(event.coords.latitude),longitude=Number(event.coords.longitude),timestamp=Number(event.timestamp),accuracy=Number(event.accuracy);
-    return Number.isFinite(latitude)&&latitude>=-90&&latitude<=90
-      &&Number.isFinite(longitude)&&longitude>=-180&&longitude<=180
-      &&Number.isFinite(timestamp)&&Number.isFinite(accuracy)&&accuracy>=0&&accuracy<=MAX_ACCURACY_M;
+    return hasFiniteNumber(event.coords.latitude)&&latitude>=-90&&latitude<=90
+      &&hasFiniteNumber(event.coords.longitude)&&longitude>=-180&&longitude<=180
+      &&hasFiniteNumber(event.timestamp)&&hasFiniteNumber(event.accuracy)&&accuracy>=0&&accuracy<=MAX_ACCURACY_M;
   }
   function splitContinuousRuns(events) {
     const points=(Array.isArray(events)?events:[]).filter(validFix).map(event=>({
