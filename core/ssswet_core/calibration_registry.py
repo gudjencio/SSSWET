@@ -40,7 +40,7 @@ def assess_calibration(record: dict, *, at: str, max_uncertainty: float | None =
     if not isinstance(provider, str) or not provider.strip() or len(provider) > 200:
         raise ValueError("calibration_provider is required")
     traceability = record.get("traceability_refs", [])
-    if not isinstance(traceability, list) or len(traceability) > 50 or any(not isinstance(ref, str) or not ref.strip() for ref in traceability):
+    if not isinstance(traceability, list) or len(traceability) > 50 or any(not isinstance(ref, str) or not ref.strip() or len(ref) > 300 for ref in traceability):
         raise ValueError("traceability_refs must contain at most 50 non-empty identifiers")
     uncertainty = record.get("expanded_uncertainty")
     if isinstance(uncertainty, bool) or not isinstance(uncertainty, (int, float)) or not isfinite(uncertainty) or uncertainty < 0:
@@ -51,6 +51,14 @@ def assess_calibration(record: dict, *, at: str, max_uncertainty: float | None =
     review_state = record.get("review_state", "pending")
     if review_state not in {"reviewed", "pending", "rejected"}:
         raise ValueError("review_state must be reviewed, pending or rejected")
+    reviewer = record.get("reviewer")
+    reviewed_at = record.get("reviewed_at")
+    if review_state in {"reviewed", "rejected"}:
+        if not isinstance(reviewer, str) or not reviewer.strip() or len(reviewer) > 200:
+            raise ValueError("reviewed or rejected calibration records require a reviewer")
+        reviewed_at = _date(reviewed_at, "reviewed_at").isoformat()
+    elif reviewer is not None and (not isinstance(reviewer, str) or len(reviewer) > 200):
+        raise ValueError("reviewer must be a string of at most 200 characters")
     reasons = []
     if not start <= instant <= end:
         reasons.append("outside_validity_window")
@@ -76,6 +84,8 @@ def assess_calibration(record: dict, *, at: str, max_uncertainty: float | None =
         "uncertainty_unit": unit,
         "traceability_refs": list(traceability),
         "review_state": review_state,
+        "reviewer": reviewer,
+        "reviewed_at": reviewed_at,
         "certificate_content_verified": False,
         "instrument_certification_claimed": False,
     }

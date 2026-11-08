@@ -16,7 +16,7 @@ def kaplan_meier(observations: list[dict]) -> dict:
         identifier = item.get("observation_id")
         duration = item.get("duration")
         event = item.get("event_observed")
-        if not isinstance(identifier, str) or not identifier.strip() or identifier in identifiers:
+        if not isinstance(identifier, str) or not identifier.strip() or len(identifier) > 200 or identifier in identifiers:
             raise ValueError("observation_id values must be unique non-empty strings")
         identifiers.add(identifier)
         if isinstance(duration, bool) or not isinstance(duration, (int, float)) or not isfinite(duration) or duration < 0:

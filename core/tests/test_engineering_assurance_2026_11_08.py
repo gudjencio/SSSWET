@@ -65,7 +65,7 @@ def test_calibration_registry_checks_validity_review_and_traceability():
         "valid_from": "2026-01-01T00:00:00Z", "valid_until": "2026-12-31T23:59:59Z",
         "certificate_sha256": "a" * 64, "calibration_provider": "Independent Lab",
         "traceability_refs": ["standard:SI-01"], "expanded_uncertainty": 0.02,
-        "uncertainty_unit": "mm", "review_state": "reviewed",
+        "uncertainty_unit": "mm", "review_state": "reviewed", "reviewer": "reviewer-1", "reviewed_at": "2026-01-01T00:00:00Z",
     }
     valid = assess_calibration(record, at="2026-11-08T09:00:00+01:00", max_uncertainty=0.03)
     assert valid["metadata_complete_for_review"] is True
@@ -289,3 +289,16 @@ def test_reproducible_bundle_rejects_sensitive_paths_and_oversized_archives():
         build_bundle({".env": "API_KEY=example"})
     with pytest.raises(ValueError, match="per-file size"):
         build_bundle({"large.bin": b"x" * (5 * 1024 * 1024 + 1)})
+
+
+def test_calibration_review_cannot_be_marked_complete_without_attribution():
+    record = {
+        "instrument_id": "sensor-02", "calibration_id": "cal-2",
+        "valid_from": "2026-01-01T00:00:00Z", "valid_until": "2026-12-31T23:59:59Z",
+        "certificate_sha256": "c" * 64, "calibration_provider": "Lab",
+        "traceability_refs": ["standard:SI-02"], "expanded_uncertainty": 0.1,
+        "uncertainty_unit": "mm", "review_state": "reviewed",
+        "reviewed_at": "2026-02-01T00:00:00Z",
+    }
+    with pytest.raises(ValueError, match="require a reviewer"):
+        assess_calibration(record, at="2026-03-01T00:00:00Z")

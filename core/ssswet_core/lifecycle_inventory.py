@@ -16,7 +16,7 @@ def aggregate_inventory(flows: list[dict]) -> dict:
         if not isinstance(flow, dict):
             raise ValueError("each inventory flow must be an object")
         required = ("flow_id", "phase", "quantity_unit", "factor_basis_unit", "impact_unit", "factor_source_id", "factor_version")
-        if any(not isinstance(flow.get(key), str) or not flow[key].strip() for key in required):
+        if any(not isinstance(flow.get(key), str) or not flow[key].strip() or len(flow[key]) > (50 if key in {"quantity_unit", "factor_basis_unit", "impact_unit"} else 200) for key in required):
             raise ValueError("each flow needs identifiers, phase and explicit units and factor provenance")
         if flow["flow_id"] in flow_ids:
             raise ValueError("flow_id values must be unique to prevent accidental double counting")

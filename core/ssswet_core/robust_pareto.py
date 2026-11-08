@@ -23,7 +23,7 @@ def analyze_frontier(alternatives: list[dict], objectives: list[dict]) -> dict:
         if not isinstance(objective, dict):
             raise ValueError("each objective must be an object")
         name, direction = objective.get("name"), objective.get("direction")
-        if not isinstance(name, str) or not name.strip() or name in names or direction not in {"minimize", "maximize"}:
+        if not isinstance(name, str) or not name.strip() or len(name) > 120 or name in names or direction not in {"minimize", "maximize"}:
             raise ValueError("objective names must be unique and directions must be minimize or maximize")
         names.add(name)
         directions[name] = direction
@@ -32,7 +32,7 @@ def analyze_frontier(alternatives: list[dict], objectives: list[dict]) -> dict:
         if not isinstance(alternative, dict):
             raise ValueError("each alternative must be an object")
         identifier, metrics = alternative.get("alternative_id"), alternative.get("metrics")
-        if not isinstance(identifier, str) or not identifier.strip() or identifier in identifiers:
+        if not isinstance(identifier, str) or not identifier.strip() or len(identifier) > 200 or identifier in identifiers:
             raise ValueError("alternative_id values must be unique non-empty strings")
         identifiers.add(identifier)
         if not isinstance(metrics, dict) or set(metrics) != names:

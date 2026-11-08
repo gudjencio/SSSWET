@@ -14,11 +14,11 @@ def assess_failure_modes(modes: list[dict]) -> dict:
         if not isinstance(mode, dict):
             raise ValueError("each failure mode must be an object")
         mode_id = mode.get("mode_id")
-        if not isinstance(mode_id, str) or not mode_id.strip() or mode_id in identifiers:
+        if not isinstance(mode_id, str) or not mode_id.strip() or len(mode_id) > 200 or mode_id in identifiers:
             raise ValueError("mode_id values must be unique non-empty strings")
         identifiers.add(mode_id)
         required = ("subsystem", "failure_mode", "effect", "cause")
-        if any(not isinstance(mode.get(key), str) or not mode[key].strip() for key in required):
+        if any(not isinstance(mode.get(key), str) or not mode[key].strip() or len(mode[key]) > 1_000 for key in required):
             raise ValueError("subsystem, failure_mode, effect and cause are required")
         for key in ("severity", "occurrence", "detectability"):
             if type(mode.get(key)) is not int or mode[key] not in _LEVELS:
@@ -26,7 +26,7 @@ def assess_failure_modes(modes: list[dict]) -> dict:
         controls = mode.get("controls", [])
         evidence = mode.get("evidence_refs", [])
         closure = mode.get("closure_evidence_refs", [])
-        if any(not isinstance(value, list) or len(value) > 50 or any(not isinstance(item, str) or not item.strip() for item in value) for value in (controls, evidence, closure)):
+        if any(not isinstance(value, list) or len(value) > 50 or any(not isinstance(item, str) or not item.strip() or len(item) > 300 for item in value) for value in (controls, evidence, closure)):
             raise ValueError("controls and evidence reference fields must be bounded lists of non-empty strings")
         action_state = mode.get("action_state", "open")
         if action_state not in _ACTION_STATES:

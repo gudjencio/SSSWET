@@ -25,7 +25,7 @@ This proposal is additive: it creates ten new core modules, a focused regression
 
 1. **Sensor clock alignment** — sensor_clock_alignment.py fits an affine clock map using Theil–Sen pairwise medians, retains source IDs and residuals, and aligns only timestamps inside the anchor interval. Acceptance: deterministic offset/drift recovery on a synthetic outlier fixture; unique anchor IDs; invalid/non-forward clocks rejected; out-of-range observations are reported rather than extrapolated; 10,000-observation probe remains below the broad 5-second CI guard.
 2. **Covariance-aware uncertainty budgets** — uncertainty_budget.py calculates first-order propagation for declared sensitivities, standard uncertainties and a correlation matrix. Acceptance: independent inputs reproduce quadrature; correlated inputs change the result correctly; asymmetric, out-of-range and non-PSD matrices are rejected; worst-case absolute bounds remain separately visible.
-3. **Metrology calibration-record audit** — calibration_registry.py checks timezone-aware validity windows, digest format, declared traceability references, review state and optional uncertainty limits. Acceptance: expired, pending, rejected, incomplete and malformed records are surfaced; duplicate instruments are rejected. The certificate content itself is not fetched or authenticated.
+3. **Metrology calibration-record audit** — calibration_registry.py checks timezone-aware validity windows, digest format, declared traceability references, review state, reviewer and review timestamp. Acceptance: expired, pending, rejected, incomplete and malformed records are surfaced; completed review states require reviewer attribution and a timezone-aware review timestamp; duplicate instruments are rejected. The certificate content itself is not fetched or authenticated.
 4. **Right-censored reliability analysis** — reliability_survival.py produces a Kaplan–Meier curve with tied events, right-censor counts, Greenwood standard errors and an unreached-median state. Acceptance: known hand-calculated fixtures match; invalid durations and duplicate IDs are rejected; no parametric extrapolation occurs; the implementation is O(n log n) after sorting.
 5. **Measurement repeatability** — measurement_repeatability.py estimates within-group and between-group variance components for balanced repeated measurements. Acceptance: equal replicate counts are required; known synthetic variance fixtures are reproducible; zero-variance cases do not divide by zero. This is not a full crossed Gage R&R study or an accreditation assessment.
 6. **Failure-mode review** — failure_mode_review.py validates separate ordinal ratings, controls, evidence and action closure. Acceptance: high-severity items without controls and modes without evidence remain flagged; closed actions require a named reviewer and closure evidence; no risk-priority number is calculated.
@@ -70,19 +70,19 @@ The remaining public APIs are documented in their module docstrings and covered 
 
 ## Local validation and performance probe
 
-The focused suite passed **20 tests** on Python **3.13.5**. The synthetic benchmark uses three timed repetitions per workload; p95 is the maximum of those three samples and is a diagnostic, not a stable statistical tail estimate.
+The focused suite passed **21 tests** on Python **3.13.5**. The synthetic benchmark uses three timed repetitions per workload; p95 is the maximum of those three samples and is a diagnostic, not a stable statistical tail estimate.
 
 | Synthetic workload | Median | p95 |
 |---|---:|---:|
-| 10,000 sensor observations aligned from 200 anchors | 10.1570 ms | 54.8862 ms |
-| 30-component covariance budget | 0.7473 ms | 0.8831 ms |
-| 500 calibration records | 3.4003 ms | 4.3478 ms |
-| 10,000 Kaplan–Meier observations | 18.6863 ms | 18.8058 ms |
-| 100 repeatability groups | 0.4889 ms | 0.5913 ms |
-| 500 failure modes | 1.4047 ms | 1.4652 ms |
-| 200 alternatives × 8 objectives | 12.3654 ms | 13.8501 ms |
-| 1,000 requirement/evidence links | 2.1878 ms | 2.2000 ms |
-| 5,000 life-cycle inventory flows | 17.5790 ms | 20.7341 ms |
-| 20-file reproducible bundle (~1 MB uncompressed) | 8.7281 ms | 9.5793 ms |
+| 10,000 sensor observations aligned from 200 anchors | 11.8205 ms | 50.3533 ms |
+| 30-component covariance budget | 0.8524 ms | 0.8695 ms |
+| 500 calibration records | 5.2568 ms | 7.4236 ms |
+| 10,000 Kaplan–Meier observations | 19.4709 ms | 21.9284 ms |
+| 100 repeatability groups | 0.3639 ms | 1.2328 ms |
+| 500 failure modes | 1.6574 ms | 2.0739 ms |
+| 200 alternatives × 8 objectives | 11.9297 ms | 12.5515 ms |
+| 1,000 requirement/evidence links | 2.8295 ms | 2.9836 ms |
+| 5,000 life-cycle inventory flows | 18.1825 ms | 19.0580 ms |
+| 20-file reproducible bundle (~1 MB uncompressed) | 5.0039 ms | 5.6711 ms |
 
 Measurements were produced in the local Python 3.13.5 container. CI repeats the same deterministic workloads on its Python 3.12 runner and retains a deliberately broad 5-second p95 guard. These numbers are not device-wide guarantees and do not establish scientific validity, agent intelligence, safety or certification.

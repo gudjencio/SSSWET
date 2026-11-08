@@ -57,7 +57,7 @@ def main() -> None:
         "valid_from": "2026-01-01T00:00:00Z", "valid_until": "2026-12-31T23:59:59Z",
         "certificate_sha256": f"{i:064x}", "calibration_provider": "Synthetic Lab",
         "traceability_refs": ["standard:synthetic"], "expanded_uncertainty": 0.02,
-        "uncertainty_unit": "mm", "review_state": "reviewed",
+        "uncertainty_unit": "mm", "review_state": "reviewed", "reviewer": "reviewer", "reviewed_at": "2026-01-01T00:00:00Z",
     } for i in range(500)]
     calibration_probe = measure(lambda: audit_registry(calibration_records, at="2026-11-08T00:00:00Z"))
     assert calibration_probe["result"]["metadata_complete_count"] == 500

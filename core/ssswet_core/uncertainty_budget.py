@@ -41,7 +41,7 @@ def propagate_linear(components: list[dict], correlation_matrix: list[list[float
         if not isinstance(item, dict):
             raise ValueError("each component must be an object")
         name = item.get("name")
-        if not isinstance(name, str) or not name.strip() or name in names:
+        if not isinstance(name, str) or not name.strip() or len(name) > 120 or name in names:
             raise ValueError("component names must be unique non-empty strings")
         names.append(name)
         sensitivities.append(_finite(item.get("sensitivity"), "sensitivity"))

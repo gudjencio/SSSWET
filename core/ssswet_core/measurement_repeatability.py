@@ -17,7 +17,7 @@ def analyze_repeatability(groups: list[dict]) -> dict:
             raise ValueError("each group must be an object")
         group_id = group.get("group_id")
         values = group.get("values")
-        if not isinstance(group_id, str) or not group_id.strip() or group_id in seen:
+        if not isinstance(group_id, str) or not group_id.strip() or len(group_id) > 200 or group_id in seen:
             raise ValueError("group_id values must be unique non-empty strings")
         seen.add(group_id)
         if not isinstance(values, list) or not 2 <= len(values) <= MAX_REPLICATES:

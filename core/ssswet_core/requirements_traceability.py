@@ -17,14 +17,14 @@ def build_traceability_matrix(requirements: list[dict], evidence: list[dict]) ->
         if not isinstance(requirement, dict):
             raise ValueError("each requirement must be an object")
         identifier = requirement.get("requirement_id")
-        if not isinstance(identifier, str) or not identifier.strip() or identifier in req_by_id:
+        if not isinstance(identifier, str) or not identifier.strip() or len(identifier) > 200 or identifier in req_by_id:
             raise ValueError("requirement_id values must be unique non-empty strings")
-        if not isinstance(requirement.get("description"), str) or not requirement["description"].strip():
+        if not isinstance(requirement.get("description"), str) or not requirement["description"].strip() or len(requirement["description"]) > 2_000:
             raise ValueError("each requirement needs a description")
         if requirement.get("verification_method") not in _METHODS:
             raise ValueError("verification_method must be analysis, test, inspection or demonstration")
         refs = requirement.get("evidence_refs", [])
-        if not isinstance(refs, list) or len(refs) > 100 or any(not isinstance(ref, str) or not ref.strip() for ref in refs):
+        if not isinstance(refs, list) or len(refs) > 100 or any(not isinstance(ref, str) or not ref.strip() or len(ref) > 300 for ref in refs):
             raise ValueError("evidence_refs must be a bounded list of non-empty identifiers")
         req_by_id[identifier] = {**requirement, "evidence_refs": list(refs)}
     evidence_by_id = {}
@@ -32,7 +32,7 @@ def build_traceability_matrix(requirements: list[dict], evidence: list[dict]) ->
         if not isinstance(item, dict):
             raise ValueError("each evidence item must be an object")
         identifier = item.get("evidence_id")
-        if not isinstance(identifier, str) or not identifier.strip() or identifier in evidence_by_id:
+        if not isinstance(identifier, str) or not identifier.strip() or len(identifier) > 200 or identifier in evidence_by_id:
             raise ValueError("evidence_id values must be unique non-empty strings")
         if item.get("result") not in _RESULTS:
             raise ValueError("evidence result must be pass, fail or inconclusive")
@@ -52,7 +52,7 @@ def build_traceability_matrix(requirements: list[dict], evidence: list[dict]) ->
                 unresolved.append(ref)
             else:
                 linked.append(item)
-        valid_pass = [item for item in linked if item["result"] == "pass" and item.get("reviewer") and item.get("provenance_ref")]
+        valid_pass = [item for item in linked if item["result"] == "pass" and isinstance(item.get("reviewer"), str) and item["reviewer"].strip() and isinstance(item.get("provenance_ref"), str) and item["provenance_ref"].strip()]
         adverse = [item for item in linked if item["result"] in {"fail", "inconclusive"}]
         if unresolved:
             state = "broken_evidence_reference"
