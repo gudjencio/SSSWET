@@ -45,13 +45,34 @@ assert.equal(bounded.sampleCount,constants.MAX_FIXES,"scenario window must be ca
 assert.deepEqual(bounded.sourceObservationIds,["fix-2","fix-3","fix-4","fix-5","fix-6","fix-7"]);
 assert.deepEqual(estimate(straight,{kind:"future",horizonSeconds:60}),future,"identical inputs must be deterministic");
 assert.equal(constants.MIN_FIXES,3);assert.equal(constants.MAX_ACCURACY_M,150);
+assert.equal(estimate(straight,{kind:"future",horizonSeconds:60}).sessionKey,"legacy");
+const sessionA=fixes([0,100,200]).map((event,index)=>({...event,id:"a-"+index,clockSessionId:"clock-A"}));
+const sessionB=fixes([1000,1100,1200]).map((event,index)=>({...event,id:"b-"+index,clockSessionId:"clock-B"}));
+const mixedSessions=[...sessionA,...sessionB];
+assert.equal(estimate(mixedSessions,{kind:"future",horizonSeconds:60}),null,"multiple clock sessions must require an explicit session selection");
+const selectedA=estimate(mixedSessions,{kind:"future",horizonSeconds:60,sessionKey:"session:clock-A"});
+assert.ok(selectedA,"an explicitly selected session with three valid fixes must produce a scenario");
+assert.equal(selectedA.clockSessionId,"clock-A");
+assert.deepEqual(selectedA.sourceObservationIds,["a-0","a-1","a-2"],"a scenario must never include observations from another clock session");
+const sessions=listSessions(mixedSessions);
+assert.equal(sessions.length,2);
+assert.deepEqual(sessions.map(item=>item.key),["session:clock-A","session:clock-B"]);
+assert.deepEqual(sessions.map(item=>item.gpsCount),[3,3]);
+assert.equal(sessionKey({timestamp:1}),"legacy","records without a clock session remain in an isolated legacy group");
+const twoInA=fixes([0,100]).map((event,index)=>({...event,id:"two-a-"+index,clockSessionId:"clock-A"}));
+const oneInB={...fixes([200])[0],id:"one-b",timestamp:120000,clockSessionId:"clock-B"};
+assert.equal(estimate([...twoInA,oneInB],{kind:"future",horizonSeconds:60}),null,"two fixes from one session and one from another must not be combined into a fabricated three-fix track");
+assert.equal(estimate([...twoInA,oneInB],{kind:"future",horizonSeconds:60,sessionKey:"session:clock-A"}),null);
+assert.equal(estimate(mixedSessions,{kind:"future",horizonSeconds:60,sessionKey:"session:missing"}),null,"unknown session selection must not fall back to another session");
+const withAnnotation=[...sessionA,{id:"annotation-a",kind:"annotation",timestamp:180000,clockSessionId:"clock-A"}];
+assert.equal(listSessions(withAnnotation)[0].count,4,"session index must include non-GPS observations in the timeline count");
 const app=fs.readFileSync(path.join(__dirname,"virtual-time-travel.js"),"utf8");
-assert.match(app,/SSSWETGpsScenarioModel\?\.estimate/);assert.match(app,/modelQualityDetails/);assert.match(app,/modelNeedQualityData/);assert.match(app,/words\.modelQualityDetails/);assert.match(app,/words\.modelNeedQualityData/);assert.doesNotMatch(app,/t\(\)\.modelQualityDetails|t\(\)\.modelNeedQualityData/);
+assert.match(app,/SSSWETGpsScenarioModel\?\.estimate/);assert.match(app,/SSSWETGpsScenarioModel\.sessionKey/);assert.match(app,/refreshSessions/);assert.match(app,/modelQualityDetails/);assert.match(app,/modelNeedQualityData/);assert.match(app,/words\.modelQualityDetails/);assert.match(app,/words\.modelNeedQualityData/);assert.doesNotMatch(app,/t\(\)\.modelQualityDetails|t\(\)\.modelNeedQualityData/);
 const html=fs.readFileSync(path.join(__dirname,"virtual-time-travel.html"),"utf8");
-assert.ok(html.indexOf('<script src="gps-scenario-model.js"></script>')<html.indexOf('<script src="virtual-time-travel.js"></script>'));
-const sw=fs.readFileSync(path.join(__dirname,"sw.js"),"utf8");assert.match(sw,/ssswet-web-v193/);assert.match(sw,/\.\/gps-scenario-model\.js/);
+assert.ok(html.indexOf('<script src="gps-scenario-model.js"></script>')<html.indexOf('<script src="virtual-time-travel.js"></script>'));assert.match(html,/id="vt-session"/);assert.match(html,/aria-describedby="vt-session-help"/);
+const sw=fs.readFileSync(path.join(__dirname,"sw.js"),"utf8");assert.match(sw,/ssswet-web-v194/);assert.match(sw,/\.\/gps-scenario-model\.js/);
 const extraStart=app.indexOf("const extraCopy=")+ "const extraCopy=".length,extraEnd=app.indexOf(";\n",extraStart),extra=JSON.parse(app.slice(extraStart,extraEnd));
 const locales=["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"];
 assert.deepEqual(Object.keys(extra),locales);
-for(const locale of locales){for(const key of ["modelNeedQualityData","modelQualityDetails"])assert.ok(extra[locale][key],"missing "+key+" translation for "+locale);for(const token of ["{distance}","{uncertainty}","{samples}","{speed}","{spread}","{sensitivity}"])assert.ok(extra[locale].modelQualityDetails.includes(token),"missing "+token+" in "+locale);}
+for(const locale of locales){for(const key of ["modelNeedQualityData","modelQualityDetails","sessionLabel","sessionSelectPrompt","sessionHelp","sessionNeedSelection","sessionOption","sessionUnknownTime","sessionLegacyPrefix"])assert.ok(extra[locale][key],"missing "+key+" translation for "+locale);for(const token of ["{distance}","{uncertainty}","{samples}","{speed}","{spread}","{sensitivity}"])assert.ok(extra[locale].modelQualityDetails.includes(token),"missing "+token+" in "+locale);for(const token of ["{start}","{end}","{count}","{gps}"])assert.ok(extra[locale].sessionOption.includes(token),"missing "+token+" in session option for "+locale);}
 console.log("GPS scenario-model regression tests passed (synthetic tracks; not a real-world positioning or forecast accuracy benchmark).");
