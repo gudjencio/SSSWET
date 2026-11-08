@@ -55,7 +55,7 @@ function put(name,value){return new Promise((resolve,reject)=>{const req=store(n
 function all(name){return new Promise((resolve,reject)=>{const req=store(name).getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)})}
 function removeAll(name){return new Promise((resolve,reject)=>{const req=store(name,"readwrite").clear();req.onsuccess=()=>resolve();req.onerror=()=>reject(req.error)})}
 function newId(){return Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9)}
-async function saveEvent(kind,data={}){const entry={id:newId(),...captureClockSnapshot(),kind,...data};await put("events",entry);events.push(entry);events.sort((a,b)=>a.timestamp-b.timestamp);refreshSessions(window.SSSWETGpsScenarioModel?.sessionKey(entry));$("vt-time").value=Math.max(0,selectedSessionEvents().length-1);refreshTimeline();refreshStorage();updateMap();return entry}
+async function saveEvent(kind,data={}){const entry={id:newId(),...captureClockSnapshot(),kind,...data};await put("events",entry);events.push(entry);events.sort((a,b)=>a.timestamp-b.timestamp);const model=window.SSSWETGpsScenarioModel,entrySession=model?.sessionKey(entry),preferredSession=$("vt-session")?.value||entrySession;refreshSessions(preferredSession);if($("vt-session").value===entrySession)$("vt-time").value=Math.max(0,selectedSessionEvents().length-1);refreshTimeline();refreshStorage();updateMap();return entry}
 function refreshStorage(){const words=extraCopy[locale]||extraCopy.en;$("vt-storage-count").textContent=events.length+" "+words.obs+" · "+media.length+" "+words.clips;refreshKeyframeClips();}
 function eventLabel(kind){return t()[kind]||kind}
 function formatTime(ts){return new Date(ts).toLocaleString(locale,{dateStyle:"medium",timeStyle:"medium"})}
