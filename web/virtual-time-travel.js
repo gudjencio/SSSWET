@@ -87,7 +87,8 @@ function showEvent(index){
  if(e.eventType){const typeOption=$("vt-event-type").querySelector('option[value="'+e.eventType+'"]');if(typeOption)detail+=" · "+typeOption.textContent;}if(e.description)detail+=" · "+e.description;
  $("vt-selected").textContent=detail;
  if(e.coords&&map)map.flyTo({center:[e.coords.longitude,e.coords.latitude],zoom:Math.max(map.getZoom(),17),essential:true});
- const clip=media.find(m=>m.timestamp<=e.timestamp&&m.timestamp+Math.max(1000,m.duration||0)>=e.timestamp)||media.filter(m=>m.timestamp<=e.timestamp).slice(-1)[0];
+ const selectedKey=window.SSSWETGpsScenarioModel?.sessionKey(e)||"legacy",sessionMedia=media.filter(item=>(window.SSSWETGpsScenarioModel?.sessionKey(item)||"legacy")===selectedKey);
+ const clip=sessionMedia.find(m=>m.timestamp<=e.timestamp&&m.timestamp+Math.max(1000,m.duration||0)>=e.timestamp)||sessionMedia.filter(m=>m.timestamp<=e.timestamp).slice(-1)[0];
  if(clip?.blob){const video=$("vt-playback");if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(clip.blob);video.src=objectUrl;video.hidden=false;}else{$("vt-playback").hidden=true;}
 }
 function reliableGpsEvents(){
@@ -96,7 +97,7 @@ function reliableGpsEvents(){
  const accepted=[];
  for(const item of raw){
   const previous=accepted[accepted.length-1];
-  if(previous&&item.timestamp-previous.timestamp<60000&&distanceMeters(previous.coords,item.coords)>5000)continue;
+  if(previous&&sessionKey(item)===sessionKey(previous)&&item.timestamp-previous.timestamp<60000&&distanceMeters(previous.coords,item.coords)>5000)continue;
   accepted.push(item);
  }
  return accepted;
@@ -306,7 +307,7 @@ function downloadKeyframe(index){
 }
 
 async function addAnnotation(){const description=$("vt-event-description").value.trim();if(!description){$("vt-event-feedback").textContent=t().eventMissing;return}const coords=currentPosition?{latitude:currentPosition.coords.latitude,longitude:currentPosition.coords.longitude}:null;await saveEvent("annotation",{eventType:$("vt-event-type").value,description,coords});$("vt-event-description").value="";$("vt-event-feedback").textContent=t().eventSaved}
-function playTimeline(){if(playbackTimer){clearInterval(playbackTimer);playbackTimer=null;$("vt-play").textContent=t().play;return}const visible=selectedSessionEvents();if(!visible.length)return;$("vt-play").textContent=t().pause;playbackTimer=setInterval(()=>{let i=Number($("vt-time").value)+1;if(i>=visible.length){clearInterval(playbackTimer);playbackTimer=null;$("vt-play").textContent=t().play;i=visible.length-1}showEvent(i)},750)}
+function playTimeline(){if(playbackTimer){clearInterval(playbackTimer);playbackTimer=null;$("vt-play").textContent=t().play;return}if(!selectedSessionEvents().length)return;$("vt-play").textContent=t().pause;playbackTimer=setInterval(()=>{const visible=selectedSessionEvents();if(!visible.length){clearInterval(playbackTimer);playbackTimer=null;$("vt-play").textContent=t().play;return}let i=Number($("vt-time").value)+1;if(i>=visible.length){clearInterval(playbackTimer);playbackTimer=null;$("vt-play").textContent=t().play;i=visible.length-1}showEvent(i)},750)}
 async function exportIndex(){const payload={format:"ssswet-virtual-time-map-index-v1",exported_at:new Date().toISOString(),session_ordering_note:"clockSessionId partitions capture sessions; timestamps are only directly comparable within a session. Do not infer cross-session chronology from device wall-clock anchors alone.",observations:events};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="ssswet-observation-index.json";a.click();URL.revokeObjectURL(url);$("vt-data-feedback").textContent=t().exported}
 async function deleteData(){if(!confirm(t().deleteConfirm))return;stopScan();await removeAll("events");await removeAll("media");events=[];media=[];mediaBytes=0;refreshSessions();refreshTimeline();refreshStorage();updateMap();$("vt-data-feedback").textContent=t().deleted}
 async function init(){
