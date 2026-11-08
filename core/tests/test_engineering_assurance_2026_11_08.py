@@ -297,7 +297,7 @@ def test_calibration_review_cannot_be_marked_complete_without_attribution():
         "valid_from": "2026-01-01T00:00:00Z", "valid_until": "2026-12-31T23:59:59Z",
         "certificate_sha256": "c" * 64, "calibration_provider": "Lab",
         "traceability_refs": ["standard:SI-02"], "expanded_uncertainty": 0.1,
-        "uncertainty_unit": "mm", "review_state": "reviewed", "reviewer": "reviewer-1", "reviewed_at": "2026-01-01T00:00:00Z",
+        "uncertainty_unit": "mm", "review_state": "reviewed",
         "reviewed_at": "2026-02-01T00:00:00Z",
     }
     with pytest.raises(ValueError, match="require a reviewer"):
