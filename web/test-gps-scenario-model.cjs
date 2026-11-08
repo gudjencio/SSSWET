@@ -2,7 +2,7 @@
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
-const {estimate,constants}=require("./gps-scenario-model.js");
+const {estimate,constants,sessionKey,listSessions}=require("./gps-scenario-model.js");
 const R=6371000;
 function lonForEast(m,lat=0){return m/(R*Math.cos(lat*Math.PI/180))*180/Math.PI;}
 function fixes(offsets,options={}){const interval=options.intervalMs??60000,lat=options.latitude??0,accuracy=options.accuracy??5;return offsets.map((east,i)=>({id:"fix-"+i,kind:"gps",timestamp:i*interval,accuracy:typeof accuracy==="function"?accuracy(i):accuracy,coords:{latitude:lat,longitude:lonForEast(east,lat)}}));}
