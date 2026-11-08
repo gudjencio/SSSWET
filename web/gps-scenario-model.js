@@ -59,6 +59,7 @@
   function splitContinuousRuns(events) {
     const points=(Array.isArray(events)?events:[]).filter(validFix).map(event=>({
       id:event.id==null?null:String(event.id),timestamp:Number(event.timestamp),accuracy:Number(event.accuracy),
+      clockSessionId:event.clockSessionId==null?null:String(event.clockSessionId),
       coords:{latitude:Number(event.coords.latitude),longitude:Number(event.coords.longitude)}
     })).sort((a,b)=>a.timestamp-b.timestamp);
     const runs=[];let current=[];
