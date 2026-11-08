@@ -33,6 +33,29 @@
       &&hasFiniteNumber(event.coords.longitude)&&longitude>=-180&&longitude<=180
       &&hasFiniteNumber(event.timestamp)&&hasFiniteNumber(event.accuracy)&&accuracy>=0&&accuracy<=MAX_ACCURACY_M;
   }
+  function sessionKey(event) {
+    const id=event&&event.clockSessionId;
+    return id===null||id===undefined||String(id)===""?"legacy":"session:"+String(id);
+  }
+  function listSessions(events) {
+    const groups=new Map();
+    for(const event of Array.isArray(events)?events:[]){
+      if(!event||typeof event!=="object")continue;
+      const key=sessionKey(event);
+      if(!groups.has(key)){
+        groups.set(key,{key,clockSessionId:key==="legacy"?null:String(event.clockSessionId),count:0,gpsCount:0,firstTimestamp:null,lastTimestamp:null});
+      }
+      const group=groups.get(key);
+      group.count++;
+      if(event.kind==="gps"&&validFix(event))group.gpsCount++;
+      if(hasFiniteNumber(event.timestamp)){
+        const timestamp=Number(event.timestamp);
+        group.firstTimestamp=group.firstTimestamp===null?timestamp:Math.min(group.firstTimestamp,timestamp);
+        group.lastTimestamp=group.lastTimestamp===null?timestamp:Math.max(group.lastTimestamp,timestamp);
+      }
+    }
+    return Array.from(groups.values()).sort((a,b)=>a.key<b.key?-1:a.key>b.key?1:0).map(group=>Object.freeze(group));
+  }
   function splitContinuousRuns(events) {
     const points=(Array.isArray(events)?events:[]).filter(validFix).map(event=>({
       id:event.id==null?null:String(event.id),timestamp:Number(event.timestamp),accuracy:Number(event.accuracy),
@@ -68,7 +91,13 @@
   function estimate(events,options={}) {
     const kind=options.kind==="past"?"past":"future",horizonSeconds=Number(options.horizonSeconds);
     if(!Number.isFinite(horizonSeconds)||horizonSeconds<=0||horizonSeconds>900)return null;
-    const eligibleRuns=splitContinuousRuns(events).filter(run=>run.length>=MIN_FIXES);
+    const validEvents=(Array.isArray(events)?events:[]).filter(validFix);
+    const availableKeys=Array.from(new Set(validEvents.map(sessionKey))).sort();
+    const requestedKey=options.sessionKey===undefined||options.sessionKey===null||options.sessionKey===""?null:String(options.sessionKey);
+    const selectedKey=requestedKey||(availableKeys.length===1?availableKeys[0]:null);
+    if(!selectedKey||!availableKeys.includes(selectedKey))return null;
+    const selectedEvents=validEvents.filter(event=>sessionKey(event)===selectedKey);
+    const eligibleRuns=splitContinuousRuns(selectedEvents).filter(run=>run.length>=MIN_FIXES);
     if(!eligibleRuns.length)return null;
     const selectedRun=kind==="past"?eligibleRuns[0]:eligibleRuns[eligibleRuns.length-1];
     const fixes=kind==="past"?selectedRun.slice(0,MAX_FIXES):selectedRun.slice(-MAX_FIXES);
@@ -94,14 +123,15 @@
     const accuracySensitivityContributionM=accuracySensitivityMps*horizonSeconds;
     const uncertaintyRadiusM=Math.ceil(anchor.accuracy+variabilityContributionM+accuracySensitivityContributionM);
     return Object.freeze({
-      kind,method:"median-local-velocity",origin:Object.freeze({...anchor.coords}),target:Object.freeze(target),
+      kind,method:"median-local-velocity",sessionKey:selectedKey,clockSessionId:fixes[0].clockSessionId==null?null:String(fixes[0].clockSessionId),
+      origin:Object.freeze({...anchor.coords}),target:Object.freeze(target),
       distanceM:speedMps*horizonSeconds,speedMps,sampleCount:fixes.length,segmentCount:velocities.length,
       sourceObservationIds:Object.freeze(fixes.map(fix=>fix.id).filter(Boolean)),anchorAccuracyM:anchor.accuracy,
       medianVelocityResidualMps,accuracySensitivityMps,variabilityContributionM,accuracySensitivityContributionM,
       uncertaintyRadiusM,horizonSeconds
     });
   }
-  const api=Object.freeze({estimate,median,constants:Object.freeze({MAX_ACCURACY_M,MAX_GAP_MS,MAX_SEGMENT_DISTANCE_M,MAX_SPEED_MPS,MAX_FIXES,MIN_FIXES})});
+  const api=Object.freeze({estimate,median,sessionKey,listSessions,constants:Object.freeze({MAX_ACCURACY_M,MAX_GAP_MS,MAX_SEGMENT_DISTANCE_M,MAX_SPEED_MPS,MAX_FIXES,MIN_FIXES})});
   if(typeof window!=="undefined")window.SSSWETGpsScenarioModel=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })();
