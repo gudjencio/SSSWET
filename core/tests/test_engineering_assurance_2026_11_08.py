@@ -65,7 +65,7 @@ def test_calibration_registry_checks_validity_review_and_traceability():
         "valid_from": "2026-01-01T00:00:00Z", "valid_until": "2026-12-31T23:59:59Z",
         "certificate_sha256": "a" * 64, "calibration_provider": "Independent Lab",
         "traceability_refs": ["standard:SI-01"], "expanded_uncertainty": 0.02,
-        "uncertainty_unit": "mm", "review_state": "reviewed", "reviewer": "reviewer-1", "reviewed_at": "2026-01-01T00:00:00Z",
+        "uncertainty_unit": "mm", "review_state": "reviewed", "reviewer": "reviewer-1", "reviewed_at": "2026-01-01T00:00:00Z", "reviewer": "reviewer-1", "reviewed_at": "2026-01-01T00:00:00Z",
     }
     valid = assess_calibration(record, at="2026-11-08T09:00:00+01:00", max_uncertainty=0.03)
     assert valid["metadata_complete_for_review"] is True
@@ -215,7 +215,7 @@ def test_calibration_registry_rejects_naive_dates_and_duplicate_instruments():
         "valid_from": "2026-01-01T00:00:00Z", "valid_until": "2026-12-31T23:59:59Z",
         "certificate_sha256": "b" * 64, "calibration_provider": "Lab",
         "traceability_refs": ["ref:1"], "expanded_uncertainty": 0.1,
-        "uncertainty_unit": "mm", "review_state": "reviewed",
+        "uncertainty_unit": "mm", "review_state": "reviewed", "reviewer": "reviewer-1", "reviewed_at": "2026-01-01T00:00:00Z",
     }
     with pytest.raises(ValueError, match="timezone"):
         assess_calibration({**record, "valid_from": "2026-01-01T00:00:00"}, at="2026-02-01T00:00:00Z")
@@ -297,7 +297,7 @@ def test_calibration_review_cannot_be_marked_complete_without_attribution():
         "valid_from": "2026-01-01T00:00:00Z", "valid_until": "2026-12-31T23:59:59Z",
         "certificate_sha256": "c" * 64, "calibration_provider": "Lab",
         "traceability_refs": ["standard:SI-02"], "expanded_uncertainty": 0.1,
-        "uncertainty_unit": "mm", "review_state": "reviewed",
+        "uncertainty_unit": "mm", "review_state": "reviewed", "reviewer": "reviewer-1", "reviewed_at": "2026-01-01T00:00:00Z",
         "reviewed_at": "2026-02-01T00:00:00Z",
     }
     with pytest.raises(ValueError, match="require a reviewer"):
