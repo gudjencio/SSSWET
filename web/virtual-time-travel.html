@@ -21,6 +21,8 @@
     <div id="vt-map" role="application" aria-label="Interactive 3D map" data-a="mapAria"></div>
     <div class="vt-map-meta"><span id="vt-coordinates" data-i="noLocation">Location not shared</span><span data-i="mapAttribution">Map data © OpenStreetMap contributors · OpenFreeMap · Terrain relief © MapLibre demo tiles</span><span data-x="mapLegend">Shaded areas are approximate scanned zones.</span></div>
   <section class="vt-panel vt-timeline"><div class="vt-panel-heading"><div><h2 data-i="timelineTitle">Recorded timeline</h2><p data-i="timelineIntro">Rewind and advance through the observations captured in this browser.</p></div><span id="vt-timeline-range">—</span></div>
+    <label class="vt-session-filter"><span data-x="sessionLabel">Recording session</span><select id="vt-session" aria-describedby="vt-session-help"><option value="">Choose a recording session</option></select></label>
+    <p id="vt-session-help" class="vt-small" data-x="sessionHelp">Sessions are kept separate because device-clock anchors from different sessions cannot be assumed comparable. Select one session to replay its timeline and model only its own GPS observations.</p>
     <input id="vt-time" type="range" min="0" max="0" value="0" step="1" aria-label="Recorded observation timeline" data-a="timelineAria">
     <div class="vt-actions"><button id="vt-prev" class="secondary" type="button" data-i="previous">Previous</button><button id="vt-play" class="primary" type="button" data-i="play">Play recorded timeline</button><button id="vt-next" class="secondary" type="button" data-i="next">Next</button></div>
     <div id="vt-selected" class="vt-selected" aria-live="polite" data-i="noObservations">No observations recorded yet.</div>
