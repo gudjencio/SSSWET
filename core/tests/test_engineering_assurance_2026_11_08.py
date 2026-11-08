@@ -65,7 +65,7 @@ def test_calibration_registry_checks_validity_review_and_traceability():
         "valid_from": "2026-01-01T00:00:00Z", "valid_until": "2026-12-31T23:59:59Z",
         "certificate_sha256": "a" * 64, "calibration_provider": "Independent Lab",
         "traceability_refs": ["standard:SI-01"], "expanded_uncertainty": 0.02,
-        "uncertainty_unit": "mm", "review_state": "reviewed", "reviewer": "reviewer-1", "reviewed_at": "2026-01-01T00:00:00Z", "reviewer": "reviewer-1", "reviewed_at": "2026-01-01T00:00:00Z",
+        "uncertainty_unit": "mm", "review_state": "reviewed", "reviewer": "reviewer-1", "reviewed_at": "2026-01-01T00:00:00Z",
     }
     valid = assess_calibration(record, at="2026-11-08T09:00:00+01:00", max_uncertainty=0.03)
     assert valid["metadata_complete_for_review"] is True
