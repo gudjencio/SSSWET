@@ -137,3 +137,5 @@ The research knowledge graph connects individual memories, claims, decisions, ex
 ## Research workflow quality
 
 The core research toolkit now adds deterministic provenance-graph diagnostics, versioned agent-capability matching, dataset governance review flags, preregistration deviation records, verifiable reproducibility manifests, uncertainty-aware temporal alignment, fair civil-rescue resource allocation, static accessibility checks, localization QA and dossier-level provenance audits. These are decision-support and review tools; they do not automate scientific approval, legal compliance, dispatch or real-world operations. See [Research workflow quality upgrades](docs/RESEARCH_WORKFLOW_QUALITY_UPGRADES_2026-11-06.md).
+
+The [engineering assurance utilities](docs/ENGINEERING_ASSURANCE_UPGRADES_2026-11-08.md) add bounded support for sensor-clock alignment, measurement uncertainty, reliability testing, protective-system failure review, requirements traceability, life-cycle inventory and reproducible research hand-offs.
