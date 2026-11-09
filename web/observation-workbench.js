@@ -275,7 +275,7 @@
         maxObservedSpeedMps = maxObservedSpeedMps === null ? speed : Math.max(maxObservedSpeedMps, speed);
         used++;
       }
-      results.push({ sessionKey: key, gpsFixCount: sorted.length, acceptedSegments: used, excludedSegments: excluded, excludedLowAccuracySegments, excludedMissingCoordinateSegments, distanceM: Number(distanceM.toFixed(3)), durationMs, movingDurationMs: movingMs, averageSpeedMps: durationMs ? Number((distanceM / (durationMs / 1000)).toFixed(4)) : null, maxObservedSpeedMps: maxObservedSpeedMps === null ? null : Number(maxObservedSpeedMps.toFixed(4)) });
+      results.push({ sessionKey: key, gpsRecordCount: sorted.length, gpsFixCount: sorted.filter(event => validCoords(event.coords)).length, acceptedSegments: used, excludedSegments: excluded, excludedLowAccuracySegments, excludedMissingCoordinateSegments, distanceM: Number(distanceM.toFixed(3)), durationMs, movingDurationMs: movingMs, averageSpeedMps: durationMs ? Number((distanceM / (durationMs / 1000)).toFixed(4)) : null, maxObservedSpeedMps: maxObservedSpeedMps === null ? null : Number(maxObservedSpeedMps.toFixed(4)) });
     }
     results.sort((a, b) => a.sessionKey.localeCompare(b.sessionKey));
     return { sessions: results, crossSessionDistanceCalculated: false };
@@ -431,13 +431,16 @@
     return '"' + text.replace(/"/g, '""') + '"';
   }
 
-  function toCSV(observations) {
-    const columns = ["id", "session_key", "kind", "timestamp", "latitude", "longitude", "accuracy_m", "clock_status", "event_type", "description"];
+  function toCSV(observations, options) {
+    const includeSessionIds = !options || options.includeSessionIds !== false;
+    const columns = includeSessionIds
+      ? ["id", "session_key", "kind", "timestamp", "latitude", "longitude", "accuracy_m", "clock_status", "event_type", "description"]
+      : ["id", "kind", "timestamp", "latitude", "longitude", "accuracy_m", "clock_status", "event_type", "description"];
     const rows = [columns.join(",")];
     for (const event of observations || []) {
-      const values = [event.id, sessionKey(event), event.kind, event.timestamp,
-        event.coords && event.coords.latitude, event.coords && event.coords.longitude,
-        event.accuracy, event.clockStatus, event.eventType, event.description];
+      const values = includeSessionIds
+        ? [event.id, sessionKey(event), event.kind, event.timestamp, event.coords && event.coords.latitude, event.coords && event.coords.longitude, event.accuracy, event.clockStatus, event.eventType, event.description]
+        : [event.id, event.kind, event.timestamp, event.coords && event.coords.latitude, event.coords && event.coords.longitude, event.accuracy, event.clockStatus, event.eventType, event.description];
       rows.push(values.map((value, index) => csvCell(value, [3, 4, 5, 6].includes(index))).join(","));
     }
     return rows.join("\r\n") + "\r\n";
