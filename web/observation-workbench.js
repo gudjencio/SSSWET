@@ -101,7 +101,7 @@
         errors.push(prefix + ":invalid_coordinates");
       }
       if (event.clockSessionId !== undefined && event.clockSessionId !== null &&
-          (typeof event.clockSessionId !== "string" || event.clockSessionId.length > 128)) {
+          (typeof event.clockSessionId !== "string" || !event.clockSessionId.trim() || event.clockSessionId.length > 128)) {
         errors.push(prefix + ":invalid_session_id");
       }
       if (event.monotonicElapsedMs !== undefined && event.monotonicElapsedMs !== null &&
@@ -126,9 +126,10 @@
   function parseIndexText(text) {
     if (typeof text !== "string") return { ok: false, errors: ["input_not_text"] };
     if (byteLength(text) > MAX_INPUT_BYTES) return { ok: false, errors: ["input_size_limit_exceeded"] };
+    const normalizedText = text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text;
     let payload;
     try {
-      payload = JSON.parse(text);
+      payload = JSON.parse(normalizedText);
     } catch (_) {
       return { ok: false, errors: ["invalid_json"] };
     }
@@ -425,7 +426,7 @@
   function csvCell(value, numeric) {
     if (value === null || value === undefined) return "";
     let text = String(value);
-    if (!numeric && /^[=+\-@\t\r]/.test(text)) text = "'" + text;
+    if (!numeric && (/^[\s]*[=+\-@]/.test(text) || /^[\t\r]/.test(text))) text = "'" + text;
     return '"' + text.replace(/"/g, '""') + '"';
   }
 
@@ -450,6 +451,8 @@
   }
 
   async function createIntegrityManifest(payload) {
+    const validation = validateIndex(payload);
+    if (!validation.ok) throw new Error("Cannot create an integrity manifest for an invalid observation index");
     const canonicalPayload = { format: payload.format, observations: payload.observations };
     const canonical = canonicalize(canonicalPayload);
     const digest = await sha256Hex(canonical);
