@@ -103,7 +103,7 @@ const html = fs.readFileSync(path.join(__dirname, "virtual-time-travel.html"), "
 assert.ok(html.indexOf('<script src="temporal-clock.js"></script>') < html.indexOf('<script src="virtual-time-travel.js"></script>'),
   "the clock helper must load before the mapping application");
 const serviceWorker = fs.readFileSync(path.join(__dirname, "sw.js"), "utf8");
-const cacheVersion = serviceWorker.match(/const CACHE = "ssswet-web-v(\\d+)";/);
+const cacheVersion = serviceWorker.match(/const CACHE = "ssswet-web-v(\d+)";/);
 assert.ok(cacheVersion, "the service worker must use a versioned cache key");
 assert.ok(Number(cacheVersion[1]) > 0, "the service-worker cache version must be a positive integer");
 assert.match(serviceWorker, /\.\/temporal-clock\.js/, "the new clock helper must be precached");
