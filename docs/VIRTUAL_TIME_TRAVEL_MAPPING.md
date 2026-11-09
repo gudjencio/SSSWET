@@ -25,7 +25,7 @@ The interface distinguishes three categories:
 2. **Retrospective estimate:** a model-generated scenario constrained by available measurements. It is not a recovered historical recording.
 3. **Forward scenario:** a model-generated continuation of measured motion. It is not a guaranteed prediction.
 
-The current baseline model extrapolates a short trajectory using constant velocity from two recorded GPS samples. Its displayed uncertainty radius grows with horizon and distance. It does not yet perform multi-object tracking, image-based reconstruction, collision solving, scene understanding, long-range historical inference, or reliable long-range forecasting. Those capabilities require separate research, calibration datasets, validation and independent review.
+The current GPS scenario model uses a bounded component-wise median of local segment velocities from one continuous run containing at least three and at most six eligible fixes. Its displayed uncertainty envelope is a heuristic built from reported anchor accuracy, velocity spread and pair-accuracy sensitivity; it is not a calibrated confidence interval. It does not yet perform multi-object tracking, image-based reconstruction, collision solving, scene understanding, long-range historical inference, or reliable long-range forecasting. Those capabilities require separate research, calibration datasets, validation and independent review.
 
 No algorithm can uniquely recover an unrecorded past from incomplete present-day observations without additional evidence and assumptions. Future states are likewise conditional on unknown actions and disturbances. The product must never label generated scenarios as observed facts.
 
