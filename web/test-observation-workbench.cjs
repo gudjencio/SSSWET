@@ -149,6 +149,7 @@ assert.doesNotMatch(csvWithoutSessions, /session_key|legacy/, "CSV export must n
   assert.match(source, /autocomplete="off"/);
   const ui = fs.readFileSync(path.join(__dirname, "observation-workbench-ui.js"), "utf8");
   assert.doesNotMatch(ui, /\bfetch\s*\(|XMLHttpRequest|sendBeacon/, "the workbench must not upload local observation files");
+  assert.doesNotMatch(ui, /localStorage|sessionStorage|indexedDB/i, "the workbench must not persist imported observations in browser storage");
   assert.match(source, /for="index-file"/);
   assert.match(source, /role="status" aria-live="polite"/);
   const htmlIds = [...source.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
