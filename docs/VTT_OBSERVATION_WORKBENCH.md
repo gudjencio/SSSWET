@@ -66,3 +66,10 @@ Previous behaviour had no dedicated import/analysis workbench: users could expor
 ## Local benchmark reference
 
 A five-trial Node.js 22.16 synthetic run processed 10,000 GPS observations across five isolated sessions with a median of approximately 91 ms and p95 of approximately 107 ms in the local development container. CI records its own runner measurements; these figures are not browser field-performance guarantees.
+
+## CI verification — 9 November 2026
+
+- SSSWET CI run [42590835182](https://github.com/gudjencio/SSSWET/actions/runs/42590835182): Python 3.11, 3.12 and 3.13 matrix jobs passed; the JavaScript syntax/regression checks and the workbench performance probe passed.
+- The Node.js 22.16 GitHub runner measured the 10,000-observation / five-session synthetic workload at median 86.83 ms and p95 97.84 ms, below the 5,000 ms acceptance guard.
+- Core test run [42590835173](https://github.com/gudjencio/SSSWET/actions/runs/42590835173): 585 tests passed in 41.19 seconds.
+- The pull request remains open and unmerged. GitHub Pages deployment has therefore not been verified; the cache update is staged for the next deployment.
