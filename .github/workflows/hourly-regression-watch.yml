@@ -37,6 +37,9 @@ jobs:
           node --check web/temporal-clock.js
           node --check web/virtual-time-travel.js
           node web/test-temporal-clock.cjs
+          node --check web/observation-workbench.js
+          node --check web/observation-workbench-ui.js
+          node web/test-observation-workbench.cjs
           node --check web/bot-personality.js
           node --check web/bot-live-room.js
           node web/test-locales.cjs
