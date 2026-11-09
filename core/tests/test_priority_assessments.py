@@ -62,7 +62,8 @@ def test_assessment_api_is_readable_and_writes_only_from_loopback(tmp_path):
         request = Request(base + "/api/research-priority-assessments", data=json.dumps({
             "programme_id": "clean-water", "scores": scores(),
             "reviewer_label": "Local team", "rationale": "Documented preliminary review.",
-        }).encode(), headers={"Content-Type": "application/json"}, method="POST")
+        }).encode(), headers={"Origin": f"http://127.0.0.1:{server.server_port}",
+                               "Content-Type": "application/json"}, method="POST")
         with urlopen(request) as response:
             saved = json.loads(response.read())
             assert response.status == 201

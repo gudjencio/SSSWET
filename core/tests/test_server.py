@@ -1,6 +1,6 @@
 import pytest
 from ssswet_core.engine import SSSWETEngine
-from ssswet_core.server import public_status, public_events
+from ssswet_core.server import make_handler, public_status, public_events
 
 
 def test_public_status_reports_real_empty_engine_state():
@@ -549,7 +549,8 @@ def test_scientific_review_board_api_preserves_independent_reviews(tmp_path):
                 "evidence_refs": ["source-1"],
             }).encode()
             request = Request(base + "/api/scientific-review-board/reviews", data=body,
-                              headers={"Content-Type": "application/json"}, method="POST")
+                              headers={"Origin": f"http://127.0.0.1:{server.server_port}",
+                                       "Content-Type": "application/json"}, method="POST")
             with urlopen(request) as response:
                 assert response.status == 201
         with urlopen(base + "/api/scientific-review-board?dossier_id=dossier-api") as response:
@@ -726,7 +727,11 @@ def test_research_journal_api_lists_entries_and_accepts_local_append(tmp_path):
             "title": "Causality review", "summary": "Document known constraints first.",
             "classification": "hypothesis", "evidence_refs": ["doi:10.example/1"],
         }
-        request = Request(base + "/api/research-journal", data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"}, method="POST")
+        request = Request(
+            base + "/api/research-journal", data=json.dumps(payload).encode(),
+            headers={"Origin": f"http://127.0.0.1:{server.server_port}",
+                     "Content-Type": "application/json"}, method="POST",
+        )
         with urlopen(request) as response:
             created = json.loads(response.read())
             assert response.status == 201
@@ -974,3 +979,184 @@ def test_scientific_memory_lineage_endpoint_returns_revision_chain(tmp_path):
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+
+def test_project_report_endpoint_accepts_only_dedicated_public_origin(tmp_path, monkeypatch):
+    import json
+    import threading
+    from http.server import ThreadingHTTPServer
+    from urllib.error import HTTPError
+    from urllib.request import Request, urlopen
+
+    from ssswet_core import project_reports
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    monkeypatch.setenv("SSSWET_GITHUB_TOKEN", "test-token")
+    monkeypatch.setattr(
+        project_reports, "create_project_report",
+        lambda payload: {"submitted": True, "changes_applied": False},
+    )
+    store = SQLiteResearchStore(tmp_path / "project-report-origin.sqlite3")
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    body = json.dumps({
+        "category": "bug", "title": "Test report",
+        "description": "A reproducible test report",
+    }).encode()
+    try:
+        blocked = Request(
+            base + "/api/project-reports", data=body,
+            headers={"Origin": "https://sites.google.com", "Content-Type": "application/json"},
+            method="POST",
+        )
+        with pytest.raises(HTTPError) as rejected:
+            urlopen(blocked)
+        assert rejected.value.code == 403
+
+        approved = Request(
+            base + "/api/project-reports", data=body,
+            headers={"Origin": "https://gudjencio.github.io", "Content-Type": "application/json"},
+            method="POST",
+        )
+        with urlopen(approved) as response:
+            assert response.status == 201
+            assert json.loads(response.read())["submitted"] is True
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
+
+def test_public_write_routes_reject_missing_and_untrusted_origins(tmp_path):
+    import json
+    import threading
+    from http.server import ThreadingHTTPServer
+    from urllib.error import HTTPError
+    from urllib.request import Request, urlopen
+
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    store = SQLiteResearchStore(tmp_path / "write-origin-guard.sqlite3")
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    write_paths = (
+        "/api/lab-verification-events",
+        "/api/scientific-review-board/reviews",
+        "/api/research-integrity/risks",
+        "/api/research-journal",
+        "/api/research-priority-assessments",
+    )
+    try:
+        for path in write_paths:
+            for origin in ("https://attacker.example", None):
+                headers = {"Content-Type": "application/json"}
+                if origin is not None:
+                    headers["Origin"] = origin
+                request = Request(
+                    base + path, data=json.dumps({}).encode(),
+                    headers=headers, method="POST",
+                )
+                with pytest.raises(HTTPError) as rejected:
+                    urlopen(request)
+                assert rejected.value.code == 403, (path, origin)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
+
+def test_shared_google_sites_origin_is_never_trusted_for_writes(tmp_path, monkeypatch):
+    import json
+    import threading
+    from http.server import ThreadingHTTPServer
+    from urllib.error import HTTPError
+    from urllib.request import Request, urlopen
+
+    from ssswet_core import server as server_module
+    from ssswet_core.persistence import SQLiteResearchStore
+
+    assert "https://sites.google.com" not in server_module.DEFAULT_WEB_ORIGINS
+    monkeypatch.setattr(server_module, "ALLOWED_WEB_ORIGINS", {
+        "https://gudjencio.github.io", "https://sites.google.com"
+    })
+    monkeypatch.setattr(server_module, "ALLOWED_WRITE_ORIGINS", {
+        "https://gudjencio.github.io", "https://sites.google.com"
+    })
+    store = SQLiteResearchStore(tmp_path / "shared-origin.sqlite3")
+    server = ThreadingHTTPServer(
+        ("127.0.0.1", 0), make_handler(SSSWETEngine(store=store), store)
+    )
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{server.server_port}"
+    write_paths = (
+        "/api/lab-verification-events",
+        "/api/scientific-review-board/reviews",
+        "/api/research-integrity/risks",
+        "/api/research-journal",
+        "/api/research-priority-assessments",
+        "/api/project-reports",
+    )
+    try:
+        read = Request(
+            base + "/api/status",
+            headers={"Origin": "https://sites.google.com"},
+        )
+        with urlopen(read) as response:
+            assert response.status == 200
+            assert response.headers["Access-Control-Allow-Origin"] == "https://sites.google.com"
+
+        preflight = Request(
+            base + "/api/project-reports",
+            headers={
+                "Origin": "https://sites.google.com",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Private-Network": "true",
+            },
+            method="OPTIONS",
+        )
+        with pytest.raises(HTTPError) as preflight_rejected:
+            urlopen(preflight)
+        assert preflight_rejected.value.code == 403
+
+        for path in write_paths:
+            for origin in ("https://sites.google.com", "http://sites.google.com"):
+                request = Request(
+                    base + path, data=json.dumps({}).encode(),
+                    headers={"Origin": origin, "Content-Type": "application/json"},
+                    method="POST",
+                )
+                with pytest.raises(HTTPError) as rejected:
+                    urlopen(request)
+                assert rejected.value.code == 403, (path, origin)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
+def test_loopback_origin_is_not_trusted_for_remote_clients(tmp_path):
+    from types import SimpleNamespace
+
+    from ssswet_core.persistence import SQLiteResearchStore
+    from ssswet_core.server import make_handler
+
+    store = SQLiteResearchStore(tmp_path / "loopback-origin.sqlite3")
+    handler_class = make_handler(SSSWETEngine(store=store), store)
+    remote = SimpleNamespace(client_address=("203.0.113.10", 45678))
+    local = SimpleNamespace(client_address=("127.0.0.1", 45678))
+
+    assert not handler_class._public_browser_origin_allowed(remote, "http://localhost:8765")
+    assert not handler_class._public_browser_origin_allowed(remote, "http://127.0.0.1:8765")
+    assert handler_class._public_browser_origin_allowed(local, "http://localhost:8765")
