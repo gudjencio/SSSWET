@@ -163,7 +163,7 @@ for(const locale of locales){
 assert.equal(formatAudit(straightAudit,"fr"),formatAudit(audit(straight,{sessionKey:"legacy"}),"fr"),
   "the same audit inputs must produce a deterministic localized summary");
 
-assert.match(app,/SSSWETGpsScenarioModel\\?\\.audit/);
-assert.match(app,/SSSWETGpsScenarioModel\\?\\.formatAudit/);
+assert.match(app,/SSSWETGpsScenarioModel\?\.audit/);
+assert.match(app,/SSSWETGpsScenarioModel\?\.formatAudit/);
 assert.match(app,/const visible=selectedSessionEvents\(\)/);
 console.log("GPS scenario-model regression tests passed (synthetic tracks; not a real-world positioning or forecast accuracy benchmark).");
