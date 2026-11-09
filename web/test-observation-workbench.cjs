@@ -67,6 +67,8 @@ const poorRoute = api.routeMetrics([gps("poor-a", 1000, 48, 2, "P", 200), gps("p
 assert.equal(poorRoute.sessions[0].excludedLowAccuracySegments, 1, "segments touching low-accuracy fixes must not enter route totals");
 const missingFixRoute = api.routeMetrics([gps("m1", 1000, 48, 2, "M"), { id: "m2", kind: "gps", timestamp: 2000, clockSessionId: "M" }, gps("m3", 3000, 48.0002, 2, "M")]);
 assert.equal(missingFixRoute.sessions[0].acceptedSegments, 0, "route metrics must not bridge across a GPS record without coordinates");
+assert.equal(missingFixRoute.sessions[0].gpsRecordCount, 3);
+assert.equal(missingFixRoute.sessions[0].gpsFixCount, 2);
 assert.equal(missingFixRoute.sessions[0].excludedMissingCoordinateSegments, 2);
 assert.equal(routes.sessions.find(s => s.sessionKey === "session:B").acceptedSegments, 0);
 
@@ -125,6 +127,8 @@ const csv = api.toCSV([{ id: "=2+2", kind: "annotation", timestamp: 1, descripti
 assert.match(csv, /'=2\+2/);
 assert.match(api.toCSV([{ id: "  =1+1", kind: "annotation", timestamp: 1 }]), /'  =1\+1/, "leading whitespace must not bypass CSV formula neutralization");
 assert.match(csv, /"line,""quoted"""/);
+const csvWithoutSessions = api.toCSV(redacted.observations, { includeSessionIds: false });
+assert.doesNotMatch(csvWithoutSessions, /session_key|legacy/, "CSV export must not reintroduce a synthetic session group after session IDs are removed");
 
 (async () => {
   const manifestA = await api.createIntegrityManifest(payload);
