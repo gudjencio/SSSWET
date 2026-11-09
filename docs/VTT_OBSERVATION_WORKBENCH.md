@@ -69,7 +69,7 @@ A five-trial Node.js 22.16 synthetic run processed 10,000 GPS observations acros
 
 ## CI verification — 9 November 2026
 
-- SSSWET CI run [42590835182](https://github.com/gudjencio/SSSWET/actions/runs/42590835182): Python 3.11, 3.12 and 3.13 matrix jobs passed; the JavaScript syntax/regression checks and the workbench performance probe passed.
-- The Node.js 22.16 GitHub runner measured the 10,000-observation / five-session synthetic workload at median 101.59 ms and p95 127.49 ms on the final run (an earlier run measured 86.83 / 97.84 ms); both were below the 5,000 ms acceptance guard.
-- Core test run [42590835173](https://github.com/gudjencio/SSSWET/actions/runs/42590835173): 585 tests passed in 33.50 seconds on the final run.
+- Latest SSSWET CI run [42591287333](https://github.com/gudjencio/SSSWET/actions/runs/42591287333): Python 3.11, 3.12 and 3.13 matrix jobs passed; JavaScript syntax/regression checks and the workbench performance probe passed. Earlier complete CI runs [42591122938](https://github.com/gudjencio/SSSWET/actions/runs/42591122938) and [42590835182](https://github.com/gudjencio/SSSWET/actions/runs/42590835182) also passed.
+- The Node.js 22.16 GitHub runner measured the 10,000-observation / five-session synthetic workload at median 103.91 ms and p95 129.12 ms on the latest run. Two earlier runs measured 101.59 / 127.49 ms and 86.83 / 97.84 ms. All three were below the 5,000 ms acceptance guard.
+- Latest core test run [42591287444](https://github.com/gudjencio/SSSWET/actions/runs/42591287444): 585 tests passed in 36.92 seconds. Earlier successful runs completed in 33.50 and 41.19 seconds.
 - The pull request remains open and unmerged. GitHub Pages deployment has therefore not been verified; the cache update is staged for the next deployment.
