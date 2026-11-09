@@ -1,13 +1,13 @@
 # Virtual Time Travel observation analysis workbench
 
-The public Virtual Time Travel Mapping page exports a local JSON observation index. The companion [Observation Analysis Workbench](../web/observation-workbench.html) accepts that export and performs bounded analysis entirely in the browser. It does not upload the selected file, access the mapping page's IndexedDB, or include recorded media.
+The public Virtual Time Travel Mapping page exports a local JSON observation index. The companion [Observation Analysis Workbench](../web/observation-workbench.html) accepts that export and performs bounded analysis entirely in the browser. It does not upload the selected file, write it to persistent browser storage, access the mapping page's IndexedDB, or include recorded media.
 
 ## Ten independently useful capabilities
 
 1. **Versioned import validation.** Accepts \`ssswet-virtual-time-map-index-v1\`, checks record identifiers, kinds, timestamps, coordinates, session identifiers and numeric metadata, and enforces 20 MiB, 50,000-record, 64-level nesting and one-million-node structural limits. Unknown future event kinds and unknown fields are retained with a warning rather than silently discarded.
 2. **Provenance and clock audit.** Counts clock metadata retention, wall-clock divergence and within-session timestamp/monotonic regressions. Legacy records remain in a separate legacy group. Cross-session chronology is never inferred.
 3. **GPS quality screening.** Flags missing or weak accuracy, non-increasing timestamps, sampling gaps over 15 minutes, jumps over 5 km and implied speeds over 70 m/s. Flags are review leads; they never delete observations.
-4. **Session-isolated route metrics.** Calculates geodesic distance, duration, average and maximum observed segment speed, and accepted/excluded segment counts separately for each capture session. Segments touching a fix with reported accuracy worse than 150 m or missing coordinates are excluded from route totals; the route is not bridged across an unusable fix. Missing accuracy remains visible and is not treated as zero.
+4. **Session-isolated route metrics.** Calculates geodesic distance, duration, average and maximum calculated segment speed, and accepted/excluded segment counts separately for each capture session. Segments touching a fix with reported accuracy worse than 150 m or missing coordinates are excluded from route totals; the route is not bridged across an unusable fix. Missing accuracy remains visible and is not treated as zero.
 5. **Temporal coverage diagnostics.** Reports per-session sample count, span, median and p95 GPS sampling intervals, gap count and longest gap. A gap is not evidence that no event occurred.
 6. **Non-destructive duplicate candidates.** Groups exact payload matches (ignoring record ID) and screens same-session GPS fixes within 1 second and 5 metres. The scan is capped at 250,000 pair comparisons and 2,000 results by default; truncation is reported. Nothing is merged or removed.
 7. **Session comparison summaries.** Compares record counts, event-kind counts, GPS counts, per-session time spans and median reported GPS accuracy without sorting or combining sessions into a global timeline.
@@ -47,7 +47,7 @@ Previous behaviour had no dedicated import/analysis workbench: users could expor
 - Privacy transformation leaves the source object unchanged and rounds both epoch and clock metadata at the selected precision; session IDs can be retained independently from clock diagnostics.
 - GeoJSON uses longitude/latitude order; CSV quoting and formula-injection safeguards are tested.
 - Identical payloads produce the same manifest digest; any observation change invalidates it.
-- The UI contains labelled file input, keyboard-visible focus, semantic tables and live status feedback. Static checks confirm no fetch/XHR/sendBeacon upload path.
+- The UI contains labelled file input, keyboard-visible focus, semantic tables and live status feedback. Static checks confirm no fetch/XHR/sendBeacon upload path and no localStorage/sessionStorage/IndexedDB persistence path.
 - A five-trial Node.js benchmark analyzes 10,000 synthetic GPS observations across five sessions with p95 below a deliberately broad 5-second CI guard.
 
 ## Regression risks and safeguards
@@ -59,7 +59,7 @@ Previous behaviour had no dedicated import/analysis workbench: users could expor
 - Duplicate detection is candidate-only, bounded and does not infer semantic equivalence.
 - Privacy transformation preserves unknown custom metadata. Users must inspect unknown fields and \`exported_at\` before sharing; the tool cannot guarantee anonymity or remove every identifying detail.
 - Coarsened coordinates and times are approximations. The reported coordinate decimal count is not a surveyed spatial error bound.
-- Route distances and speeds are descriptive geodesic calculations, not survey-grade measurements or navigation instructions.
+- Route distances and speeds are descriptive geodesic calculations, not survey-grade measurements or navigation instructions. The displayed maximum is calculated from accepted adjacent fixes, not taken from a certified speed sensor.
 - SHA-256 manifests detect changes to the included format and observation payload, not malicious authorship or certificate authenticity.
 - English/French UI coverage is partial; no full WCAG certification or professional translation is claimed.
 
