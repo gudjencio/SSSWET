@@ -98,6 +98,9 @@ if (new Set(languageCodes).size !== languageCodes.length) {
 }
 
 const userReferenceLanguageCodes = `af sq de am en ar hy as ay az bm bn bho be my bs br bg yue ca ceb ny zh-CN zh-TW si ko co ht hr da dv doi es eo et ee fi fon fr fy gd gl cy ka el gn gu ha haw he hi hmn hu ig ilo id ga is it ja jv kn kk km rw kok kri ku ckb ky lo la lv ln lt lg lb mk mai mg ms ml mt mi mr mni lus mn nl ne no oc or om uz ug ps pa fa pl pt qu ro sa sm sg sr st sn sd sk sl so su sv sw tg ta tt cs te th bo ti ts tr tk tw uk ur vi xh yi yo zu ab aa ace ban btx bts bbc bci bem eu bxr ce crs mfe kg luo gv pap ber tpi fr-CA fur gsw crh ca-valencia ach alz chr din dmk dyu ff gaa nqo ss ve wo av awa bal ba bew bik prs dz cnh hil os pnb cv ch chk fj hrx`.split(/\s+/);
+if (new Set(userReferenceLanguageCodes).size !== 189 || userReferenceLanguageCodes.length !== 189) {
+  throw new Error("The current SSSWET reference language list must contain 189 unique codes");
+}
 const missingReferenceLanguages = userReferenceLanguageCodes.filter(code => !languageCodes.includes(code));
 if (missingReferenceLanguages.length) {
   throw new Error("The user reference language list is incomplete: " + missingReferenceLanguages.join(", "));
@@ -541,3 +544,31 @@ if (!pageSource.includes('src="repair-project.js"') || !pageSource.includes('src
 if (!pageSource.includes('href="mobile-repair.css"')) {
   throw new Error("Project support controls must load their responsive stylesheet");
 }
+
+
+const readmeSource = fs.readFileSync(new URL("../README.md", `file://${__filename}`), "utf8");
+for (const statement of [
+  "1,000 research programmes",
+  "ten super-categories",
+  "606 selected themes",
+  "300 selectable language entries",
+  "189 unique language codes",
+  "30-minute and hourly GitHub Actions regression watches"
+]) {
+  if (!readmeSource.includes(statement)) throw new Error("Public README is out of sync: " + statement);
+}
+if (/510 research programmes|190 unique language codes|An hourly GitHub Actions regression watch/.test(readmeSource)) {
+  throw new Error("Public README contains superseded catalogue or monitoring figures.");
+}
+if (!pageSource.includes('content="SSSWET — Super Soldier Space Warping Engineering Tech"') ||
+    pageSource.includes("Engeriening")) {
+  throw new Error("The public page description must use the correct project name.");
+}
+if (!pageSource.includes(">Explore Virtual Time Travel Mapping</a>") ||
+    !timeTravelLinkSource.includes('en:"Explore Virtual Time Travel Mapping"') ||
+    !timeTravelLinkSource.includes('fr:"Explorer la cartographie spatio-temporelle virtuelle"') ||
+    timeTravelLinkSource.includes("Virtual Time Machine") ||
+    timeTravelLinkSource.includes("machine à voyager dans le temps")) {
+  throw new Error("The public Virtual Time Travel link must describe the mapping prototype, not imply a time machine.");
+}
+console.log("Validated public catalogue figures, reference language count, monitoring configuration and evidence-aligned temporal wording.");
