@@ -67,7 +67,7 @@ assert.equal(estimate(mixedSessions,{kind:"future",horizonSeconds:60,sessionKey:
 const withAnnotation=[...sessionA,{id:"annotation-a",kind:"annotation",timestamp:180000,clockSessionId:"clock-A"}];
 assert.equal(listSessions(withAnnotation)[0].count,4,"session index must include non-GPS observations in the timeline count");
 const app=fs.readFileSync(path.join(__dirname,"virtual-time-travel.js"),"utf8");
-assert.match(app,/SSSWETGpsScenarioModel\?\.estimate/);assert.match(app,/SSSWETGpsScenarioModel\?\.sessionKey/);assert.match(app,/refreshSessions/);assert.match(app,/function selectedSessionEvents\(\)/);assert.match(app,/const visible=selectedSessionEvents\(\)/);assert.match(app,/preferredSession=\$\("vt-session"\)\?\.value\|\|entrySession/);assert.match(app,/session_ordering_note/);assert.match(app,/sessionKey\(item\)===sessionKey\(previous\)/);assert.match(app,/currentSession!==previousSession/);assert.match(app,/markerBuckets\.get\(currentSession\+/);assert.match(app,/sessionMedia/);assert.match(app,/modelQualityDetails/);assert.match(app,/modelNeedQualityData/);assert.match(app,/words\.modelQualityDetails/);assert.match(app,/words\.modelNeedQualityData/);assert.doesNotMatch(app,/t\(\)\.modelQualityDetails|t\(\)\.modelNeedQualityData/);
+assert.match(app,/model\?\.estimate/);assert.match(app,/SSSWETGpsScenarioModel\?\.sessionKey/);assert.match(app,/refreshSessions/);assert.match(app,/function selectedSessionEvents\(\)/);assert.match(app,/const visible=selectedSessionEvents\(\)/);assert.match(app,/preferredSession=\$\("vt-session"\)\?\.value\|\|entrySession/);assert.match(app,/session_ordering_note/);assert.match(app,/sessionKey\(item\)===sessionKey\(previous\)/);assert.match(app,/currentSession!==previousSession/);assert.match(app,/markerBuckets\.get\(currentSession\+/);assert.match(app,/sessionMedia/);assert.match(app,/modelQualityDetails/);assert.match(app,/modelNeedQualityData/);assert.match(app,/words\.modelQualityDetails/);assert.match(app,/words\.modelNeedQualityData/);assert.doesNotMatch(app,/t\(\)\.modelQualityDetails|t\(\)\.modelNeedQualityData/);
 const html=fs.readFileSync(path.join(__dirname,"virtual-time-travel.html"),"utf8");
 assert.ok(html.indexOf('<script src="gps-scenario-model.js"></script>')<html.indexOf('<script src="virtual-time-travel.js"></script>'));assert.match(html,/id="vt-session"/);assert.match(html,/aria-describedby="vt-session-help"/);
 const sw=fs.readFileSync(path.join(__dirname,"sw.js"),"utf8");assert.match(sw,/ssswet-web-v195/);assert.match(sw,/\.\/gps-scenario-model\.js/);
@@ -163,7 +163,7 @@ for(const locale of auditLocales){
 assert.equal(formatAudit(straightAudit,"fr"),formatAudit(audit(straight,{sessionKey:"legacy"}),"fr"),
   "the same audit inputs must produce a deterministic localized summary");
 
-assert.match(app,/SSSWETGpsScenarioModel\?\.audit/);
-assert.match(app,/SSSWETGpsScenarioModel\?\.formatAudit/);
+assert.match(app,/model\?\.audit/);
+assert.match(app,/model\?\.formatAudit/);
 assert.match(app,/const visible=selectedSessionEvents\(\)/);
 console.log("GPS scenario-model regression tests passed (synthetic tracks; not a real-world positioning or forecast accuracy benchmark).");
