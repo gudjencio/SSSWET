@@ -2,7 +2,7 @@
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
-const {estimate,constants,sessionKey,listSessions}=require("./gps-scenario-model.js");
+const {estimate,audit,formatAudit,constants,sessionKey,listSessions,locales}=require("./gps-scenario-model.js");
 const R=6371000;
 function lonForEast(m,lat=0){return m/(R*Math.cos(lat*Math.PI/180))*180/Math.PI;}
 function fixes(offsets,options={}){const interval=options.intervalMs??60000,lat=options.latitude??0,accuracy=options.accuracy??5;return offsets.map((east,i)=>({id:"fix-"+i,kind:"gps",timestamp:i*interval,accuracy:typeof accuracy==="function"?accuracy(i):accuracy,coords:{latitude:lat,longitude:lonForEast(east,lat)}}));}
@@ -70,9 +70,100 @@ const app=fs.readFileSync(path.join(__dirname,"virtual-time-travel.js"),"utf8");
 assert.match(app,/SSSWETGpsScenarioModel\?\.estimate/);assert.match(app,/SSSWETGpsScenarioModel\?\.sessionKey/);assert.match(app,/refreshSessions/);assert.match(app,/function selectedSessionEvents\(\)/);assert.match(app,/const visible=selectedSessionEvents\(\)/);assert.match(app,/preferredSession=\$\("vt-session"\)\?\.value\|\|entrySession/);assert.match(app,/session_ordering_note/);assert.match(app,/sessionKey\(item\)===sessionKey\(previous\)/);assert.match(app,/currentSession!==previousSession/);assert.match(app,/markerBuckets\.get\(currentSession\+/);assert.match(app,/sessionMedia/);assert.match(app,/modelQualityDetails/);assert.match(app,/modelNeedQualityData/);assert.match(app,/words\.modelQualityDetails/);assert.match(app,/words\.modelNeedQualityData/);assert.doesNotMatch(app,/t\(\)\.modelQualityDetails|t\(\)\.modelNeedQualityData/);
 const html=fs.readFileSync(path.join(__dirname,"virtual-time-travel.html"),"utf8");
 assert.ok(html.indexOf('<script src="gps-scenario-model.js"></script>')<html.indexOf('<script src="virtual-time-travel.js"></script>'));assert.match(html,/id="vt-session"/);assert.match(html,/aria-describedby="vt-session-help"/);
-const sw=fs.readFileSync(path.join(__dirname,"sw.js"),"utf8");assert.match(sw,/ssswet-web-v194/);assert.match(sw,/\.\/gps-scenario-model\.js/);
+const sw=fs.readFileSync(path.join(__dirname,"sw.js"),"utf8");assert.match(sw,/ssswet-web-v195/);assert.match(sw,/\.\/gps-scenario-model\.js/);
 const extraStart=app.indexOf("const extraCopy=")+ "const extraCopy=".length,extraEnd=app.indexOf(";\n",extraStart),extra=JSON.parse(app.slice(extraStart,extraEnd));
 const locales=["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"];
 assert.deepEqual(Object.keys(extra),locales);
 for(const locale of locales){for(const key of ["modelNeedQualityData","modelQualityDetails","sessionLabel","sessionSelectPrompt","sessionHelp","sessionNeedSelection","sessionOption","sessionUnknownTime","sessionLegacyPrefix"])assert.ok(extra[locale][key],"missing "+key+" translation for "+locale);for(const token of ["{distance}","{uncertainty}","{samples}","{speed}","{spread}","{sensitivity}"])assert.ok(extra[locale].modelQualityDetails.includes(token),"missing "+token+" in "+locale);for(const token of ["{start}","{end}","{count}","{gps}"])assert.ok(extra[locale].sessionOption.includes(token),"missing "+token+" in session option for "+locale);}
+
+const straightAudit=audit(straight,{sessionKey:"legacy"});
+assert.ok(straightAudit,"an explicit session audit must be available");
+assert.equal(straightAudit.gpsObservationCount,3);
+assert.equal(straightAudit.acceptedFixCount,3);
+assert.equal(straightAudit.rejectedFixCount,0);
+assert.equal(straightAudit.continuousRunCount,1);
+assert.equal(straightAudit.longestRunFixes,3);
+assert.equal(straightAudit.scenarioReady,true);
+assert.equal(straightAudit.continuityBreaks,0);
+assert.match(formatAudit(straightAudit,"fr"),/Audit GPS/);
+assert.ok(!formatAudit(straightAudit,"fr").includes("0 coordonnées"),"zero-count rejection categories should stay out of the user summary");
+
+const interrupted=fixes([0,100,200,300]);
+interrupted[1].accuracy=null;
+const interruptedAudit=audit(interrupted,{sessionKey:"legacy"});
+assert.equal(interruptedAudit.acceptedFixCount,3);
+assert.equal(interruptedAudit.rejectedFixCount,1);
+assert.equal(interruptedAudit.rejectionCounts.missing_accuracy,1);
+assert.equal(interruptedAudit.breakCounts.rejected_fix,1);
+assert.equal(interruptedAudit.continuousRunCount,2);
+assert.equal(interruptedAudit.longestRunFixes,2);
+assert.equal(interruptedAudit.scenarioReady,false);
+assert.equal(estimate(interrupted,{kind:"future",horizonSeconds:60}),null,
+  "a rejected GPS observation must break the track rather than allowing the model to bridge across it");
+
+const rejectedFixtures=[
+  {id:"missing-coords",kind:"gps",timestamp:0,accuracy:5,coords:null},
+  {id:"invalid-coords",kind:"gps",timestamp:1000,accuracy:5,coords:{latitude:91,longitude:0}},
+  {id:"invalid-time",kind:"gps",timestamp:"bad",accuracy:5,coords:{latitude:0,longitude:0}},
+  {id:"missing-accuracy",kind:"gps",timestamp:2000,accuracy:null,coords:{latitude:0,longitude:0}},
+  {id:"invalid-accuracy",kind:"gps",timestamp:3000,accuracy:-1,coords:{latitude:0,longitude:0}},
+  {id:"over-limit",kind:"gps",timestamp:4000,accuracy:151,coords:{latitude:0,longitude:0}}
+];
+const rejectedAudit=audit(rejectedFixtures,{sessionKey:"legacy"});
+assert.equal(rejectedAudit.gpsObservationCount,6);
+assert.equal(rejectedAudit.acceptedFixCount,0);
+assert.equal(rejectedAudit.rejectedFixCount,6);
+assert.equal(rejectedAudit.rejectionCounts.missing_coordinates,1);
+assert.equal(rejectedAudit.rejectionCounts.invalid_coordinates,1);
+assert.equal(rejectedAudit.rejectionCounts.invalid_timestamp,1);
+assert.equal(rejectedAudit.rejectionCounts.missing_accuracy,1);
+assert.equal(rejectedAudit.rejectionCounts.invalid_accuracy,1);
+assert.equal(rejectedAudit.rejectionCounts.accuracy_over_limit,1);
+assert.equal(rejectedAudit.scenarioReady,false);
+
+const gapAudit=audit(gap,{sessionKey:"legacy"});
+assert.equal(gapAudit.breakCounts.time_gap,1);
+const distanceAudit=audit(fixes([0,100,6000]),{sessionKey:"legacy"});
+assert.equal(distanceAudit.breakCounts.distance_jump,1);
+const speedAudit=audit(fixes([0,100,4301]),{sessionKey:"legacy"});
+assert.equal(speedAudit.breakCounts.speed_limit,1);
+const duplicateAudit=audit(duplicate,{sessionKey:"legacy"});
+assert.equal(duplicateAudit.breakCounts.non_increasing_time,1);
+assert.equal(estimate(duplicate,{kind:"future",horizonSeconds:60}),null);
+
+const monotonicTrack=fixes([0,100,200],{intervalMs:60000}).map((event,index)=>({
+  ...event,clockSessionId:"monotonic-fixture",monotonicElapsedMs:index*30000,clockStatus:"within_tolerance"
+}));
+const monotonicEstimate=estimate(monotonicTrack,{kind:"future",horizonSeconds:60,sessionKey:"session:monotonic-fixture"});
+assert.ok(monotonicEstimate);
+assert.ok(Math.abs(monotonicEstimate.distanceM-200)<0.2,
+  "same-session elapsed time must use monotonic readings instead of rounded epoch timestamps");
+
+const mixedClockTrack=fixes([0,100,200]).map((event,index)=>({
+  ...event,clockSessionId:"mixed-clock",monotonicElapsedMs:index===0?0:null,
+  clockStatus:index===0?"within_tolerance":"monotonic_unavailable"
+}));
+const mixedClockAudit=audit(mixedClockTrack,{sessionKey:"session:mixed-clock"});
+assert.equal(mixedClockAudit.breakCounts.clock_basis_change,1);
+assert.equal(mixedClockAudit.clockFallbackCount,2);
+assert.equal(estimate(mixedClockTrack,{kind:"future",horizonSeconds:60,sessionKey:"session:mixed-clock"}),null,
+  "a change between monotonic and wall-clock time bases must split the track");
+
+assert.equal(audit(mixedSessions),null,"an audit must not silently combine multiple capture sessions");
+const sessionAudit=audit(mixedSessions,{sessionKey:"session:clock-A"});
+assert.equal(sessionAudit.acceptedFixCount,3);
+assert.equal(sessionAudit.scenarioReady,true);
+assert.equal(locales.length,15);
+assert.deepEqual(locales,["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"]);
+for(const locale of locales){
+  const formatted=formatAudit(interruptedAudit,locale);
+  assert.ok(formatted.length>20,"audit summary must be localized for "+locale);
+  assert.ok(!formatted.includes("{accepted}")&&!formatted.includes("{items}"),"audit placeholders must be resolved for "+locale);
+}
+assert.equal(formatAudit(straightAudit,"fr"),formatAudit(audit(straight,{sessionKey:"legacy"}),"fr"),
+  "the same audit inputs must produce a deterministic localized summary");
+
+assert.match(app,/SSSWETGpsScenarioModel\\?\\.audit/);
+assert.match(app,/SSSWETGpsScenarioModel\\?\\.formatAudit/);
+assert.match(app,/const visible=selectedSessionEvents\(\)/);
 console.log("GPS scenario-model regression tests passed (synthetic tracks; not a real-world positioning or forecast accuracy benchmark).");
