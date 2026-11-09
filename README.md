@@ -24,6 +24,8 @@ The proposed, currently disabled [monthly technology financing model](docs/MONTH
 
 Try the [standalone Virtual Time Travel Mapping prototype](https://gudjencio.github.io/SSSWET/virtual-time-travel.html). It supports consent-based local spatial capture, recorded observation replay and clearly labelled short-horizon scenarios. It does not recover unrecorded history or guarantee future outcomes.
 
+The companion [Observation Analysis Workbench](https://gudjencio.github.io/SSSWET/observation-workbench.html) validates exported indexes, audits session provenance and GPS quality, identifies non-destructive duplicate candidates, and creates privacy-adjusted JSON, CSV and GeoJSON exports with optional SHA-256 integrity manifests. Analysis stays in the browser.
+
 ## Continuous scientific and engineering improvement
 
 The purpose of the SSSWET research bots is not only to catalogue ideas: they are intended to help advance scientific understanding and develop technologies toward greater usefulness, performance, durability, efficiency, maintainability, safety and evidence quality.

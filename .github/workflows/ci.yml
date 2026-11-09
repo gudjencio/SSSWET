@@ -44,6 +44,8 @@ jobs:
           node --check web/donation-config.js
           node --check web/product-purchase-config.js
           node --check web/temporal-clock.js
+          node --check web/observation-workbench.js
+          node --check web/observation-workbench-ui.js
           node --check web/gps-scenario-model.js
           node --check web/virtual-time-travel.js
           node --check web/keyframe-continuity.js
@@ -59,6 +61,7 @@ jobs:
           node web/test-keyframe-continuity.cjs
           node web/test-keyframe-correspondence.cjs
           node web/test-temporal-clock.cjs
+          node web/test-observation-workbench.cjs
           node web/test-gps-scenario-model.cjs
           node web/test-keyframe-spatial-distribution.cjs
           node web/test-bot-personality.cjs
@@ -67,4 +70,6 @@ jobs:
         run: python -m pytest -q
       - name: Benchmark bounded research workflow utilities
         if: matrix.python-version == '3.12'
-        run: python .github/scripts/benchmark_research_quality.py
+        run: |
+          python .github/scripts/benchmark_research_quality.py
+          node .github/scripts/benchmark_observation_workbench.cjs

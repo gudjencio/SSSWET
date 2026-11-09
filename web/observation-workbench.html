@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Validate, audit and privacy-adjust a local SSSWET Virtual Time Travel observation export.">
+  <title>Observation analysis workbench · SSSWET</title>
+  <link rel="stylesheet" href="observation-workbench.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="virtual-time-travel.html">SSSWET <span> / Virtual Time Travel Mapping</span></a>
+      <label class="language-label" for="language"><span data-i="language">Language</span>
+        <select id="language" autocomplete="off" aria-label="Language">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+        </select>
+      </label>
+    </header>
+
+    <section class="intro">
+      <p class="eyebrow">LOCAL-FIRST · RESEARCH QUALITY</p>
+      <h1 data-i="title">Observation analysis workbench</h1>
+      <p data-i="intro">Validate and review an observation index exported by Virtual Time Travel Mapping. All analysis runs in this browser; this page does not upload your file or write it to persistent browser storage.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="import-heading">
+      <h2 id="import-heading" data-i="importTitle">1. Import an observation index</h2>
+      <p class="muted" data-i="importHelp">Choose an ssswet-observation-index.json file exported from the mapping interface. Media files are not included.</p>
+      <label class="file-label" for="index-file" data-i="fileLabel">Observation index JSON</label>
+      <input id="index-file" type="file" accept="application/json,.json" autocomplete="off" aria-describedby="limits status">
+      <p id="limits" class="limits" data-i="limits">Limits: 20 MiB per file and 50,000 observations. Unsupported versions or invalid records are rejected without changing your original file.</p>
+      <div id="status" class="status" role="status" aria-live="polite" aria-atomic="true" data-i="statusWaiting">Waiting for a local file.</div>
+      <ul id="validation-errors" class="errors" aria-label="Validation errors"></ul>
+    </section>
+
+    <section id="report" hidden>
+      <section class="summary-grid" aria-label="Analysis summary">
+        <article class="metric"><span data-i="observations">Observations</span><strong id="metric-observations">—</strong></article>
+        <article class="metric"><span data-i="sessions">Sessions</span><strong id="metric-sessions">—</strong></article>
+        <article class="metric"><span data-i="gps">GPS fixes</span><strong id="metric-gps">—</strong></article>
+        <article class="metric"><span data-i="flags">Quality flags</span><strong id="metric-flags">—</strong></article>
+      </section>
+
+      <section class="panel" aria-labelledby="provenance-heading">
+        <h2 id="provenance-heading" data-i="provenanceTitle">2. Provenance and clock audit</h2>
+        <p id="provenance-summary" class="muted"></p>
+        <div id="sessions-table" class="table-wrap"></div>
+        <p class="note" data-i="sessionNote">Capture sessions are isolated. Device wall-clock anchors from different sessions are not assumed comparable; the report never infers a global chronology.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="quality-heading">
+        <h2 id="quality-heading" data-i="qualityTitle">3. GPS quality diagnostics</h2>
+        <p class="muted" data-i="qualityHelp">Flags identify records or segments for review. They do not delete observations or establish that a location is wrong.</p>
+        <div id="quality-table" class="table-wrap"></div>
+        <div id="quality-records-table" class="table-wrap"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="coverage-heading">
+        <h2 id="coverage-heading" data-i="coverageTitle">4. Temporal coverage and route metrics</h2>
+        <p class="muted" data-i="coverageHelp">Sampling gaps describe recorded cadence only; they do not prove that no event occurred during an interval.</p>
+        <div id="coverage-table" class="table-wrap"></div>
+        <div id="routes-table" class="table-wrap"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="duplicates-heading">
+        <h2 id="duplicates-heading" data-i="duplicatesTitle">5. Duplicate review candidates</h2>
+        <p class="muted" data-i="duplicatesHelp">Exact and near-duplicate candidates are suggestions for human review. Nothing is merged, hidden or deleted.</p>
+        <div id="duplicates-table" class="table-wrap"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="privacy-heading">
+        <h2 id="privacy-heading" data-i="privacyTitle">6. Privacy-adjusted export</h2>
+        <p class="muted" data-i="privacyHelp">Choose what to include in a new copy. The imported source remains unchanged. The default profile reduces location and time precision and removes the event description field and detailed sensor values.</p>
+        <div class="controls">
+          <label><span data-i="coordinatePrecision">Coordinate decimals</span>
+            <select id="coordinate-decimals" autocomplete="off"><option value="0">0</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select>
+          </label>
+          <label><span data-i="timePrecision">Time precision</span>
+            <select id="time-precision" autocomplete="off"><option value="day">Day</option><option value="hour">Hour</option><option value="minute" selected>Minute</option><option value="exact">Exact</option></select>
+          </label>
+        </div>
+        <div class="checks">
+          <label><input id="include-descriptions" type="checkbox" autocomplete="off"><span data-i="includeDescriptions">Include free-text descriptions</span></label>
+          <label><input id="include-sensors" type="checkbox" autocomplete="off"><span data-i="includeSensors">Include detailed motion and orientation values</span></label>
+          <label><input id="include-clock" type="checkbox" autocomplete="off"><span data-i="includeClock">Include clock diagnostics</span></label>
+          <label><input id="include-sessions" type="checkbox" autocomplete="off"><span data-i="includeSessions">Include capture-session identifiers</span></label>
+          <label><input id="pseudonymize-ids" type="checkbox" checked autocomplete="off"><span data-i="pseudonymize">Replace record IDs with sequential local labels</span></label>
+        </div>
+        <div class="actions">
+          <button id="export-json" type="button" disabled data-i="exportJson">Export adjusted JSON + integrity manifest</button>
+          <button id="export-csv" type="button" disabled data-i="exportCsv">Export CSV</button>
+          <button id="export-geojson" type="button" disabled data-i="exportGeojson">Export GeoJSON</button>
+          <button id="export-manifest" type="button" disabled data-i="exportManifest">Export integrity manifest only</button>
+        </div>
+        <div id="integrity-status" class="status" role="status" aria-live="polite" data-i="integrityWaiting">No integrity manifest checked.</div>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <a href="virtual-time-travel.html" data-i="back">Back to Virtual Time Travel Mapping</a>
+      <span data-i="footer">SSSWET research prototype · Local analysis only · Not a scientific or safety certification.</span>
+    </footer>
+  </main>
+  <script src="observation-workbench.js"></script>
+  <script src="observation-workbench-ui.js"></script>
+</body>
+</html>
