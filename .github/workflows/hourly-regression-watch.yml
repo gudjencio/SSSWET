@@ -34,6 +34,9 @@ jobs:
         run: |
           node --check web/locales.js
           node --check web/app.js
+          node --check web/temporal-clock.js
+          node --check web/virtual-time-travel.js
+          node web/test-temporal-clock.cjs
           node --check web/bot-personality.js
           node --check web/bot-live-room.js
           node web/test-locales.cjs
