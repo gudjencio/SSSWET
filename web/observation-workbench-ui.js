@@ -128,16 +128,23 @@
       $("integrity-status").textContent = t("exported");
     } catch (_) { $("integrity-status").textContent = t("cryptoUnavailable"); }
   }
+  function resetReport() {
+    sourcePayload = null;
+    report = null;
+    $("report").hidden = true;
+    $("validation-errors").replaceChildren();
+    ["export-json", "export-csv", "export-geojson", "export-manifest"].forEach(id => { $(id).disabled = true; });
+  }
   function loadFile(file) {
-    if (!file) { setStatus(t("noFile"), true); return; }
+    if (!file) { resetReport(); setStatus(t("noFile"), true); return; }
+    resetReport();
     if (file.size > api.MAX_INPUT_BYTES) { setStatus(t("tooLarge"), true); return; }
     file.text().then(text => {
       const parsed = api.parseIndexText(text);
       $("validation-errors").replaceChildren();
       if (!parsed.ok) {
         parsed.errors.slice(0, 100).forEach(error => { const li = document.createElement("li"); li.textContent = error; $("validation-errors").append(li); });
-        sourcePayload = null; report = null; $("report").hidden = true;
-        ["export-json", "export-csv", "export-geojson", "export-manifest"].forEach(id => { $(id).disabled = true; });
+        resetReport();
         setStatus(t("invalid"), true); return;
       }
       sourcePayload = parsed.payload;
