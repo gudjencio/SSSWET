@@ -11,7 +11,7 @@ The public Virtual Time Travel Mapping page exports a local JSON observation ind
 5. **Temporal coverage diagnostics.** Reports per-session sample count, span, median and p95 GPS sampling intervals, gap count and longest gap. A gap is not evidence that no event occurred.
 6. **Non-destructive duplicate candidates.** Groups exact payload matches (ignoring record ID) and screens same-session GPS fixes within 1 second and 5 metres. The scan is capped at 250,000 pair comparisons and 2,000 results by default; truncation is reported. Nothing is merged or removed.
 7. **Session comparison summaries.** Compares record counts, event-kind counts, GPS counts, per-session time spans and median reported GPS accuracy without sorting or combining sessions into a global timeline.
-8. **Privacy transformations.** Creates a separate copy with configurable coordinate rounding (0–6 decimals), time coarsening (exact/minute/hour/day), optional removal of free text, detailed sensor values and clock diagnostics, optional session-ID removal, and optional sequential record-ID pseudonyms. The imported object is never mutated.
+8. **Privacy transformations.** Creates a separate copy with configurable coordinate rounding (0–6 decimals), time coarsening (exact/minute/hour/day), optional removal of the event description field, detailed sensor values and clock diagnostics, optional session-ID removal, and optional sequential record-ID pseudonyms. The imported object is never mutated.
 9. **Interoperable exports.** Produces privacy-adjusted JSON, CSV and RFC 7946-style GeoJSON. GeoJSON coordinates use \`[longitude, latitude]\`; only GPS and geolocated annotation records become point features. CSV text cells are escaped and formula-prefixed strings are neutralized.
 10. **Integrity manifests.** Creates and verifies a deterministic SHA-256 manifest over the export format identifier and ordered observation records using sorted-key JSON canonicalization. This detects payload changes; it is not a digital signature, author identity check or source authentication.
 
@@ -65,4 +65,4 @@ Previous behaviour had no dedicated import/analysis workbench: users could expor
 
 ## Local benchmark reference
 
-A five-trial Node.js 22.16 synthetic run processed 10,000 GPS observations across five isolated sessions with a median of approximately 97 ms and p95 of approximately 102 ms in the local development container. CI records its own runner measurements; these figures are not browser field-performance guarantees.
+A five-trial Node.js 22.16 synthetic run processed 10,000 GPS observations across five isolated sessions with a median of approximately 91 ms and p95 of approximately 107 ms in the local development container. CI records its own runner measurements; these figures are not browser field-performance guarantees.
