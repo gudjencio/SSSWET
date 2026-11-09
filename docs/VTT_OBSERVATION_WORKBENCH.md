@@ -65,7 +65,7 @@ Previous behaviour had no dedicated import/analysis workbench: users could expor
 
 ## Local benchmark reference
 
-A five-trial Node.js 22.16 synthetic run processed 10,000 GPS observations across five isolated sessions with a median of approximately 90 ms and p95 of approximately 118 ms in the final local development-container run. CI records its own runner measurements; these figures are not browser field-performance guarantees.
+A five-trial Node.js 22.16 synthetic run processed 10,000 GPS observations across five isolated sessions with a median of approximately 84 ms and p95 of approximately 98 ms in the latest local development-container run. CI records its own runner measurements; these figures are not browser field-performance guarantees.
 
 ## CI verification — 9 November 2026
 
