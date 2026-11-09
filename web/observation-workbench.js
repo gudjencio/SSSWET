@@ -252,13 +252,14 @@
     const maxGap = Number.isFinite(opts.maxGapMs) ? Math.max(1, opts.maxGapMs) : MAX_GPS_GAP_MS;
     const maxJump = Number.isFinite(opts.maxJumpM) ? Math.max(1, opts.maxJumpM) : MAX_GPS_JUMP_M;
     const maxSpeed = Number.isFinite(opts.maxSpeedMps) ? Math.max(0, opts.maxSpeedMps) : MAX_GPS_SPEED_MPS;
-    const bySession = groupBySession((observations || []).filter(event => event && event.kind === "gps" && validCoords(event.coords)));
+    const bySession = groupBySession((observations || []).filter(event => event && event.kind === "gps"));
     const results = [];
     for (const [key, records] of bySession) {
       const sorted = records.slice().sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
-      let distanceM = 0, durationMs = 0, movingMs = 0, maxObservedSpeedMps = null, used = 0, excluded = 0, excludedLowAccuracySegments = 0;
+      let distanceM = 0, durationMs = 0, movingMs = 0, maxObservedSpeedMps = null, used = 0, excluded = 0, excludedLowAccuracySegments = 0, excludedMissingCoordinateSegments = 0;
       for (let i = 1; i < sorted.length; i++) {
         const a = sorted[i - 1], b = sorted[i];
+        if (!validCoords(a.coords) || !validCoords(b.coords)) { excluded++; excludedMissingCoordinateSegments++; continue; }
         const deltaMs = Number(b.timestamp) - Number(a.timestamp);
         const segmentM = haversine(a.coords, b.coords);
         const speed = deltaMs > 0 ? segmentM / (deltaMs / 1000) : Infinity;
@@ -274,7 +275,7 @@
         maxObservedSpeedMps = maxObservedSpeedMps === null ? speed : Math.max(maxObservedSpeedMps, speed);
         used++;
       }
-      results.push({ sessionKey: key, gpsFixCount: sorted.length, acceptedSegments: used, excludedSegments: excluded, excludedLowAccuracySegments, distanceM: Number(distanceM.toFixed(3)), durationMs, movingDurationMs: movingMs, averageSpeedMps: durationMs ? Number((distanceM / (durationMs / 1000)).toFixed(4)) : null, maxObservedSpeedMps: maxObservedSpeedMps === null ? null : Number(maxObservedSpeedMps.toFixed(4)) });
+      results.push({ sessionKey: key, gpsFixCount: sorted.length, acceptedSegments: used, excludedSegments: excluded, excludedLowAccuracySegments, excludedMissingCoordinateSegments, distanceM: Number(distanceM.toFixed(3)), durationMs, movingDurationMs: movingMs, averageSpeedMps: durationMs ? Number((distanceM / (durationMs / 1000)).toFixed(4)) : null, maxObservedSpeedMps: maxObservedSpeedMps === null ? null : Number(maxObservedSpeedMps.toFixed(4)) });
     }
     results.sort((a, b) => a.sessionKey.localeCompare(b.sessionKey));
     return { sessions: results, crossSessionDistanceCalculated: false };
@@ -283,7 +284,7 @@
   function temporalCoverage(observations, options) {
     const opts = options || {};
     const gapThresholdMs = Number.isFinite(opts.gapThresholdMs) ? Math.max(1, opts.gapThresholdMs) : MAX_GPS_GAP_MS;
-    const bySession = groupBySession((observations || []).filter(event => event && event.kind === "gps" && Number.isFinite(event.timestamp)));
+    const bySession = groupBySession((observations || []).filter(event => event && event.kind === "gps" && Number.isFinite(event.timestamp) && validCoords(event.coords)));
     const sessions = [];
     for (const [key, records] of bySession) {
       const times = records.map(event => Number(event.timestamp)).sort((a, b) => a - b);
