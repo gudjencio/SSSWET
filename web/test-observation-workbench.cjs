@@ -32,6 +32,7 @@ assert.ok(api.validateIndex({ ...payload, observations: [payload.observations[0]
 assert.ok(api.validateIndex({ ...payload, observations: [{ ...payload.observations[0], coords: { latitude: 91, longitude: 0 } }] }).errors.includes("observations[0]:invalid_coordinates"));
 assert.ok(api.validateIndex({ ...payload, observations: new Array(api.MAX_OBSERVATIONS + 1).fill(payload.observations[0]) }).errors.includes("observation_limit_exceeded"));
 assert.equal(api.parseIndexText("{").errors[0], "invalid_json");
+assert.equal(api.parseIndexText("\uFEFF" + JSON.stringify(payload)).ok, true, "a UTF-8 BOM must not break valid JSON imports");
 assert.equal(api.parseIndexText(" ".repeat(api.MAX_INPUT_BYTES + 1)).errors[0], "input_size_limit_exceeded");
 let deep = { value: true }; for (let i = 0; i < 70; i++) deep = { nested: deep };
 assert.ok(api.validateIndex({ ...payload, observations: [{ id: "deep", kind: "annotation", timestamp: 1, extra: deep }] }).errors.includes("structure_limit_exceeded"));
@@ -112,6 +113,7 @@ assert.deepEqual(geojson.features[0].geometry.coordinates, [2, 48]);
 assert.equal(geojson.metadata.coordinateOrder, "longitude,latitude");
 const csv = api.toCSV([{ id: "=2+2", kind: "annotation", timestamp: 1, description: "line,\"quoted\"" }]);
 assert.match(csv, /'=2\+2/);
+assert.match(api.toCSV([{ id: "  =1+1", kind: "annotation", timestamp: 1 }]), /'  =1\+1/, "leading whitespace must not bypass CSV formula neutralization");
 assert.match(csv, /"line,""quoted"""/);
 
 (async () => {
@@ -119,6 +121,7 @@ assert.match(csv, /"line,""quoted"""/);
   const manifestB = await api.createIntegrityManifest(payload);
   assert.equal(manifestA.digest, manifestB.digest, "identical payloads must have identical manifests");
   assert.equal((await api.verifyIntegrityManifest(payload, manifestA)).valid, true);
+  await assert.rejects(() => api.createIntegrityManifest({ format: "wrong", observations: [] }), /invalid observation index/);
   const changed = { ...payload, observations: payload.observations.map((e, i) => i ? e : { ...e, accuracy: 9 }) };
   assert.equal((await api.verifyIntegrityManifest(changed, manifestA)).valid, false);
   const report = api.analyze(payload);
