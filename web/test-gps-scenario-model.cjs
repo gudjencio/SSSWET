@@ -2,7 +2,7 @@
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
-const {estimate,audit,formatAudit,constants,sessionKey,listSessions,locales}=require("./gps-scenario-model.js");
+const {estimate,audit,formatAudit,constants,sessionKey,listSessions,locales:auditLocales}=require("./gps-scenario-model.js");
 const R=6371000;
 function lonForEast(m,lat=0){return m/(R*Math.cos(lat*Math.PI/180))*180/Math.PI;}
 function fixes(offsets,options={}){const interval=options.intervalMs??60000,lat=options.latitude??0,accuracy=options.accuracy??5;return offsets.map((east,i)=>({id:"fix-"+i,kind:"gps",timestamp:i*interval,accuracy:typeof accuracy==="function"?accuracy(i):accuracy,coords:{latitude:lat,longitude:lonForEast(east,lat)}}));}
@@ -153,9 +153,9 @@ assert.equal(audit(mixedSessions),null,"an audit must not silently combine multi
 const sessionAudit=audit(mixedSessions,{sessionKey:"session:clock-A"});
 assert.equal(sessionAudit.acceptedFixCount,3);
 assert.equal(sessionAudit.scenarioReady,true);
-assert.equal(locales.length,15);
-assert.deepEqual(locales,["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"]);
-for(const locale of locales){
+assert.equal(auditLocales.length,15);
+assert.deepEqual(auditLocales,["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"]);
+for(const locale of auditLocales){
   const formatted=formatAudit(interruptedAudit,locale);
   assert.ok(formatted.length>20,"audit summary must be localized for "+locale);
   assert.ok(!formatted.includes("{accepted}")&&!formatted.includes("{items}"),"audit placeholders must be resolved for "+locale);
