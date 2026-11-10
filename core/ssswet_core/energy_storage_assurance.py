@@ -327,7 +327,6 @@ def capacity_fade(cycle_measurements: object) -> dict:
         points.append((number, capacity, source_id, evidence_refs, uncertainty))
     if len(points) < 3:
         raise ValueError("at least three unique cycle measurements are required")
-    points.sort()
     points.sort(key=lambda point: point[0])
     xs = [float(point[0]) for point in points]
     ys = [point[1] for point in points]
