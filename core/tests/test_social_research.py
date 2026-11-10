@@ -86,13 +86,19 @@ def test_social_provider_deduplicates_and_bounds_results():
     assert len(items) == 1 and errors == ()
 
 
-def test_social_provider_reports_unconfigured_platforms_without_scraping(monkeypatch):
+def test_social_provider_enables_public_no_key_sources_without_live_network_in_tests(monkeypatch):
+    from ssswet_core.social_expansion import BlueskySearchProvider, QiitaSearchProvider
     for key in ("SSSWET_YOUTUBE_API_KEY", "SSSWET_X_BEARER_TOKEN", "SSSWET_INSTAGRAM_ACCESS_TOKEN",
-                "SSSWET_INSTAGRAM_USER_ID", "SSSWET_INSTAGRAM_BUSINESS_ACCOUNTS"):
+                "SSSWET_INSTAGRAM_USER_ID", "SSSWET_INSTAGRAM_BUSINESS_ACCOUNTS",
+                "SSSWET_REDDIT_ACCESS_TOKEN", "SSSWET_THREADS_ACCESS_TOKEN",
+                "SSSWET_FACEBOOK_ACCESS_TOKEN", "SSSWET_FACEBOOK_PAGE_IDS", "SSSWET_PUBLIC_FEEDS"):
         monkeypatch.delenv(key, raising=False)
-    items, errors = SocialResearchProvider.from_environment().search("materials science")
-    assert items == [] and "No official social-platform API credentials" in errors[0]
-
+    monkeypatch.setattr(BlueskySearchProvider, "search", lambda self, query: [])
+    monkeypatch.setattr(QiitaSearchProvider, "search", lambda self, query: [])
+    provider = SocialResearchProvider.from_environment()
+    assert {source.name for source in provider.providers} >= {"bluesky-atproto", "qiita-api-v2"}
+    items, errors = provider.search("materials science")
+    assert items == [] and errors == ()
 
 def test_social_provider_contains_provider_failure_without_losing_other_results():
     class Broken:
@@ -166,7 +172,7 @@ def test_social_item_rejects_non_https_and_unknown_platforms():
     with pytest.raises(ValueError):
         SocialItem("x", "x:1", "title", "text", "http://x.com/a")
     with pytest.raises(ValueError):
-        SocialItem("tiktok", "tiktok:1", "title", "text", "https://example.org")
+        SocialItem("Bad Platform", "bad:1", "title", "text", "https://example.org")
 
 
 
