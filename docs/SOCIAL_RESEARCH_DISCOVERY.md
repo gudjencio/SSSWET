@@ -65,6 +65,7 @@ The provider registry now includes additional sources, always retaining the plat
 | Source | Access mode | Important limits |
 |---|---|---|
 | Bluesky | Public AT Protocol AppView search | Public posts only; results remain discovery leads |
+| Public web / forums | Optional Brave Search API | Searches indexed public pages across community sites and forums; snippets are discovery leads, not source text verification |
 | Reddit | OAuth API search | Requires an approved Reddit API app/token and a descriptive user agent; respect rate limits and Reddit terms |
 | Threads | Official Meta Threads keyword-search endpoint | Requires `threads_keyword_search`; public search may be restricted until Meta grants advanced access |
 | Facebook | Official Graph API posts for explicitly configured Page IDs | Public Page fields only; Page Public Content Access/app review or other Meta permissions may be required |
@@ -77,6 +78,7 @@ The RSS adapter is a generic open-web connector for publicly published feeds; it
 
 ### Additional environment settings
 
+- `SSSWET_BRAVE_SEARCH_API_KEY` (optional; broad public-web/forum discovery)
 - `SSSWET_REDDIT_ACCESS_TOKEN`
 - `SSSWET_REDDIT_USER_AGENT` (required when Reddit is enabled)
 - `SSSWET_THREADS_ACCESS_TOKEN` (must carry the approved `threads_keyword_search` scope for public search)
@@ -88,7 +90,7 @@ The RSS adapter is a generic open-web connector for publicly published feeds; it
 - `SSSWET_TRANSLATION_TARGET_LANG` (defaults to EN)
 - `SSSWET_DEEPL_API_URL` (must be the official free or paid DeepL API endpoint)
 
-Bluesky public search and Qiita public search are available without an access token. The configured source list is bounded, queried concurrently with a maximum of eight workers, and globally deduplicated. The output cap remains ten records per research pass. Individual platform errors do not suppress successful sources.
+Bluesky public search and Qiita public search are available without an access token. The optional Brave Search adapter can discover indexed public pages across additional community sites and forums; it does not see private or unindexed content. The configured source list is bounded, queried concurrently with a maximum of eight workers, and globally deduplicated. The output cap remains ten records per research pass. Individual platform errors do not suppress successful sources.
 
 ### Multilingual clickbait and translation
 
