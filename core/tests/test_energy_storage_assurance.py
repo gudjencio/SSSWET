@@ -124,6 +124,7 @@ def test_cycle_segmentation_preserves_complete_and_incomplete_groups():
     result = segment_cycles(rows)
     assert result[0]["complete_charge_discharge_pair"] is True
     assert result[0]["review_flags"] == []
+    assert result[0]["calibration_refs"] == ["cal-1"]
     assert result[1]["complete_charge_discharge_pair"] is False
     assert "charge_observations_missing" in result[1]["review_flags"]
     assert result[1]["sample_ids"] == [rows[3]["sample_id"]]
@@ -198,13 +199,16 @@ def test_round_trip_efficiency_flags_ratio_above_100_without_hiding_it():
 
 def test_capacity_fade_reports_descriptive_linear_trend():
     result = capacity_fade([
-        {"cycle_number": 1, "capacity_ah": 10},
-        {"cycle_number": 2, "capacity_ah": 9},
-        {"cycle_number": 3, "capacity_ah": 8},
+        {"cycle_number": 1, "capacity_ah": 10, "source_id": "cycler-a", "evidence_refs": ["test-1"], "uncertainty_ah": 0.1},
+        {"cycle_number": 2, "capacity_ah": 9, "source_id": "cycler-a", "evidence_refs": ["test-2"], "uncertainty_ah": 0.1},
+        {"cycle_number": 3, "capacity_ah": 8, "source_id": "cycler-b", "evidence_refs": ["test-3"], "uncertainty_ah": 0.2},
     ])
     assert result["slope_ah_per_cycle"] == pytest.approx(-1.0)
     assert result["relative_change_percent"] == pytest.approx(-20.0)
     assert result["r_squared_descriptive"] == pytest.approx(1.0)
+    assert result["source_ids"] == ["cycler-a", "cycler-b"]
+    assert result["evidence_refs"] == ["test-1", "test-2", "test-3"]
+    assert len(result["uncertainty_ah_by_cycle"]) == 3
     assert result["extrapolation_performed"] is False
 
 
@@ -231,6 +235,9 @@ def test_temperature_excursion_counts_and_only_sums_confirmed_spans():
     result = temperature_excursions(rows, minimum_c=0, maximum_c=40)
     assert result["above_limit_count"] == 2
     assert result["confirmed_out_of_range_span_seconds"] == pytest.approx(300)
+    assert result["source_ids"] == ["sensor-source-1"]
+    assert result["calibration_refs"] == ["cal-1"]
+    assert result["out_of_range_sources"][0]["sample_id"] == rows[0]["sample_id"]
     assert result["safety_clearance_established"] is False
 
 
@@ -249,6 +256,7 @@ def test_cell_imbalance_uses_caller_threshold_and_keeps_each_sample():
     result = cell_imbalance(rows, review_spread_v=0.05)
     assert result["maximum_spread_v"] == pytest.approx(0.10)
     assert result["samples"][0]["review_flag"] == "spread_above_supplied_limit"
+    assert result["samples"][0]["source_id"] == "sensor-source-1"
     assert result["samples"][1]["review_flag"] is None
 
 
@@ -261,6 +269,7 @@ def test_mad_screen_flags_outlier_without_removing_observations():
     rows = [make_sample(i, current=value) for i, value in enumerate([1, 1, 1, 1, 10])]
     result = detect_signal_anomalies(rows, fields=("current_a",))
     assert [item["sample_id"] for item in result["anomalies"]] == [rows[-1]["sample_id"]]
+    assert result["anomalies"][0]["source_id"] == "sensor-source-1"
     assert result["source_observations_removed"] == 0
 
 
