@@ -11,6 +11,8 @@ import json
 
 MAX_REVIEWS = 100
 MAX_TEXT = 4000
+MAX_CONTEXT_BYTES = 250_000
+MAX_REVIEW_BYTES = 20_000
 
 
 def build_deliberation_synthesis(
@@ -26,6 +28,7 @@ def build_deliberation_synthesis(
         raise ValueError(f"reviews must be a list of at most {MAX_REVIEWS}")
     normalized = []
     seen = set()
+    seen_reviewers = set()
     for review in reviews:
         if not isinstance(review, dict):
             raise ValueError("every review must be a dictionary")
@@ -36,10 +39,16 @@ def build_deliberation_synthesis(
             raise ValueError("every review requires reviewer_id")
         if not isinstance(review_id, str) or not review_id.strip() or review_id in seen:
             raise ValueError("review IDs must be unique and non-empty")
-        if not isinstance(position, str) or not position.strip():
-            raise ValueError("every review requires an explicit position")
+        if not isinstance(position, str) or not position.strip() or len(position) > 100:
+            raise ValueError("every review requires a bounded explicit position")
+        if reviewer in seen_reviewers:
+            raise ValueError("reviewer IDs must be unique within one synthesis")
         seen.add(review_id)
+        seen_reviewers.add(reviewer)
         item = dict(review)
+        encoded_review = json.dumps(item, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")
+        if len(encoded_review) > MAX_REVIEW_BYTES:
+            raise ValueError("a review record exceeds the 20 KB limit")
         for field in ("rationale", "limitations", "uncertainty_note"):
             value = item.get(field, "")
             if not isinstance(value, str) or len(value) > MAX_TEXT:
@@ -49,6 +58,16 @@ def build_deliberation_synthesis(
         item["reviewer_id"], str(item.get("submitted_at", "")),
         str(item.get("review_id", item["reviewer_id"])),
     ))
+    coverage = evidence_coverage or {}
+    disagreement = disagreement or {}
+    reassessment = reassessment or {}
+    if not all(isinstance(item, dict) for item in (coverage, disagreement, reassessment)):
+        raise ValueError("coverage, disagreement and reassessment summaries must be dictionaries")
+    context_bytes = json.dumps(
+        [coverage, disagreement, reassessment], ensure_ascii=False, sort_keys=True, default=str,
+    ).encode("utf-8")
+    if len(context_bytes) > MAX_CONTEXT_BYTES:
+        raise ValueError("combined evidence and review summaries exceed the 250 KB limit")
     counts = {}
     for item in normalized:
         key = item["position"].strip().casefold()
@@ -60,9 +79,6 @@ def build_deliberation_synthesis(
     else:
         pattern = "mixed_recorded_positions"
 
-    coverage = evidence_coverage or {}
-    disagreement = disagreement or {}
-    reassessment = reassessment or {}
     gaps = []
     for claim in coverage.get("claims", []) if isinstance(coverage, dict) else []:
         gaps.extend(

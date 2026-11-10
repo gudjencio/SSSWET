@@ -71,6 +71,9 @@ class Observation:
         for name in ("observation_id", "variable", "value"):
             if not _norm(getattr(self, name)):
                 raise ValueError(f"{name} is required")
+        if (not isinstance(self.source_ids, tuple) or len(self.source_ids) > 100
+                or any(not isinstance(item, str) or not item.strip() for item in self.source_ids)):
+            raise ValueError("observation source IDs must be a tuple of at most 100 non-empty IDs")
         if len(set(self.source_ids)) != len(self.source_ids):
             raise ValueError("observation source IDs must be unique")
 

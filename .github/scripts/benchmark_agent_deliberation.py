@@ -9,6 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "core"))
 
+from ssswet_core.claim_specification import ClaimSpecification, validate_claim_history
 from ssswet_core.source_lineage import analyze_source_lineage
 from ssswet_core.evidence_coverage import build_evidence_coverage
 from ssswet_core.hypothesis_matrix import Hypothesis, Observation, Prediction, evaluate_hypotheses
@@ -105,7 +106,12 @@ def main():
         "source_digests": {**previous["source_digests"], "s0": "sha-changed", "s1000": "sha-new"},
         "method_versions": {**previous["method_versions"], "m0": "v2"},
     }
+    claim_history = [ClaimSpecification(
+        claim_id=f"c{i}", version=1, statement=f"Claim {i}", subject=f"subject-{i}",
+        predicate="measured", value="observed", scope="synthetic", evidence_refs=(f"s{i}",),
+    ) for i in range(100)]
     probes = {}
+    probes["claim_specification"], _ = measure(lambda: validate_claim_history(claim_history))
     probes["source_lineage"], lineage_result = measure(lambda: analyze_source_lineage(sources))
     probes["evidence_coverage"], coverage_result = measure(lambda: build_evidence_coverage(claims, evidence, sources))
     probes["hypothesis_matrix"], _ = measure(lambda: evaluate_hypotheses(hypotheses, observations))

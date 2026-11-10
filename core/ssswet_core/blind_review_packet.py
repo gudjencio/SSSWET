@@ -64,6 +64,9 @@ def build_blind_packet(
     packet_bytes = json.dumps(packet, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     if len(packet_bytes) > MAX_PACKET_BYTES:
         raise ValueError("blind review packet exceeds the 1 MB limit")
+    mapping_bytes = json.dumps(mapping, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    if len(mapping_bytes) > MAX_PACKET_BYTES:
+        raise ValueError("separate unblinding key exceeds the 1 MB limit")
     return {
         "packet": packet,
         "packet_sha256": sha256(packet_bytes).hexdigest(),
@@ -71,6 +74,7 @@ def build_blind_packet(
         "warnings": warnings,
         "document_count": len(packet_documents),
         "packet_bytes": len(packet_bytes),
+        "unblinding_key_bytes": len(mapping_bytes),
         "unblinding_key_separate_from_packet": True,
         "complete_anonymity_guaranteed": False,
         "source_identifiers_preserved": True,

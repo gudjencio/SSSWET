@@ -315,3 +315,25 @@ def test_synthesis_rejects_duplicate_review_ids_and_bounds_text():
         build_deliberation_synthesis("c", "claim", [
             {**review, "rationale": "x" * 4001}
         ])
+
+
+def test_coverage_rejects_duplicate_evidence_ids():
+    item = {"evidence_id": "same", "claim_id": "c1", "stance": "supports"}
+    with pytest.raises(ValueError):
+        build_evidence_coverage([{"claim_id": "c1"}], [item, item])
+
+
+def test_synthesis_rejects_duplicate_reviewer_identity():
+    reviews = [
+        {"review_id": "one", "reviewer_id": "r1", "position": "supports"},
+        {"review_id": "two", "reviewer_id": "r1", "position": "challenges"},
+    ]
+    with pytest.raises(ValueError):
+        build_deliberation_synthesis("case", "claim", reviews)
+
+
+def test_observation_source_references_are_bounded_and_typed():
+    with pytest.raises(ValueError):
+        Observation("o", "x", "y", source_ids=["not-a-tuple"])
+    with pytest.raises(ValueError):
+        Observation("o", "x", "y", source_ids=tuple(f"s{i}" for i in range(101)))
