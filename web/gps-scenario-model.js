@@ -404,7 +404,7 @@
     if(radius>=poleClearanceM)return null;
     const origin={latitude,longitude},unwrapped=[];
     for(let index=0;index<steps;index++){
-      const point=destinationPoint(origin,2*Math.PI*index/steps,radius);
+      const point=destinationPoint(origin,-2*Math.PI*index/steps,radius);
       const longitudeOffset=normalizeLongitude(point.longitude-longitude);
       unwrapped.push([longitude+longitudeOffset,point.latitude]);
     }
@@ -428,7 +428,7 @@
       if(!eastern||!westernRing)return null;
       return {type:"MultiPolygon",coordinates:[[eastern],[westernRing]]};
     }
-    return {type:"Polygon",coordinates:[ring.map(([lon,lat])=>[normalizeLongitude(lon),lat])]};
+    return {type:"Polygon",coordinates:[ring.map(([lon,lat])=>[lon,lat])]};
   }
   function sampleEvenly(items,limit=500) {
     if(!Array.isArray(items)||!Number.isInteger(limit)||limit<1)return [];

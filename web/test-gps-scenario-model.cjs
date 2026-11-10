@@ -19,12 +19,13 @@ assert.deepEqual(sampleEvenly([],500),[],"empty marker sets must remain empty");
 assert.deepEqual(sampleEvenly([1,2],0),[],"invalid sample limits must be rejected");
 assert.deepEqual(sampleEvenly([1,2,3],1),[3],"a single sample must preserve the final marker");
 const geometryRings=geometry=>geometry.type==="Polygon"?[geometry.coordinates[0]]:geometry.coordinates.map(polygon=>polygon[0]);
+const signedArea=ring=>ring.slice(0,-1).reduce((area,point,index)=>{const next=ring[index+1];return area+point[0]*next[1]-next[0]*point[1];},0)/2;
 const ordinaryCenter={latitude:46.5,longitude:2.2};
 const ordinaryGeometry=accuracyFootprint(ordinaryCenter,42);
 assert.ok(ordinaryGeometry&&ordinaryGeometry.type==="Polygon","an ordinary footprint must be a GeoJSON Polygon");
 const ordinaryRing=geometryRings(ordinaryGeometry)[0];
 assert.equal(ordinaryRing.length,37,"the default footprint must use 36 edges plus a closing coordinate");
-assert.deepEqual(ordinaryRing[0],ordinaryRing[ordinaryRing.length-1],"the ordinary polygon ring must be closed");
+assert.deepEqual(ordinaryRing[0],ordinaryRing[ordinaryRing.length-1],"the ordinary polygon ring must be closed");assert.ok(signedArea(ordinaryRing)>0,"ordinary GeoJSON exterior rings must use counterclockwise winding");
 for(const coordinate of ordinaryRing){
   const radius=distance(ordinaryCenter,{latitude:coordinate[1],longitude:coordinate[0]});
   assert.ok(Math.abs(radius-42)<0.02,"ordinary footprint vertices must match the reported radius");
@@ -35,7 +36,7 @@ for(const center of [{latitude:0,longitude:179.9999},{latitude:0,longitude:-179.
   assert.equal(crossing.coordinates.length,2);
   for(const ring of geometryRings(crossing)){
     assert.ok(ring.length>=4,"each clipped polygon must have three vertices and a closing coordinate");
-    assert.deepEqual(ring[0],ring[ring.length-1],"each clipped polygon ring must be closed");
+    assert.deepEqual(ring[0],ring[ring.length-1],"each clipped polygon ring must be closed");assert.ok(signedArea(ring)>0,"clipped GeoJSON exterior rings must preserve counterclockwise winding");
     for(let index=0;index<ring.length;index++){
       const coordinate=ring[index],next=ring[(index+1)%ring.length];
       assert.ok(coordinate[0]>=-180&&coordinate[0]<=180,"GeoJSON longitude must remain normalized");
