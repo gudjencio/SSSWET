@@ -8,6 +8,7 @@ NODE_TYPES = {"claim", "evidence", "assumption", "limitation", "method"}
 RELATIONS = {"supports", "challenges", "depends_on", "qualifies", "derived_from"}
 MAX_NODES = 2000
 MAX_EDGES = 10000
+MAX_PATH_STATES = 50000
 
 
 def validate_argument_map(nodes: list[dict], edges: list[dict]) -> dict:
@@ -86,10 +87,13 @@ def validate_argument_map(nodes: list[dict], edges: list[dict]) -> dict:
     claim_nodes = sorted(node_id for node_id, item in by_id.items() if item["node_type"] == "claim")
     reachable_claims = set()
     evidence_paths = []
+    path_states = 0
+    path_search_truncated = False
     for evidence_id in evidence_nodes:
         queue = deque([(evidence_id, [evidence_id])])
         visited = {evidence_id}
-        while queue and len(evidence_paths) < 500:
+        while queue and len(evidence_paths) < 500 and path_states < MAX_PATH_STATES:
+            path_states += 1
             current, path = queue.popleft()
             if current in claim_nodes:
                 reachable_claims.add(current)
@@ -102,6 +106,9 @@ def validate_argument_map(nodes: list[dict], edges: list[dict]) -> dict:
                     continue
                 visited.add(target)
                 queue.append((target, path + [target]))
+        if queue or path_states >= MAX_PATH_STATES:
+            path_search_truncated = True
+            break
     unsupported_claims = sorted(set(claim_nodes) - reachable_claims)
     connected_nodes = {item for path in evidence_paths for item in path}
     orphan_evidence = sorted(set(evidence_nodes) - connected_nodes)
@@ -112,6 +119,8 @@ def validate_argument_map(nodes: list[dict], edges: list[dict]) -> dict:
         "claim_nodes_without_evidence_path": unsupported_claims,
         "orphan_evidence_nodes": orphan_evidence,
         "evidence_paths": evidence_paths[:500],
+        "path_search_states": path_states,
+        "path_search_truncated": path_search_truncated,
         "path_tracing_bounded": True,
         "claim_truth_established": False,
     }
@@ -134,7 +143,9 @@ def trace_argument_paths(
         adjacency[edge["source_id"]].append((edge["target_id"], edge["relation"]))
     paths = []
     queue = deque([(start_id, [start_id])])
-    while queue and len(paths) < max_paths:
+    states_examined = 0
+    while queue and len(paths) < max_paths and states_examined < MAX_PATH_STATES:
+        states_examined += 1
         current, path = queue.popleft()
         if current == end_id:
             paths.append(path)
@@ -146,7 +157,8 @@ def trace_argument_paths(
                 queue.append((target, path + [target]))
     return {
         "start_id": start_id, "end_id": end_id, "paths": paths,
-        "path_count": len(paths), "truncated": bool(queue),
+        "path_count": len(paths), "truncated": bool(queue) or states_examined >= MAX_PATH_STATES,
+        "states_examined": states_examined,
         "maximum_depth": max_depth, "maximum_paths": max_paths,
         "interpretation": "Paths represent declared relationships, not proof.",
     }

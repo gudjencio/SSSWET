@@ -42,7 +42,10 @@ def analyze_disagreements(reviews: list[dict]) -> dict:
                 dimensions[field] = values
         source_usage = defaultdict(list)
         for item in items:
-            for source_id in item.get("source_ids", []):
+            source_ids = item.get("source_ids", [])
+            if not isinstance(source_ids, list) or len(source_ids) > 100:
+                raise ValueError("source_ids must be a list of at most 100 IDs")
+            for source_id in source_ids:
                 if isinstance(source_id, str) and source_id.strip():
                     source_usage[source_id.strip()].append(item["reviewer_id"])
         shared_sources = {

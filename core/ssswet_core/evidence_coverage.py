@@ -30,6 +30,8 @@ def build_evidence_coverage(
         raise ValueError("source lineage contains a cycle")
     source_to_cluster = lineage.get("source_to_cluster", {})
     rows = defaultdict(list)
+    seen_evidence_ids = set()
+    claim_id_set = set(claim_ids)
     for item in evidence:
         if not isinstance(item, dict):
             raise ValueError("every evidence item must be a dictionary")
@@ -38,7 +40,10 @@ def build_evidence_coverage(
         stance = item.get("stance")
         if not isinstance(evidence_id, str) or not evidence_id.strip():
             raise ValueError("every evidence item requires an evidence_id")
-        if claim_id not in set(claim_ids):
+        if evidence_id in seen_evidence_ids:
+            raise ValueError("evidence IDs must be unique")
+        seen_evidence_ids.add(evidence_id)
+        if not isinstance(claim_id, str) or claim_id not in claim_id_set:
             raise ValueError(f"evidence references unknown claim: {claim_id}")
         if stance not in STANCES:
             raise ValueError(f"unsupported evidence stance: {stance}")

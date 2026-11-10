@@ -14,8 +14,9 @@ def _mapping(value, field):
         raise ValueError(f"{field} must be a mapping of at most {MAX_DEPENDENCIES} entries")
     cleaned = {}
     for key, item in value.items():
-        if not isinstance(key, str) or not key.strip() or not isinstance(item, str) or not item.strip():
-            raise ValueError(f"{field} keys and values must be non-empty strings")
+        if (not isinstance(key, str) or not key.strip() or len(key) > 200
+                or not isinstance(item, str) or not item.strip() or len(item) > 300):
+            raise ValueError(f"{field} keys and values must be non-empty bounded strings")
         cleaned[key.strip()] = item.strip()
     return cleaned
 
