@@ -345,6 +345,7 @@ class MultiSourceLiteratureProvider:
         source_ids: list[str] = []
         bibliographic_records: list[dict] = []
         seen: dict[str, int] = {}
+        seen_metadata: dict[str, int] = {}
         for provider, result in results:
             for source_id, item in zip(result.source_ids, result.evidence):
                 normalized = source_id.casefold().replace("https://doi.org/", "").strip()
@@ -358,24 +359,34 @@ class MultiSourceLiteratureProvider:
                 if key in seen:
                     # Keep a single DOI candidate while retaining which indexes
                     # independently returned it and filling only missing metadata.
-                    index = seen[key]
-                    existing = dict(bibliographic_records[index]) if index < len(bibliographic_records) else {}
-                    for field, value in incoming.items():
-                        if existing.get(field) in (None, "", [], {} ) and value not in (None, "", [], {}):
-                            existing[field] = value
-                    providers_seen = set(existing.get("metadata_providers", []))
-                    providers_seen.add(provider.name)
-                    source_ids_seen = set(existing.get("provider_source_ids", []))
-                    source_ids_seen.add(source_id)
-                    existing["metadata_providers"] = sorted(providers_seen)
-                    existing["provider_source_ids"] = sorted(source_ids_seen)
-                    if index < len(bibliographic_records):
-                        bibliographic_records[index] = existing
+                    if incoming:
+                        if key in seen_metadata:
+                            index = seen_metadata[key]
+                            existing = dict(bibliographic_records[index])
+                            for field, value in incoming.items():
+                                if existing.get(field) in (None, "", [], {}) and value not in (None, "", [], {}):
+                                    existing[field] = value
+                            providers_seen = set(existing.get("metadata_providers", []))
+                            source_ids_seen = set(existing.get("provider_source_ids", []))
+                        else:
+                            existing = dict(incoming)
+                            providers_seen = set()
+                            source_ids_seen = set()
+                        providers_seen.add(provider.name)
+                        source_ids_seen.add(source_id)
+                        existing["metadata_providers"] = sorted(providers_seen)
+                        existing["provider_source_ids"] = sorted(source_ids_seen)
+                        if key in seen_metadata:
+                            bibliographic_records[seen_metadata[key]] = existing
+                        else:
+                            seen_metadata[key] = len(bibliographic_records)
+                            bibliographic_records.append(existing)
                     continue
                 seen[key] = len(evidence)
                 evidence.append(f"[{provider.name}] {item}")
                 source_ids.append(source_id)
                 if incoming:
+                    seen_metadata[key] = len(bibliographic_records)
                     bibliographic_records.append({
                         **incoming,
                         "source_id": source_id,
