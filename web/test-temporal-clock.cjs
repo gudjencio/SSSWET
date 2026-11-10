@@ -105,7 +105,7 @@ assert.ok(html.indexOf('<script src="temporal-clock.js"></script>') < html.index
 const serviceWorker = fs.readFileSync(path.join(__dirname, "sw.js"), "utf8");
 const cacheVersion = serviceWorker.match(/const CACHE = "ssswet-web-v(\d+)";/);
 assert.ok(cacheVersion, "the service worker must use a versioned cache key");
-assert.ok(Number(cacheVersion[1]) > 0, "the service-worker cache version must be a positive integer");
+assert.ok(Number(cacheVersion[1]) >= 193, "the cache version must be at least v193, when the temporal/GPS modules entered the precache");
 assert.match(serviceWorker, /\.\/temporal-clock\.js/, "the new clock helper must be precached");
 assert.match(serviceWorker, /cache\.addAll\(ASSETS\)/, "the declared assets must be installed into the versioned cache");
 
