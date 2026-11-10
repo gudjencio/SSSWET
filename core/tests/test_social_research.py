@@ -288,3 +288,11 @@ def test_social_provider_discards_only_zero_overlap_items_and_records_match_hint
     assert errors == ()
     assert [item.source_id for item in items] == ["qiita:relevant"]
     assert items[0].metadata["query_relevance"]["method"] == "lexical_overlap_only_not_evidence"
+
+
+def test_query_relevance_preserves_short_technical_acronyms():
+    from ssswet_core.social_research import query_relevance
+
+    score, terms = query_relevance("AI", "AI-assisted research tools")
+    assert score == 1.0 and terms == ("ai",)
+    assert query_relevance("EV", "A cooking recipe") == (0.0, ())
