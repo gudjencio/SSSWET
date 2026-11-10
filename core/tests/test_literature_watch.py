@@ -45,6 +45,10 @@ def test_watch_flags_exact_doi_and_new_candidate_without_promoting(tmp_path):
     assert report.candidates[0].classification == "possible_duplicate"
     assert report.candidates[0].duplicate_source_ids == ("existing-known",)
     assert report.candidates[0].url == "https://publisher.example/known"
+    assert report.candidates[0].authors == ("Author A",)
+    assert report.candidates[0].venue == "Journal"
+    assert report.candidates[0].publication_type == "retraction"
+    assert "retraction_status_signal" in report.candidates[0].publication_status_signals
     assert report.candidates[1].classification == "candidate_for_review"
     assert report.candidates[1].related_memory_ids == ("memory-orbit",)
     assert report.bibliographic_integrity["record_count"] == 2
