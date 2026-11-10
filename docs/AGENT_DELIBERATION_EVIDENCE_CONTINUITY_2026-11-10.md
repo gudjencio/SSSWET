@@ -72,3 +72,27 @@ The dedicated benchmark workflow reports median and p95 latency for synthetic wo
 - Protective/rescue research remains subject to qualified domain review, human factors, safety, ethics, legal requirements and appropriate real-world validation. These utilities do not certify equipment or authorize deployment.
 
 No new runtime dependency is required. Existing database schemas and stored research records are not modified.
+
+
+## CI evidence — 10 November 2026
+
+The final pull-request CI run completed successfully on Python 3.11, 3.12 and 3.13. The Python 3.12.16 run reports **604 passed** for the full core suite, including 18 focused tests for this update. The independent core-tests workflow also passed.
+
+The dedicated synthetic benchmark completed five repetitions per operation on Python 3.12.16. Values below are p95 latency, not claimed speedups:
+
+| Operation | p95 |
+|---|---:|
+| Claim specification and history validation | 0.131 ms |
+| Source-lineage clustering (1,000 sources) | 11.630 ms |
+| Hypothesis matrix (50 hypotheses, 1,000 observations) | 228.322 ms |
+| Evidence coverage (100 claims, 1,000 evidence records) | 17.004 ms |
+| Blind packet (100 documents) | 1.341 ms |
+| Reviewer calibration (200 cases, five reviewers each) | 1.334 ms |
+| Argument map (500 nodes, 499 edges) | 1.807 ms |
+| Disagreement analysis (1,000 reviews) | 3.906 ms |
+| Reassessment comparison (up to 1,000 source digests plus other dependency maps) | 1.123 ms |
+| Dissent-preserving synthesis (50 positions) | 1.270 ms |
+
+The 100-document synthetic blind packet occupied **19,861 bytes**. The benchmark artifact is attached to the dedicated [GitHub Actions benchmark run](https://github.com/gudjencio/SSSWET/actions/runs/42784532969). All ten probes remained below the intentionally broad 5,000 ms guard.
+
+These figures describe one hosted runner and fixed synthetic fixtures. They are not mobile-device benchmarks, database storage-growth forecasts, external-provider latency measurements, scientific accuracy results or evidence of increased agent intelligence.
