@@ -79,8 +79,8 @@ def test_social_provider_deduplicates_and_bounds_results():
         name = "fake"
         def search(self, query):
             return [
-                SocialItem("youtube", "youtube:1", "A", "text", "https://www.youtube.com/watch?v=1"),
-                SocialItem("youtube", "youtube:1", "A duplicate", "text", "https://www.youtube.com/watch?v=1"),
+                SocialItem("youtube", "youtube:1", "Science A", "science text", "https://www.youtube.com/watch?v=1"),
+                SocialItem("youtube", "youtube:1", "Science A duplicate", "science text", "https://www.youtube.com/watch?v=1"),
             ]
     items, errors = SocialResearchProvider([Fake()], max_results=1).search("science")
     assert len(items) == 1 and errors == ()
@@ -246,3 +246,41 @@ def test_social_result_budget_round_robins_across_platforms(monkeypatch):
     items, errors = SocialResearchProvider([Busy(), Smaller()], max_results=4).search("science")
     assert {item.platform for item in items} == {"youtube", "reddit"}
     assert len(items) == 4 and errors == ()
+
+
+def test_query_relevance_filters_zero_overlap_and_keeps_partial_matches():
+    from ssswet_core.social_research import query_relevance
+
+    assert query_relevance("solid-state battery", "A cooking recipe") == (0.0, ())
+    score, terms = query_relevance("solid-state battery", "Battery materials overview")
+    assert score > 0
+    assert "battery" in terms
+
+
+def test_query_relevance_supports_japanese_and_chinese_character_ngrams():
+    from ssswet_core.social_research import query_relevance
+
+    ja_score, ja_terms = query_relevance("全固体電池", "全固体電池の研究と材料")
+    zh_score, zh_terms = query_relevance("固态电池", "固态电池研究进展")
+    assert ja_score == 1.0 and ja_terms == ("exact_phrase",)
+    assert zh_score == 1.0 and zh_terms == ("exact_phrase",)
+
+
+def test_social_provider_discards_only_zero_overlap_items_and_records_match_hint(monkeypatch):
+    from ssswet_core.social_expansion import translate_items_if_configured
+    monkeypatch.setattr("ssswet_core.social_expansion.translate_items_if_configured", lambda items: items)
+
+    class Mixed:
+        name = "mixed"
+        def search(self, query):
+            return [
+                SocialItem("qiita", "qiita:relevant", "Battery material study",
+                           "Solid-state battery measurements", "https://qiita.com/items/relevant"),
+                SocialItem("qiita", "qiita:unrelated", "A cooking diary",
+                           "How to prepare lunch", "https://qiita.com/items/unrelated"),
+            ]
+
+    items, errors = SocialResearchProvider([Mixed()]).search("solid-state battery")
+    assert errors == ()
+    assert [item.source_id for item in items] == ["qiita:relevant"]
+    assert items[0].metadata["query_relevance"]["method"] == "lexical_overlap_only_not_evidence"
