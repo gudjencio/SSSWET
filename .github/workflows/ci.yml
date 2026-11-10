@@ -55,6 +55,7 @@ jobs:
           node --check web/locales.js
           node --check web/bot-personality.js
           node --check web/bot-live-room.js
+          node --check web/research-ledger.js
           node web/test-locales.cjs
           node web/test-keyframe-continuity.cjs
           node web/test-keyframe-correspondence.cjs
@@ -62,6 +63,7 @@ jobs:
           node web/test-gps-scenario-model.cjs
           node web/test-keyframe-spatial-distribution.cjs
           node web/test-bot-personality.cjs
+          node web/test-research-ledger.cjs
       - name: Run core tests
         working-directory: core
         run: python -m pytest -q
