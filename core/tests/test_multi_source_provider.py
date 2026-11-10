@@ -10,6 +10,7 @@ class HealthyIndex:
             evidence=("A research paper",),
             uncertainty=1.0,
             source_ids=("https://doi.org/10.example/123",),
+            bibliographic_records=({"source_id": "https://doi.org/10.example/123", "title": "A research paper", "doi": "10.example/123", "publication_year": 2025, "authors": ["A. Researcher"], "venue": "Example Journal", "type": "journal-article"},),
         )
 
 
@@ -30,6 +31,8 @@ def test_multi_source_search_keeps_results_when_one_index_fails():
     assert result.evidence == ("[healthy-index] A research paper",)
     assert "unstable-index: RuntimeError" in result.summary
     assert result.uncertainty == 1.0
+    assert len(result.bibliographic_records) == 1
+    assert result.bibliographic_records[0]["title"] == "A research paper"
 
 
 def test_multi_source_search_reports_when_both_indexes_fail():
