@@ -26,18 +26,20 @@ runaway, certify a battery, or authorize operational use.
    current to Wh, then compares charge and discharge energy. Ratios above 100% are
    reported unchanged with a review flag rather than clipped or silently accepted.
 5. **Capacity-fade trend.** Fits a descriptive least-squares line to at least three
-   unique cycle measurements. Reports slope, observed relative change and
-   descriptive R-squared; it does not forecast end-of-life or extrapolate.
+   unique cycle measurements. Preserves optional per-cycle source IDs, evidence
+   references and standard uncertainty. Reports slope, observed relative change
+   and descriptive R-squared; it does not forecast end-of-life or extrapolate.
 6. **Temperature-excursion accounting.** Counts observations outside explicit
-   researcher-supplied limits and sums only adjacent intervals whose two endpoints
-   are outside on the same side. It does not interpolate crossings or call a range
-   safe.
+   researcher-supplied limits, retains source/calibration references and sums only
+   adjacent intervals whose two endpoints are outside on the same side. It does
+   not interpolate crossings or call a range safe.
 7. **Cell-voltage imbalance screening.** Calculates per-sample max-minus-min cell
-   voltage spread against a caller-supplied review threshold. Missing or insufficient
-   cell measurements remain visible.
+   voltage spread against a caller-supplied review threshold. Per-sample source and
+   calibration references remain visible; missing or insufficient cell measurements
+   are retained.
 8. **Robust signal-anomaly screening.** Uses median absolute deviation on selected
-   current, voltage and temperature fields. It flags candidate observations but
-   never deletes or edits source samples.
+   current, voltage and temperature fields. Flags retain sample/source/calibration
+   references and never delete or edit source samples.
 9. **Protocol revision comparison.** Produces deterministic SHA-256 fingerprints
    and field-path differences for bounded JSON-compatible protocol revisions.
 10. **Reproducible evidence packet.** Creates a deterministic, bounded manifest
