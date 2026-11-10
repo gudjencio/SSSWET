@@ -264,6 +264,10 @@ def test_query_relevance_supports_japanese_and_chinese_character_ngrams():
     zh_score, zh_terms = query_relevance("固态电池", "固态电池研究进展")
     assert ja_score == 1.0 and ja_terms == ("exact_phrase",)
     assert zh_score == 1.0 and zh_terms == ("exact_phrase",)
+    partial_ja, ja_matches = query_relevance("全固体電池", "固体電池の材料研究")
+    partial_zh, zh_matches = query_relevance("固态电池", "电池技术研究")
+    assert 0.0 < partial_ja < 1.0 and ja_matches
+    assert 0.0 < partial_zh < 1.0 and zh_matches
 
 
 def test_social_provider_discards_only_zero_overlap_items_and_records_match_hint(monkeypatch):
