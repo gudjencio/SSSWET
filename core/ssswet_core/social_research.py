@@ -402,3 +402,58 @@ class SocialResearchProvider:
         if errors:
             summary += " Platform errors: " + "; ".join(errors)
         return ProviderResult(summary, tuple(records), 1.0, tuple(source_ids))
+
+
+class MultiSourceResearchProvider:
+    """Run scholarly discovery and configured social discovery in one bot pass.
+
+    Social results remain separately structured and unverified. A missing social
+    API credential never disables Crossref/OpenAlex discovery.
+    """
+
+    name = "scholarly-plus-social-research"
+
+    def __init__(self, literature_provider=None, social_provider=None):
+        from .providers import MultiSourceLiteratureProvider
+        self.literature_provider = literature_provider or MultiSourceLiteratureProvider()
+        self.social_provider = social_provider or SocialResearchProvider.from_environment()
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        providers = (self.literature_provider, self.social_provider)
+        results = {}
+        failures = []
+        with ThreadPoolExecutor(max_workers=2, thread_name_prefix="ssswet-research-sources") as pool:
+            futures = {pool.submit(provider.investigate, objective, strategy): provider for provider in providers}
+            for future in as_completed(futures):
+                provider = futures[future]
+                try:
+                    results[provider.name] = future.result()
+                except Exception as exc:
+                    failures.append(f"{provider.name}: {type(exc).__name__}")
+                    results[provider.name] = ProviderResult(
+                        f"{provider.name} failed ({type(exc).__name__}); no result was inferred.",
+                        uncertainty=1.0,
+                    )
+
+        evidence, source_ids, seen = [], [], set()
+        for provider in providers:
+            result = results[provider.name]
+            for source_id, record in zip(result.source_ids, result.evidence):
+                key = str(source_id).casefold().strip()
+                if not key or key in seen:
+                    continue
+                seen.add(key)
+                evidence.append(record)
+                source_ids.append(source_id)
+        summaries = [
+            f"{provider.name}: {results[provider.name].summary}"
+            for provider in providers
+        ]
+        if failures:
+            summaries.append("Provider failures: " + "; ".join(failures))
+        return ProviderResult(
+            summary="Combined discovery pass. " + " ".join(summaries),
+            evidence=tuple(evidence),
+            uncertainty=max((results[p.name].uncertainty for p in providers), default=1.0),
+            source_ids=tuple(source_ids),
+        )
