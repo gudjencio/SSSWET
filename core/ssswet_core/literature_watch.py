@@ -69,6 +69,11 @@ class LiteratureWatchReport:
         known_sources = store._all_source_records()
         memories = store.collective_memory_items(limit=500)
         candidates = []
+        metadata_by_source = {
+            str(record.get("source_id", "")): record
+            for record in result.bibliographic_records
+            if isinstance(record, dict) and record.get("source_id")
+        }
         for source_id, raw in zip(result.source_ids, result.evidence):
             evidence = raw.strip()
             provider_name = provider
@@ -76,13 +81,14 @@ class LiteratureWatchReport:
             if match:
                 provider_name, evidence = match.group(1), match.group(2)
             parts = [part.strip() for part in evidence.split("|")]
-            title = parts[0] if parts else ""
+            structured = metadata_by_source.get(str(source_id), {})
+            title = str(structured.get("title") or (parts[0] if parts else "")).strip()
             if not title:
                 continue
-            doi_match = re.search(r"\bDOI:\s*([^|]+)", evidence, re.IGNORECASE)
-            doi = _normalize_doi(doi_match.group(1)) if doi_match else ""
-            url_match = re.search(r"\bURL:\s*(https?://\S+)", evidence, re.IGNORECASE)
-            url = url_match.group(1).rstrip(".,)") if url_match else ""
+            doi_match = re.search(r"\\bDOI:\\s*([^|]+)", evidence, re.IGNORECASE)
+            doi = _normalize_doi(structured.get("doi") or (doi_match.group(1) if doi_match else ""))
+            url_match = re.search(r"\\bURL:\\s*(https?://\\S+)", evidence, re.IGNORECASE)
+            url = str(structured.get("url") or (url_match.group(1).rstrip(".,)") if url_match else "")).strip()
             exact = []
             similar = []
             for known in known_sources:
