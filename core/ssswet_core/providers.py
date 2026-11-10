@@ -285,7 +285,7 @@ class OpenAlexProvider:
             source_type = str(item.get("type") or "")
             bibliographic_records.append({
                 "source_id": identity, "title": title, "doi": doi, "url": work_id,
-                "authors": authors, "publication_year": year,
+                "authors": authors, "publication_year": item.get("publication_year"),
                 "publication_date": publication_date, "venue": venue,
                 "type": source_type, "is_retracted": item.get("is_retracted") is True,
                 "is_preprint": source_type.casefold() == "preprint",
