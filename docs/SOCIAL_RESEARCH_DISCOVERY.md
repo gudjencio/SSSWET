@@ -40,7 +40,7 @@ When configured, available platform adapters are queried concurrently with a max
 
 ## Misinformation and clickbait handling
 
-Automated triage only flags observable review signals, including sensational wording, extraordinary absolute claims, unsupported certainty language, missing source references, promotional context, reposts and missing author/language metadata.
+Automated triage currently flags a limited set of observable English- and French-language review signals, including sensational wording, extraordinary absolute claims, unsupported certainty language, missing source references, promotional context, reposts and missing author/language metadata. It is a keyword heuristic, not a multilingual misinformation classifier.
 
 It does not label a post as true, false, fake news or misinformation. It does not infer expertise from follower counts, popularity or verification badges. A high engagement count never increases scientific credibility.
 
