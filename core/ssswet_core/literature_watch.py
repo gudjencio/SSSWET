@@ -1,13 +1,14 @@
 """Review-oriented literature watch over scholarly metadata providers."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 import re
 import uuid
 from typing import Protocol
 
 from .providers import ProviderResult
+from .bibliographic_integrity import analyze_bibliographic_integrity
 
 
 class LiteratureProvider(Protocol):
@@ -52,6 +53,7 @@ class LiteratureWatchReport:
     provider: str
     provider_summary: str
     candidates: tuple[WatchCandidate, ...]
+    bibliographic_integrity: dict = field(default_factory=dict)
     provider_errors: tuple[str, ...] = ()
     scientific_validity_established: bool = False
     memory_changed: bool = False
@@ -106,11 +108,15 @@ class LiteratureWatchReport:
                 related_memory_ids=tuple(sorted(set(related_memory))),
                 classification=classification,
             ))
+        bibliographic_records = list(result.bibliographic_records or ())
+        # Older/custom providers may only return display strings. Keep those
+        # candidates visible, but never fabricate missing bibliographic fields.
+        integrity = analyze_bibliographic_integrity(bibliographic_records)
         return cls(
             watch_id=str(uuid.uuid4()), query=query.strip(),
             created_at=datetime.now(timezone.utc).isoformat(),
             provider=provider, provider_summary=result.summary,
-            candidates=tuple(candidates),
+            candidates=tuple(candidates), bibliographic_integrity=integrity,
         )
 
 
