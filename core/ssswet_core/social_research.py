@@ -102,7 +102,7 @@ _STOPWORDS = {
 def _tokens(value: str) -> set[str]:
     return {t for t in _TOKEN_PATTERN.findall(value.casefold()) if t not in _STOPWORDS}
 
-_CJK_RUN_PATTERN = re.compile(r"[\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af]+")
+_CJK_RUN_PATTERN = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]+")
 
 
 def _cjk_bigrams(value: str) -> set[str]:
