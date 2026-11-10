@@ -128,3 +128,51 @@ def test_multilingual_clickbait_flags_never_assign_truth(phrase, expected):
     assert expected in result.flags
     assert result.verification_status == "not_verified"
     assert result.status == "manual_review_required"
+
+
+
+def test_public_rss_feed_parses_bounded_atom_entries(monkeypatch):
+    xml = b'''<?xml version="1.0" encoding="utf-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom">
+      <entry><id>tag:example.org,2026:post1</id><title>Research forum update</title>
+      <summary>Experimental measurements and methods</summary>
+      <link href="https://example.org/posts/1"/><updated>2026-11-01T00:00:00Z</updated>
+      <author><name>Open Lab</name></author></entry>
+    </feed>'''
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+        def read(self, size): return xml
+    class Opener:
+        def open(self, *args, **kwargs): return Response()
+    monkeypatch.setattr("ssswet_core.social_expansion.socket.getaddrinfo",
+                        lambda *a, **k: [(None, None, None, None, ("93.184.216.34", 443))])
+    monkeypatch.setattr("ssswet_core.social_expansion.build_opener", lambda *a: Opener())
+    items = PublicRSSFeedProvider(["https://example.org/feed"]).search("experimental measurements")
+    assert len(items) == 1
+    assert items[0].platform == "forum-example"
+    assert items[0].url == "https://example.org/posts/1"
+    assert items[0].author == "Open Lab"
+
+
+def test_environment_registry_adds_sources_without_removing_existing_adapters(monkeypatch):
+    from ssswet_core.social_research import SocialResearchProvider
+    monkeypatch.setenv("SSSWET_REDDIT_ACCESS_TOKEN", "reddit-token")
+    monkeypatch.setenv("SSSWET_REDDIT_USER_AGENT", "SSSWET test/1.0")
+    monkeypatch.setenv("SSSWET_THREADS_ACCESS_TOKEN", "threads-token")
+    monkeypatch.setenv("SSSWET_FACEBOOK_ACCESS_TOKEN", "facebook-token")
+    monkeypatch.setenv("SSSWET_FACEBOOK_PAGE_IDS", "123456")
+    monkeypatch.setenv("SSSWET_YOUTUBE_API_KEY", "youtube-key")
+    monkeypatch.setenv("SSSWET_X_BEARER_TOKEN", "x-token")
+    monkeypatch.setenv("SSSWET_INSTAGRAM_ACCESS_TOKEN", "instagram-token")
+    monkeypatch.setenv("SSSWET_INSTAGRAM_USER_ID", "123")
+    monkeypatch.setenv("SSSWET_INSTAGRAM_BUSINESS_ACCOUNTS", "science_lab")
+    monkeypatch.setenv("SSSWET_PUBLIC_FEEDS", "https://example.org/feed")
+    provider = SocialResearchProvider.from_environment()
+    names = {source.name for source in provider.providers}
+    assert {
+        "bluesky-atproto", "reddit-oauth-search", "threads-keyword-search",
+        "facebook-public-page-posts", "qiita-api-v2", "configured-public-rss-feeds",
+        "youtube-data-api", "x-api-v2", "instagram-graph-business-discovery",
+    } <= names
+    assert len(provider.providers) <= 20
