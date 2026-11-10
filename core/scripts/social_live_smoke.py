@@ -16,10 +16,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ssswet_core.social_expansion import BlueskySearchProvider, QiitaSearchProvider
 
 QUERIES = {
-    "en": "solid state battery experimental results",
-    "fr": "batterie à électrolyte solide résultats expérimentaux",
-    "ja": "全固体電池 実験 結果",
-    "zh": "固态电池 实验 结果",
+    "en": "battery",
+    "fr": "batterie",
+    "ja": "全固体電池",
+    "zh": "固态电池",
 }
 
 
@@ -66,6 +66,7 @@ def main() -> int:
                 failed_requests += 1
                 entry["status"] = "error"
                 entry["error"] = type(exc).__name__
+                entry["detail"] = str(exc)[:180]
             report["queries"][language]["providers"][name] = entry
 
     report["summary"] = {
