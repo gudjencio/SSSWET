@@ -38,7 +38,7 @@ class SocialItem:
     metadata: dict = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if not re.fullmatch(r"[a-z0-9][a-z0-9._-]{1,39}", self.platform):
+        if not re.fullmatch(r"[a-z0-9][a-z0-9._-]{0,39}", self.platform):
             raise ValueError("Platform identifiers must be bounded lowercase slugs.")
         if not self.source_id.strip() or not self.url.startswith("https://"):
             raise ValueError("Social items require a stable source ID and HTTPS URL.")
