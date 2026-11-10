@@ -71,11 +71,11 @@ assert.match(app,/model\?\.estimate/);assert.match(app,/SSSWETGpsScenarioModel\?
 const html=fs.readFileSync(path.join(__dirname,"virtual-time-travel.html"),"utf8");
 assert.ok(html.indexOf('<script src="gps-scenario-model.js"></script>')<html.indexOf('<script src="virtual-time-travel.js"></script>'));assert.match(html,/id="vt-session"/);assert.match(html,/aria-describedby="vt-session-help"/);
 const sw=fs.readFileSync(path.join(__dirname,"sw.js"),"utf8");
-const cacheVersion=sw.match(/const CACHE = "ssswet-web-v(\\d+)";/);
+const cacheVersion=sw.match(/const CACHE = "ssswet-web-v(\d+)";/);
 assert.ok(cacheVersion,"the service worker must use a versioned cache key");
 assert.ok(Number(cacheVersion[1])>0,"the service-worker cache version must be a positive integer");
-assert.match(sw,/\\.\\/gps-scenario-model\\.js/,"the GPS scenario model must be precached");
-assert.match(sw,/cache\\.addAll\\(ASSETS\\)/,"the declared assets must be installed into the versioned cache");
+assert.match(sw,/\.\/gps-scenario-model\.js/,"the GPS scenario model must be precached");
+assert.match(sw,/cache\.addAll\(ASSETS\)/,"the declared assets must be installed into the versioned cache");
 const extraStart=app.indexOf("const extraCopy=")+ "const extraCopy=".length,extraEnd=app.indexOf(";\n",extraStart),extra=JSON.parse(app.slice(extraStart,extraEnd));
 const locales=["en","fr","es","de","it","pt","nl","ru","uk","ar","he","ja","ko","zh","hi"];
 assert.deepEqual(Object.keys(extra),locales);
