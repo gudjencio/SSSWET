@@ -116,6 +116,25 @@ def _cjk_bigrams(value: str) -> set[str]:
     return terms
 
 
+_SHORT_STOPWORDS = {
+    "of", "in", "to", "on", "at", "is", "be", "as", "by", "an", "or", "if",
+    "it", "we", "he", "do", "no", "so", "up", "us", "de", "du", "et", "en",
+    "au", "la", "le", "el", "un", "da", "do", "os", "um", "na", "no",
+}
+
+
+def _relevance_terms(value: str) -> set[str]:
+    terms = {term for term in _tokens(value)
+             if not _CJK_RUN_PATTERN.fullmatch(term)}
+    # Preserve short technical acronyms such as AI, EV, ML and 5G while
+    # excluding common two-letter function words.
+    terms.update(
+        term for term in re.findall(r"[\\w-]{2,}", value.casefold())
+        if term not in _SHORT_STOPWORDS and not _CJK_RUN_PATTERN.fullmatch(term)
+    )
+    return terms
+
+
 def query_relevance(query: str, value: str) -> tuple[float, tuple[str, ...]]:
     """Return lexical query coverage, not a quality, credibility or truth score."""
     normalized_query = query.casefold().strip()
@@ -125,10 +144,8 @@ def query_relevance(query: str, value: str) -> tuple[float, tuple[str, ...]]:
     if normalized_query in normalized_value:
         return 1.0, ("exact_phrase",)
 
-    query_terms = {term for term in _tokens(query)
-                   if not _CJK_RUN_PATTERN.fullmatch(term)}
-    value_terms = {term for term in _tokens(value)
-                   if not _CJK_RUN_PATTERN.fullmatch(term)}
+    query_terms = _relevance_terms(query)
+    value_terms = _relevance_terms(value)
     query_terms.update(_cjk_bigrams(query))
     value_terms.update(_cjk_bigrams(value))
     if not query_terms:
