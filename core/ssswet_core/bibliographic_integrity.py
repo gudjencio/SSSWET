@@ -82,7 +82,7 @@ def analyze_bibliographic_integrity(records: list[dict[str, Any]]) -> dict[str, 
         year = str(record.get("publication_year") or record.get("year") or "")[:4]
         if doi:
             doi_groups[doi].append(source_id)
-        if title:
+        if title and year:
             title_groups[(title, year)].append(source_id)
 
         flags = _publication_flags(record)
