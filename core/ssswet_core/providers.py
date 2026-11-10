@@ -10,6 +10,7 @@ class ProviderResult:
     evidence: tuple[str, ...] = ()
     uncertainty: float = 1.0
     source_ids: tuple[str, ...] = ()
+    bibliographic_records: tuple[dict, ...] = ()
 
 
 class ResearchProvider(Protocol):
@@ -146,6 +147,7 @@ class CrossrefProvider:
         items = message.get("items", []) if isinstance(message, dict) else []
         evidence: list[str] = []
         source_ids: list[str] = []
+        bibliographic_records: list[dict] = []
         for item in items[:self.max_results]:
             if not isinstance(item, dict):
                 continue
@@ -173,6 +175,17 @@ class CrossrefProvider:
             if not identity:
                 continue
             source_ids.append(identity)
+            venue_values = item.get("container-title") or []
+            published_date = "-".join(str(part) for part in date_parts[0]) if date_parts and date_parts[0] else ""
+            bibliographic_records.append({
+                "source_id": identity, "title": title, "doi": doi, "url": url_value,
+                "authors": author_names, "publication_year": year if isinstance(year, int) else None,
+                "publication_date": published_date, "venue": str(venue_values[0]).strip() if venue_values else "",
+                "publisher": publisher, "type": str(item.get("type") or ""),
+                "relation": item.get("relation") or {},
+                "peer_review_status": "not_established_by_crossref_metadata",
+                "metadata_provider": self.name,
+            })
             evidence.append(
                 f"{title} | {author_text} | {year} | {publisher or 'publisher unavailable'} "
                 f"| DOI: {doi or 'unavailable'} | URL: {url_value}"
@@ -192,6 +205,7 @@ class CrossrefProvider:
             evidence=tuple(evidence),
             uncertainty=1.0,
             source_ids=tuple(source_ids),
+            bibliographic_records=tuple(bibliographic_records),
         )
 
 
@@ -237,6 +251,7 @@ class OpenAlexProvider:
         results = payload.get("results", []) if isinstance(payload, dict) else []
         evidence: list[str] = []
         source_ids: list[str] = []
+        bibliographic_records: list[dict] = []
         for item in results[:self.max_results]:
             if not isinstance(item, dict):
                 continue
@@ -266,6 +281,17 @@ class OpenAlexProvider:
                 f"| OpenAlex: {work_id} | cited-by count: {cited if isinstance(cited, int) else 'unavailable'}"
             )
             source_ids.append(identity)
+            publication_date = str(item.get("publication_date") or "")
+            source_type = str(item.get("type") or "")
+            bibliographic_records.append({
+                "source_id": identity, "title": title, "doi": doi, "url": work_id,
+                "authors": authors, "publication_year": year,
+                "publication_date": publication_date, "venue": venue,
+                "type": source_type, "is_retracted": item.get("is_retracted") is True,
+                "is_preprint": source_type.casefold() == "preprint",
+                "peer_review_status": "not_established_by_openalex_metadata",
+                "metadata_provider": self.name,
+            })
 
         if not evidence:
             return ProviderResult(
@@ -281,6 +307,7 @@ class OpenAlexProvider:
             evidence=tuple(evidence),
             uncertainty=1.0,
             source_ids=tuple(source_ids),
+            bibliographic_records=tuple(bibliographic_records),
         )
 
 
@@ -316,6 +343,7 @@ class MultiSourceLiteratureProvider:
                     )))
         evidence: list[str] = []
         source_ids: list[str] = []
+        bibliographic_records: list[dict] = []
         seen: set[str] = set()
         for provider, result in results:
             for source_id, item in zip(result.source_ids, result.evidence):
@@ -326,6 +354,13 @@ class MultiSourceLiteratureProvider:
                 seen.add(key)
                 evidence.append(f"[{provider.name}] {item}")
                 source_ids.append(source_id)
+                matching_records = [
+                    record for record in result.bibliographic_records
+                    if str(record.get("source_id", "")).casefold() == str(source_id).casefold()
+                    or str(record.get("doi", "")).casefold() == normalized
+                ]
+                for record in matching_records[:1]:
+                    bibliographic_records.append({**record, "source_id": source_id})
         if not evidence:
             return ProviderResult(
                 "Crossref and OpenAlex returned no usable records. Check network access or broaden the query. "
@@ -343,6 +378,7 @@ class MultiSourceLiteratureProvider:
             evidence=tuple(evidence),
             uncertainty=1.0,
             source_ids=tuple(source_ids),
+            bibliographic_records=tuple(bibliographic_records),
         )
 
 
