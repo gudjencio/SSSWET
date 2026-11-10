@@ -128,3 +128,20 @@ Acceptance criteria:
 8. No runtime dependency, database migration, scraping fallback or default provider change is introduced.
 
 Regression risks include API quota exhaustion, schema drift, rate limits, stale content, platform policy changes and false positives/negatives in text heuristics. These are surfaced as provider errors or review flags, not silently hidden. API access and real-world classification quality require separate live integration evaluation; deterministic unit tests do not establish misinformation-detection accuracy.
+
+## GitHub Actions live smoke checks
+
+The repository includes `.github/workflows/social-live-smoke.yml`. It runs on:
+- pushes to the social-discovery feature branch;
+- pull requests (read-only public API calls only);
+- a daily schedule;
+- manual `workflow_dispatch`.
+
+The workflow tests four fixed research queries (English, French, Japanese and Chinese) against public Bluesky search and the official Qiita API. It does not require API secrets, does not write to the repository, and does not access private accounts. It uploads a seven-day artifact named `social-live-smoke-report` containing bounded public metadata, URLs, counts, language hints and request status; it does not retain full post/article bodies.
+
+A zero-result query is valid and is not treated as an outage. Individual provider errors are recorded in the report; the workflow fails only if every request fails. A successful response confirms endpoint reachability and response parsing only, not scientific accuracy, completeness, or the quality of a claim. GitHub Actions is a suitable lightweight validation runner, but it is not a continuously running SSSWET research daemon or a permanent database.
+
+To run it manually: open **Actions → Social research live smoke test → Run workflow**, select the feature branch, and start the run. Download the `social-live-smoke-report` artifact from the completed run.
+
+Credentials for optional Brave, Reddit, Threads, Facebook and DeepL integrations must be added separately as repository Actions secrets only after the corresponding provider account/app has been approved. Do not place credentials in workflow YAML, source files, issues, logs or artifacts. The current smoke workflow deliberately does not print or consume those secrets.
+
