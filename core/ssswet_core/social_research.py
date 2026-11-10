@@ -38,8 +38,8 @@ class SocialItem:
     metadata: dict = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if self.platform not in {"youtube", "x", "instagram"}:
-            raise ValueError("Unsupported social platform.")
+        if not re.fullmatch(r"[a-z0-9][a-z0-9._-]{1,39}", self.platform):
+            raise ValueError("Platform identifiers must be bounded lowercase slugs.")
         if not self.source_id.strip() or not self.url.startswith("https://"):
             raise ValueError("Social items require a stable source ID and HTTPS URL.")
         if len(self.title) > 500 or len(self.text) > 5000:
@@ -62,12 +62,28 @@ class SocialTriage:
     )
 
 
-_CLICKBAIT = (
-    (re.compile(r"\b(shocking|unbelievable|they don't want you to know|secret they hide|choc|incroyable|ils ne veulent pas que vous sachiez)\b", re.I), "sensational_language"),
-    (re.compile(r"\b(miracle cure|cures? (all|every)|100% guaranteed|zero risk|remède miracle|guérit tout|zéro risque|garanti à 100 %)\b", re.I), "extraordinary_absolute_claim"),
-    (re.compile(r"\b(proven|scientists confirm|science proves|prouvé|les scientifiques confirment|la science prouve)\b", re.I), "unsupported_certainty_language"),
-    (re.compile(r"\b(instant|overnight|revolutionary breakthrough|instantané|du jour au lendemain|percée révolutionnaire)\b", re.I), "breakthrough_or_speed_claim"),
+_CLICKBAIT = {
+    "en": ("shocking", "unbelievable", "they don't want you to know", "secret they hide", "miracle cure", "100% guaranteed", "zero risk", "science proves", "scientists confirm", "instant breakthrough", "overnight breakthrough", "cures everything"),
+    "fr": ("choc", "incroyable", "ils ne veulent pas que vous sachiez", "remède miracle", "garanti à 100 %", "zéro risque", "la science prouve", "les scientifiques confirment", "percée révolutionnaire", "guérit tout"),
+    "es": ("impactante", "increíble", "no quieren que sepas", "cura milagrosa", "riesgo cero", "100% garantizado", "la ciencia demuestra", "avance revolucionario"),
+    "pt": ("chocante", "inacreditável", "não querem que você saiba", "cura milagrosa", "risco zero", "100% garantido", "a ciência prova", "avanço revolucionário"),
+    "de": ("unglaublich", "geheime wahrheit", "wundermittel", "risikofrei", "wissenschaft beweist", "revolutionärer durchbruch"),
+    "it": ("sconvolgente", "incredibile", "cura miracolosa", "rischio zero", "la scienza dimostra", "scoperta rivoluzionaria"),
+    "nl": ("schokkend", "ongelooflijk", "wondermiddel", "geen enkel risico", "de wetenschap bewijst", "revolutionaire doorbraak"),
+    "ru": ("шокирующий", "невероятный", "чудо-средство", "нулевой риск", "наука доказала", "революционный прорыв"),
+    "ar": ("صدمة", "لا يصدق", "علاج سحري", "بدون مخاطر", "العلم يثبت", "اكتشاف ثوري"),
+    "hi": ("चौंकाने वाला", "अविश्वसनीय", "चमत्कारी इलाज", "शून्य जोखिम", "विज्ञान ने साबित किया", "क्रांतिकारी खोज"),
+    "tr": ("şok edici", "inanılmaz", "mucize tedavi", "sıfır risk", "bilim kanıtladı", "devrim niteliğinde"),
+    "id": ("mengejutkan", "luar biasa", "obat ajaib", "tanpa risiko", "sains membuktikan", "terobosan revolusioner"),
+    "ja": ("衝撃", "信じられない", "奇跡の治療", "リスクゼロ", "科学が証明", "革命的発見"),
+    "zh": ("震惊", "难以置信", "神奇疗法", "零风险", "科学证明", "革命性突破"),
+    "ko": ("충격적인", "믿을 수 없는", "기적의 치료", "위험 제로", "과학이 증명", "혁신적 돌파구"),
+}
+_CLICKBAIT_PATTERNS = tuple(
+    (re.compile(re.escape(phrase), re.I), f"clickbait_language_{lang}")
+    for lang, phrases in _CLICKBAIT.items() for phrase in phrases
 )
+
 _URL_PATTERN = re.compile(r"https?://[^\s<>()]+", re.I)
 _TOKEN_PATTERN = re.compile(r"[\w-]{3,}", re.UNICODE)
 _STOPWORDS = {
@@ -85,8 +101,9 @@ def triage_social_item(item: SocialItem) -> SocialTriage:
     """Flag observable review risks without assigning a truth score."""
     text = f"{item.title} {item.text}"
     flags: list[str] = []
-    for pattern, label in _CLICKBAIT:
-        if pattern.search(text):
+    normalized = text.casefold()
+    for pattern, label in _CLICKBAIT_PATTERNS:
+        if pattern.search(normalized):
             flags.append(label)
     if not _URL_PATTERN.search(item.text) and not item.metadata.get("referenced_sources"):
         flags.append("no_source_reference_in_post")
@@ -334,12 +351,14 @@ class SocialResearchProvider:
     name = "social-video-research-discovery"
 
     def __init__(self, providers: Iterable[object], max_results: int = MAX_RESULTS):
-        self.providers = tuple(providers)[:3]
+        self.providers = tuple(providers)[:20]
         self.max_results = max(1, min(int(max_results), MAX_RESULTS))
 
     @classmethod
     def from_environment(cls, max_results: int = MAX_RESULTS) -> "SocialResearchProvider":
         providers = []
+        from .social_expansion import configured_expansion_providers
+        providers.extend(configured_expansion_providers(max_results=max_results))
         youtube_key = os.getenv("SSSWET_YOUTUBE_API_KEY", "").strip()
         x_token = os.getenv("SSSWET_X_BEARER_TOKEN", "").strip()
         instagram_token = os.getenv("SSSWET_INSTAGRAM_ACCESS_TOKEN", "").strip()
@@ -366,7 +385,7 @@ class SocialResearchProvider:
             )
         items: list[SocialItem] = []
         errors: list[str] = []
-        with ThreadPoolExecutor(max_workers=min(3, len(self.providers)), thread_name_prefix="ssswet-social") as pool:
+        with ThreadPoolExecutor(max_workers=min(8, len(self.providers)), thread_name_prefix="ssswet-social") as pool:
             futures = {pool.submit(provider.search, query): provider for provider in self.providers}
             for future in as_completed(futures):
                 provider = futures[future]
@@ -381,6 +400,8 @@ class SocialResearchProvider:
             unique.values(), key=lambda item: (item.published_at or "", item.platform, item.source_id),
             reverse=True,
         )
+        from .social_expansion import translate_items_if_configured
+        ordered = translate_items_if_configured(ordered)
         return ordered[:self.max_results], tuple(errors)
 
     def investigate(self, objective: str, strategy: str) -> ProviderResult:
