@@ -129,7 +129,7 @@ def _relevance_terms(value: str) -> set[str]:
     # Preserve short technical acronyms such as AI, EV, ML and 5G while
     # excluding common two-letter function words.
     terms.update(
-        term for term in re.findall(r"[\\w-]{2,}", value.casefold())
+        term for term in re.findall(r"[\w-]{2,}", value.casefold())
         if term not in _SHORT_STOPWORDS and not _CJK_RUN_PATTERN.fullmatch(term)
     )
     return terms
