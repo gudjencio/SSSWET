@@ -330,9 +330,9 @@ class InstagramBusinessDiscoveryProvider:
         results: dict[str, SocialItem] = {}
         for username in self.usernames:
             fields = f"business_discovery.username({username}){{username,media.limit({self.max_results}){{id,caption,media_type,permalink,timestamp}}}}"
-            params = urlencode({"fields": fields, "access_token": self._token})
+            params = urlencode({"fields": fields})
             url = f"{self.endpoint}/{self.graph_version}/{self.instagram_user_id}?{params}"
-            payload = self.request_json(url, {}, self.timeout)
+            payload = self.request_json(url, {"Authorization": "Bearer " + self._token}, self.timeout)
             discovery = payload.get("business_discovery") or {}
             account = str(discovery.get("username") or username)
             for media in discovery.get("media", {}).get("data", [])[:self.max_results]:
