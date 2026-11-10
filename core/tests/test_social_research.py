@@ -227,3 +227,22 @@ def test_french_clickbait_phrases_are_flagged_without_truth_classification():
     assert "unsupported_certainty_language" in triage.flags
     assert "breakthrough_or_speed_claim" in triage.flags
     assert triage.verification_status == "not_verified"
+
+
+
+def test_social_result_budget_round_robins_across_platforms(monkeypatch):
+    from ssswet_core.social_expansion import translate_items_if_configured
+    monkeypatch.setattr("ssswet_core.social_expansion.translate_items_if_configured", lambda items: items)
+    class Busy:
+        name = "busy"
+        def search(self, query):
+            return [SocialItem("youtube", f"youtube:{i}", f"Video {i}", "science",
+                               f"https://www.youtube.com/watch?v={i}") for i in range(8)]
+    class Smaller:
+        name = "smaller"
+        def search(self, query):
+            return [SocialItem("reddit", f"reddit:{i}", f"Post {i}", "science",
+                               f"https://www.reddit.com/r/science/{i}") for i in range(2)]
+    items, errors = SocialResearchProvider([Busy(), Smaller()], max_results=4).search("science")
+    assert {item.platform for item in items} == {"youtube", "reddit"}
+    assert len(items) == 4 and errors == ()
