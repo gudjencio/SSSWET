@@ -81,7 +81,7 @@ class BraveWebSearchProvider:
 
 class BlueskySearchProvider:
     name = "bluesky-atproto"
-    endpoint = "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts"
+    endpoint = "https://api.bsky.app/xrpc/app.bsky.feed.searchPosts"
 
     def __init__(self, max_results=10, request_json=_fetch_json):
         self.max_results = max(1, min(int(max_results), 25))
