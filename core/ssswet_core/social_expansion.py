@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import replace
 from email.utils import parsedate_to_datetime
 import ipaddress
+import hashlib
 import json
 import os
 import re
@@ -36,6 +37,46 @@ def _lang_from_text(value: str) -> str:
     if any("\u0900" <= c <= "\u097f" for c in sample):
         return "hi"
     return ""
+
+
+
+class BraveWebSearchProvider:
+    """Search the public web index for community/forum material across domains."""
+    name = "brave-web-search"
+    endpoint = "https://api.search.brave.com/res/v1/web/search"
+
+    def __init__(self, subscription_token: str, max_results=10, request_json=_fetch_json):
+        if not subscription_token.strip():
+            raise ValueError("A Brave Search API subscription token is required.")
+        self.token = subscription_token.strip()
+        self.max_results = max(1, min(int(max_results), 20))
+        self.request_json = request_json
+
+    def search(self, query: str) -> list[SocialItem]:
+        if not query.strip():
+            return []
+        url = self.endpoint + "?" + urlencode({"q": query[:300], "count": self.max_results, "safesearch": "moderate"})
+        payload = self.request_json(url, {"X-Subscription-Token": self.token}, DEFAULT_TIMEOUT)
+        results = (payload.get("web") or {}).get("results", [])
+        output = []
+        for row in results[:self.max_results]:
+            title, link = str(row.get("title") or ""), str(row.get("url") or "")
+            if not title or not link.startswith("https://"):
+                continue
+            description = str(row.get("description") or "")
+            source_id = hashlib.sha256(link.encode("utf-8")).hexdigest()[:24]
+            output.append(SocialItem(
+                platform="web-search", source_id="web-search:" + source_id,
+                title=title[:500], text=description[:5000], url=link[:1500],
+                author=str((row.get("profile") or {}).get("long_name") or "")[:150],
+                published_at=str(row.get("page_age") or "")[:40],
+                content_type="indexed_public_web_page",
+                metadata={"search_provider": "Brave Search API",
+                          "domain": str(urlparse(link).hostname or "")[:200],
+                          "language": _lang_from_text(title + " " + description),
+                          "search_snippet_is_not_primary_evidence": True},
+            ))
+        return output
 
 
 class BlueskySearchProvider:
@@ -395,6 +436,9 @@ class DeepLTranslationClient:
 def configured_expansion_providers(max_results=10):
     """Build only adapters for which explicit credentials/configuration exist."""
     providers = [BlueskySearchProvider(max_results=max_results)]
+    brave_key = os.getenv("SSSWET_BRAVE_SEARCH_API_KEY", "").strip()
+    if brave_key:
+        providers.append(BraveWebSearchProvider(brave_key, max_results=max_results))
     reddit_token = os.getenv("SSSWET_REDDIT_ACCESS_TOKEN", "").strip()
     if reddit_token:
         providers.append(RedditSearchProvider(
