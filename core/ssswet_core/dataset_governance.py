@@ -426,7 +426,13 @@ def audit_group_time_splits(
         raise ValueError("max_records must be between 1 and the configured maximum")
     group_key = _text(group_field, "group_field", 120)
     time_key = _text(time_field, "time_field", 120)
-    names = sorted(_text(name, "split name", 80) for name in splits)
+    names = []
+    for raw_name in splits:
+        normalized_name = _text(raw_name, "split name", 80)
+        if normalized_name != raw_name:
+            raise ValueError("split names must not contain leading or trailing whitespace")
+        names.append(normalized_name)
+    names.sort()
     order = split_order if split_order is not None else names
     if (not isinstance(order, list) or any(not isinstance(item, str) for item in order)
             or len(order) != len(set(order)) or set(order) != set(names)):
@@ -487,7 +493,8 @@ def audit_group_time_splits(
     passed = not overlaps and not violations
     return {
         "split_order": order, "record_count": total, "time_ranges": ranges,
-        "group_overlap_count": len(overlaps), "group_overlaps": overlaps,
+        "group_overlap_count": sum(overlap_patterns.values()),
+        "group_overlap_pattern_count": len(overlaps), "group_overlaps": overlaps,
         "time_order_violations": violations,
         "group_leakage_detected": bool(overlaps),
         "temporal_leakage_detected": bool(violations),
@@ -579,6 +586,8 @@ def build_release_manifest(
     normalized_artifacts = {}
     for name, digest in artifact_digests.items():
         key = _identifier(name, "artifact name")
+        if key in normalized_artifacts:
+            raise ValueError("artifact names must be unique after normalization")
         if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
             raise ValueError(f"artifact {key} must have a lowercase SHA-256 digest")
         normalized_artifacts[key] = digest

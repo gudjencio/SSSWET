@@ -144,10 +144,14 @@ def test_group_and_time_split_audit_detects_group_overlap_and_temporal_reversal(
     assert result["policy_gate_passed"] is True
     bad = deepcopy(good)
     bad["test"].append({"person_group": "g1", "captured_at": "2025-12-31T00:00:00Z"})
+    bad["train"].append({"person_group": "g4", "captured_at": "2026-01-02T00:00:00Z"})
+    bad["test"].append({"person_group": "g4", "captured_at": "2026-03-02T00:00:00Z"})
     result = audit_group_time_splits(bad, group_field="person_group", time_field="captured_at",
                                      split_order=["train", "validation", "test"])
     assert result["group_leakage_detected"] is True
-    assert result["group_overlaps"][0]["group_count"] == 1
+    assert result["group_overlap_count"] == 2
+    assert result["group_overlap_pattern_count"] == 1
+    assert result["group_overlaps"][0]["group_count"] == 2
     assert "group" not in result["group_overlaps"][0]
     assert result["temporal_leakage_detected"] is True
     with pytest.raises(ValueError, match="timezone"):
@@ -210,6 +214,11 @@ def test_release_manifest_rejects_bad_digest_and_oversized_metadata():
         build_release_manifest(dataset_id="d", dataset_version=1, schema_digest="a" * 64, artifact_digests={},
                                source_refs=["s", "s"], review_refs=[], readiness_report={"ready_for_human_release_review": False},
                                software_version="1")
+    with pytest.raises(ValueError, match="artifact names"):
+        build_release_manifest(dataset_id="d", dataset_version=1, schema_digest="a" * 64,
+                               artifact_digests={" a": "b" * 64, "a": "c" * 64},
+                               source_refs=[], review_refs=[], readiness_report={"ready_for_human_release_review": False},
+                               software_version="1")
 
 
 def test_documented_consent_without_evidence_reference_is_not_a_pass():
@@ -263,6 +272,9 @@ def test_time_split_order_is_timezone_normalized_and_requires_unique_names():
     with pytest.raises(ValueError, match="exactly once"):
         audit_group_time_splits(splits, group_field="group", time_field="when",
                                 split_order=["train", "train"])
+    with pytest.raises(ValueError, match="whitespace"):
+        audit_group_time_splits({" train": splits["train"], "test": splits["test"]},
+                                group_field="group", time_field="when")
 
 
 def test_limits_and_untrusted_types_fail_closed():
