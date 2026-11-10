@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ssswet_core.providers import MultiSourceLiteratureProvider
 from ssswet_core.social_expansion import BlueskySearchProvider, QiitaSearchProvider
+from ssswet_core.social_research import query_relevance
 
 QUERIES = {
     "en": "solid-state battery",
@@ -66,10 +67,16 @@ def main() -> int:
         for name, provider in social_providers:
             entry = {"status": "ok", "count": 0, "raw_count": 0, "items": []}
             try:
-                items = provider.search(query)
+                raw_items = provider.search(query)
                 successful_requests += 1
-                entry["raw_count"] = len(items)
+                items = []
+                for item in raw_items:
+                    score, matched_terms = query_relevance(query, item.title + " " + item.text)
+                    if score > 0.0:
+                        items.append((item, score, matched_terms))
+                entry["raw_count"] = len(raw_items)
                 entry["count"] = len(items)
+                entry["filtered_out_count"] = len(raw_items) - len(items)
                 entry["items"] = [
                     {
                         "platform": item.platform,
@@ -80,8 +87,13 @@ def main() -> int:
                         "published_at": item.published_at[:40],
                         "language_hint": str(item.metadata.get("language") or "")[:12],
                         "triage": "not_verified",
+                        "query_relevance": {
+                            "score": round(score, 3),
+                            "matched_terms": list(matched_terms[:12]),
+                            "method": "lexical_overlap_only_not_evidence",
+                        },
                     }
-                    for item in items[:3]
+                    for item, score, matched_terms in items[:3]
                 ]
             except Exception as exc:
                 failed_requests += 1
