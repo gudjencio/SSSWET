@@ -1,0 +1,39 @@
+name: SSSWET agent deliberation benchmark
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "core/ssswet_core/claim_specification.py"
+      - "core/ssswet_core/hypothesis_matrix.py"
+      - "core/ssswet_core/source_lineage.py"
+      - "core/ssswet_core/evidence_coverage.py"
+      - "core/ssswet_core/blind_review_packet.py"
+      - "core/ssswet_core/reviewer_calibration.py"
+      - "core/ssswet_core/argument_map.py"
+      - "core/ssswet_core/disagreement_analysis.py"
+      - "core/ssswet_core/reassessment_triggers.py"
+      - "core/ssswet_core/deliberation_synthesis.py"
+      - ".github/scripts/benchmark_agent_deliberation.py"
+      - ".github/workflows/agent-deliberation-benchmark.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run bounded synthetic benchmark
+        run: python .github/scripts/benchmark_agent_deliberation.py > agent-deliberation-benchmark.json
+      - name: Upload synthetic benchmark report
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-deliberation-benchmark
+          path: agent-deliberation-benchmark.json
+          if-no-files-found: error
