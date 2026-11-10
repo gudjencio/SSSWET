@@ -430,8 +430,14 @@
     }
     return {type:"Polygon",coordinates:[ring.map(([lon,lat])=>[normalizeLongitude(lon),lat])]};
   }
+  function sampleEvenly(items,limit=500) {
+    if(!Array.isArray(items)||!Number.isInteger(limit)||limit<1)return [];
+    if(items.length<=limit)return items.slice();
+    if(limit===1)return [items[items.length-1]];
+    return Array.from({length:limit},(_,index)=>items[Math.floor(index*(items.length-1)/(limit-1))]);
+  }
   const api=Object.freeze({
-    estimate,audit,formatAudit,median,sessionKey,listSessions,accuracyFootprint,
+    estimate,audit,formatAudit,median,sessionKey,listSessions,accuracyFootprint,sampleEvenly,
     locales:Object.freeze(Object.keys(AUDIT_LABELS)),
     constants:Object.freeze({MAX_ACCURACY_M,MAX_GAP_MS,MAX_SEGMENT_DISTANCE_M,MAX_SPEED_MPS,MAX_FIXES,MIN_FIXES})
   });

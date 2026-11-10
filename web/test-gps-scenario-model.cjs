@@ -2,11 +2,22 @@
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
-const {estimate,audit,formatAudit,constants,sessionKey,listSessions,accuracyFootprint,locales:auditLocales}=require("./gps-scenario-model.js");
+const {estimate,audit,formatAudit,constants,sessionKey,listSessions,accuracyFootprint,sampleEvenly,locales:auditLocales}=require("./gps-scenario-model.js");
 const R=6371000;
 function lonForEast(m,lat=0){return m/(R*Math.cos(lat*Math.PI/180))*180/Math.PI;}
 function fixes(offsets,options={}){const interval=options.intervalMs??60000,lat=options.latitude??0,accuracy=options.accuracy??5;return offsets.map((east,i)=>({id:"fix-"+i,kind:"gps",timestamp:i*interval,accuracy:typeof accuracy==="function"?accuracy(i):accuracy,coords:{latitude:lat,longitude:lonForEast(east,lat)}}));}
 function distance(a,b){const p1=a.latitude*Math.PI/180,p2=b.latitude*Math.PI/180,dp=(b.latitude-a.latitude)*Math.PI/180,dl=(b.longitude-a.longitude)*Math.PI/180,h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 2*R*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));}
+const sampleInput=Array.from({length:1000},(_,index)=>index);
+const boundedSample=sampleEvenly(sampleInput,500);
+assert.equal(boundedSample.length,500,"the map footprint sample must respect its 500-marker cap");
+assert.equal(boundedSample[0],0,"even sampling must retain the first marker in deterministic ordering");
+assert.equal(boundedSample[boundedSample.length-1],999,"even sampling must retain the final marker in deterministic ordering");
+assert.equal(new Set(boundedSample).size,500,"even sampling must not duplicate marker references");
+assert.ok(boundedSample.every((value,index)=>index===0||value>boundedSample[index-1]),"evenly sampled marker order must remain stable");
+assert.deepEqual(sampleEvenly([1,2],500),[1,2],"short tracks must not be padded or reordered");
+assert.deepEqual(sampleEvenly([],500),[],"empty marker sets must remain empty");
+assert.deepEqual(sampleEvenly([1,2],0),[],"invalid sample limits must be rejected");
+assert.deepEqual(sampleEvenly([1,2,3],1),[3],"a single sample must preserve the final marker");
 const geometryRings=geometry=>geometry.type==="Polygon"?[geometry.coordinates[0]]:geometry.coordinates.map(polygon=>polygon[0]);
 const ordinaryCenter={latitude:46.5,longitude:2.2};
 const ordinaryGeometry=accuracyFootprint(ordinaryCenter,42);
@@ -109,7 +120,7 @@ assert.equal(estimate(mixedSessions,{kind:"future",horizonSeconds:60,sessionKey:
 const withAnnotation=[...sessionA,{id:"annotation-a",kind:"annotation",timestamp:180000,clockSessionId:"clock-A"}];
 assert.equal(listSessions(withAnnotation)[0].count,4,"session index must include non-GPS observations in the timeline count");
 const app=fs.readFileSync(path.join(__dirname,"virtual-time-travel.js"),"utf8");
-assert.match(app,/accuracyFootprint/);assert.match(app,/reported-gps-accuracy/);assert.match(app,/vt-gps-accuracy-areas/);assert.match(app,/MAX_DISPLAYED_ACCURACY_FOOTPRINTS=500/);assert.doesNotMatch(app,/visited-zone|vt-scanned-zones|destination\(center,step\*Math\.PI\/18,40\)/);assert.match(app,/model\?\.estimate/);assert.match(app,/SSSWETGpsScenarioModel\?\.sessionKey/);assert.match(app,/refreshSessions/);assert.match(app,/function selectedSessionEvents\(\)/);assert.match(app,/const visible=selectedSessionEvents\(\)/);assert.match(app,/preferredSession=\$\("vt-session"\)\?\.value\|\|entrySession/);assert.match(app,/session_ordering_note/);assert.match(app,/sessionKey\(item\)===sessionKey\(previous\)/);assert.match(app,/currentSession!==previousSession/);assert.match(app,/markerBuckets\.get\(currentSession\+/);assert.match(app,/sessionMedia/);assert.match(app,/modelQualityDetails/);assert.match(app,/modelNeedQualityData/);assert.match(app,/words\.modelQualityDetails/);assert.match(app,/words\.modelNeedQualityData/);assert.doesNotMatch(app,/t\(\)\.modelQualityDetails|t\(\)\.modelNeedQualityData/);
+assert.match(app,/sampleEvenly/);assert.match(app,/accuracyFootprint/);assert.match(app,/reported-gps-accuracy/);assert.match(app,/vt-gps-accuracy-areas/);assert.match(app,/MAX_DISPLAYED_ACCURACY_FOOTPRINTS=500/);assert.doesNotMatch(app,/visited-zone|vt-scanned-zones|destination\(center,step\*Math\.PI\/18,40\)/);assert.match(app,/model\?\.estimate/);assert.match(app,/SSSWETGpsScenarioModel\?\.sessionKey/);assert.match(app,/refreshSessions/);assert.match(app,/function selectedSessionEvents\(\)/);assert.match(app,/const visible=selectedSessionEvents\(\)/);assert.match(app,/preferredSession=\$\("vt-session"\)\?\.value\|\|entrySession/);assert.match(app,/session_ordering_note/);assert.match(app,/sessionKey\(item\)===sessionKey\(previous\)/);assert.match(app,/currentSession!==previousSession/);assert.match(app,/markerBuckets\.get\(currentSession\+/);assert.match(app,/sessionMedia/);assert.match(app,/modelQualityDetails/);assert.match(app,/modelNeedQualityData/);assert.match(app,/words\.modelQualityDetails/);assert.match(app,/words\.modelNeedQualityData/);assert.doesNotMatch(app,/t\(\)\.modelQualityDetails|t\(\)\.modelNeedQualityData/);
 const html=fs.readFileSync(path.join(__dirname,"virtual-time-travel.html"),"utf8");
 assert.ok(html.indexOf('<script src="gps-scenario-model.js"></script>')<html.indexOf('<script src="virtual-time-travel.js"></script>'));assert.match(html,/id="vt-session"/);assert.match(html,/aria-describedby="vt-session-help"/);
 const sw=fs.readFileSync(path.join(__dirname,"sw.js"),"utf8");assert.match(sw,/ssswet-web-v196/);assert.match(sw,/\.\/gps-scenario-model\.js/);

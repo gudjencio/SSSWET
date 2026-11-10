@@ -129,7 +129,8 @@ function geoFeatures(){
  });
  flushSegment();
  segments.forEach(coordinates=>features.push({type:"Feature",geometry:{type:"LineString",coordinates},properties:{kind:"recorded-track"}}));
- markers.slice(-MAX_DISPLAYED_ACCURACY_FOOTPRINTS).forEach(event=>{
+ const footprintMarkers=model?.sampleEvenly?.(markers,MAX_DISPLAYED_ACCURACY_FOOTPRINTS)||markers.slice(0,MAX_DISPLAYED_ACCURACY_FOOTPRINTS);
+ footprintMarkers.forEach(event=>{
   const accuracy=Number(event.accuracy);
   if(!Number.isFinite(accuracy)||accuracy<=0||accuracy>150)return;
   const geometry=model?.accuracyFootprint?.(event.coords,accuracy);
