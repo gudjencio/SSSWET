@@ -100,6 +100,10 @@ def analyze_source_lineage(sources: list[dict]) -> dict:
         if a != b:
             parent[max(a, b)] = min(a, b)
 
+    for source_id, parents in parent_graph.items():
+        for parent_id in parents:
+            union(source_id, parent_id)
+
     shared = defaultdict(set)
     for source_id, source in by_id.items():
         for field in _LINK_FIELDS:
