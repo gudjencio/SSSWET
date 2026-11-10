@@ -157,6 +157,7 @@ def test_public_rss_feed_parses_bounded_atom_entries(monkeypatch):
 
 def test_environment_registry_adds_sources_without_removing_existing_adapters(monkeypatch):
     from ssswet_core.social_research import SocialResearchProvider
+    monkeypatch.setenv("SSSWET_BRAVE_SEARCH_API_KEY", "brave-token")
     monkeypatch.setenv("SSSWET_REDDIT_ACCESS_TOKEN", "reddit-token")
     monkeypatch.setenv("SSSWET_REDDIT_USER_AGENT", "SSSWET test/1.0")
     monkeypatch.setenv("SSSWET_THREADS_ACCESS_TOKEN", "threads-token")
@@ -171,7 +172,7 @@ def test_environment_registry_adds_sources_without_removing_existing_adapters(mo
     provider = SocialResearchProvider.from_environment()
     names = {source.name for source in provider.providers}
     assert {
-        "bluesky-atproto", "reddit-oauth-search", "threads-keyword-search",
+        "bluesky-atproto", "brave-web-search", "reddit-oauth-search", "threads-keyword-search",
         "facebook-public-page-posts", "qiita-api-v2", "configured-public-rss-feeds",
         "youtube-data-api", "x-api-v2", "instagram-graph-business-discovery",
     } <= names
