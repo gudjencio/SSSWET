@@ -1,6 +1,7 @@
 import json
 
 from ssswet_core.providers import CrossrefProvider
+from ssswet_core.bibliographic_integrity import analyze_bibliographic_integrity
 
 
 class FakeResponse:
@@ -59,6 +60,8 @@ def test_crossref_provider_returns_traceable_bibliographic_records(monkeypatch):
     assert record["type"] == "journal-article"
     assert record["relation"]["is-corrected-by"][0]["id"] == "10.1234/correction"
     assert record["peer_review_status"] == "not_established_by_crossref_metadata"
+    integrity = analyze_bibliographic_integrity(list(result.bibliographic_records))
+    assert integrity["correction_signal_count"] == 1
     assert "discovery leads only" in result.summary
     assert "mailto=research%40example.org" in seen["url"]
     assert "SSSWET/0.1" in seen["agent"]
