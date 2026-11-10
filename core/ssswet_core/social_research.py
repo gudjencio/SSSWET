@@ -80,10 +80,16 @@ _CLICKBAIT = {
     "ko": ("충격적인", "믿을 수 없는", "기적의 치료", "위험 제로", "과학이 증명", "혁신적 돌파구"),
 }
 _CLICKBAIT_PATTERNS = tuple(
-    (re.compile(re.escape(phrase), re.I), f"clickbait_language_{lang}")
+    (re.compile((r"(?<!\\w)" + re.escape(phrase) + r"(?!\\w)") if phrase.isascii() else re.escape(phrase), re.I), f"clickbait_language_{lang}")
     for lang, phrases in _CLICKBAIT.items() for phrase in phrases
 )
 
+_LEGACY_CLICKBAIT = (
+    (re.compile(r"\b(shocking|unbelievable|they don't want you to know|secret they hide|choc|incroyable|ils ne veulent pas que vous sachiez)\b", re.I), "sensational_language"),
+    (re.compile(r"\b(miracle cure|cures? (all|every)|100% guaranteed|zero risk|remède miracle|guérit tout|zéro risque|garanti à 100 %)\b", re.I), "extraordinary_absolute_claim"),
+    (re.compile(r"\b(proven|scientists confirm|science proves|prouvé|les scientifiques confirment|la science prouve)\b", re.I), "unsupported_certainty_language"),
+    (re.compile(r"\b(instant|overnight|revolutionary breakthrough|instantané|du jour au lendemain|percée révolutionnaire)\b", re.I), "breakthrough_or_speed_claim"),
+)
 _URL_PATTERN = re.compile(r"https?://[^\s<>()]+", re.I)
 _TOKEN_PATTERN = re.compile(r"[\w-]{3,}", re.UNICODE)
 _STOPWORDS = {
@@ -104,6 +110,9 @@ def triage_social_item(item: SocialItem) -> SocialTriage:
     normalized = text.casefold()
     for pattern, label in _CLICKBAIT_PATTERNS:
         if pattern.search(normalized):
+            flags.append(label)
+    for pattern, label in _LEGACY_CLICKBAIT:
+        if pattern.search(text):
             flags.append(label)
     if not _URL_PATTERN.search(item.text) and not item.metadata.get("referenced_sources"):
         flags.append("no_source_reference_in_post")
@@ -401,8 +410,8 @@ class SocialResearchProvider:
             reverse=True,
         )
         from .social_expansion import translate_items_if_configured
-        ordered = translate_items_if_configured(ordered)
-        return ordered[:self.max_results], tuple(errors)
+        ordered = translate_items_if_configured(ordered[:self.max_results])
+        return ordered, tuple(errors)
 
     def investigate(self, objective: str, strategy: str) -> ProviderResult:
         items, errors = self.search(objective)
