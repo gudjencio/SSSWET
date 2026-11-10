@@ -301,7 +301,7 @@ class InstagramBusinessDiscoveryProvider:
         terms = _tokens(query)
         if not terms:
             return []
-        results = []
+        results: dict[str, SocialItem] = {}
         for username in self.usernames:
             fields = f"business_discovery.username({username}){{username,media.limit({self.max_results}){{id,caption,media_type,permalink,timestamp}}}}"
             params = urlencode({"fields": fields, "access_token": self._token})
@@ -318,7 +318,7 @@ class InstagramBusinessDiscoveryProvider:
                 permalink, media_id = str(media.get("permalink") or ""), str(media.get("id") or "")
                 if not permalink.startswith("https://www.instagram.com/") or not media_id:
                     continue
-                results.append(SocialItem(
+                results.setdefault(f"instagram:{media_id}", SocialItem(
                     platform="instagram", source_id=f"instagram:{media_id}",
                     title=caption[:180] or f"Instagram post from @{account}",
                     text=caption[:5000], url=permalink, author=f"@{account}",
@@ -326,7 +326,7 @@ class InstagramBusinessDiscoveryProvider:
                     content_type=str(media.get("media_type") or "post").lower(),
                     metadata={"account_scope": "configured_public_professional_account"},
                 ))
-        return results[:MAX_RESULTS]
+        return list(results.values())[:MAX_RESULTS]
 
 
 class SocialResearchProvider:
