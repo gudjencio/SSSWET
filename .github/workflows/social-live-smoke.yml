@@ -1,6 +1,10 @@
 name: Social research live smoke test
 
 on:
+  push:
+    branches:
+      - feature/social-platform-research-discovery-verified-2026-11-10
+  pull_request:
   workflow_dispatch:
   schedule:
     - cron: "30 7 * * *"
