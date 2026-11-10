@@ -90,7 +90,7 @@ def validate_energy_samples(samples: object) -> list[dict]:
             raise ValueError("sample_id values must be unique")
         seen_ids.add(sample_id)
         mode = raw.get("mode")
-        if mode not in VALID_MODES:
+        if not isinstance(mode, str) or mode not in VALID_MODES:
             raise ValueError("mode must be charge, discharge or rest")
         stamp = _timestamp(raw.get("timestamp_utc"))
         previous = last_by_session.get(session_id)
@@ -199,9 +199,13 @@ def _cycle_mode_samples(
         matches = [row for row in matches if row["session_id"] == session_id]
     elif len(sessions) > 1:
         raise ValueError("cycle_id occurs in multiple sessions; session_id is required")
-    selected = [row for row in matches if row["mode"] == mode]
-    if len(selected) < 2:
+    cycle_rows = matches
+    selected_positions = [index for index, row in enumerate(cycle_rows) if row["mode"] == mode]
+    if len(selected_positions) < 2:
         raise ValueError(f"at least two {mode} samples are required in the selected cycle")
+    if selected_positions != list(range(selected_positions[0], selected_positions[-1] + 1)):
+        raise ValueError("integration cannot bridge an intervening rest or opposite-mode sample")
+    selected = [cycle_rows[index] for index in selected_positions]
     stamps = [_timestamp(row["timestamp_utc"]) for row in selected]
     gaps = [(right - left).total_seconds() for left, right in zip(stamps, stamps[1:])]
     if any(gap <= 0 for gap in gaps):
@@ -432,7 +436,7 @@ def detect_signal_anomalies(
     limit = _positive_limit(robust_z_limit, "robust_z_limit")
     if not isinstance(fields, (list, tuple)) or not fields:
         raise ValueError("fields must be a non-empty list or tuple")
-    if any(field not in SIGNAL_FIELDS for field in fields) or len(set(fields)) != len(fields):
+    if any(not isinstance(field, str) or field not in SIGNAL_FIELDS for field in fields) or len(set(fields)) != len(fields):
         raise ValueError("fields contains an unsupported or duplicate signal")
     normalized = validate_energy_samples(samples)
     summaries = []
@@ -491,9 +495,9 @@ def _flatten_protocol(value: object, prefix: str = "", depth: int = 0) -> dict[s
         if not value:
             return {prefix or "$": {}}
         flattened = {}
+        if any(not isinstance(key, str) or not key.strip() or len(key) > 200 for key in value):
+            raise ValueError("protocol keys must be non-empty strings of at most 200 characters")
         for key in sorted(value):
-            if not isinstance(key, str) or not key.strip() or len(key) > 200:
-                raise ValueError("protocol keys must be non-empty strings of at most 200 characters")
             path = f"{prefix}.{key}" if prefix else key
             flattened.update(_flatten_protocol(value[key], path, depth + 1))
         return flattened
@@ -537,6 +541,8 @@ def build_evidence_packet(
 ) -> dict:
     """Create a deterministic, bounded manifest; source files remain with the researcher."""
     normalized = validate_energy_samples(samples)
+    if not normalized:
+        raise ValueError("at least one source sample is required")
     if not isinstance(protocol, dict):
         raise ValueError("protocol must be an object")
     protocol_text = _canonical(protocol)
@@ -585,6 +591,11 @@ def verify_evidence_packet(packet: object, samples: object | None = None) -> dic
     issues = []
     if not isinstance(packet, dict):
         return {"valid": False, "issues": ["packet_must_be_an_object"]}
+    try:
+        if len(_canonical(packet).encode("utf-8")) > MAX_PACKET_BYTES:
+            return {"valid": False, "issues": ["packet_exceeds_size_limit"], "manifest_integrity_only": True, "authorship_authenticated": False, "scientific_validity_established": False}
+    except (TypeError, ValueError):
+        return {"valid": False, "issues": ["packet_payload_not_canonical_json"], "manifest_integrity_only": True, "authorship_authenticated": False, "scientific_validity_established": False}
     digest = packet.get("packet_sha256")
     if not isinstance(digest, str) or len(digest) != 64:
         issues.append("packet_digest_missing_or_malformed")
