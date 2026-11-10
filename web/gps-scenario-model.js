@@ -354,8 +354,90 @@
       uncertaintyRadiusM,horizonSeconds
     });
   }
+  function closeRing(points) {
+    if(points.length<3)return null;
+    const ring=points.map(point=>[point[0],point[1]]);
+    ring.push([ring[0][0],ring[0][1]]);
+    return ring;
+  }
+  function clipLongitude(ring,boundary,keepLess) {
+    const points=ring.slice(0,-1),output=[];
+    for(let index=0;index<points.length;index++){
+      const current=points[index],previous=points[(index+points.length-1)%points.length];
+      const currentInside=keepLess?current[0]<=boundary:current[0]>=boundary;
+      const previousInside=keepLess?previous[0]<=boundary:previous[0]>=boundary;
+      if(currentInside!==previousInside){
+        const fraction=(boundary-previous[0])/(current[0]-previous[0]);
+        output.push([boundary,previous[1]+fraction*(current[1]-previous[1])]);
+      }
+      if(currentInside)output.push(current);
+    }
+    return closeRing(output);
+  }
+  function destinationPoint(origin,bearingRadians,distanceM) {
+    const angularDistance=distanceM/EARTH_RADIUS_M;
+    const latitude1=origin.latitude*Math.PI/180;
+    const longitude1=origin.longitude*Math.PI/180;
+    const latitude2=Math.asin(Math.max(-1,Math.min(1,
+      Math.sin(latitude1)*Math.cos(angularDistance)
+      +Math.cos(latitude1)*Math.sin(angularDistance)*Math.cos(bearingRadians)
+    )));
+    const longitude2=longitude1+Math.atan2(
+      Math.sin(bearingRadians)*Math.sin(angularDistance)*Math.cos(latitude1),
+      Math.cos(angularDistance)-Math.sin(latitude1)*Math.sin(latitude2)
+    );
+    return {
+      latitude:latitude2*180/Math.PI,
+      longitude:normalizeLongitude(longitude2*180/Math.PI)
+    };
+  }
+  function accuracyFootprint(center,radiusM,steps=36) {
+    const numeric=value=>(typeof value==="number"&&Number.isFinite(value))
+      ||(typeof value==="string"&&value.trim()!==""&&Number.isFinite(Number(value)));
+    if(!center||typeof center!=="object"
+      ||!numeric(center.latitude)||!numeric(center.longitude)||!numeric(radiusM)
+      ||!Number.isInteger(steps)||steps<12||steps>72)return null;
+    const latitude=Number(center.latitude),longitude=Number(center.longitude),radius=Number(radiusM);
+    if(latitude < -90||latitude > 90||longitude < -180||longitude > 180
+      ||radius<=0||radius>MAX_ACCURACY_M)return null;
+    const poleClearanceM=(90-Math.abs(latitude))*Math.PI/180*EARTH_RADIUS_M;
+    if(radius>=poleClearanceM)return null;
+    const origin={latitude,longitude},unwrapped=[];
+    for(let index=0;index<steps;index++){
+      const point=destinationPoint(origin,-2*Math.PI*index/steps,radius);
+      const longitudeOffset=normalizeLongitude(point.longitude-longitude);
+      unwrapped.push([longitude+longitudeOffset,point.latitude]);
+    }
+    const minLongitude=Math.min(...unwrapped.map(point=>point[0]));
+    const maxLongitude=Math.max(...unwrapped.map(point=>point[0]));
+    const ring=closeRing(unwrapped);
+    if(!ring)return null;
+    if(maxLongitude>180){
+      const western=clipLongitude(ring,180,true);
+      const eastern=clipLongitude(ring,180,false);
+      const shiftedEastern=eastern?.map(([lon,lat])=>[lon-360,lat]);
+      const easternRing=shiftedEastern?closeRing(shiftedEastern):null;
+      if(!western||!easternRing)return null;
+      return {type:"MultiPolygon",coordinates:[[western],[easternRing]]};
+    }
+    if(minLongitude < -180){
+      const eastern=clipLongitude(ring,-180,false);
+      const western=clipLongitude(ring,-180,true);
+      const shiftedWestern=western?.map(([lon,lat])=>[lon+360,lat]);
+      const westernRing=shiftedWestern?closeRing(shiftedWestern):null;
+      if(!eastern||!westernRing)return null;
+      return {type:"MultiPolygon",coordinates:[[eastern],[westernRing]]};
+    }
+    return {type:"Polygon",coordinates:[ring.map(([lon,lat])=>[lon,lat])]};
+  }
+  function sampleEvenly(items,limit=500) {
+    if(!Array.isArray(items)||!Number.isInteger(limit)||limit<1)return [];
+    if(items.length<=limit)return items.slice();
+    if(limit===1)return [items[items.length-1]];
+    return Array.from({length:limit},(_,index)=>items[Math.floor(index*(items.length-1)/(limit-1))]);
+  }
   const api=Object.freeze({
-    estimate,audit,formatAudit,median,sessionKey,listSessions,
+    estimate,audit,formatAudit,median,sessionKey,listSessions,accuracyFootprint,sampleEvenly,
     locales:Object.freeze(Object.keys(AUDIT_LABELS)),
     constants:Object.freeze({MAX_ACCURACY_M,MAX_GAP_MS,MAX_SEGMENT_DISTANCE_M,MAX_SPEED_MPS,MAX_FIXES,MIN_FIXES})
   });
