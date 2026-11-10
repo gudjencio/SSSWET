@@ -45,3 +45,34 @@ def test_multi_source_search_reports_when_both_indexes_fail():
     assert result.evidence == ()
     assert "Source failures:" in result.summary
     assert result.uncertainty == 1.0
+
+
+class SecondHealthyIndex:
+    name = "second-healthy-index"
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        return ProviderResult(
+            "The same DOI was independently indexed.",
+            evidence=("A research paper from the second index",),
+            uncertainty=1.0,
+            source_ids=("https://doi.org/10.example/123",),
+            bibliographic_records=({
+                "source_id": "https://doi.org/10.example/123",
+                "title": "A research paper", "doi": "https://doi.org/10.example/123",
+                "publication_date": "2025-02-03", "metadata_provider": "second-healthy-index",
+            },),
+        )
+
+
+def test_multi_source_duplicate_doi_retains_both_index_provenances():
+    provider = MultiSourceLiteratureProvider()
+    provider.providers = (HealthyIndex(), SecondHealthyIndex())
+
+    result = provider.investigate("A harmless research question", "initial")
+
+    assert len(result.evidence) == 1
+    assert len(result.bibliographic_records) == 1
+    record = result.bibliographic_records[0]
+    assert record["metadata_providers"] == ["healthy-index", "second-healthy-index"]
+    assert record["provider_source_ids"] == ["https://doi.org/10.example/123"]
+    assert record["publication_date"] == "2025-02-03"
