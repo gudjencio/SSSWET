@@ -80,7 +80,7 @@ _CLICKBAIT = {
     "ko": ("충격적인", "믿을 수 없는", "기적의 치료", "위험 제로", "과학이 증명", "혁신적 돌파구"),
 }
 _CLICKBAIT_PATTERNS = tuple(
-    (re.compile((r"(?<!\\w)" + re.escape(phrase) + r"(?!\\w)") if phrase.isascii() else re.escape(phrase), re.I), f"clickbait_language_{lang}")
+    (re.compile((r"(?<!\w)" + re.escape(phrase) + r"(?!\w)") if phrase.isascii() else re.escape(phrase), re.I), f"clickbait_language_{lang}")
     for lang, phrases in _CLICKBAIT.items() for phrase in phrases
 )
 
