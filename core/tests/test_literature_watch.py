@@ -15,7 +15,7 @@ class FakeProvider:
             ),
             source_ids=("10.1234/known", "10.1234/new"),
             bibliographic_records=(
-                {"source_id": "10.1234/known", "title": "Known paper", "doi": "10.1234/known", "authors": ["Author A"], "publication_year": 2024, "publication_date": "2024-01-01", "venue": "Journal", "type": "retraction"},
+                {"source_id": "10.1234/known", "title": "Known paper", "doi": "10.1234/known", "url": "https://publisher.example/known", "authors": ["Author A"], "publication_year": 2024, "publication_date": "2024-01-01", "venue": "Journal", "type": "retraction"},
                 {"source_id": "10.1234/new", "title": "A new study of orbital dynamics", "doi": "10.1234/new", "authors": ["Author B"], "publication_year": 2025, "publication_date": "2025-02-01", "venue": "Journal", "type": "journal-article"},
             ),
         )
@@ -44,6 +44,7 @@ def test_watch_flags_exact_doi_and_new_candidate_without_promoting(tmp_path):
     assert report.campaign_changed is False
     assert report.candidates[0].classification == "possible_duplicate"
     assert report.candidates[0].duplicate_source_ids == ("existing-known",)
+    assert report.candidates[0].url == "https://publisher.example/known"
     assert report.candidates[1].classification == "candidate_for_review"
     assert report.candidates[1].related_memory_ids == ("memory-orbit",)
     assert report.bibliographic_integrity["record_count"] == 2
