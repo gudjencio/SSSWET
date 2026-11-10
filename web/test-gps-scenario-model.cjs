@@ -73,7 +73,7 @@ assert.ok(html.indexOf('<script src="gps-scenario-model.js"></script>')<html.ind
 const sw=fs.readFileSync(path.join(__dirname,"sw.js"),"utf8");
 const cacheVersion=sw.match(/const CACHE = "ssswet-web-v(\d+)";/);
 assert.ok(cacheVersion,"the service worker must use a versioned cache key");
-assert.ok(Number(cacheVersion[1])>0,"the service-worker cache version must be a positive integer");
+assert.ok(Number(cacheVersion[1])>=193,"the cache version must be at least v193, when the temporal/GPS modules entered the precache");
 assert.match(sw,/\.\/gps-scenario-model\.js/,"the GPS scenario model must be precached");
 assert.match(sw,/cache\.addAll\(ASSETS\)/,"the declared assets must be installed into the versioned cache");
 const extraStart=app.indexOf("const extraCopy=")+ "const extraCopy=".length,extraEnd=app.indexOf(";\n",extraStart),extra=JSON.parse(app.slice(extraStart,extraEnd));
