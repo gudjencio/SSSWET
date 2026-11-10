@@ -34,6 +34,8 @@ The project also adopts a **persistence principle**. A failed experiment, blocke
 
 Persistence does not override safety, ethics, biosafety, human-subject protections, environmental protections, applicable law or scientific evidence. The project must never make a technology less safe merely to preserve a performance score, and it must never hide a regression or fabricate an improvement.
 
+The [bounded research toolkit](docs/RESEARCH_TOOLKIT_UPGRADES_2026-11-07.md) adds ten independently testable, local research-support capabilities for memory continuity, evidence comparison, rescue planning, protective-test review, accessibility and reliability.
+
 ## Applications
 
 Install SSSWET on supported mobile devices from the website, or download the Windows, macOS and Linux desktop builds from [official releases](https://github.com/gudjencio/SSSWET/releases). Mobile installation and package availability are explained in [Application distribution](docs/APP_DISTRIBUTION.md).
