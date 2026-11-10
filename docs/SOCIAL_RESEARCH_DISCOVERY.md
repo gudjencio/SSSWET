@@ -28,9 +28,9 @@ Use only credentials issued to an application you control and only within the pl
 
 Run from core/:
 
-    python -m ssswet_core.research_cli --provider social --objective "battery thermal management experimental results"
+    python -m ssswet_core.research_cli --provider combined --objective "battery thermal management experimental results"
 
-The provider can also be constructed programmatically:
+The continuous research daemon now combines scholarly discovery with social discovery whenever the corresponding official API credentials are configured. Missing social credentials leave the existing scholarly search active. For a one-off social-only pass, use --provider social. The provider can also be constructed programmatically:
 
     from ssswet_core.social_research import SocialResearchProvider
     provider = SocialResearchProvider.from_environment()
