@@ -184,9 +184,9 @@ class FacebookPublicPageProvider:
         for page_id in self.page_ids:
             url = self.endpoint + "/" + page_id + "/posts?" + urlencode({
                 "fields": "id,message,created_time,permalink_url,from",
-                "limit": self.max_results, "access_token": self.token,
+                "limit": self.max_results,
             })
-            payload = self.request_json(url, {}, DEFAULT_TIMEOUT)
+            payload = self.request_json(url, {"Authorization": "Bearer " + self.token}, DEFAULT_TIMEOUT)
             for row in payload.get("data", [])[:self.max_results]:
                 ident, message = str(row.get("id") or ""), str(row.get("message") or "")
                 link = str(row.get("permalink_url") or "")
@@ -348,11 +348,14 @@ class DeepLTranslationClient:
     """Optional translation that stores the original and translation side by side."""
     endpoint = "https://api-free.deepl.com/v2/translate"
 
-    def __init__(self, auth_key: str, target_lang="EN"):
+    def __init__(self, auth_key: str, target_lang="EN", endpoint=None):
         if not auth_key.strip():
             raise ValueError("DeepL API key is required.")
         self.auth_key = auth_key.strip()
         self.target_lang = re.sub(r"[^A-Za-z-]", "", target_lang.upper())[:8] or "EN"
+        self.endpoint = endpoint or self.endpoint
+        if self.endpoint not in {"https://api-free.deepl.com/v2/translate", "https://api.deepl.com/v2/translate"}:
+            raise ValueError("Only the official DeepL API endpoints are permitted.")
 
     def translate_item(self, item: SocialItem) -> SocialItem:
         text = (item.title + "\n" + item.text).strip()
@@ -416,7 +419,10 @@ def translate_items_if_configured(items):
     key = os.getenv("SSSWET_DEEPL_AUTH_KEY", "").strip()
     if not key:
         return items
-    translator = DeepLTranslationClient(key, os.getenv("SSSWET_TRANSLATION_TARGET_LANG", "EN"))
+    translator = DeepLTranslationClient(
+        key, os.getenv("SSSWET_TRANSLATION_TARGET_LANG", "EN"),
+        os.getenv("SSSWET_DEEPL_API_URL", "https://api-free.deepl.com/v2/translate"),
+    )
     output = []
     for item in items:
         try:
