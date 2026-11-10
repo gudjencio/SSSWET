@@ -208,3 +208,16 @@ def test_combined_provider_deduplicates_sources_and_survives_provider_errors():
     assert result.source_ids == ("shared-source", "x:123")
     assert result.evidence == ("paper", "post")
     assert result.uncertainty == 1.0
+
+
+
+def test_french_clickbait_phrases_are_flagged_without_truth_classification():
+    item = SocialItem("x", "x:fr", "Remède miracle, zéro risque",
+                      "La science prouve une percée révolutionnaire",
+                      "https://x.com/lab/status/fr")
+    triage = triage_social_item(item)
+    assert triage.status == "manual_review_required"
+    assert "extraordinary_absolute_claim" in triage.flags
+    assert "unsupported_certainty_language" in triage.flags
+    assert "breakthrough_or_speed_claim" in triage.flags
+    assert triage.verification_status == "not_verified"
