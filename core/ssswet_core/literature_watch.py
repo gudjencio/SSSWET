@@ -85,9 +85,9 @@ class LiteratureWatchReport:
             title = str(structured.get("title") or (parts[0] if parts else "")).strip()
             if not title:
                 continue
-            doi_match = re.search(r"\\bDOI:\\s*([^|]+)", evidence, re.IGNORECASE)
+            doi_match = re.search(r"\bDOI:\s*([^|]+)", evidence, re.IGNORECASE)
             doi = _normalize_doi(structured.get("doi") or (doi_match.group(1) if doi_match else ""))
-            url_match = re.search(r"\\bURL:\\s*(https?://\\S+)", evidence, re.IGNORECASE)
+            url_match = re.search(r"\bURL:\s*(https?://\S+)", evidence, re.IGNORECASE)
             url = str(structured.get("url") or (url_match.group(1).rstrip(".,)") if url_match else "")).strip()
             exact = []
             similar = []
