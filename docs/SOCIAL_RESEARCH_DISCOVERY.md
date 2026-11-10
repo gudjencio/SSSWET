@@ -57,6 +57,60 @@ A human reviewer should locate primary research, inspect methods and limitations
 - API credentials remain in environment variables and are not serialized into evidence records.
 - API errors and unavailable entitlements are reported; no fabricated fallback results are generated.
 
+
+## Expanded global discovery
+
+The provider registry now includes additional sources, always retaining the platform-specific scope and access limits:
+
+| Source | Access mode | Important limits |
+|---|---|---|
+| Bluesky | Public AT Protocol AppView search | Public posts only; results remain discovery leads |
+| Reddit | OAuth API search | Requires an approved Reddit API app/token and a descriptive user agent; respect rate limits and Reddit terms |
+| Threads | Official Meta Threads keyword-search endpoint | Requires `threads_keyword_search`; public search may be restricted until Meta grants advanced access |
+| Facebook | Official Graph API posts for explicitly configured Page IDs | Public Page fields only; Page Public Content Access/app review or other Meta permissions may be required |
+| Instagram | Existing Graph API Business Discovery adapter | Configured public professional accounts only; not unrestricted Instagram search |
+| Qiita | Official Qiita API v2 | Japanese technical articles; public rate limits apply; optional access token |
+| Community/forum feeds | Operator-configured HTTPS RSS/Atom URLs | Public feeds only; HTTPS required, private-network destinations and redirects rejected, response size bounded |
+| Regional/community feeds | Same RSS/Atom adapter, with platform provenance inferred for configured domains | Can include public feeds from Bilibili, Niconico, Zenn, note, Weibo, Zhihu, MeWe, Snapchat and independent forums when a lawful public RSS/Atom feed is available |
+
+The RSS adapter is a generic open-web connector for publicly published feeds; it does not imply that every named service itself offers an official RSS endpoint. MeWe and Snapchat do not currently have a generally available unrestricted public research-search API in this integration. Their content is included only if an operator supplies an accessible public feed or a future officially approved API connector. The same rule applies to Chinese and Japanese services without a stable, documented public API. Qiita and Bluesky have direct adapters; other regional services can be added as official access becomes available.
+
+### Additional environment settings
+
+- `SSSWET_REDDIT_ACCESS_TOKEN`
+- `SSSWET_REDDIT_USER_AGENT` (required when Reddit is enabled)
+- `SSSWET_THREADS_ACCESS_TOKEN` (must carry the approved `threads_keyword_search` scope for public search)
+- `SSSWET_FACEBOOK_ACCESS_TOKEN`
+- `SSSWET_FACEBOOK_PAGE_IDS` (comma-separated numeric public Page IDs; only these Pages are queried)
+- `SSSWET_QIITA_ACCESS_TOKEN` (optional)
+- `SSSWET_PUBLIC_FEEDS` (one operator-approved public HTTPS RSS/Atom URL per line)
+- `SSSWET_DEEPL_AUTH_KEY` (optional; translation disabled if absent)
+- `SSSWET_TRANSLATION_TARGET_LANG` (defaults to EN)
+- `SSSWET_DEEPL_API_URL` (must be the official free or paid DeepL API endpoint)
+
+Bluesky public search and Qiita public search are available without an access token. The configured source list is bounded, queried concurrently with a maximum of eight workers, and globally deduplicated. The output cap remains ten records per research pass. Individual platform errors do not suppress successful sources.
+
+### Multilingual clickbait and translation
+
+The heuristic phrase library currently covers English, French, Spanish, Portuguese, German, Italian, Dutch, Russian, Arabic, Hindi, Turkish, Indonesian, Japanese, Simplified/Traditional Chinese phrase forms, and Korean. These are language-specific review signals, not a calibrated multilingual classifier. Script detection is only a hint; platform-provided language metadata is preferred. Short posts, slang, sarcasm, dialects, code-switching, memes, and adversarially altered text can evade detection or trigger false positives. An unflagged post is not considered trustworthy.
+
+Optional DeepL translation stores the translation beside the untouched original title/text, records detected source and target language, and marks translation as not fact verification. Translation is attempted only when an API key is configured; failures preserve the original content. Reviewers should compare important technical terms, units, numbers, negations, names, and quoted passages against the original-language source before relying on a translation. Translation never changes the verification status.
+
+### Additional regression and acceptance criteria
+
+1. Public adapters return stable source IDs and canonical HTTPS links with author, timestamp and language metadata where the source exposes them.
+2. Reddit, Threads and Facebook require explicit credentials; Meta page search is restricted to configured Page IDs.
+3. Bluesky and Qiita are added without making existing scholarly providers or platform adapters mandatory.
+4. Public RSS/Atom feeds are HTTPS-only, size-bounded, redirect-disabled and rejected when DNS resolves to non-public IP addresses.
+5. Social source retrieval uses no more than eight concurrent workers and remains bounded by the existing ten-record research-pass cap.
+6. The original language text remains unchanged when a translation is attached; translation failure cannot discard the source.
+7. At least 15 language/script families have deterministic clickbait review fixtures; all triage outputs remain `not_verified`.
+8. No automated language heuristic or translation is allowed to mark a claim true, false, confirmed or disproven.
+9. Missing credentials, unavailable platform APIs and unsupported platforms do not trigger scraping, login automation or fabricated results.
+10. Existing YouTube, X, Instagram, Crossref, OpenAlex, daemon and CLI behaviours remain available.
+
+Live platform quotas, Meta app-review status, Reddit approval, DeepL billing/limits and regional feed availability must be validated with the operator's own credentials. The unit suite uses mocked responses and does not establish live platform availability or real-world misinformation-classification accuracy.
+
 ## Acceptance criteria and regression comparison
 
 The previous default CLI offered demo, scholarly metadata and local-corpus providers; it had no first-party social/video adapters. This change adds an opt-in social provider without changing the default demo provider or existing scholarly choices.
