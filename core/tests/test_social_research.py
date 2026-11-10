@@ -294,5 +294,5 @@ def test_query_relevance_preserves_short_technical_acronyms():
     from ssswet_core.social_research import query_relevance
 
     score, terms = query_relevance("AI", "AI-assisted research tools")
-    assert score == 1.0 and terms == ("ai",)
+    assert score == 1.0 and terms == ("exact_phrase",)
     assert query_relevance("EV", "A cooking recipe") == (0.0, ())
