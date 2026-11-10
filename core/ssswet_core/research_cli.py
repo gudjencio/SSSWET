@@ -20,6 +20,7 @@ from .providers import (
     ArxivProvider,
     MultiSourceLiteratureProvider,
 )
+from .social_research import SocialResearchProvider
 
 
 def load_corpus(path: str) -> list[CorpusDocument]:
@@ -46,7 +47,7 @@ def main() -> None:
     parser.add_argument("--corpus", help="Optional JSON file containing local source documents")
     parser.add_argument("--pdf", action="append", default=[], help="Local PDF to extract and search; may be repeated")
     parser.add_argument("--database", default=".ssswet/ssswet.sqlite3", help="SQLite research history path")
-    parser.add_argument("--provider", choices=("demo", "crossref", "openalex", "arxiv", "literature", "llm"), default="demo")
+    parser.add_argument("--provider", choices=("demo", "crossref", "openalex", "arxiv", "literature", "social", "llm"), default="demo")
     parser.add_argument("--mailto", default="", help="Optional contact email for Crossref requests")
     parser.add_argument("--model", default=os.getenv("SSSWET_LLM_MODEL", ""))
     parser.add_argument(
@@ -76,6 +77,8 @@ def main() -> None:
         provider = ArxivProvider()
     elif args.provider == "literature":
         provider = MultiSourceLiteratureProvider(mailto=args.mailto)
+    elif args.provider == "social":
+        provider = SocialResearchProvider.from_environment()
     elif args.provider == "llm":
         provider = OpenAICompatibleProvider(
             api_key=os.getenv("SSSWET_LLM_API_KEY", ""),
