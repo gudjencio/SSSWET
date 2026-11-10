@@ -90,7 +90,7 @@ The RSS adapter is a generic open-web connector for publicly published feeds; it
 - `SSSWET_TRANSLATION_TARGET_LANG` (defaults to EN)
 - `SSSWET_DEEPL_API_URL` (must be the official free or paid DeepL API endpoint)
 
-Bluesky public search and Qiita public search are available without an access token. The optional Brave Search adapter can discover indexed public pages across additional community sites and forums; it does not see private or unindexed content. The configured source list is bounded, queried concurrently with a maximum of eight workers, and globally deduplicated. The output cap remains ten records per research pass. Individual platform errors do not suppress successful sources.
+Bluesky public search and Qiita public search are available without an access token. The optional Brave Search adapter can discover indexed public pages across additional community sites and forums; it does not see private or unindexed content. The configured source list is bounded, queried concurrently with a maximum of eight workers, and globally deduplicated. The ten-record research-pass cap is selected by round-robin across platforms so a high-volume source cannot monopolize the entire result set. Individual platform errors do not suppress successful sources.
 
 ### Multilingual clickbait and translation
 
