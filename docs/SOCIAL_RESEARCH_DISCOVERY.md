@@ -145,3 +145,10 @@ To run it manually: open **Actions → Social research live smoke test → Run w
 
 Credentials for optional Brave, Reddit, Threads, Facebook and DeepL integrations must be added separately as repository Actions secrets only after the corresponding provider account/app has been approved. Do not place credentials in workflow YAML, source files, issues, logs or artifacts. The current smoke workflow deliberately does not print or consume those secrets.
 
+
+
+### Query-relevance filtering
+
+Social/community results now pass through a conservative lexical relevance check before entering the bounded cross-platform result set. Exact query phrases receive full lexical coverage; other matches use shared terms, with adjacent-character bigrams for Japanese, Chinese and Korean text where whitespace tokenization is unsuitable. Results with no detectable overlap are excluded as likely off-topic. Partial matches are retained and carry a bounded `query_relevance` metadata hint with matched terms.
+
+This score measures only text overlap with the submitted query. It is not a relevance benchmark, source-quality rating, expertise score, scientific-evidence score, misinformation verdict or truth probability. Synonyms, transliteration, inflection, abbreviations, code-switching, OCR errors and paraphrases can still be missed. Researchers should inspect the original result and broaden or reformulate the query when discovery is too narrow. The live smoke artifact reports raw and post-filter counts separately so filtering is auditable.
