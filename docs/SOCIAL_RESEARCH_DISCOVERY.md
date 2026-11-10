@@ -161,3 +161,20 @@ Evidence dossier analysis now includes a read-only bibliographic integrity repor
 Duplicate groups are review candidates only: no source is automatically deleted or collapsed. Exact title/year matching is deliberately conservative and does not claim fuzzy duplicate detection. Publication-status flags are not authoritative confirmation; reviewers must check the publisher's version of record and the relevant correction/retraction notice. A missing field means unknown, not that the property is absent. A preprint flag does not imply poor research, and a peer-review metadata field does not establish methodological quality. Existing source-quality rubrics and independence checks remain separate: citations, shared authors, venue names, and bibliographic metadata cannot establish truth or independent replication.
 
 The dossier report exposes `bibliographic_integrity` beside source assessments, source-independence diagnostics and provenance checks. This is a bounded metadata audit (maximum 2,000 source records), not a scientific-validity score or automated adjudication.
+
+
+## Discovery-time bibliographic status metadata
+
+Crossref and OpenAlex adapters now preserve a bounded structured bibliographic record alongside their human-readable discovery result. The combined provider carries that metadata forward when it merges results, and the literature-watch report exposes a bibliographic_integrity object computed from the metadata returned by the providers at discovery time.
+
+Captured fields include DOI, title, author names, publication date/year, venue or container title, publication type and provider provenance. Crossref relation metadata is retained so correction/retraction-related notices can be surfaced for review. OpenAlex is_retracted and work type metadata are retained, including a preprint signal when the returned type is preprint. The provider's available fields vary by record and API response; absent fields remain unknown.
+
+The report is deliberately conservative:
+- A Crossref relation or publication type is a metadata signal, not a publisher-confirmed current status.
+- OpenAlex is_retracted is recorded as a provider-supplied flag, not independently verified by SSSWET.
+- Neither provider's bibliographic metadata is treated as proof of peer review; peer-review status remains unestablished unless separately supported by an explicit, reviewable record.
+- A preprint type does not imply poor quality or invalidity.
+- Duplicate candidates remain human-review tasks; provider-level DOI merging only prevents the same DOI from appearing twice in one combined discovery response and does not delete dossier sources.
+- The discovery-time audit is separate from the dossier audit. It does not automatically import candidates into the evidence registry, collective memory or a campaign, and it does not change a scientific verdict.
+
+For a suspected retraction, correction or expression of concern, reviewers should inspect the publisher's version of record and the linked notice, then record their adjudication through the existing review workflow. Unit tests use mocked provider payloads and validate parsing/propagation only; they do not establish API completeness or real-world publication-status accuracy.
