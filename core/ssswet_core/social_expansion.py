@@ -14,7 +14,7 @@ import re
 import socket
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
-from urllib.request import Request, build_opener, HTTPRedirectHandler
+from urllib.request import Request, build_opener, HTTPRedirectHandler, urlopen
 import xml.etree.ElementTree as ET
 
 from .social_research import SocialItem, _fetch_json, MAX_RESPONSE_BYTES, DEFAULT_TIMEOUT
@@ -223,7 +223,13 @@ class QiitaSearchProvider:
             return []
         url = self.endpoint + "?" + urlencode({"query": query[:200], "per_page": self.max_results})
         headers = {"Authorization": "Bearer " + self.token} if self.token else {}
-        payload = self.request_json(url, headers, DEFAULT_TIMEOUT)
+        request = Request(url, headers={"Accept": "application/json", **headers,
+                                        "User-Agent": "SSSWET/0.3 Qiita API client"})
+        with urlopen(request, timeout=DEFAULT_TIMEOUT) as response:
+            raw = response.read(MAX_RESPONSE_BYTES + 1)
+        if len(raw) > MAX_RESPONSE_BYTES:
+            raise ValueError("Qiita response exceeds the configured size limit.")
+        payload = json.loads(raw.decode("utf-8"))
         output = []
         for row in payload[:self.max_results] if isinstance(payload, list) else []:
             ident, title, link = str(row.get("id") or ""), str(row.get("title") or ""), str(row.get("url") or "")
@@ -289,7 +295,13 @@ class PublicRSSFeedProvider:
             if node.tag.rsplit("}", 1)[-1] in {"item", "entry"}:
                 entries.append(node)
         output = []
-        platform = "forum-" + re.sub(r"[^a-z0-9-]", "-", host.split(".")[-2] if len(host.split(".")) > 1 else host)[:24]
+        base_host = host[4:] if host.startswith("www.") else host
+        known_platforms = {
+            "mewe.com": "mewe", "snapchat.com": "snapchat", "bilibili.com": "bilibili",
+            "nicovideo.jp": "niconico", "qiita.com": "qiita", "zenn.dev": "zenn",
+            "note.com": "note", "weibo.com": "weibo", "zhihu.com": "zhihu",
+        }
+        platform = known_platforms.get(base_host, "forum-" + re.sub(r"[^a-z0-9-]", "-", base_host.split(".")[0])[:24])
         for entry in entries[:self.max_results]:
             fields = {}
             for node in entry.iter():
@@ -344,7 +356,7 @@ class DeepLTranslationClient:
 
     def translate_item(self, item: SocialItem) -> SocialItem:
         text = (item.title + "\n" + item.text).strip()
-        if not text:
+        if not text or str(item.metadata.get("language") or "").lower() in {"en", "en-us", "en-gb"}:
             return item
         from urllib.parse import urlencode
         body = urlencode({"text": text[:4500], "target_lang": self.target_lang}).encode()
