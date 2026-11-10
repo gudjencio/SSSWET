@@ -1,0 +1,41 @@
+name: Social research live smoke test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 7 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: social-live-smoke
+  cancel-in-progress: false
+
+jobs:
+  public-multilingual-smoke:
+    name: Public multilingual API checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run public API smoke checks
+        working-directory: core
+        run: |
+          python ../core/scripts/social_live_smoke.py
+
+      - name: Upload bounded public metadata report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: social-live-smoke-report
+          path: core/social-live-smoke-report.json
+          if-no-files-found: ignore
+          retention-days: 7
