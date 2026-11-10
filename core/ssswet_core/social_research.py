@@ -405,12 +405,21 @@ class SocialResearchProvider:
         unique: dict[str, SocialItem] = {}
         for item in items:
             unique.setdefault(item.source_id, item)
-        ordered = sorted(
-            unique.values(), key=lambda item: (item.published_at or "", item.platform, item.source_id),
-            reverse=True,
-        )
+        grouped: dict[str, list[SocialItem]] = {}
+        for item in sorted(unique.values(), key=lambda item: (item.published_at or "", item.source_id), reverse=True):
+            grouped.setdefault(item.platform, []).append(item)
+        # Round-robin across platforms prevents one high-volume network from
+        # consuming the entire bounded research-pass budget.
+        ordered: list[SocialItem] = []
+        while grouped and len(ordered) < self.max_results:
+            for platform in sorted(tuple(grouped)):
+                bucket = grouped.get(platform) or []
+                if bucket and len(ordered) < self.max_results:
+                    ordered.append(bucket.pop(0))
+                if not bucket:
+                    grouped.pop(platform, None)
         from .social_expansion import translate_items_if_configured
-        ordered = translate_items_if_configured(ordered[:self.max_results])
+        ordered = translate_items_if_configured(ordered)
         return ordered, tuple(errors)
 
     def investigate(self, objective: str, strategy: str) -> ProviderResult:
