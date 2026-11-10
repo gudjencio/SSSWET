@@ -76,7 +76,7 @@ No new runtime dependency is required. Existing database schemas and stored rese
 
 ## CI evidence — 10 November 2026
 
-The final pull-request CI run completed successfully on Python 3.11, 3.12 and 3.13. The Python 3.12.16 run reports **604 passed** for the full core suite, including 18 focused tests for this update. The independent core-tests workflow also passed.
+The final pull-request CI run completed successfully on Python 3.11, 3.12 and 3.13. The Python 3.12.16 run reports **604 passed** for the full core suite, including 19 focused tests for this update. The independent core-tests workflow also passed.
 
 The dedicated synthetic benchmark completed five repetitions per operation on Python 3.12.16. Values below are p95 latency, not claimed speedups:
 
