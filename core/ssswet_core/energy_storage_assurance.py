@@ -174,6 +174,7 @@ def segment_cycles(samples: object) -> list[dict]:
             "review_flags": flags,
             "sample_ids": [row["sample_id"] for row in rows],
             "source_ids": sorted({row["source_id"] for row in rows}),
+            "calibration_refs": sorted({ref for row in rows for ref in row.get("calibration_refs", [])}),
             "first_timestamp_utc": rows[0]["timestamp_utc"],
             "last_timestamp_utc": rows[-1]["timestamp_utc"],
         })
@@ -315,10 +316,19 @@ def capacity_fade(cycle_measurements: object) -> dict:
         capacity = _number(row.get("capacity_ah"), "capacity_ah", 0.0)
         if capacity <= 0:
             raise ValueError("capacity_ah must be greater than zero")
-        points.append((number, capacity))
+        source_id = _required_text(row["source_id"], "source_id") if row.get("source_id") is not None else None
+        refs = row.get("evidence_refs", [])
+        if not isinstance(refs, (list, tuple)) or len(refs) > 100:
+            raise ValueError("evidence_refs must contain at most 100 identifiers")
+        evidence_refs = [_required_text(ref, "evidence reference") for ref in refs]
+        if len(set(evidence_refs)) != len(evidence_refs):
+            raise ValueError("evidence references must be unique per cycle")
+        uncertainty = _number(row["uncertainty_ah"], "uncertainty_ah", 0.0) if row.get("uncertainty_ah") is not None else None
+        points.append((number, capacity, source_id, evidence_refs, uncertainty))
     if len(points) < 3:
         raise ValueError("at least three unique cycle measurements are required")
     points.sort()
+    points.sort(key=lambda point: point[0])
     xs = [float(point[0]) for point in points]
     ys = [point[1] for point in points]
     x_mean = sum(xs) / len(xs)
@@ -339,6 +349,12 @@ def capacity_fade(cycle_measurements: object) -> dict:
         "relative_change_percent": (ys[-1] - ys[0]) / ys[0] * 100.0,
         "r_squared_descriptive": max(0.0, min(1.0, r_squared)),
         "trend_direction": "decreasing" if slope < 0 else ("increasing" if slope > 0 else "flat"),
+        "source_ids": sorted({point[2] for point in points if point[2] is not None}),
+        "evidence_refs": sorted({ref for point in points for ref in point[3]}),
+        "uncertainty_ah_by_cycle": [
+            {"cycle_number": point[0], "standard_uncertainty_ah": point[4]}
+            for point in points if point[4] is not None
+        ],
         "extrapolation_performed": False,
         "cycle_numbers": [int(value) for value in xs],
     }
@@ -381,6 +397,13 @@ def temperature_excursions(
         "below_limit_count": len(below),
         "above_limit_count": len(above),
         "out_of_range_sample_ids": [row["sample_id"] for row in below + above],
+        "out_of_range_sources": [
+            {"sample_id": row["sample_id"], "source_id": row["source_id"],
+             "calibration_refs": row.get("calibration_refs", [])}
+            for row in below + above
+        ],
+        "source_ids": sorted({row["source_id"] for row in measured}),
+        "calibration_refs": sorted({ref for row in measured for ref in row.get("calibration_refs", [])}),
         "minimum_observed_c": min(values),
         "maximum_observed_c": max(values),
         "confirmed_out_of_range_span_seconds": confirmed_seconds,
@@ -402,6 +425,8 @@ def cell_imbalance(samples: object, review_spread_v: float) -> dict:
         if len(cells) < 2:
             results.append({
                 "sample_id": row["sample_id"],
+                "source_id": row["source_id"],
+                "calibration_refs": row.get("calibration_refs", []),
                 "cell_count": len(cells),
                 "spread_v": None,
                 "review_flag": "fewer_than_two_cell_measurements",
@@ -410,6 +435,8 @@ def cell_imbalance(samples: object, review_spread_v: float) -> dict:
         spread = max(cells) - min(cells)
         results.append({
             "sample_id": row["sample_id"],
+            "source_id": row["source_id"],
+            "calibration_refs": row.get("calibration_refs", []),
             "cell_count": len(cells),
             "spread_v": spread,
             "review_flag": "spread_above_supplied_limit" if spread > threshold else None,
@@ -422,6 +449,8 @@ def cell_imbalance(samples: object, review_spread_v: float) -> dict:
         "maximum_spread_v": max(measured) if measured else None,
         "median_spread_v": median(measured) if measured else None,
         "review_spread_limit_v": threshold,
+        "source_ids": sorted({row["source_id"] for row in normalized if row.get("cell_voltages_v") is not None}),
+        "calibration_refs": sorted({ref for row in normalized for ref in row.get("calibration_refs", []) if row.get("cell_voltages_v") is not None}),
         "samples": results,
         "safety_clearance_established": False,
     }
@@ -464,6 +493,8 @@ def detect_signal_anomalies(
                 item = {
                     "field": field,
                     "sample_id": row["sample_id"],
+                    "source_id": row["source_id"],
+                    "calibration_refs": row.get("calibration_refs", []),
                     "value": row[field],
                     "median": centre,
                     "mad": mad,
