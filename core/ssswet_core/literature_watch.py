@@ -1,7 +1,7 @@
 """Review-oriented literature watch over scholarly metadata providers."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timezone
 import re
 import uuid
@@ -43,6 +43,13 @@ class WatchCandidate:
     related_memory_ids: tuple[str, ...] = ()
     classification: str = "candidate_for_review"
     note: str = "Bibliographic metadata only; inspect the publication and its methods."
+    authors: tuple[str, ...] = ()
+    publication_date: str = ""
+    publication_year: str | int | None = None
+    venue: str = ""
+    publication_type: str = ""
+    publication_status_signals: tuple[str, ...] = ()
+    metadata_providers: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -106,6 +113,9 @@ class LiteratureWatchReport:
             classification = "possible_duplicate" if exact else (
                 "possible_title_match" if similar else "candidate_for_review"
             )
+            provider_names = structured.get("metadata_providers") or (
+                [structured.get("metadata_provider")] if structured.get("metadata_provider") else [provider_name]
+            )
             candidates.append(WatchCandidate(
                 candidate_id=str(uuid.uuid4()), provider=provider_name,
                 source_id=source_id, title=title, doi=doi, url=url,
@@ -113,11 +123,25 @@ class LiteratureWatchReport:
                 similar_source_ids=tuple(sorted(set(similar))),
                 related_memory_ids=tuple(sorted(set(related_memory))),
                 classification=classification,
+                authors=tuple(str(name) for name in (structured.get("authors") or []) if name),
+                publication_date=str(structured.get("publication_date") or ""),
+                publication_year=structured.get("publication_year"),
+                venue=str(structured.get("venue") or ""),
+                publication_type=str(structured.get("type") or ""),
+                metadata_providers=tuple(sorted({str(name) for name in provider_names if name})),
             ))
         bibliographic_records = list(result.bibliographic_records or ())
         # Older/custom providers may only return display strings. Keep those
         # candidates visible, but never fabricate missing bibliographic fields.
         integrity = analyze_bibliographic_integrity(bibliographic_records)
+        integrity_by_source = {
+            row["source_id"]: tuple(row["flags"])
+            for row in integrity["records"]
+        }
+        candidates = [
+            replace(candidate, publication_status_signals=integrity_by_source.get(candidate.source_id, ()))
+            for candidate in candidates
+        ]
         return cls(
             watch_id=str(uuid.uuid4()), query=query.strip(),
             created_at=datetime.now(timezone.utc).isoformat(),
