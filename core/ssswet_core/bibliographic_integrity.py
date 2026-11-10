@@ -52,7 +52,7 @@ def _publication_flags(record: dict[str, Any]) -> list[str]:
         flags.append("retraction_status_signal")
     if any(term in combined for term in ("expression of concern", "expression-of-concern", "editorial-expression-of-concern")):
         flags.append("expression_of_concern_signal")
-    if any(term in combined for term in ("correction", "erratum", "corrigendum", "is-correction-of")):
+    if any(term in combined for term in ("correction", "corrected", "erratum", "corrigendum", "is-correction-of")):
         flags.append("correction_or_erratum_signal")
     if record.get("is_preprint") is True or any(term in combined for term in ("preprint", "posted-content")):
         flags.append("preprint_or_posted_content")
