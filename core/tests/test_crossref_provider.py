@@ -28,6 +28,9 @@ def test_crossref_provider_returns_traceable_bibliographic_records(monkeypatch):
                     "publisher": "Example Society",
                     "published-print": {"date-parts": [[2024, 5, 1]]},
                     "author": [{"given": "Ada", "family": "Lovelace"}],
+                    "container-title": ["Journal of Reproducible Examples"],
+                    "type": "journal-article",
+                    "relation": {"is-corrected-by": [{"id-type": "doi", "id": "10.1234/correction"}]},
                 }
             ]
         }
@@ -50,6 +53,12 @@ def test_crossref_provider_returns_traceable_bibliographic_records(monkeypatch):
     assert "Ada Lovelace" in result.evidence[0]
     assert "2024" in result.evidence[0]
     assert result.uncertainty == 1.0
+    record = result.bibliographic_records[0]
+    assert record["doi"] == "10.1234/example.1"
+    assert record["venue"] == "Journal of Reproducible Examples"
+    assert record["type"] == "journal-article"
+    assert record["relation"]["is-corrected-by"][0]["id"] == "10.1234/correction"
+    assert record["peer_review_status"] == "not_established_by_crossref_metadata"
     assert "discovery leads only" in result.summary
     assert "mailto=research%40example.org" in seen["url"]
     assert "SSSWET/0.1" in seen["agent"]
