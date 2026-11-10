@@ -63,10 +63,10 @@ class SocialTriage:
 
 
 _CLICKBAIT = (
-    (re.compile(r"\b(shocking|unbelievable|they don't want you to know|secret they hide)\b", re.I), "sensational_language"),
-    (re.compile(r"\b(miracle cure|cures? (all|every)|100% guaranteed|zero risk)\b", re.I), "extraordinary_absolute_claim"),
-    (re.compile(r"\b(proven|scientists confirm|science proves)\b", re.I), "unsupported_certainty_language"),
-    (re.compile(r"\b(instant|overnight|revolutionary breakthrough)\b", re.I), "breakthrough_or_speed_claim"),
+    (re.compile(r"\b(shocking|unbelievable|they don't want you to know|secret they hide|choc|incroyable|ils ne veulent pas que vous sachiez)\b", re.I), "sensational_language"),
+    (re.compile(r"\b(miracle cure|cures? (all|every)|100% guaranteed|zero risk|remède miracle|guérit tout|zéro risque|garanti à 100 %)\b", re.I), "extraordinary_absolute_claim"),
+    (re.compile(r"\b(proven|scientists confirm|science proves|prouvé|les scientifiques confirment|la science prouve)\b", re.I), "unsupported_certainty_language"),
+    (re.compile(r"\b(instant|overnight|revolutionary breakthrough|instantané|du jour au lendemain|percée révolutionnaire)\b", re.I), "breakthrough_or_speed_claim"),
 )
 _URL_PATTERN = re.compile(r"https?://[^\s<>()]+", re.I)
 _TOKEN_PATTERN = re.compile(r"[\w-]{3,}", re.UNICODE)
