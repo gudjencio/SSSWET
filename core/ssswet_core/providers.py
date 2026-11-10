@@ -344,23 +344,44 @@ class MultiSourceLiteratureProvider:
         evidence: list[str] = []
         source_ids: list[str] = []
         bibliographic_records: list[dict] = []
-        seen: set[str] = set()
+        seen: dict[str, int] = {}
         for provider, result in results:
             for source_id, item in zip(result.source_ids, result.evidence):
                 normalized = source_id.casefold().replace("https://doi.org/", "").strip()
                 key = normalized or item.casefold()
-                if key in seen:
-                    continue
-                seen.add(key)
-                evidence.append(f"[{provider.name}] {item}")
-                source_ids.append(source_id)
                 matching_records = [
                     record for record in result.bibliographic_records
                     if str(record.get("source_id", "")).casefold() == str(source_id).casefold()
-                    or str(record.get("doi", "")).casefold() == normalized
+                    or str(record.get("doi", "")).casefold().replace("https://doi.org/", "") == normalized
                 ]
-                for record in matching_records[:1]:
-                    bibliographic_records.append({**record, "source_id": source_id})
+                incoming = matching_records[0] if matching_records else {}
+                if key in seen:
+                    # Keep a single DOI candidate while retaining which indexes
+                    # independently returned it and filling only missing metadata.
+                    index = seen[key]
+                    existing = dict(bibliographic_records[index]) if index < len(bibliographic_records) else {}
+                    for field, value in incoming.items():
+                        if existing.get(field) in (None, "", [], {} ) and value not in (None, "", [], {}):
+                            existing[field] = value
+                    providers_seen = set(existing.get("metadata_providers", []))
+                    providers_seen.add(provider.name)
+                    source_ids_seen = set(existing.get("provider_source_ids", []))
+                    source_ids_seen.add(source_id)
+                    existing["metadata_providers"] = sorted(providers_seen)
+                    existing["provider_source_ids"] = sorted(source_ids_seen)
+                    if index < len(bibliographic_records):
+                        bibliographic_records[index] = existing
+                    continue
+                seen[key] = len(evidence)
+                evidence.append(f"[{provider.name}] {item}")
+                source_ids.append(source_id)
+                if incoming:
+                    bibliographic_records.append({
+                        **incoming,
+                        "source_id": source_id,
+                        "metadata_providers": [provider.name],
+                        "provider_source_ids": [source_id],
+                    })
         if not evidence:
             return ProviderResult(
                 "Crossref and OpenAlex returned no usable records. Check network access or broaden the query. "
