@@ -1,4 +1,4 @@
-"""Live, read-only smoke checks for public multilingual social discovery."""
+"""Live, read-only smoke checks for multilingual scholarly and social discovery."""
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -8,49 +8,68 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from ssswet_core.providers import MultiSourceLiteratureProvider
 from ssswet_core.social_expansion import BlueskySearchProvider, QiitaSearchProvider
 
 QUERIES = {
-    "en": {"query": "solid-state battery", "terms": ("solid-state battery", "solid state battery")},
-    "fr": {"query": "batterie à l'état solide", "terms": ("batterie à l'état solide", "batterie solide")},
-    "ja": {"query": "全固体電池", "terms": ("全固体電池",)},
-    "zh": {"query": "固态电池", "terms": ("固态电池",)},
+    "en": "solid-state battery",
+    "fr": "batterie à l'état solide",
+    "ja": "全固体電池",
+    "zh": "固态电池",
 }
 
 
 def main() -> int:
-    providers = (
+    social_providers = (
         ("bluesky", BlueskySearchProvider(max_results=3)),
         ("qiita", QiitaSearchProvider(max_results=1)),
     )
+    scholarly = MultiSourceLiteratureProvider(max_results=3)
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "mode": "public_read_only_smoke_test",
+        "mode": "public_read_only_multilingual_smoke_test",
         "queries": {},
         "limitations": [
-            "A successful API response does not establish scientific validity.",
-            "Only public content is queried; no scraping or login automation is used.",
-            "Zero relevant matches are not considered an API failure.",
-            "Results are filtered by literal topic terms and are not a scientific quality assessment.",
-            "Only bounded public metadata is retained in this report.",
+            "Bibliographic metadata and social posts are discovery leads, not scientific validation.",
+            "Crossref and OpenAlex records must be checked against the original publication.",
+            "Qiita and Bluesky are community discovery sources, not peer-reviewed literature indexes.",
+            "Zero results are reported as zero results, never replaced with invented matches.",
+            "Only bounded metadata and bibliographic snippets are retained; no full papers are downloaded.",
         ],
     }
     successful_requests = failed_requests = 0
-    for language, config in QUERIES.items():
-        query = config["query"]
-        terms = tuple(term.casefold() for term in config["terms"])
+    for language, query in QUERIES.items():
         report["queries"][language] = {"query": query, "providers": {}}
-        for name, provider in providers:
+
+        try:
+            result = scholarly.investigate(query, "multilingual live smoke test")
+            successful_requests += 1
+            report["queries"][language]["providers"]["crossref_openalex"] = {
+                "status": "ok" if result.source_ids else "no_records",
+                "count": len(result.source_ids),
+                "records": [
+                    {
+                        "source_id": source_id[:240],
+                        "citation": evidence[:900],
+                        "verification_status": "not_verified",
+                    }
+                    for source_id, evidence in zip(result.source_ids[:6], result.evidence[:6])
+                ],
+                "summary": result.summary[:500],
+            }
+        except Exception as exc:
+            failed_requests += 1
+            report["queries"][language]["providers"]["crossref_openalex"] = {
+                "status": "error", "error": type(exc).__name__, "detail": str(exc)[:180]
+            }
+
+        for name, provider in social_providers:
             entry = {"status": "ok", "count": 0, "raw_count": 0, "items": []}
             try:
                 items = provider.search(query)
                 successful_requests += 1
-                relevant = [
-                    item for item in items
-                    if any(term in (item.title + " " + item.text).casefold() for term in terms)
-                ]
                 entry["raw_count"] = len(items)
-                entry["count"] = len(relevant)
+                entry["count"] = len(items)
                 entry["items"] = [
                     {
                         "platform": item.platform,
@@ -62,7 +81,7 @@ def main() -> int:
                         "language_hint": str(item.metadata.get("language") or "")[:12],
                         "triage": "not_verified",
                     }
-                    for item in relevant[:3]
+                    for item in items[:3]
                 ]
             except Exception as exc:
                 failed_requests += 1
@@ -75,7 +94,7 @@ def main() -> int:
         "successful_requests": successful_requests,
         "failed_requests": failed_requests,
         "languages_tested": list(QUERIES),
-        "providers_tested": [name for name, _ in providers],
+        "providers_tested": ["Crossref", "OpenAlex", "Bluesky", "Qiita"],
     }
     Path("social-live-smoke-report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
