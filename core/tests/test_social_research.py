@@ -167,3 +167,44 @@ def test_social_item_rejects_non_https_and_unknown_platforms():
         SocialItem("x", "x:1", "title", "text", "http://x.com/a")
     with pytest.raises(ValueError):
         SocialItem("tiktok", "tiktok:1", "title", "text", "https://example.org")
+
+
+
+def test_combined_provider_keeps_scholarly_results_when_social_is_unconfigured():
+    from ssswet_core.providers import ProviderResult
+    from ssswet_core.social_research import MultiSourceResearchProvider
+
+    class Literature:
+        name = "literature"
+        def investigate(self, objective, strategy):
+            return ProviderResult("Scholarly leads", ("paper metadata",), 1.0, ("doi:10.1000/x",))
+
+    class Social:
+        name = "social"
+        def investigate(self, objective, strategy):
+            return ProviderResult("No social credentials", (), 1.0, ())
+
+    result = MultiSourceResearchProvider(Literature(), Social()).investigate("science", "initial")
+    assert result.source_ids == ("doi:10.1000/x",)
+    assert result.evidence == ("paper metadata",)
+    assert "No social credentials" in result.summary
+
+
+def test_combined_provider_deduplicates_sources_and_survives_provider_errors():
+    from ssswet_core.providers import ProviderResult
+    from ssswet_core.social_research import MultiSourceResearchProvider
+
+    class Literature:
+        name = "literature"
+        def investigate(self, objective, strategy):
+            return ProviderResult("Paper", ("paper",), 0.8, ("shared-source",))
+
+    class Social:
+        name = "social"
+        def investigate(self, objective, strategy):
+            return ProviderResult("Social", ("duplicate", "post"), 1.0, ("shared-source", "x:123"))
+
+    result = MultiSourceResearchProvider(Literature(), Social()).investigate("science", "initial")
+    assert result.source_ids == ("shared-source", "x:123")
+    assert result.evidence == ("paper", "post")
+    assert result.uncertainty == 1.0
