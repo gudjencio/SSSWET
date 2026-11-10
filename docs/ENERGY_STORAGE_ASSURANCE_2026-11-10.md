@@ -103,6 +103,31 @@ researcher. The functions do not retrieve or upload source files.
 - No runtime dependency, persistent database table, existing endpoint, existing
   research record, public catalogue or payment/customer setting is changed.
 
+## CI benchmark snapshot
+
+The GitHub Actions run on Python 3.12 processed 2,000 synthetic samples. Five
+repetitions were measured per workload; the table reports the observed p95
+latency from that runner, not a hardware-independent guarantee.
+
+| Operation | p95 |
+| --- | ---: |
+| Validated ingestion | 8.431 ms |
+| Cycle segmentation | 8.589 ms |
+| Capacity integration | 9.476 ms |
+| Energy and round-trip analysis | 18.484 ms |
+| Capacity-fade fit | 0.075 ms |
+| Temperature-excursion accounting | 11.459 ms |
+| Cell-imbalance screening | 8.506 ms |
+| Signal-anomaly screening | 8.791 ms |
+| Protocol revision comparison | 0.079 ms |
+| Evidence packet generation | 14.341 ms |
+
+The deterministic metadata packet in this workload was 2,111 bytes. Every
+operation remained below the 2,000 ms p95 regression ceiling. The full core
+suite passed **617 tests on each of Python 3.11, 3.12 and 3.13**; the separate
+core-test workflow also passed. Synthetic timings do not demonstrate battery
+performance, scientific validity or safety.
+
 ## Comparison with previous behaviour
 
 The inspected \`main\` baseline and its immediate predecessor contained no
