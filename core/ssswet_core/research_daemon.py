@@ -10,6 +10,7 @@ from pathlib import Path
 from .persistence import SQLiteResearchStore
 from .pipeline import ResearchPipeline
 from .providers import MultiSourceLiteratureProvider
+from .social_research import MultiSourceResearchProvider
 from .apps_script_relay import AppsScriptSuccessRelay
 
 TECHNOLOGY_OBJECTIVES = [
@@ -123,7 +124,9 @@ def run_pass(
     progress_callback=None,
 ) -> list[dict]:
     store = SQLiteResearchStore(database)
-    provider = MultiSourceLiteratureProvider(mailto=mailto)
+    provider = MultiSourceResearchProvider(
+        literature_provider=MultiSourceLiteratureProvider(mailto=mailto),
+    )
     pipeline = ResearchPipeline(provider=provider, store=store)
     completed: list[dict] = []
     cycle_started_at = datetime.now(timezone.utc).isoformat()
