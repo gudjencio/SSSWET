@@ -6,7 +6,7 @@ No scraping, login automation, transcript circumvention, or private-content acce
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from itertools import islice
 import json
 import os
@@ -101,6 +101,40 @@ _STOPWORDS = {
 
 def _tokens(value: str) -> set[str]:
     return {t for t in _TOKEN_PATTERN.findall(value.casefold()) if t not in _STOPWORDS}
+
+_CJK_RUN_PATTERN = re.compile(r"[\\u3040-\\u30ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uac00-\\ud7af]+")
+
+
+def _cjk_bigrams(value: str) -> set[str]:
+    """Create bounded adjacent-character terms for scripts without whitespace tokenization."""
+    terms = set()
+    for run in _CJK_RUN_PATTERN.findall(value.casefold()):
+        if len(run) == 1:
+            terms.add("cjk1:" + run)
+        else:
+            terms.update("cjk2:" + run[index:index + 2] for index in range(len(run) - 1))
+    return terms
+
+
+def query_relevance(query: str, value: str) -> tuple[float, tuple[str, ...]]:
+    """Return lexical query coverage, not a quality, credibility or truth score."""
+    normalized_query = query.casefold().strip()
+    normalized_value = value.casefold()
+    if not normalized_query or not normalized_value:
+        return 0.0, ()
+    if normalized_query in normalized_value:
+        return 1.0, ("exact_phrase",)
+
+    query_terms = {term for term in _tokens(query)
+                   if not _CJK_RUN_PATTERN.fullmatch(term)}
+    value_terms = {term for term in _tokens(value)
+                   if not _CJK_RUN_PATTERN.fullmatch(term)}
+    query_terms.update(_cjk_bigrams(query))
+    value_terms.update(_cjk_bigrams(value))
+    if not query_terms:
+        return 0.0, ()
+    matched = tuple(sorted(query_terms & value_terms))
+    return len(matched) / len(query_terms), matched
 
 
 def triage_social_item(item: SocialItem) -> SocialTriage:
@@ -399,7 +433,22 @@ class SocialResearchProvider:
             for future in as_completed(futures):
                 provider = futures[future]
                 try:
-                    items.extend(future.result())
+                    for item in future.result():
+                        score, matched_terms = query_relevance(
+                            query, item.title + " " + item.text
+                        )
+                        # A zero-overlap result is almost certainly off-topic. Keep
+                        # partial matches; lexical coverage is only a discovery hint.
+                        if score <= 0.0:
+                            continue
+                        metadata = dict(item.metadata)
+                        if len(metadata) < 30:
+                            metadata["query_relevance"] = {
+                                "score": round(score, 3),
+                                "matched_terms": list(matched_terms[:12]),
+                                "method": "lexical_overlap_only_not_evidence",
+                            }
+                        items.append(replace(item, metadata=metadata))
                 except Exception as exc:
                     errors.append(f"{provider.name}: {type(exc).__name__}: {str(exc)[:180]}")
         unique: dict[str, SocialItem] = {}
