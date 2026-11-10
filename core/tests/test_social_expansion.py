@@ -176,3 +176,23 @@ def test_environment_registry_adds_sources_without_removing_existing_adapters(mo
         "youtube-data-api", "x-api-v2", "instagram-graph-business-discovery",
     } <= names
     assert len(provider.providers) <= 20
+
+
+
+def test_brave_web_search_discovers_public_forum_pages_and_keeps_snippet_unverified():
+    seen = {}
+    def fake(url, headers, timeout):
+        seen["headers"] = headers
+        return {"web": {"results": [{
+            "title": "Open research forum discussion",
+            "description": "Japanese researchers discuss measurement methods",
+            "url": "https://forum.example.jp/topics/42",
+            "page_age": "2026-11-01T00:00:00Z",
+            "profile": {"long_name": "Example Research Forum"},
+        }]}}
+    from ssswet_core.social_expansion import BraveWebSearchProvider
+    item = BraveWebSearchProvider("brave-token", request_json=fake).search("materials science forum")[0]
+    assert item.platform == "web-search"
+    assert item.url == "https://forum.example.jp/topics/42"
+    assert item.metadata["search_snippet_is_not_primary_evidence"] is True
+    assert seen["headers"]["X-Subscription-Token"] == "brave-token"
