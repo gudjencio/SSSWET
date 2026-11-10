@@ -134,6 +134,10 @@ Agent memories now carry explicit, append-only source-review states. Researchers
 
 The research knowledge graph connects individual memories, claims, decisions, experiments, evidence, technology dossiers and hypotheses through explicit, provenance-linked relationships. Bounded impact tracing helps identify downstream artefacts that may need review when upstream evidence or interpretations change. It complements the technology dependency graph rather than replacing it. See [Research Knowledge Graph](docs/RESEARCH_KNOWLEDGE_GRAPH.md).
 
+## Field energy-storage assurance
+
+The core includes bounded, provenance-aware analysis for researcher-supplied field-power logs: explicit cycle grouping, Ah/Wh integration with gap rejection, descriptive capacity trends, caller-threshold temperature and cell-voltage screening, anomaly flags, protocol revision fingerprints and deterministic evidence manifests. The utilities are retrospective decision support only; they do not control hardware, prescribe charging, predict battery failure, certify safety or authorize operational use. See [Field energy-storage assurance](docs/ENERGY_STORAGE_ASSURANCE_2026-11-10.md).
+
 ## Research workflow quality
 
 The core research toolkit now adds deterministic provenance-graph diagnostics, versioned agent-capability matching, dataset governance review flags, preregistration deviation records, verifiable reproducibility manifests, uncertainty-aware temporal alignment, fair civil-rescue resource allocation, static accessibility checks, localization QA and dossier-level provenance audits. These are decision-support and review tools; they do not automate scientific approval, legal compliance, dispatch or real-world operations. See [Research workflow quality upgrades](docs/RESEARCH_WORKFLOW_QUALITY_UPGRADES_2026-11-06.md).
