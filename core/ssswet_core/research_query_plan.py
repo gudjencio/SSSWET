@@ -64,17 +64,20 @@ def build_query_plan(*, objective: str, terms: list[dict], source_channels: list
         if not re.fullmatch(r"[a-z]{2,3}(?:-[a-z0-9]{2,8})*", language):
             raise ValueError("language must be a BCP-47-like language tag")
         normalized_terms.append({"term": term, "language": language})
-    if not isinstance(source_channels, list) or not source_channels:
-        raise ValueError("at least one source channel is required")
-    channels = sorted(set(source_channels))
+    if not isinstance(source_channels, list) or not source_channels or any(not isinstance(item, str) or not item.strip() for item in source_channels):
+        raise ValueError("source_channels must be a non-empty list of channel names")
+    channels = sorted(set(item.strip().lower() for item in source_channels))
     unknown = sorted(set(channels) - set(CHANNELS))
     if unknown:
         raise ValueError("unsupported source channels: " + ", ".join(unknown))
     if not isinstance(max_queries, int) or isinstance(max_queries, bool) or not 1 <= max_queries <= MAX_QUERIES:
         raise ValueError(f"max_queries must be between 1 and {MAX_QUERIES}")
-    langs = sorted(set(languages or [item["language"] for item in normalized_terms]))
-    if any(not isinstance(code, str) or not re.fullmatch(r"[a-z]{2,3}(?:-[a-z0-9]{2,8})*", code.lower()) for code in langs):
+    if languages is not None and (not isinstance(languages, list) or len(languages) > 100):
+        raise ValueError("languages must be a list of at most 100 language tags")
+    raw_languages = languages if languages is not None else [item["language"] for item in normalized_terms]
+    if any(not isinstance(code, str) or not re.fullmatch(r"[a-z]{2,3}(?:-[a-z0-9]{2,8})*", code.strip().lower()) for code in raw_languages):
         raise ValueError("languages must contain valid language tags")
+    langs = sorted(set(code.strip().lower() for code in raw_languages))
     start, end = _date(date_from, "date_from"), _date(date_to, "date_to")
     if start and end and start > end:
         raise ValueError("date_from must not be later than date_to")
