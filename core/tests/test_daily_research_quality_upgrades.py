@@ -415,8 +415,9 @@ def test_rescue_assurance_rejects_control_owner_as_independent_reviewer_and_hand
         "review_id": "review-1", "hazard_id": "h1",
         "reviewer_id": "engineer-2", "evidence_refs": ["review-record-1"],
     }])
-    assert result["status"] == "independent_review_required"
+    assert result["status"] == "blocked_invalid_independent_review"
     assert result["critical_hazards_without_independent_review"] == ["h1"]
+    assert result["invalid_review_refs"] == ["review-1"]
     malformed = dict(base, verifications=[{"verification_id": "v2", "outcome": "pass",
                                            "evidence_refs": ["report"]}])
     assert build_assurance_case(**malformed)["invalid_verification_refs"] == ["v2"]

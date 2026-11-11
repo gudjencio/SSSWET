@@ -88,7 +88,11 @@ def validate_completion(contract: dict, completion: dict) -> dict:
 
     top_level_refs = checked_refs(completion.get("evidence_refs"), "evidence_refs")
     output_refs = checked_refs(output.get("evidence_refs"), "output.evidence_refs")
-    references_disagree = bool(top_level_refs and output_refs and set(top_level_refs) != set(output_refs))
+    references_disagree = (
+        "evidence_refs" in completion
+        and "evidence_refs" in output
+        and set(top_level_refs) != set(output_refs)
+    )
     all_refs = sorted(set(top_level_refs) | set(output_refs))
     if all_refs or "evidence_refs" in output:
         output["evidence_refs"] = all_refs

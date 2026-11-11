@@ -131,7 +131,7 @@ def build_assurance_case(*, design_id: str, design_class: str, design_owner_id: 
     missing_critical_review = sorted(set(critical_hazards) - reviewed_hazards)
     traceability_complete = not (
         missing_requirement_verification or hazard_gaps or invalid_controls
-        or invalid_verifications or invalid_reviews
+        or invalid_verifications
     )
     if failed_verifications:
         status = "verification_failures_recorded"
@@ -139,6 +139,8 @@ def build_assurance_case(*, design_id: str, design_class: str, design_owner_id: 
         status = "verification_inconclusive_review_required"
     elif not traceability_complete:
         status = "blocked_missing_traceability"
+    elif invalid_reviews:
+        status = "blocked_invalid_independent_review"
     elif missing_critical_review:
         status = "independent_review_required"
     else:
