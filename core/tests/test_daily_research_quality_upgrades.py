@@ -10,7 +10,7 @@ from ssswet_core.memory_retrieval_evaluation import evaluate_retrieval
 from ssswet_core.agent_task_contracts import build_task_contract, validate_completion
 from ssswet_core.agent_conflict_register import AgentConflictRegister
 from ssswet_core.research_graph_snapshot import build_snapshot, verify_snapshot, diff_snapshots
-from ssswet_core.temporal_clock_alignment import build_clock_model, align_events
+from ssswet_core.temporal_clock_alignment import build_clock_model, align_events, verify_clock_model
 from ssswet_core.rescue_design_assurance import build_assurance_case
 
 
@@ -166,7 +166,12 @@ def test_agent_conflict_register_is_append_only_and_requires_explicit_disclosure
         campaign_ids=["campaign-a"], source_ids=["paper-1"],
         recorded_at="2026-11-11T09:00:00+00:00",
     )
+    declaration = register.history("conflict-1")[0]
+    declaration["campaign_ids"].clear()
     assert register.eligibility("agent-1", campaign_id="campaign-a")["eligible_for_assignment"] is False
+    history = register.history("conflict-1")
+    history[0]["source_ids"].append("mutated")
+    assert "mutated" not in register.history("conflict-1")[0]["source_ids"]
     with pytest.raises(ValueError):
         register.review("conflict-1", reviewer_id="agent-1", decision="cleared_after_review",
                         note="Self-review", evidence_refs=["review-1"])
@@ -232,6 +237,13 @@ def test_temporal_clock_alignment_interpolates_only_inside_session_anchors():
     assert result["events"][1]["status"] == "different_session_or_source"
     assert result["events"][2]["status"] == "outside_anchor_range"
     assert result["unrecorded_history_recovered"] is False
+    assert verify_clock_model(model)["valid"] is True
+    tampered = dict(model)
+    tampered["anchors"] = list(model["anchors"])
+    tampered["anchors"][0] = dict(tampered["anchors"][0], uncertainty_seconds=99)
+    assert verify_clock_model(tampered)["valid"] is False
+    with pytest.raises(ValueError):
+        align_events(tampered, [])
     with pytest.raises(ValueError):
         build_clock_model([
             {"session_id": "s", "source_id": "x", "source_timestamp": "2026-11-11T10:00:00",
@@ -266,6 +278,10 @@ def test_rescue_design_assurance_requires_traceability_and_independent_review():
     failed["verifications"] = [{"verification_id": "v1", "requirement_id": "r1",
                                 "outcome": "fail", "evidence_refs": ["test-report-1"]}]
     assert build_assurance_case(**failed)["status"] == "verification_failures_recorded"
+    inconclusive = dict(base)
+    inconclusive["verifications"] = [{"verification_id": "v1", "requirement_id": "r1",
+                                      "outcome": "inconclusive", "evidence_refs": ["test-report-1"]}]
+    assert build_assurance_case(**inconclusive)["status"] == "verification_inconclusive_review_required"
     invalid = dict(base)
     invalid["design_class"] = "weapon"
     with pytest.raises(ValueError):
