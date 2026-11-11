@@ -36,6 +36,8 @@ jobs:
       - name: Validate web scripts and localization
         run: |
           node --check web/virtual-time-travel.js
+          node --check web/temporal-clock.js
+          node --check web/gps-scenario-model.js
           node --check web/keyframe-continuity.js
           node --check web/keyframe-correspondence.js
           node --check web/virtual-time-travel-link.js
