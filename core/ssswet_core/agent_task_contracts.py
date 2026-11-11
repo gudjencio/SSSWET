@@ -1,8 +1,6 @@
 """Machine-checkable, least-privilege contracts for research-agent assignments."""
 from __future__ import annotations
 
-import re
-
 MAX_REFS = 500
 MAX_FIELDS = 100
 
@@ -79,9 +77,13 @@ def validate_completion(contract: dict, completion: dict) -> dict:
     output = completion.get("output")
     if not isinstance(output, dict):
         output = {}
+    else:
+        output = dict(output)
+    evidence_refs = completion.get("evidence_refs", [])
+    if isinstance(evidence_refs, list) and "evidence_refs" not in output:
+        output["evidence_refs"] = evidence_refs
     required = contract.get("required_output_fields", [])
     missing = sorted(field for field in required if field not in output or output[field] in (None, "", [], {}))
-    evidence_refs = completion.get("evidence_refs", [])
     if not isinstance(evidence_refs, list) or any(not isinstance(item, str) or not item.strip() for item in evidence_refs):
         raise ValueError("evidence_refs must be a list of non-empty strings")
     allowed = set(contract.get("allowed_source_ids", []))
