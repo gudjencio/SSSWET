@@ -541,3 +541,10 @@ if (!pageSource.includes('src="repair-project.js"') || !pageSource.includes('src
 if (!pageSource.includes('href="mobile-repair.css"')) {
   throw new Error("Project support controls must load their responsive stylesheet");
 }
+
+const adminCssSource = fs.readFileSync(new URL("./admin.css", `file://${__filename}`), "utf8");
+if (!adminCssSource.includes(":focus-visible") ||
+    !adminCssSource.includes("outline: 3px solid") ||
+    !adminCssSource.includes("outline-offset: 3px")) {
+  throw new Error("The standalone administration page must provide a visible keyboard focus indicator.");
+}
