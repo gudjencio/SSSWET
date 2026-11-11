@@ -47,7 +47,10 @@ def _evidence_ref(value):
 def _nonnegative(value, field):
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError(f"{field} must be finite and non-negative")
-    result = float(value)
+    try:
+        result = float(value)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise ValueError(f"{field} must be finite and non-negative") from exc
     if not isfinite(result) or result < 0:
         raise ValueError(f"{field} must be finite and non-negative")
     return result
@@ -66,12 +69,13 @@ def _drift(previous_source, current_source, previous_reference, current_referenc
 
 
 def _close_number(actual, expected):
-    return (
-        isinstance(actual, (int, float))
-        and not isinstance(actual, bool)
-        and isfinite(float(actual))
-        and abs(float(actual) - expected) <= max(1e-9, abs(expected) * 1e-12)
-    )
+    if not isinstance(actual, (int, float)) or isinstance(actual, bool):
+        return False
+    try:
+        numeric = float(actual)
+    except (OverflowError, TypeError, ValueError):
+        return False
+    return isfinite(numeric) and abs(numeric - expected) <= max(1e-9, abs(expected) * 1e-12)
 
 
 def build_clock_model(anchors: list[dict]) -> dict:
@@ -240,7 +244,7 @@ def verify_clock_model(model: dict) -> dict:
                         structural = False
                         break
                     anchor_id = _identifier(item.get("anchor_id"), "anchor_id")
-                    if anchor_id in seen_ids:
+                    if anchor_id != item.get("anchor_id") or anchor_id in seen_ids:
                         structural = False
                         break
                     seen_ids.add(anchor_id)
@@ -253,14 +257,16 @@ def verify_clock_model(model: dict) -> dict:
                         structural = False
                         break
                     reference_ref = _evidence_ref(item.get("reference_evidence_ref"))
-                    if reference_ref != item.get("reference_evidence_ref"):
+                    source_time = _timestamp(item.get("source_timestamp"), "source_timestamp")
+                    reference_time = _timestamp(item.get("reference_timestamp"), "reference_timestamp")
+                    if (
+                        reference_ref != item.get("reference_evidence_ref")
+                        or source_time.isoformat() != item.get("source_timestamp")
+                        or reference_time.isoformat() != item.get("reference_timestamp")
+                    ):
                         structural = False
                         break
-                    normalized.append((
-                        _timestamp(item.get("source_timestamp"), "source_timestamp"),
-                        _timestamp(item.get("reference_timestamp"), "reference_timestamp"),
-                        uncertainty,
-                    ))
+                    normalized.append((source_time, reference_time, uncertainty))
             drift_intervals = []
             if structural:
                 for index, (previous, current) in enumerate(zip(normalized, normalized[1:])):
@@ -289,9 +295,12 @@ def verify_clock_model(model: dict) -> dict:
                 calculated_drift = max(abs(value) for value in drift_intervals)
                 declared_refs = sum(item.get("reference_evidence_ref") is not None for item in anchors)
                 all_declared = all(item.get("uncertainty_declared") is True for item in anchors)
+                reference_count = payload.get("anchor_evidence_ref_count")
                 structural = (
                     _close_number(payload.get("max_absolute_drift_ppm"), calculated_drift)
-                    and payload.get("anchor_evidence_ref_count") == declared_refs
+                    and isinstance(reference_count, int)
+                    and not isinstance(reference_count, bool)
+                    and reference_count == declared_refs
                     and payload.get("all_anchor_uncertainties_declared") is all_declared
                 )
 
