@@ -11,7 +11,9 @@ MAX_EVENTS = 5000
 MAX_ID_LENGTH = 160
 MAX_EVIDENCE_REF_LENGTH = 500
 ALIGNMENT_METHOD = "piecewise_linear_interpolation"
-UNCERTAINTY_METHOD = "linear_sum_of_declared_absolute_bounds"
+CLOCK_MAPPING_ASSUMPTION = "piecewise_linear_between_declared_anchors"
+UNCERTAINTY_METHOD = "linear_sum_of_declared_absolute_bounds_under_piecewise_linear_model"
+UNCERTAINTY_INTERPRETATION = "conditional_envelope_under_piecewise_linear_clock_mapping"
 UNCERTAINTY_SEMANTICS = (
     "Declared values are conservative absolute bounds in seconds; "
     "they are not standard deviations or confidence intervals."
@@ -167,12 +169,14 @@ def build_clock_model(anchors: list[dict]) -> dict:
             item["uncertainty_declared"] for item in serialized_anchors
         ),
         "alignment_method": ALIGNMENT_METHOD,
+        "clock_mapping_assumption": CLOCK_MAPPING_ASSUMPTION,
         "drift_intervals": drift_intervals,
         "max_absolute_drift_ppm": max(abs(item["drift_ppm"]) for item in drift_intervals),
         "drift_is_diagnostic_only": True,
         "extrapolation_permitted": False,
         "uncertainty_method": UNCERTAINTY_METHOD,
         "uncertainty_semantics": UNCERTAINTY_SEMANTICS,
+        "uncertainty_interpretation": UNCERTAINTY_INTERPRETATION,
         "uncertainty_is_confidence_interval": False,
     }
     digest = hashlib.sha256(_canonical(payload).encode("utf-8")).hexdigest()
@@ -233,8 +237,10 @@ def verify_clock_model(model: dict) -> dict:
         elif structural and schema_version == 2:
             structural = (
                 payload.get("alignment_method") == ALIGNMENT_METHOD
+                and payload.get("clock_mapping_assumption") == CLOCK_MAPPING_ASSUMPTION
                 and payload.get("uncertainty_method") == UNCERTAINTY_METHOD
                 and payload.get("uncertainty_semantics") == UNCERTAINTY_SEMANTICS
+                and payload.get("uncertainty_interpretation") == UNCERTAINTY_INTERPRETATION
                 and payload.get("uncertainty_is_confidence_interval") is False
             )
             seen_ids = set()
@@ -421,10 +427,16 @@ def align_events(model: dict, events: list[dict]) -> dict:
             "anchor_uncertainty_declared": anchor_uncertainty_declared,
             "event_uncertainty_seconds": event_uncertainty if event_uncertainty_declared else None,
             "event_uncertainty_declared": event_uncertainty_declared,
-            "uncertainty_seconds": total_uncertainty,
-            "uncertainty_bound_complete": uncertainty_complete,
+            "declared_uncertainty_envelope_seconds": total_uncertainty,
+            "declared_uncertainty_inputs_complete": uncertainty_complete,
             "uncertainty_method": (
                 UNCERTAINTY_METHOD if not legacy else "legacy_uncertainty_semantics_unverified"
+            ),
+            "uncertainty_interpretation": (
+                UNCERTAINTY_INTERPRETATION if not legacy else "legacy_uncertainty_semantics_unverified"
+            ),
+            "clock_mapping_assumption": (
+                CLOCK_MAPPING_ASSUMPTION if not legacy else "legacy_assumption_not_recorded"
             ),
             "uncertainty_is_confidence_interval": False,
             "extrapolation_used": False,
@@ -435,8 +447,8 @@ def align_events(model: dict, events: list[dict]) -> dict:
         "events": reports,
         "event_count": len(reports),
         "aligned_count": len(aligned),
-        "complete_uncertainty_bound_count": sum(
-            item["uncertainty_bound_complete"] for item in aligned
+        "complete_declared_uncertainty_input_count": sum(
+            item["declared_uncertainty_inputs_complete"] for item in aligned
         ),
         "complete_anchor_provenance_count": sum(
             item["anchor_provenance_complete"] for item in aligned
@@ -444,6 +456,9 @@ def align_events(model: dict, events: list[dict]) -> dict:
         "clock_model_sha256": model["model_sha256"],
         "alignment_method": (
             ALIGNMENT_METHOD if not legacy else "legacy_piecewise_linear_interpolation"
+        ),
+        "clock_mapping_assumption": (
+            CLOCK_MAPPING_ASSUMPTION if not legacy else "legacy_assumption_not_recorded"
         ),
         "drift_is_diagnostic_only": True,
         "extrapolation_permitted": False,

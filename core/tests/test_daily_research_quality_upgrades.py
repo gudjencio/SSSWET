@@ -236,7 +236,7 @@ def test_temporal_clock_alignment_interpolates_only_inside_session_anchors():
          "timestamp": "2026-11-11T10:20:00+00:00"},
     ])
     assert result["events"][0]["aligned_at"] == "2026-11-11T10:06:00+00:00"
-    assert result["events"][0]["uncertainty_seconds"] == 1.5
+    assert result["events"][0]["declared_uncertainty_envelope_seconds"] == 1.5
     assert result["events"][1]["status"] == "different_session_or_source"
     assert result["events"][2]["status"] == "outside_anchor_range"
     assert result["unrecorded_history_recovered"] is False
