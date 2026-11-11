@@ -11,7 +11,9 @@ MAX_EVENTS = 5000
 MAX_ID_LENGTH = 160
 MAX_EVIDENCE_REF_LENGTH = 500
 ALIGNMENT_METHOD = "piecewise_linear_interpolation"
-UNCERTAINTY_METHOD = "linear_sum_of_declared_absolute_bounds"
+CLOCK_MAPPING_ASSUMPTION = "piecewise_linear_between_declared_anchors"
+UNCERTAINTY_METHOD = "linear_sum_of_declared_absolute_bounds_under_piecewise_linear_model"
+UNCERTAINTY_INTERPRETATION = "conditional_envelope_under_piecewise_linear_clock_mapping"
 UNCERTAINTY_SEMANTICS = (
     "Declared values are conservative absolute bounds in seconds; "
     "they are not standard deviations or confidence intervals."
