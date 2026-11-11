@@ -17,14 +17,21 @@ from .persistence import SQLiteResearchStore
 WEB_ROOT = Path(__file__).resolve().parents[2] / "web"
 DEFAULT_WEB_ORIGINS = {
     "https://gudjencio.github.io",
-    "https://sites.google.com",
-    "http://sites.google.com",
 }
 ALLOWED_WEB_ORIGINS = {
     origin.strip()
     for origin in os.environ.get("SSSWET_ALLOWED_ORIGINS", "").split(",")
     if origin.strip()
 } or DEFAULT_WEB_ORIGINS
+
+DEFAULT_WRITE_ORIGINS = {
+    "https://gudjencio.github.io",
+}
+ALLOWED_WRITE_ORIGINS = {
+    origin.strip()
+    for origin in os.environ.get("SSSWET_ALLOWED_WRITE_ORIGINS", "").split(",")
+    if origin.strip()
+} or DEFAULT_WRITE_ORIGINS
 
 
 def public_status(engine: SSSWETEngine, store: SQLiteResearchStore | None = None) -> dict[str, Any]:
@@ -65,7 +72,9 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
             origin = self.headers.get("Origin")
-            if origin in ALLOWED_WEB_ORIGINS and self.path.startswith("/api/"):
+            if origin and self.path.startswith("/api/") and (
+                origin in ALLOWED_WEB_ORIGINS or self._public_browser_origin_allowed(origin)
+            ):
                 self.send_header("Access-Control-Allow-Origin", origin)
                 self.send_header("Vary", "Origin")
             self.send_header("X-Content-Type-Options", "nosniff")
@@ -85,12 +94,50 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             supplied = self.headers.get("X-SSSWET-Admin-Token", "")
             return bool(admin_token) and hmac.compare_digest(supplied, admin_token)
 
+        def _public_browser_origin_allowed(self, origin: str | None) -> bool:
+            from urllib.parse import urlsplit
+            if not origin:
+                return False
+            try:
+                parsed = urlsplit(origin)
+                hostname = parsed.hostname
+                parsed.port
+            except ValueError:
+                return False
+            if (
+                parsed.scheme not in {"http", "https"}
+                or not hostname
+                or parsed.username is not None
+                or parsed.password is not None
+                or parsed.path
+                or parsed.query
+                or parsed.fragment
+            ):
+                return False
+            hostname = hostname.lower()
+            # Google Sites shares one origin across unrelated sites and is
+            # never a trusted browser-write origin.
+            if hostname == "sites.google.com" or hostname.endswith(".sites.google.com"):
+                return False
+            if hostname in {"localhost", "127.0.0.1", "::1"}:
+                return self.client_address[0] in {"127.0.0.1", "::1"}
+            return origin in ALLOWED_WRITE_ORIGINS
+
         def do_OPTIONS(self) -> None:
             from urllib.parse import urlsplit
             origin = self.headers.get("Origin", "")
             path = urlsplit(self.path).path
-            if origin not in ALLOWED_WEB_ORIGINS or not path.startswith("/api/"):
-                self.send_error(403, "Origin is not allowed")
+            requested_method = self.headers.get("Access-Control-Request-Method", "GET").upper()
+            if requested_method == "POST":
+                origin_allowed = self._public_browser_origin_allowed(origin)
+            elif requested_method in {"GET", "HEAD"}:
+                origin_allowed = (
+                    origin in ALLOWED_WEB_ORIGINS or self._public_browser_origin_allowed(origin)
+                )
+            else:
+                origin_allowed = False
+            if not path.startswith("/api/") or not origin_allowed:
+                self.send_error(403, "Origin or requested method is not allowed")
                 return
             self.send_response(204)
             self.send_header("Access-Control-Allow-Origin", origin)
@@ -573,22 +620,23 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
         def do_POST(self) -> None:
             from urllib.parse import urlsplit
             request_path = urlsplit(self.path).path
+            origin = self.headers.get("Origin")
             if request_path == "/api/project-reports":
-                origin = self.headers.get("Origin")
-                if origin not in ALLOWED_WEB_ORIGINS:
-                    self._json({"error": "Origin is not allowed to submit project reports"}, 403)
+                if not self._public_browser_origin_allowed(origin):
+                    self._json({"error": "A dedicated approved browser origin is required to submit project reports"}, 403)
                     return
                 token = os.environ.get("SSSWET_GITHUB_TOKEN", "").strip()
                 if not token:
                     self._json({"error": "Project report intake is temporarily unavailable"}, 503)
                     return
-            elif self.client_address[0] not in {"127.0.0.1", "::1"}:
-                self.send_error(403, "Verification reviews are restricted to the local machine")
-                return
-            if request_path == "/api/research-priority-assessments":
-                origin = self.headers.get("Origin")
-                if origin and origin not in ALLOWED_WEB_ORIGINS and urlsplit(origin).hostname not in {"localhost", "127.0.0.1", "::1"}:
-                    self._json({"error": "Origin is not allowed to submit local priority assessments"}, 403)
+            else:
+                if self.client_address[0] not in {"127.0.0.1", "::1"}:
+                    self.send_error(403, "Verification reviews are restricted to the local machine")
+                    return
+                # Preserve local CLI access without an Origin header, but reject
+                # browser-origin writes from untrusted or shared hosting origins.
+                if origin and not self._public_browser_origin_allowed(origin):
+                    self._json({"error": "Origin is not allowed to submit this write operation"}, 403)
                     return
             private_order_write = (
                 request_path == "/api/private/orders"
