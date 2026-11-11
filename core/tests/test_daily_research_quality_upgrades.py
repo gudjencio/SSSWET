@@ -74,8 +74,8 @@ def test_query_plan_is_bounded_multilingual_and_permission_aware():
     )
     assert plan["query_count"] == 1
     assert plan["truncated"] is True
-    assert plan["source_channels"][1]["channel"] == "instagram"
-    assert plan["source_channels"][1]["operator_configuration_required"] is True
+    assert plan["source_channels"][0]["channel"] == "instagram"
+    assert plan["source_channels"][0]["operator_configuration_required"] is True
     assert plan["private_data_accessed"] is False
     assert plan["execution_started"] is False
     assert len(plan["plan_sha256"]) == 64
