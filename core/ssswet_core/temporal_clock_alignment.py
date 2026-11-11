@@ -1,4 +1,4 @@
-"""Anchor-bounded alignment of recorded clocks for Virtual Time Mapping sessions."""
+"""Anchor-bounded, provenance-preserving clock alignment for Virtual Time Mapping."""
 from __future__ import annotations
 
 import hashlib
@@ -8,6 +8,14 @@ from math import isfinite
 
 MAX_ANCHORS = 500
 MAX_EVENTS = 5000
+MAX_ID_LENGTH = 160
+MAX_EVIDENCE_REF_LENGTH = 500
+ALIGNMENT_METHOD = "piecewise_linear_interpolation"
+UNCERTAINTY_METHOD = "linear_sum_of_declared_absolute_bounds"
+UNCERTAINTY_SEMANTICS = (
+    "Declared values are conservative absolute bounds in seconds; "
+    "they are not standard deviations or confidence intervals."
+)
 
 
 def _timestamp(value, field):
@@ -22,174 +30,406 @@ def _timestamp(value, field):
     return parsed.astimezone(timezone.utc)
 
 
+def _identifier(value, field):
+    if not isinstance(value, str) or not value.strip() or len(value.strip()) > MAX_ID_LENGTH:
+        raise ValueError(f"{field} must contain 1 to {MAX_ID_LENGTH} characters")
+    return value.strip()
+
+
+def _evidence_ref(value):
+    if value is None:
+        return None
+    if not isinstance(value, str) or len(value.strip()) > MAX_EVIDENCE_REF_LENGTH:
+        raise ValueError(f"reference_evidence_ref must contain at most {MAX_EVIDENCE_REF_LENGTH} characters")
+    return value.strip() or None
+
+
+def _nonnegative(value, field):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{field} must be finite and non-negative")
+    result = float(value)
+    if not isfinite(result) or result < 0:
+        raise ValueError(f"{field} must be finite and non-negative")
+    return result
+
+
 def _canonical(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
 
+def _drift(previous_source, current_source, previous_reference, current_reference):
+    source_seconds = (current_source - previous_source).total_seconds()
+    reference_seconds = (current_reference - previous_reference).total_seconds()
+    if source_seconds <= 0 or reference_seconds <= 0:
+        raise ValueError("source and reference anchor timestamps must be strictly increasing")
+    return source_seconds, reference_seconds, (reference_seconds / source_seconds - 1.0) * 1_000_000
+
+
+def _close_number(actual, expected):
+    return (
+        isinstance(actual, (int, float))
+        and not isinstance(actual, bool)
+        and isfinite(float(actual))
+        and abs(float(actual) - expected) <= max(1e-9, abs(expected) * 1e-12)
+    )
+
+
 def build_clock_model(anchors: list[dict]) -> dict:
+    """Build a deterministic model from paired, timezone-aware clock anchors.
+
+    Anchor uncertainties are optional user-declared absolute bounds. Missing
+    bounds are retained as undeclared rather than silently treated as zero.
+    """
     if not isinstance(anchors, list) or not 2 <= len(anchors) <= MAX_ANCHORS:
         raise ValueError(f"anchors must contain 2 to {MAX_ANCHORS} records")
+
     normalized = []
     session_id = source_id = None
     for item in anchors:
         if not isinstance(item, dict):
             raise ValueError("every anchor must be an object")
-        session = item.get("session_id")
-        source = item.get("source_id")
-        if not isinstance(session, str) or not session.strip() or not isinstance(source, str) or not source.strip():
-            raise ValueError("each anchor requires session_id and source_id")
+        session = _identifier(item.get("session_id"), "session_id")
+        source = _identifier(item.get("source_id"), "source_id")
         if session_id is None:
-            session_id, source_id = session.strip(), source.strip()
-        if session.strip() != session_id or source.strip() != source_id:
+            session_id, source_id = session, source
+        if session != session_id or source != source_id:
             raise ValueError("one clock model may contain only one session and source")
+
         source_time = _timestamp(item.get("source_timestamp"), "source_timestamp")
         reference_time = _timestamp(item.get("reference_timestamp"), "reference_timestamp")
-        uncertainty = item.get("uncertainty_seconds", 0.0)
-        if isinstance(uncertainty, bool) or not isinstance(uncertainty, (int, float)) or not isfinite(float(uncertainty)) or uncertainty < 0:
-            raise ValueError("uncertainty_seconds must be finite and non-negative")
+        uncertainty_declared = item.get("uncertainty_seconds") is not None
+        uncertainty = (
+            _nonnegative(item.get("uncertainty_seconds"), "uncertainty_seconds")
+            if uncertainty_declared else 0.0
+        )
+        raw_anchor_id = item.get("anchor_id")
+        anchor_id = None if raw_anchor_id is None else _identifier(raw_anchor_id, "anchor_id")
         normalized.append({
-            "source_timestamp": source_time, "reference_timestamp": reference_time,
-            "uncertainty_seconds": float(uncertainty),
+            "anchor_id": anchor_id,
+            "source_timestamp": source_time,
+            "reference_timestamp": reference_time,
+            "uncertainty_seconds": uncertainty,
+            "uncertainty_declared": uncertainty_declared,
+            "reference_evidence_ref": _evidence_ref(item.get("reference_evidence_ref")),
         })
+
     normalized.sort(key=lambda item: item["source_timestamp"])
     for previous, current in zip(normalized, normalized[1:]):
-        if current["source_timestamp"] <= previous["source_timestamp"]:
-            raise ValueError("source anchor timestamps must be strictly increasing")
-        if current["reference_timestamp"] <= previous["reference_timestamp"]:
-            raise ValueError("reference anchor timestamps must be strictly increasing")
-    drifts = []
+        _drift(
+            previous["source_timestamp"], current["source_timestamp"],
+            previous["reference_timestamp"], current["reference_timestamp"],
+        )
+
+    for index, item in enumerate(normalized, start=1):
+        if item["anchor_id"] is None:
+            item["anchor_id"] = f"anchor-{index:04d}"
+    anchor_ids = [item["anchor_id"] for item in normalized]
+    if len(anchor_ids) != len(set(anchor_ids)):
+        raise ValueError("anchor_id values must be unique")
+
+    serialized_anchors = [{
+        "anchor_id": item["anchor_id"],
+        "source_timestamp": item["source_timestamp"].isoformat(),
+        "reference_timestamp": item["reference_timestamp"].isoformat(),
+        "uncertainty_seconds": item["uncertainty_seconds"],
+        "uncertainty_declared": item["uncertainty_declared"],
+        "reference_evidence_ref": item["reference_evidence_ref"],
+    } for item in normalized]
+
+    drift_intervals = []
     for previous, current in zip(normalized, normalized[1:]):
-        source_seconds = (current["source_timestamp"] - previous["source_timestamp"]).total_seconds()
-        reference_seconds = (current["reference_timestamp"] - previous["reference_timestamp"]).total_seconds()
-        drifts.append((reference_seconds / source_seconds - 1.0) * 1_000_000)
+        source_seconds, reference_seconds, drift_ppm = _drift(
+            previous["source_timestamp"], current["source_timestamp"],
+            previous["reference_timestamp"], current["reference_timestamp"],
+        )
+        drift_intervals.append({
+            "from_anchor_id": previous["anchor_id"],
+            "to_anchor_id": current["anchor_id"],
+            "source_interval_seconds": source_seconds,
+            "reference_interval_seconds": reference_seconds,
+            "drift_ppm": drift_ppm,
+        })
+
     payload = {
-        "schema_version": 1, "session_id": session_id, "source_id": source_id,
-        "anchors": [{
-            "source_timestamp": item["source_timestamp"].isoformat(),
-            "reference_timestamp": item["reference_timestamp"].isoformat(),
-            "uncertainty_seconds": item["uncertainty_seconds"],
-        } for item in normalized],
-        "anchor_count": len(normalized),
-        "max_absolute_drift_ppm": max(abs(value) for value in drifts),
+        "schema_version": 2,
+        "session_id": session_id,
+        "source_id": source_id,
+        "anchors": serialized_anchors,
+        "anchor_count": len(serialized_anchors),
+        "anchor_evidence_ref_count": sum(
+            item["reference_evidence_ref"] is not None for item in serialized_anchors
+        ),
+        "all_anchor_uncertainties_declared": all(
+            item["uncertainty_declared"] for item in serialized_anchors
+        ),
+        "alignment_method": ALIGNMENT_METHOD,
+        "drift_intervals": drift_intervals,
+        "max_absolute_drift_ppm": max(abs(item["drift_ppm"]) for item in drift_intervals),
         "drift_is_diagnostic_only": True,
         "extrapolation_permitted": False,
+        "uncertainty_method": UNCERTAINTY_METHOD,
+        "uncertainty_semantics": UNCERTAINTY_SEMANTICS,
+        "uncertainty_is_confidence_interval": False,
     }
     digest = hashlib.sha256(_canonical(payload).encode("utf-8")).hexdigest()
     return {**payload, "model_sha256": digest}
 
 
 def verify_clock_model(model: dict) -> dict:
+    """Verify model structure, declared scientific limits and canonical digest."""
     if not isinstance(model, dict):
-        raise ValueError("clock model must be an object")
+        return {
+            "valid": False, "recorded_sha256": None,
+            "expected_sha256": None, "tampered_or_incomplete": True,
+        }
+
     payload = {key: value for key, value in model.items() if key != "model_sha256"}
     expected = None
+    structural = False
     try:
+        schema_version = payload.get("schema_version")
         anchors = payload.get("anchors")
-        session_id, source_id = payload.get("session_id"), payload.get("source_id")
+        session_id = _identifier(payload.get("session_id"), "session_id")
+        source_id = _identifier(payload.get("source_id"), "source_id")
         structural = (
-            payload.get("schema_version") == 1
-            and isinstance(session_id, str) and bool(session_id.strip())
-            and isinstance(source_id, str) and bool(source_id.strip())
-            and isinstance(anchors, list) and 2 <= len(anchors) <= MAX_ANCHORS
+            schema_version in {1, 2}
+            and isinstance(anchors, list)
+            and 2 <= len(anchors) <= MAX_ANCHORS
             and len(anchors) == payload.get("anchor_count")
+            and payload.get("drift_is_diagnostic_only") is True
+            and payload.get("extrapolation_permitted") is False
         )
+
         normalized = []
-        if structural:
+        if structural and schema_version == 1:
             for item in anchors:
                 if not isinstance(item, dict):
                     structural = False
                     break
-                uncertainty = item.get("uncertainty_seconds")
-                if (
-                    isinstance(uncertainty, bool)
-                    or not isinstance(uncertainty, (int, float))
-                    or not isfinite(float(uncertainty)) or uncertainty < 0
-                ):
-                    structural = False
-                    break
+                uncertainty = _nonnegative(item.get("uncertainty_seconds"), "uncertainty_seconds")
                 normalized.append((
                     _timestamp(item.get("source_timestamp"), "source_timestamp"),
                     _timestamp(item.get("reference_timestamp"), "reference_timestamp"),
+                    uncertainty,
                 ))
-        drifts = []
-        if structural:
-            for previous, current in zip(normalized, normalized[1:]):
-                source_seconds = (current[0] - previous[0]).total_seconds()
-                reference_seconds = (current[1] - previous[1]).total_seconds()
-                if source_seconds <= 0 or reference_seconds <= 0:
-                    structural = False
-                    break
-                drifts.append((reference_seconds / source_seconds - 1.0) * 1_000_000)
-        if structural:
-            calculated_drift = max(abs(value) for value in drifts)
-            stored_drift = payload.get("max_absolute_drift_ppm")
+            drifts = []
+            if structural:
+                for previous, current in zip(normalized, normalized[1:]):
+                    source_seconds, _, drift_ppm = _drift(
+                        previous[0], current[0], previous[1], current[1]
+                    )
+                    drifts.append(drift_ppm)
+                calculated_drift = max(abs(value) for value in drifts)
+                structural = _close_number(payload.get("max_absolute_drift_ppm"), calculated_drift)
+
+        elif structural and schema_version == 2:
             structural = (
-                isinstance(stored_drift, (int, float)) and not isinstance(stored_drift, bool)
-                and isfinite(float(stored_drift))
-                and abs(float(stored_drift) - calculated_drift) <= max(1e-9, abs(calculated_drift) * 1e-12)
+                payload.get("alignment_method") == ALIGNMENT_METHOD
+                and payload.get("uncertainty_method") == UNCERTAINTY_METHOD
+                and payload.get("uncertainty_semantics") == UNCERTAINTY_SEMANTICS
+                and payload.get("uncertainty_is_confidence_interval") is False
             )
-        canonical = _canonical(payload)
-        expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+            seen_ids = set()
+            if structural:
+                for item in anchors:
+                    if not isinstance(item, dict):
+                        structural = False
+                        break
+                    anchor_id = _identifier(item.get("anchor_id"), "anchor_id")
+                    if anchor_id in seen_ids:
+                        structural = False
+                        break
+                    seen_ids.add(anchor_id)
+                    declared = item.get("uncertainty_declared")
+                    if not isinstance(declared, bool):
+                        structural = False
+                        break
+                    uncertainty = _nonnegative(item.get("uncertainty_seconds"), "uncertainty_seconds")
+                    if not declared and uncertainty != 0:
+                        structural = False
+                        break
+                    reference_ref = _evidence_ref(item.get("reference_evidence_ref"))
+                    normalized.append((
+                        _timestamp(item.get("source_timestamp"), "source_timestamp"),
+                        _timestamp(item.get("reference_timestamp"), "reference_timestamp"),
+                        uncertainty,
+                    ))
+            drift_intervals = []
+            if structural:
+                for index, (previous, current) in enumerate(zip(normalized, normalized[1:])):
+                    source_seconds, reference_seconds, drift_ppm = _drift(
+                        previous[0], current[0], previous[1], current[1]
+                    )
+                    stored = payload.get("drift_intervals")
+                    if not isinstance(stored, list) or len(stored) != len(normalized) - 1:
+                        structural = False
+                        break
+                    item = stored[index]
+                    if not isinstance(item, dict):
+                        structural = False
+                        break
+                    if (
+                        item.get("from_anchor_id") != anchors[index]["anchor_id"]
+                        or item.get("to_anchor_id") != anchors[index + 1]["anchor_id"]
+                        or not _close_number(item.get("source_interval_seconds"), source_seconds)
+                        or not _close_number(item.get("reference_interval_seconds"), reference_seconds)
+                        or not _close_number(item.get("drift_ppm"), drift_ppm)
+                    ):
+                        structural = False
+                        break
+                    drift_intervals.append(drift_ppm)
+            if structural:
+                calculated_drift = max(abs(value) for value in drift_intervals)
+                declared_refs = sum(item.get("reference_evidence_ref") is not None for item in anchors)
+                all_declared = all(item.get("uncertainty_declared") is True for item in anchors)
+                structural = (
+                    _close_number(payload.get("max_absolute_drift_ppm"), calculated_drift)
+                    and payload.get("anchor_evidence_ref_count") == declared_refs
+                    and payload.get("all_anchor_uncertainties_declared") is all_declared
+                )
+
+        if structural:
+            expected = hashlib.sha256(_canonical(payload).encode("utf-8")).hexdigest()
     except (KeyError, TypeError, ValueError, OverflowError):
         structural = False
     valid = bool(structural and model.get("model_sha256") == expected)
     return {
-        "valid": valid, "recorded_sha256": model.get("model_sha256"),
-        "expected_sha256": expected, "tampered_or_incomplete": not valid,
+        "valid": valid,
+        "recorded_sha256": model.get("model_sha256"),
+        "expected_sha256": expected,
+        "tampered_or_incomplete": not valid,
     }
 
 
 def align_events(model: dict, events: list[dict]) -> dict:
+    """Return a derived aligned view; never mutates source events or model inputs."""
     verification = verify_clock_model(model)
     if not verification["valid"]:
         raise ValueError("clock model failed integrity verification")
     if not isinstance(events, list) or len(events) > MAX_EVENTS:
-        raise ValueError(f"events must be a list of at most {MAX_EVENTS}")
-    anchors = [{
-        "source": _timestamp(item["source_timestamp"], "source_timestamp"),
-        "reference": _timestamp(item["reference_timestamp"], "reference_timestamp"),
-        "uncertainty": float(item["uncertainty_seconds"]),
-    } for item in model["anchors"]]
+        raise ValueError(f"events must be a list of at most {MAX_EVENTS} records")
+
+    legacy = model["schema_version"] == 1
+    anchors = []
+    for index, item in enumerate(model["anchors"], start=1):
+        anchors.append({
+            "anchor_id": item.get("anchor_id", f"legacy-anchor-{index:04d}"),
+            "source": _timestamp(item["source_timestamp"], "source_timestamp"),
+            "reference": _timestamp(item["reference_timestamp"], "reference_timestamp"),
+            "uncertainty": float(item["uncertainty_seconds"]),
+            "uncertainty_declared": item.get("uncertainty_declared", False) if not legacy else False,
+            "reference_evidence_ref": item.get("reference_evidence_ref") if not legacy else None,
+        })
+
     reports = []
     for index, event in enumerate(events):
         if not isinstance(event, dict):
             raise ValueError("each event must be an object")
         event_id = event.get("event_id", str(index))
-        if not isinstance(event_id, str) or not event_id.strip() or len(event_id) > 160:
-            raise ValueError("event_id must contain 1 to 160 characters")
+        if not isinstance(event_id, str) or not event_id.strip() or len(event_id) > MAX_ID_LENGTH:
+            raise ValueError(f"event_id must contain 1 to {MAX_ID_LENGTH} characters")
         if event.get("session_id") != model["session_id"] or event.get("source_id") != model["source_id"]:
-            reports.append({"event_id": event_id, "status": "different_session_or_source", "aligned_at": None, "extrapolation_used": False})
+            reports.append({
+                "event_id": event_id, "status": "different_session_or_source",
+                "aligned_at": None, "extrapolation_used": False,
+            })
             continue
+
         instant = _timestamp(event.get("timestamp"), "event timestamp")
-        event_uncertainty = event.get("uncertainty_seconds", 0.0)
-        if isinstance(event_uncertainty, bool) or not isinstance(event_uncertainty, (int, float)) or not isfinite(float(event_uncertainty)) or event_uncertainty < 0:
-            raise ValueError("event uncertainty_seconds must be finite and non-negative")
+        event_uncertainty_declared = event.get("uncertainty_seconds") is not None
+        event_uncertainty = (
+            _nonnegative(event.get("uncertainty_seconds"), "event uncertainty_seconds")
+            if event_uncertainty_declared else 0.0
+        )
         if instant < anchors[0]["source"] or instant > anchors[-1]["source"]:
-            reports.append({"event_id": event_id, "status": "outside_anchor_range", "aligned_at": None, "extrapolation_used": False})
+            reports.append({
+                "event_id": event_id, "status": "outside_anchor_range",
+                "aligned_at": None, "extrapolation_used": False,
+            })
             continue
-        right_index = next((i for i, anchor in enumerate(anchors) if anchor["source"] >= instant), len(anchors) - 1)
+
+        right_index = next(
+            (i for i, anchor in enumerate(anchors) if anchor["source"] >= instant),
+            len(anchors) - 1,
+        )
         if anchors[right_index]["source"] == instant:
-            aligned = anchors[right_index]["reference"]
-            anchor_uncertainty = anchors[right_index]["uncertainty"]
+            left = right = anchors[right_index]
+            fraction = 0.0
+            interval_seconds = 0.0
+            interval_drift_ppm = None
+            aligned = right["reference"]
+            anchor_uncertainty_declared = right["uncertainty_declared"]
+            anchor_uncertainty = right["uncertainty"] if anchor_uncertainty_declared else None
         else:
             left, right = anchors[right_index - 1], anchors[right_index]
-            span = (right["source"] - left["source"]).total_seconds()
-            fraction = (instant - left["source"]).total_seconds() / span
+            interval_seconds = (right["source"] - left["source"]).total_seconds()
+            fraction = (instant - left["source"]).total_seconds() / interval_seconds
             aligned = left["reference"] + (right["reference"] - left["reference"]) * fraction
-            anchor_uncertainty = left["uncertainty"] * (1 - fraction) + right["uncertainty"] * fraction
+            anchor_uncertainty_declared = (
+                left["uncertainty_declared"] and right["uncertainty_declared"]
+            )
+            anchor_uncertainty = (
+                left["uncertainty"] * (1 - fraction) + right["uncertainty"] * fraction
+                if anchor_uncertainty_declared else None
+            )
+            interval_drift_ppm = (
+                model["drift_intervals"][right_index - 1]["drift_ppm"]
+                if not legacy else None
+            )
+
+        anchor_refs = [
+            item["reference_evidence_ref"]
+            for item in (left, right)
+            if item["reference_evidence_ref"] is not None
+        ]
+        required_ref_count = 1 if left is right else 2
+        uncertainty_complete = anchor_uncertainty_declared and event_uncertainty_declared
+        total_uncertainty = (
+            anchor_uncertainty + event_uncertainty if uncertainty_complete else None
+        )
         reports.append({
-            "event_id": event_id, "status": "aligned_within_anchors",
+            "event_id": event_id,
+            "status": "aligned_within_anchors",
+            "source_timestamp": instant.isoformat(),
             "aligned_at": aligned.isoformat(),
-            "uncertainty_seconds": anchor_uncertainty + float(event_uncertainty),
-            "anchor_uncertainty_seconds": anchor_uncertainty,
-            "event_uncertainty_seconds": float(event_uncertainty),
-            "extrapolation_used": False,
+            "left_anchor_id": left["anchor_id"],
+            "right_anchor_id": right["anchor_id"],
+            "interpolation_fraction": fraction,
             "interpolation_fraction_not_a_probability": True,
+            "anchor_interval_seconds": interval_seconds,
+            "interval_drift_ppm": interval_drift_ppm,
+            "anchor_reference_evidence_refs": anchor_refs,
+            "anchor_provenance_complete": len(anchor_refs) == required_ref_count,
+            "anchor_uncertainty_seconds": anchor_uncertainty,
+            "anchor_uncertainty_declared": anchor_uncertainty_declared,
+            "event_uncertainty_seconds": event_uncertainty if event_uncertainty_declared else None,
+            "event_uncertainty_declared": event_uncertainty_declared,
+            "uncertainty_seconds": total_uncertainty,
+            "uncertainty_bound_complete": uncertainty_complete,
+            "uncertainty_method": (
+                UNCERTAINTY_METHOD if not legacy else "legacy_uncertainty_semantics_unverified"
+            ),
+            "uncertainty_is_confidence_interval": False,
+            "extrapolation_used": False,
         })
+
+    aligned = [item for item in reports if item["status"] == "aligned_within_anchors"]
     return {
-        "events": reports, "event_count": len(reports),
-        "aligned_count": sum(item["status"] == "aligned_within_anchors" for item in reports),
+        "events": reports,
+        "event_count": len(reports),
+        "aligned_count": len(aligned),
+        "complete_uncertainty_bound_count": sum(
+            item["uncertainty_bound_complete"] for item in aligned
+        ),
+        "complete_anchor_provenance_count": sum(
+            item["anchor_provenance_complete"] for item in aligned
+        ),
         "clock_model_sha256": model["model_sha256"],
+        "alignment_method": (
+            ALIGNMENT_METHOD if not legacy else "legacy_piecewise_linear_interpolation"
+        ),
+        "drift_is_diagnostic_only": True,
+        "extrapolation_permitted": False,
         "session_isolation_preserved": True,
         "unrecorded_history_recovered": False,
         "event_identity_established": False,
