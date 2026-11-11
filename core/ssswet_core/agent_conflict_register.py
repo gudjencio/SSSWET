@@ -1,6 +1,7 @@
 """Append-only conflict declarations and reviewer recusal checks for research agents."""
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime, timezone
 
 MAX_EVENTS = 10000
@@ -32,7 +33,7 @@ class AgentConflictRegister:
         for event in events or []:
             if not isinstance(event, dict):
                 raise ValueError("existing events must be dictionaries")
-            self._events.append(dict(event))
+            self._events.append(deepcopy(event))
         if len(self._events) > MAX_EVENTS:
             raise ValueError(f"register is limited to {MAX_EVENTS} events")
 
@@ -65,7 +66,7 @@ class AgentConflictRegister:
             "recorded_at": timestamp,
         }
         self._append(event)
-        return dict(event)
+        return deepcopy(event)
 
     def review(self, declaration_id: str, *, reviewer_id: str, decision: str,
                note: str, evidence_refs: list[str], recorded_at: str | None = None) -> dict:
@@ -98,7 +99,7 @@ class AgentConflictRegister:
     def _append(self, event):
         if len(self._events) >= MAX_EVENTS:
             raise ValueError(f"register is limited to {MAX_EVENTS} events")
-        self._events.append(dict(event))
+        self._events.append(deepcopy(event))
 
     def history(self, declaration_id: str | None = None) -> list[dict]:
         if declaration_id is not None:
@@ -106,7 +107,7 @@ class AgentConflictRegister:
             selected = [item for item in self._events if item["declaration_id"] == key]
         else:
             selected = list(self._events)
-        return [dict(item) for item in selected]
+        return deepcopy(selected)
 
     def eligibility(self, agent_id: str, *, campaign_id: str = "",
                     source_ids: list[str] | None = None) -> dict:
