@@ -48,16 +48,33 @@ def verify_snapshot(snapshot: dict) -> dict:
     recorded = snapshot.get("snapshot_sha256")
     payload = {key: value for key, value in snapshot.items() if key != "snapshot_sha256"}
     try:
+        nodes, edges = payload.get("nodes"), payload.get("edges")
+        structural = (
+            payload.get("schema_version") == 1
+            and isinstance(nodes, list) and len(nodes) <= MAX_NODES
+            and isinstance(edges, list) and len(edges) <= MAX_EDGES
+            and payload.get("node_count") == len(nodes)
+            and payload.get("edge_count") == len(edges)
+            and all(isinstance(item, dict) for item in nodes + edges)
+        )
+        if structural:
+            node_ids = [item.get("node_id") for item in nodes]
+            edge_ids = [item.get("edge_id") for item in edges]
+            structural = (
+                all(isinstance(value, str) and value.strip() for value in node_ids + edge_ids)
+                and len(node_ids) == len(set(node_ids))
+                and len(edge_ids) == len(set(edge_ids))
+            )
         canonical = _canonical(payload)
-    except (TypeError, ValueError) as exc:
-        raise ValueError("snapshot must contain finite JSON-compatible values") from exc
-    if len(canonical.encode("utf-8")) > MAX_BYTES:
-        raise ValueError(f"snapshot exceeds {MAX_BYTES} bytes")
-    expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        if len(canonical.encode("utf-8")) > MAX_BYTES:
+            structural = False
+        expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    except (TypeError, ValueError):
+        structural, expected = False, None
+    valid = bool(structural and isinstance(recorded, str) and recorded == expected)
     return {
-        "valid": isinstance(recorded, str) and recorded == expected,
-        "recorded_sha256": recorded, "expected_sha256": expected,
-        "tampered_or_incomplete": not (isinstance(recorded, str) and recorded == expected),
+        "valid": valid, "recorded_sha256": recorded, "expected_sha256": expected,
+        "tampered_or_incomplete": not valid,
     }
 
 

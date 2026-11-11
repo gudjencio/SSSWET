@@ -59,7 +59,7 @@ def build_assurance_case(*, design_id: str, design_class: str, design_owner_id: 
     inconclusive_verifications = []
     invalid_verifications = []
     for item in verifications:
-        requirement_id = item["requirement_id"]
+        requirement_id = item.get("requirement_id")
         if requirement_id not in requirement_ids:
             invalid_verifications.append(item["verification_id"])
             continue
@@ -76,6 +76,7 @@ def build_assurance_case(*, design_id: str, design_class: str, design_owner_id: 
             inconclusive_verifications.append(item["verification_id"])
 
     control_by_hazard = {key: [] for key in hazard_ids}
+    control_owners_by_hazard = {key: [] for key in hazard_ids}
     invalid_controls = []
     for item in controls:
         hazard_id = item.get("hazard_id")
@@ -83,8 +84,9 @@ def build_assurance_case(*, design_id: str, design_class: str, design_owner_id: 
             invalid_controls.append(item["control_id"])
             continue
         _identifier(item.get("description"), "control description")
-        _identifier(item.get("owner_id"), "control owner_id")
+        control_owner = _identifier(item.get("owner_id"), "control owner_id")
         control_by_hazard[hazard_id].append(item["control_id"])
+        control_owners_by_hazard[hazard_id].append(control_owner)
 
     hazard_gaps = []
     critical_hazards = []
@@ -114,6 +116,7 @@ def build_assurance_case(*, design_id: str, design_class: str, design_owner_id: 
             or not isinstance(reviewer_id, str)
             or not reviewer_id.strip()
             or reviewer_id.strip() == owner
+            or (hazard_id in hazard_ids and reviewer_id.strip() in control_owners_by_hazard[hazard_id])
             or not valid_refs
         ):
             invalid_reviews.append(item["review_id"])

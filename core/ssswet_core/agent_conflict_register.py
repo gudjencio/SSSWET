@@ -17,6 +17,18 @@ def _clean(value, field, maximum=240):
     return value.strip()
 
 
+def _timestamp(value, field):
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{field} must be a timezone-aware ISO timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"{field} must be a timezone-aware ISO timestamp") from exc
+    if parsed.tzinfo is None:
+        raise ValueError(f"{field} must include an explicit timezone")
+    return parsed.astimezone(timezone.utc).isoformat()
+
+
 def _refs(values, field):
     if not isinstance(values, list) or len(values) > 500:
         raise ValueError(f"{field} must be a list of at most 500 values")
@@ -54,7 +66,7 @@ class AgentConflictRegister:
             raise ValueError("a conflict must have a campaign, source or explicit global scope")
         if any(event["declaration_id"] == declaration_id for event in self._events):
             raise ValueError("declaration_id already exists")
-        timestamp = _clean(recorded_at, "recorded_at") if recorded_at else datetime.now(timezone.utc).isoformat()
+        timestamp = _timestamp(recorded_at, "recorded_at") if recorded_at else datetime.now(timezone.utc).isoformat()
         event = {
             "event_id": declaration_id, "declaration_id": declaration_id,
             "supersedes_event_id": None, "agent_id": agent_id,
@@ -91,10 +103,10 @@ class AgentConflictRegister:
             **previous, "event_id": event_id, "supersedes_event_id": previous["event_id"],
             "status": decision, "reviewer_id": reviewer, "review_note": note,
             "evidence_refs": refs,
-            "recorded_at": _clean(recorded_at, "recorded_at") if recorded_at else datetime.now(timezone.utc).isoformat(),
+            "recorded_at": _timestamp(recorded_at, "recorded_at") if recorded_at else datetime.now(timezone.utc).isoformat(),
         }
         self._append(event)
-        return dict(event)
+        return deepcopy(event)
 
     def _append(self, event):
         if len(self._events) >= MAX_EVENTS:
@@ -112,7 +124,7 @@ class AgentConflictRegister:
     def eligibility(self, agent_id: str, *, campaign_id: str = "",
                     source_ids: list[str] | None = None) -> dict:
         agent = _clean(agent_id, "agent_id")
-        campaign = campaign_id.strip() if campaign_id else ""
+        campaign = _clean(campaign_id, "campaign_id") if campaign_id else ""
         sources = set(_refs(source_ids or [], "source_ids"))
         latest = {}
         for event in self._events:

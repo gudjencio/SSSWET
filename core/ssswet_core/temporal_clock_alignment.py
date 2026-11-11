@@ -82,22 +82,60 @@ def verify_clock_model(model: dict) -> dict:
     if not isinstance(model, dict):
         raise ValueError("clock model must be an object")
     payload = {key: value for key, value in model.items() if key != "model_sha256"}
+    expected = None
     try:
+        anchors = payload.get("anchors")
+        session_id, source_id = payload.get("session_id"), payload.get("source_id")
+        structural = (
+            payload.get("schema_version") == 1
+            and isinstance(session_id, str) and bool(session_id.strip())
+            and isinstance(source_id, str) and bool(source_id.strip())
+            and isinstance(anchors, list) and 2 <= len(anchors) <= MAX_ANCHORS
+            and len(anchors) == payload.get("anchor_count")
+        )
+        normalized = []
+        if structural:
+            for item in anchors:
+                if not isinstance(item, dict):
+                    structural = False
+                    break
+                uncertainty = item.get("uncertainty_seconds")
+                if (
+                    isinstance(uncertainty, bool)
+                    or not isinstance(uncertainty, (int, float))
+                    or not isfinite(float(uncertainty)) or uncertainty < 0
+                ):
+                    structural = False
+                    break
+                normalized.append((
+                    _timestamp(item.get("source_timestamp"), "source_timestamp"),
+                    _timestamp(item.get("reference_timestamp"), "reference_timestamp"),
+                ))
+        drifts = []
+        if structural:
+            for previous, current in zip(normalized, normalized[1:]):
+                source_seconds = (current[0] - previous[0]).total_seconds()
+                reference_seconds = (current[1] - previous[1]).total_seconds()
+                if source_seconds <= 0 or reference_seconds <= 0:
+                    structural = False
+                    break
+                drifts.append((reference_seconds / source_seconds - 1.0) * 1_000_000)
+        if structural:
+            calculated_drift = max(abs(value) for value in drifts)
+            stored_drift = payload.get("max_absolute_drift_ppm")
+            structural = (
+                isinstance(stored_drift, (int, float)) and not isinstance(stored_drift, bool)
+                and isfinite(float(stored_drift))
+                and abs(float(stored_drift) - calculated_drift) <= max(1e-9, abs(calculated_drift) * 1e-12)
+            )
         canonical = _canonical(payload)
-    except (TypeError, ValueError) as exc:
-        raise ValueError("clock model must contain finite JSON-compatible values") from exc
-    expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    anchors = model.get("anchors")
-    valid = (
-        model.get("schema_version") == 1
-        and isinstance(anchors, list)
-        and len(anchors) == model.get("anchor_count")
-        and len(anchors) >= 2
-        and model.get("model_sha256") == expected
-    )
+        expected = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    except (KeyError, TypeError, ValueError, OverflowError):
+        structural = False
+    valid = bool(structural and model.get("model_sha256") == expected)
     return {
-        "valid": bool(valid), "recorded_sha256": model.get("model_sha256"),
-        "expected_sha256": expected, "tampered_or_incomplete": not bool(valid),
+        "valid": valid, "recorded_sha256": model.get("model_sha256"),
+        "expected_sha256": expected, "tampered_or_incomplete": not valid,
     }
 
 
@@ -117,6 +155,8 @@ def align_events(model: dict, events: list[dict]) -> dict:
         if not isinstance(event, dict):
             raise ValueError("each event must be an object")
         event_id = event.get("event_id", str(index))
+        if not isinstance(event_id, str) or not event_id.strip() or len(event_id) > 160:
+            raise ValueError("event_id must contain 1 to 160 characters")
         if event.get("session_id") != model["session_id"] or event.get("source_id") != model["source_id"]:
             reports.append({"event_id": event_id, "status": "different_session_or_source", "aligned_at": None, "extrapolation_used": False})
             continue

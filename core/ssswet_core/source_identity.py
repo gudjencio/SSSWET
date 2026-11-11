@@ -1,6 +1,7 @@
 """Strong-identifier source normalization and conservative duplicate clustering."""
 from __future__ import annotations
 
+import ipaddress
 import re
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -21,9 +22,16 @@ def canonicalize_url(value: str) -> str:
         raise ValueError("only absolute HTTP(S) URLs are accepted")
     if parts.username or parts.password:
         raise ValueError("URLs containing user credentials are not accepted")
-    host = parts.hostname.encode("idna").decode("ascii").lower()
-    if host.startswith("www."):
-        host = host[4:]
+    raw_host = parts.hostname
+    if ":" in raw_host:
+        try:
+            host = f"[{ipaddress.IPv6Address(raw_host).compressed}]"
+        except ValueError as exc:
+            raise ValueError("URL IPv6 host is invalid") from exc
+    else:
+        host = raw_host.encode("idna").decode("ascii").lower()
+        if host.startswith("www."):
+            host = host[4:]
     try:
         port = parts.port
     except ValueError as exc:
@@ -32,11 +40,11 @@ def canonicalize_url(value: str) -> str:
     path = re.sub(r"/{2,}", "/", parts.path or "/")
     if path != "/":
         path = path.rstrip("/")
+    # Preserve query order: repeated parameters can be order-sensitive on some APIs.
     query = [
         (key, val) for key, val in parse_qsl(parts.query, keep_blank_values=True)
         if key.casefold() not in _TRACKING
     ]
-    query.sort(key=lambda pair: (pair[0], pair[1]))
     return urlunsplit((parts.scheme.lower(), netloc, path, urlencode(query, doseq=True), ""))
 
 

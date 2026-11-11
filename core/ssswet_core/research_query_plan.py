@@ -64,8 +64,8 @@ def build_query_plan(*, objective: str, terms: list[dict], source_channels: list
         if not re.fullmatch(r"[a-z]{2,3}(?:-[a-z0-9]{2,8})*", language):
             raise ValueError("language must be a BCP-47-like language tag")
         normalized_terms.append({"term": term, "language": language})
-    if not isinstance(source_channels, list) or not source_channels or any(not isinstance(item, str) or not item.strip() for item in source_channels):
-        raise ValueError("source_channels must be a non-empty list of channel names")
+    if not isinstance(source_channels, list) or not source_channels or len(source_channels) > 100 or any(not isinstance(item, str) or not item.strip() for item in source_channels):
+        raise ValueError("source_channels must be a non-empty list of at most 100 channel names")
     channels = sorted(set(item.strip().lower() for item in source_channels))
     unknown = sorted(set(channels) - set(CHANNELS))
     if unknown:

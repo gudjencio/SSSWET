@@ -4,7 +4,7 @@ This release proposal adds ten independent, additive research-support capabiliti
 
 ## Baseline inspection
 
-The implementation was based on the current main tree at 0a45c064615421ad8d895e58a27c058cf2b969e8 and its immediate predecessor 86f7709025f69464d4750468ddaffe775c38fce0. The direct comparison showed that the only intervening change removed an accidentally committed bibliographic test fixture; no application code changed in that one-commit interval.
+The implementation was based on the current main tree at 18452711042712cbd41175bc710526532f6bf4f7 and its immediate predecessor 96a1bd80881f017ccdf5ee8ba2b5642ee2608c9d. The direct comparison showed that the only intervening change removed an accidentally committed, incomplete test fixture; no application code changed in that one-commit interval. The new work is additive to the inspected current tree.
 
 The current baseline already included scientific-memory versioning, bounded memory compaction, evidence freshness weighting, source-quality assessment, research knowledge graphs, task decomposition, reviewer proposals, Virtual Time Mapping, rescue resource allocation and reproducibility manifests. The ten additions below deliberately complement those facilities instead of replacing their existing interfaces.
 
@@ -154,7 +154,7 @@ The current baseline already included scientific-memory versioning, bounded memo
 ## Validation and non-regression plan
 
 - Python compatibility: Python 3.11+ and standard-library-only implementation.
-- Automated coverage: dedicated tests exercise all ten new modules, their failure paths, bounded inputs, provenance retention, contradiction retention, session isolation and safety gates.
+- Automated coverage: dedicated tests exercise all ten new modules, their failure paths, bounded inputs, provenance retention, contradiction retention, session isolation and safety gates. Additional hardening tests cover Japanese kana, order-sensitive URL queries, IPv6 URLs, exact review-interval boundaries, true median/p95 latency, conflicting evidence-reference fields, defensive copies, malformed snapshot/clock structures, control-owner recusal and oversized channel lists.
 - Existing behaviour: legacy evidence freshness, Virtual Time Mapping and rescue resource-planning APIs remain unchanged and are covered by the repository's existing suite.
 - Performance controls: all new bulk interfaces impose explicit record/query/byte caps; graph snapshots and query plans are deterministic; no unbounded background work or storage writes are introduced.
 - Security and privacy: no credentials, private platform content, customer data, payment/tax/refund logic, legal policy or deployment secrets are read or modified.

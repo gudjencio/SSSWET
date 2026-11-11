@@ -46,7 +46,7 @@ def assess_record(record: dict, *, as_of: str) -> dict:
         status, reason = "outside_declared_window", "assessment time follows the declared validity window"
     elif observed is None:
         status, reason = "undated", "no observation or publication date was supplied"
-    elif interval is not None and (now - observed).total_seconds() > interval * 86400:
+    elif interval is not None and (now - observed).total_seconds() >= interval * 86400:
         status, reason = "review_due", "the explicitly declared review interval has elapsed"
     elif interval is None and end is None:
         status, reason = "no_expiry_policy", "no explicit review interval or validity end was supplied"
@@ -63,6 +63,7 @@ def assess_record(record: dict, *, as_of: str) -> dict:
 
 
 def assess_records(records: list[dict], *, as_of: str) -> dict:
+    _parse(as_of, "as_of", allow_date=False)
     if not isinstance(records, list) or len(records) > MAX_RECORDS:
         raise ValueError(f"records must be a list of at most {MAX_RECORDS} items")
     reports = [assess_record(item, as_of=as_of) for item in records]

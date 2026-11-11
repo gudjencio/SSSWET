@@ -1,7 +1,8 @@
 """Deterministic retrieval evaluation for relevance, provenance and contradiction recall."""
 from __future__ import annotations
 
-from math import isfinite
+from math import ceil, isfinite
+from statistics import median
 
 MAX_QUERIES = 500
 MAX_RESULTS = 500
@@ -15,7 +16,7 @@ def _percentile(values, fraction):
     if not values:
         return None
     ordered = sorted(values)
-    index = max(0, min(len(ordered) - 1, int((len(ordered) * fraction + 0.999999) - 1)))
+    index = max(0, min(len(ordered) - 1, ceil(len(ordered) * fraction) - 1))
     return ordered[index]
 
 
@@ -89,8 +90,9 @@ def evaluate_retrieval(queries: list[dict], *, top_k: int = 10,
         "aggregate": aggregate,
         "latency_ms": {
             "sample_count": len(latencies),
-            "median": _percentile(latencies, 0.5),
+            "median": median(latencies) if latencies else None,
             "p95": _percentile(latencies, 0.95),
+            "percentile_method": "nearest_rank",
         },
         "storage_bytes": storage_bytes,
         "deterministic_for_identical_inputs": True,

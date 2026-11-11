@@ -74,25 +74,33 @@ def validate_completion(contract: dict, completion: dict) -> dict:
         raise ValueError("a schema-version-1 task contract is required")
     if not isinstance(completion, dict):
         raise ValueError("completion must be an object")
-    output = completion.get("output")
-    if not isinstance(output, dict):
-        output = {}
-    else:
-        output = dict(output)
-    evidence_refs = completion.get("evidence_refs", [])
-    if isinstance(evidence_refs, list) and "evidence_refs" not in output:
-        output["evidence_refs"] = evidence_refs
+    raw_output = completion.get("output")
+    output = dict(raw_output) if isinstance(raw_output, dict) else {}
+
+    def checked_refs(value, field):
+        if value is None:
+            return []
+        if not isinstance(value, list) or any(not isinstance(item, str) or not item.strip() for item in value):
+            raise ValueError(f"{field} must be a list of non-empty strings")
+        if len(value) != len(set(value)):
+            raise ValueError(f"{field} must not contain duplicates")
+        return [item.strip() for item in value]
+
+    top_level_refs = checked_refs(completion.get("evidence_refs"), "evidence_refs")
+    output_refs = checked_refs(output.get("evidence_refs"), "output.evidence_refs")
+    references_disagree = bool(top_level_refs and output_refs and set(top_level_refs) != set(output_refs))
+    all_refs = sorted(set(top_level_refs) | set(output_refs))
+    if all_refs or "evidence_refs" in output:
+        output["evidence_refs"] = all_refs
     required = contract.get("required_output_fields", [])
     missing = sorted(field for field in required if field not in output or output[field] in (None, "", [], {}))
-    if not isinstance(evidence_refs, list) or any(not isinstance(item, str) or not item.strip() for item in evidence_refs):
-        raise ValueError("evidence_refs must be a list of non-empty strings")
     allowed = set(contract.get("allowed_source_ids", []))
-    unapproved = sorted(set(evidence_refs) - allowed)
-    if len(evidence_refs) != len(set(evidence_refs)):
-        raise ValueError("evidence_refs must not contain duplicates")
+    unapproved = sorted(set(all_refs) - allowed)
     blockers = []
     if missing:
         blockers.append("required_output_fields_missing")
+    if references_disagree:
+        blockers.append("evidence_reference_fields_disagree")
     if unapproved:
         blockers.append("evidence_reference_outside_allowlist")
     return {

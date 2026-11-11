@@ -309,3 +309,123 @@ def test_legacy_freshness_virtual_time_and_rescue_planning_remain_unchanged():
     assert allocation["allocations"]["water"] == 3
     assert allocation["shortages"]["water"] == 2
     assert allocation["requires_human_dispatch"] is True
+
+
+
+def test_multilingual_triage_profiles_japanese_kana_without_kanji():
+    assert script_profile("これはすごい")["dominant_script"] == "cjk"
+
+
+def test_source_identity_preserves_order_sensitive_queries_and_ipv6_hosts():
+    assert canonicalize_url("https://[2001:db8::1]:443/a") == "https://[2001:db8::1]/a"
+    assert canonicalize_url("https://example.org/search?tag=a&tag=b") != canonicalize_url(
+        "https://example.org/search?tag=b&tag=a"
+    )
+
+
+def test_evidence_review_interval_is_due_at_exact_boundary_and_empty_batch_validates_time():
+    due = assess_record({
+        "source_id": "boundary", "observed_at": "2026-10-01T00:00:00+00:00",
+        "review_after_days": 30,
+    }, as_of="2026-10-31T00:00:00+00:00")
+    assert due["status"] == "review_due"
+    with pytest.raises(ValueError):
+        assess_records([], as_of="2026-11-11T12:00:00")
+
+
+def test_retrieval_latency_uses_statistical_median_and_nearest_rank_p95():
+    result = evaluate_retrieval([
+        {"relevant_ids": ["a"], "retrieved_ids": ["a"], "latency_ms": 1},
+        {"relevant_ids": ["a"], "retrieved_ids": ["a"], "latency_ms": 2},
+        {"relevant_ids": ["a"], "retrieved_ids": ["a"], "latency_ms": 3},
+        {"relevant_ids": ["a"], "retrieved_ids": ["a"], "latency_ms": 4},
+    ])
+    assert result["latency_ms"]["median"] == 2.5
+    assert result["latency_ms"]["p95"] == 4.0
+    assert result["latency_ms"]["percentile_method"] == "nearest_rank"
+
+
+def test_agent_completion_cannot_hide_unapproved_output_references():
+    contract = build_task_contract(
+        task_id="task-refs", objective="Check source references",
+        creator_agent_id="creator", assigned_agent_id="worker", reviewer_agent_id="reviewer",
+        required_capabilities=["review"], declared_capabilities=["review"],
+        allowed_source_ids=["approved-paper"],
+    )
+    result = validate_completion(contract, {
+        "output": {"summary": "Review", "limitations": ["Scope"],
+                   "evidence_refs": ["unapproved-paper"]},
+        "evidence_refs": ["approved-paper"],
+    })
+    assert result["unapproved_evidence_refs"] == ["unapproved-paper"]
+    assert "evidence_reference_fields_disagree" in result["blockers"]
+    assert result["eligible_for_human_review"] is False
+
+
+def test_conflict_register_return_values_are_isolated_and_timestamps_are_aware():
+    register = AgentConflictRegister()
+    register.declare(
+        declaration_id="conflict-copy", agent_id="agent-x", category="collaboration",
+        description="Co-authorship", campaign_ids=["campaign-x"],
+        recorded_at="2026-11-11T09:00:00+00:00",
+    )
+    reviewed = register.review(
+        "conflict-copy", reviewer_id="reviewer-x", decision="cleared_after_review",
+        note="Independent review", evidence_refs=["review-evidence"],
+        recorded_at="2026-11-11T10:00:00+00:00",
+    )
+    reviewed["campaign_ids"].clear()
+    assert register.history("conflict-copy")[1]["campaign_ids"] == ["campaign-x"]
+    with pytest.raises(ValueError):
+        register.declare(
+            declaration_id="bad-time", agent_id="agent-y", category="other",
+            description="Disclosure", campaign_ids=["campaign-y"],
+            recorded_at="2026-11-11T10:00:00",
+        )
+
+
+def test_graph_snapshot_verifier_rejects_malformed_structure_even_with_a_digest():
+    malformed = {"schema_version": 1, "nodes": "not-a-list", "edges": [],
+                 "node_count": 0, "edge_count": 0, "source_graph_mutated": False,
+                 "snapshot_sha256": "0" * 64}
+    assert verify_snapshot(malformed)["valid"] is False
+
+
+def test_clock_model_verifier_rejects_incomplete_anchor_payload():
+    malformed = {"schema_version": 1, "session_id": "s", "source_id": "camera",
+                 "anchors": [], "anchor_count": 0, "max_absolute_drift_ppm": 0.0,
+                 "drift_is_diagnostic_only": True, "extrapolation_permitted": False,
+                 "model_sha256": "0" * 64}
+    assert verify_clock_model(malformed)["valid"] is False
+
+
+def test_rescue_assurance_rejects_control_owner_as_independent_reviewer_and_handles_missing_refs():
+    base = {
+        "design_id": "rescue-vest-2", "design_class": "protective_equipment",
+        "design_owner_id": "engineer-1",
+        "requirements": [{"requirement_id": "r1", "statement": "Maintain visibility"}],
+        "hazards": [{"hazard_id": "h1", "description": "Low visibility",
+                     "severity": 4, "likelihood": 2}],
+        "controls": [{"control_id": "c1", "hazard_id": "h1",
+                      "description": "Reflective panels", "owner_id": "engineer-2"}],
+        "verifications": [{"verification_id": "v1", "requirement_id": "r1",
+                           "outcome": "pass", "evidence_refs": ["test-report-1"]}],
+    }
+    result = build_assurance_case(**base, independent_reviews=[{
+        "review_id": "review-1", "hazard_id": "h1",
+        "reviewer_id": "engineer-2", "evidence_refs": ["review-record-1"],
+    }])
+    assert result["status"] == "independent_review_required"
+    assert result["critical_hazards_without_independent_review"] == ["h1"]
+    malformed = dict(base, verifications=[{"verification_id": "v2", "outcome": "pass",
+                                           "evidence_refs": ["report"]}])
+    assert build_assurance_case(**malformed)["invalid_verification_refs"] == ["v2"]
+
+
+def test_query_plan_rejects_oversized_channel_lists_before_normalization():
+    with pytest.raises(ValueError):
+        build_query_plan(
+            objective="Check bounded channel handling",
+            terms=[{"term": "materials testing", "language": "en"}],
+            source_channels=["youtube"] * 101,
+        )
