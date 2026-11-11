@@ -1,7 +1,6 @@
 """Strong-identifier source normalization and conservative duplicate clustering."""
 from __future__ import annotations
 
-import hashlib
 import re
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
@@ -25,7 +24,10 @@ def canonicalize_url(value: str) -> str:
     host = parts.hostname.encode("idna").decode("ascii").lower()
     if host.startswith("www."):
         host = host[4:]
-    port = parts.port
+    try:
+        port = parts.port
+    except ValueError as exc:
+        raise ValueError("URL port is invalid") from exc
     netloc = host if port is None or (parts.scheme.lower(), port) in {("http", 80), ("https", 443)} else f"{host}:{port}"
     path = re.sub(r"/{2,}", "/", parts.path or "/")
     if path != "/":
@@ -39,6 +41,8 @@ def canonicalize_url(value: str) -> str:
 
 
 def _normalize_doi(value: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError("doi must be a string")
     cleaned = value.strip().casefold()
     cleaned = re.sub(r"^https?://(?:dx\.)?doi\.org/", "", cleaned)
     cleaned = re.sub(r"^doi:\s*", "", cleaned)
@@ -48,6 +52,8 @@ def _normalize_doi(value: str) -> str:
 
 
 def _normalize_arxiv(value: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError("arxiv_id must be a string")
     cleaned = value.strip().casefold()
     cleaned = re.sub(r"^https?://arxiv\.org/(?:abs|pdf)/", "", cleaned)
     cleaned = cleaned.removesuffix(".pdf")
@@ -71,7 +77,7 @@ def source_identity(record: dict) -> dict:
     if canonical_url:
         keys.append("url:" + canonical_url)
     checksum = record.get("content_sha256", "")
-    if checksum:
+    if checksum not in ("", None):
         if not isinstance(checksum, str) or not re.fullmatch(r"[a-fA-F0-9]{64}", checksum):
             raise ValueError("content_sha256 must be a 64-character hexadecimal digest")
         keys.append("sha256:" + checksum.lower())
