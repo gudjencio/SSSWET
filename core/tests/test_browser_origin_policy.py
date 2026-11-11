@@ -139,7 +139,7 @@ def test_local_cli_write_without_origin_remains_supported(tmp_path):
     request = Request(
         base + "/api/research-journal",
         data=json.dumps({
-            "technology": "test", "event_type": "research_question",
+            "technology": "timetravel", "event_type": "research_question",
             "title": "Local CLI compatibility", "summary": "No browser Origin header.",
         }).encode(),
         headers={"Content-Type": "application/json"},
