@@ -161,3 +161,10 @@ The current baseline already included scientific-memory versioning, bounded memo
 - Scientific limits: no module autonomously adjudicates evidence, approves a design, authorizes an experiment, or claims that agent intelligence has increased.
 
 The release is acceptable only if the complete core test suite and existing web checks pass on the pull-request commit. Any CI failure must be treated as a blocker, not as a successful release.
+
+
+### Follow-up: provenance-preserving clock alignment
+
+The anchor-bounded clock utility now emits schema version 2 with stable anchor identifiers, optional bounded reference-evidence references, per-interval drift diagnostics, and explicit uncertainty semantics. Aligned events retain their bracketing anchor IDs, interpolation fraction, interval drift, and available evidence references. Anchor and event uncertainty are treated as user-declared absolute bounds and combined linearly; if any required bound is undeclared, the model withholds the numeric total instead of silently assuming zero. Version-1 models remain verifiable, but their uncertainty/provenance completeness is not overstated. Regression coverage includes deterministic ordering/digests, exact-anchor provenance, missing uncertainty, semantic-flag tampering with a recomputed digest, bounded identifiers/references, and legacy compatibility.
+
+**Scope note:** this remains a Python core research utility. It does not yet rewrite or automatically align browser IndexedDB records, and no new browser sensor, network, or service-worker behavior was introduced.
