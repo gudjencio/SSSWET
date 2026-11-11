@@ -20,6 +20,17 @@ QUERIES = {
 }
 
 
+def smoke_exit_code(successful_requests: int, failed_requests: int) -> int:
+    """Fail the live smoke check when any provider request fails.
+
+    A successful response with zero matches is still a successful request;
+    partial provider outages must not be reported as a green smoke run.
+    """
+    if successful_requests < 0 or failed_requests < 0:
+        raise ValueError("Request counts cannot be negative.")
+    return 0 if successful_requests > 0 and failed_requests == 0 else 1
+
+
 def main() -> int:
     social_providers = (
         ("bluesky", BlueskySearchProvider(max_results=3)),
@@ -112,7 +123,7 @@ def main() -> int:
         json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     print(json.dumps(report["summary"], ensure_ascii=False))
-    return 1 if successful_requests == 0 else 0
+    return smoke_exit_code(successful_requests, failed_requests)
 
 
 if __name__ == "__main__":
