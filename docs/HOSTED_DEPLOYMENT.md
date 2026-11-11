@@ -36,3 +36,14 @@ Public reports labelled `public report` trigger the report-processing workflow. 
 Add `OPENAI_API_KEY` under **Repository Settings → Secrets and variables → Actions**. The key is used only by the private GitHub Actions runner and must never be placed in public files or browser configuration. The workflow uses the repository's temporary `GITHUB_TOKEN` to create a branch and pull request.
 
 Automatic processing does not automatically merge code into the live project. Every generated pull request remains reviewable before integration, preserving a final safeguard against malicious or mistaken public suggestions. The public **View my improvements** menu stores the reports submitted from that browser locally and links to their GitHub issue records.
+
+## Browser-origin policy
+
+The local server uses separate origin policies for public reads and browser writes:
+
+- `SSSWET_ALLOWED_ORIGINS` controls CORS access to public read endpoints. The local default is the dedicated GitHub Pages origin. A hosted deployment may explicitly add `https://sites.google.com` for public read-only data.
+- `SSSWET_ALLOWED_WRITE_ORIGINS` controls browser-origin write requests. Its default is `https://gudjencio.github.io`. The shared `sites.google.com` origin is always rejected for writes, even if it is accidentally included in an environment allowlist.
+- Loopback browser origins are accepted only when the actual TCP client is loopback. Local command-line writes without an `Origin` header remain supported.
+- The Google Sites mirror should embed the GitHub Pages interface for write operations. A request made directly by the parent `sites.google.com` document is intentionally rejected because all Google Sites properties share the same origin.
+
+Origin checks mitigate cross-site browser requests; they are not user authentication and do not replace endpoint-specific authorization or abuse controls.
