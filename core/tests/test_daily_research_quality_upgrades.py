@@ -229,7 +229,7 @@ def test_temporal_clock_alignment_interpolates_only_inside_session_anchors():
     ])
     result = align_events(model, [
         {"event_id": "inside", "session_id": "session-1", "source_id": "camera-a",
-         "timestamp": "2026-11-11T10:05:00+00:00"},
+         "timestamp": "2026-11-11T10:05:00+00:00", "uncertainty_seconds": 0.0},
         {"event_id": "other-session", "session_id": "session-2", "source_id": "camera-a",
          "timestamp": "2026-11-11T10:05:00+00:00"},
         {"event_id": "outside", "session_id": "session-1", "source_id": "camera-a",
