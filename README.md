@@ -98,7 +98,7 @@ SSSWET is an evolving research initiative. Public summaries are informational an
 
 ## Language availability
 
-The public interface offers **300 selectable language entries**. The catalogue includes all **190 unique language codes** in the project's current reference list, covering the named languages, regional varieties and grouped language families. Each option has a language code and a native-language label. This confirms selector availability, not complete translation: the principal interface is maintained in a limited set of core locales, selected additional sections have further translations, and untranslated strings use the English fallback. Language availability must not be mistaken for a complete professional translation. Contributions from qualified native speakers are welcome, especially for scientific, medical, safety and accessibility terminology.
+The public interface offers **300 selectable language entries**. The catalogue includes all **189 unique language codes** in the project's current reference list, covering the named languages, regional varieties and grouped language families. Each option has a language code and a native-language label. This confirms selector availability, not complete translation: the principal interface is maintained in a limited set of core locales, selected additional sections have further translations, and untranslated strings use the English fallback. Language availability must not be mistaken for a complete professional translation. Contributions from qualified native speakers are welcome, especially for scientific, medical, safety and accessibility terminology.
 
 ## Continuous improvement and regression monitoring
 
