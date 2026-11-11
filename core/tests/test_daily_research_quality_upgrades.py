@@ -12,6 +12,9 @@ from ssswet_core.agent_conflict_register import AgentConflictRegister
 from ssswet_core.research_graph_snapshot import build_snapshot, verify_snapshot, diff_snapshots
 from ssswet_core.temporal_clock_alignment import build_clock_model, align_events, verify_clock_model
 from ssswet_core.rescue_design_assurance import build_assurance_case
+from ssswet_core.evidence_freshness import assess as assess_freshness
+from ssswet_core.virtual_time_mapping import VirtualTimeMap, TemporalObservation
+from ssswet_core.rescue_resource_planner import plan_resources
 
 
 def test_multilingual_triage_handles_cjk_scripts_and_keeps_original_text():
@@ -286,3 +289,23 @@ def test_rescue_design_assurance_requires_traceability_and_independent_review():
     invalid["design_class"] = "weapon"
     with pytest.raises(ValueError):
         build_assurance_case(**invalid)
+
+
+def test_legacy_freshness_virtual_time_and_rescue_planning_remain_unchanged():
+    freshness = assess_freshness(30, 30)
+    assert freshness["freshness_band"] == "aging"
+    assert freshness["source_claim_modified"] is False
+
+    mapping = VirtualTimeMap()
+    mapping.add(TemporalObservation(
+        timestamp="2026-11-11T09:00:00+00:00",
+        label="Recorded observation", source_id="camera-1",
+        uncertainty_seconds=1.0,
+    ))
+    assert len(mapping.window()) == 1
+    assert mapping.export()[0]["source_id"] == "camera-1"
+
+    allocation = plan_resources({"water": 5}, {"water": 3})
+    assert allocation["allocations"]["water"] == 3
+    assert allocation["shortages"]["water"] == 2
+    assert allocation["requires_human_dispatch"] is True
