@@ -129,7 +129,10 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             path = urlsplit(self.path).path
             requested_method = self.headers.get("Access-Control-Request-Method", "GET").upper()
             if requested_method == "POST":
-                origin_allowed = self._public_browser_origin_allowed(origin)
+                origin_allowed = self._public_browser_origin_allowed(origin) and (
+                    path == "/api/project-reports"
+                    or self.client_address[0] in {"127.0.0.1", "::1"}
+                )
             elif requested_method in {"GET", "HEAD"}:
                 origin_allowed = (
                     origin in ALLOWED_WEB_ORIGINS or self._public_browser_origin_allowed(origin)
