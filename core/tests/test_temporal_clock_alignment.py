@@ -80,8 +80,8 @@ def test_clock_alignment_is_deterministic_and_retains_anchor_provenance():
     assert event["anchor_provenance_complete"] is True
     assert event["anchor_uncertainty_seconds"] == 1.5
     assert event["event_uncertainty_seconds"] == 0.25
-    assert event["uncertainty_seconds"] == 1.75
-    assert event["uncertainty_bound_complete"] is True
+    assert event["declared_uncertainty_envelope_seconds"] == 1.75
+    assert event["declared_uncertainty_inputs_complete"] is True
     assert event["uncertainty_is_confidence_interval"] is False
     assert event["extrapolation_used"] is False
     assert result["unrecorded_history_recovered"] is False
@@ -104,9 +104,9 @@ def test_missing_uncertainty_is_not_silently_reported_as_zero():
     event = result["events"][0]
     assert event["anchor_uncertainty_seconds"] is None
     assert event["event_uncertainty_seconds"] is None
-    assert event["uncertainty_seconds"] is None
-    assert event["uncertainty_bound_complete"] is False
-    assert result["complete_uncertainty_bound_count"] == 0
+    assert event["declared_uncertainty_envelope_seconds"] is None
+    assert event["declared_uncertainty_inputs_complete"] is False
+    assert result["complete_declared_uncertainty_input_count"] == 0
 
 
 def test_exact_anchor_uses_one_provenance_reference_without_duplication():
@@ -124,7 +124,7 @@ def test_exact_anchor_uses_one_provenance_reference_without_duplication():
     assert event["anchor_provenance_complete"] is True
     assert event["interpolation_fraction"] == 0.0
     assert event["anchor_interval_seconds"] == 0.0
-    assert event["uncertainty_seconds"] == 1.0
+    assert event["declared_uncertainty_envelope_seconds"] == 1.0
 
 
 def test_model_verifier_rejects_semantic_flags_even_when_digest_is_recomputed():
@@ -191,6 +191,6 @@ def test_legacy_schema_one_models_remain_verifiable_but_do_not_claim_complete_bo
     }])
     event = result["events"][0]
     assert event["aligned_at"] == "2026-11-11T10:06:00+00:00"
-    assert event["uncertainty_seconds"] is None
-    assert event["uncertainty_bound_complete"] is False
+    assert event["declared_uncertainty_envelope_seconds"] is None
+    assert event["declared_uncertainty_inputs_complete"] is False
     assert event["anchor_provenance_complete"] is False
