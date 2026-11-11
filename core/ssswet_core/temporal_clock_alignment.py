@@ -233,8 +233,10 @@ def verify_clock_model(model: dict) -> dict:
         elif structural and schema_version == 2:
             structural = (
                 payload.get("alignment_method") == ALIGNMENT_METHOD
+                and payload.get("clock_mapping_assumption") == CLOCK_MAPPING_ASSUMPTION
                 and payload.get("uncertainty_method") == UNCERTAINTY_METHOD
                 and payload.get("uncertainty_semantics") == UNCERTAINTY_SEMANTICS
+                and payload.get("uncertainty_interpretation") == UNCERTAINTY_INTERPRETATION
                 and payload.get("uncertainty_is_confidence_interval") is False
             )
             seen_ids = set()
