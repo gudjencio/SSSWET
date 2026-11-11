@@ -192,7 +192,11 @@ def verify_clock_model(model: dict) -> dict:
         session_id = _identifier(payload.get("session_id"), "session_id")
         source_id = _identifier(payload.get("source_id"), "source_id")
         structural = (
-            schema_version in {1, 2}
+            isinstance(schema_version, int)
+            and not isinstance(schema_version, bool)
+            and schema_version in {1, 2}
+            and payload.get("session_id") == session_id
+            and payload.get("source_id") == source_id
             and isinstance(anchors, list)
             and 2 <= len(anchors) <= MAX_ANCHORS
             and len(anchors) == payload.get("anchor_count")
@@ -249,6 +253,9 @@ def verify_clock_model(model: dict) -> dict:
                         structural = False
                         break
                     reference_ref = _evidence_ref(item.get("reference_evidence_ref"))
+                    if reference_ref != item.get("reference_evidence_ref"):
+                        structural = False
+                        break
                     normalized.append((
                         _timestamp(item.get("source_timestamp"), "source_timestamp"),
                         _timestamp(item.get("reference_timestamp"), "reference_timestamp"),
@@ -377,9 +384,10 @@ def align_events(model: dict, events: list[dict]) -> dict:
                 if not legacy else None
             )
 
+        bracket_anchors = (left,) if left is right else (left, right)
         anchor_refs = [
             item["reference_evidence_ref"]
-            for item in (left, right)
+            for item in bracket_anchors
             if item["reference_evidence_ref"] is not None
         ]
         required_ref_count = 1 if left is right else 2
