@@ -132,10 +132,10 @@ Regression risks include API quota exhaustion, schema drift, rate limits, stale 
 ## GitHub Actions live smoke checks
 
 The repository includes `.github/workflows/social-live-smoke.yml`. It runs on:
-- pushes to the social-discovery feature branch;
-- pull requests (read-only public API calls only);
 - a daily schedule;
 - manual `workflow_dispatch`.
+
+The live API smoke is intentionally separate from pull-request CI so intermittent third-party outages and rate limits cannot block deterministic code review. Provider errors still produce a non-zero live-smoke result and a bounded artifact report.
 
 The workflow tests four fixed research queries (English, French, Japanese and Chinese) against Crossref, OpenAlex, public Bluesky search and the official Qiita API. It does not require API secrets, does not write to the repository, and does not access private accounts. It uploads a seven-day artifact named `social-live-smoke-report` containing bounded bibliographic metadata, public URLs, counts, language hints and request status; it does not download full papers or retain full social post bodies.
 
