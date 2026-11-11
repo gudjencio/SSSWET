@@ -96,7 +96,7 @@ def tokenize(value: str) -> list[str]:
         if any(
             start <= ord(char) <= end
             for char in word
-            for start, end in ((0x3400, 0x9FFF), (0x0E00, 0x0E7F))
+            for start, end in ((0x3040, 0x30FF), (0x31F0, 0x31FF), (0x3400, 0x9FFF), (0x0E00, 0x0E7F))
         ):
             extra.extend(word[index:index + 2] for index in range(max(0, len(word) - 1)))
     return list(dict.fromkeys(words + extra))

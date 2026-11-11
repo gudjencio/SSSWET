@@ -312,8 +312,9 @@ def test_legacy_freshness_virtual_time_and_rescue_planning_remain_unchanged():
 
 
 
-def test_multilingual_triage_profiles_japanese_kana_without_kanji():
+def test_multilingual_triage_profiles_and_tokenizes_japanese_kana_without_kanji():
     assert script_profile("これはすごい")["dominant_script"] == "cjk"
+    assert "れは" in tokenize("これはすごい")
 
 
 def test_source_identity_preserves_order_sensitive_queries_and_ipv6_hosts():
