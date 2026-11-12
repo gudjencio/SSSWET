@@ -146,6 +146,34 @@ def test_duplicate_event_ids_are_rejected_only_within_the_aligned_session_and_so
     ]
 
 
+def test_event_ids_are_trimmed_before_uniqueness_checks_and_output():
+    model = build_clock_model(_anchors())
+    duplicate_after_trimming = [
+        {
+            "event_id": " frame-normalized ",
+            "session_id": "session-1",
+            "source_id": "camera-a",
+            "timestamp": "2026-11-11T10:03:00+00:00",
+        },
+        {
+            "event_id": "frame-normalized",
+            "session_id": "session-1",
+            "source_id": "camera-a",
+            "timestamp": "2026-11-11T10:07:00+00:00",
+        },
+    ]
+    with pytest.raises(ValueError, match="event_id values must be unique"):
+        align_events(model, duplicate_after_trimming)
+
+    result = align_events(model, [{
+        "event_id": " frame-trimmed ",
+        "session_id": "session-1",
+        "source_id": "camera-a",
+        "timestamp": "2026-11-11T10:05:00+00:00",
+    }])
+    assert result["events"][0]["event_id"] == "frame-trimmed"
+
+
 def test_exact_anchor_uses_one_provenance_reference_without_duplication():
     model = build_clock_model(_anchors())
     result = align_events(model, [{
