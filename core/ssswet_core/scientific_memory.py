@@ -149,6 +149,8 @@ class ScientificMemoryService:
         cursor = before_version_number
         if cursor is None:
             cursor = int(selected["version_number"]) + 1
+        elif cursor > int(selected["version_number"]) + 1:
+            raise ValueError("before_version_number cannot be later than the selected version")
         page = self.store.scientific_memory_history_page_for_key(
             selected["memory_key"], before_version_number=cursor, limit=limit + 1
         )
