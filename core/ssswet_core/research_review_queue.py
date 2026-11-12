@@ -100,12 +100,12 @@ def build_review_queue(store: Any, *, limit: int = 100) -> dict[str, Any]:
     ordered = sorted(
         items.values(),
         key=lambda item: (
-            PRIORITY_ORDER[item["priority"]],
+            -PRIORITY_ORDER[item["priority"]],
             str(item.get("created_at", "")),
             item["entity_type"],
             item["entity_id"],
         ),
-        reverse=False,
+        reverse=True,
     )
     for item in ordered:
         item["reason_codes"].sort()
