@@ -1681,8 +1681,14 @@
     });
     applyLocale();
     setStatusKey("loading");
-    if (window.SSSWETVirtualTimeReady) loadSession();
-    else window.addEventListener("ssswet:virtual-time-ready", loadSession, { once: true });
+    if (window.SSSWETVirtualTimeUnavailable) {
+      setStatus(words().unsupported);
+      buildButton.disabled = true;
+    } else if (window.SSSWETVirtualTimeReady) {
+      loadSession();
+    } else {
+      window.addEventListener("ssswet:virtual-time-ready", loadSession, { once: true });
+    }
   }
 
   const api = Object.freeze({
