@@ -124,6 +124,11 @@ async function main() {
     { ...snapshotInput[1], kind: "different-kind" }
   ]);
   assert.notEqual(snapshot.sha256, changedKind.sha256, "event kind changes must alter the snapshot fingerprint");
+  const changedId = await workspace.buildObservationSnapshot(SESSION, SOURCE, "monotonic", [
+    snapshotInput[0],
+    { ...snapshotInput[1], event_id: "renamed-event" }
+  ]);
+  assert.notEqual(snapshot.sha256, changedId.sha256, "event ID changes must alter the snapshot fingerprint");
   const tamperedSnapshot = {
     ...snapshot,
     observations: snapshot.observations.map((item, index) =>
@@ -132,6 +137,9 @@ async function main() {
   };
   assert.equal((await workspace.verifyObservationSnapshot(tamperedSnapshot)).valid, false,
     "tampered snapshot content must fail verification");
+  const countTamperedSnapshot = { ...snapshot, event_count: snapshot.event_count + 1 };
+  assert.equal((await workspace.verifyObservationSnapshot(countTamperedSnapshot)).valid, false,
+    "tampered snapshot counts must fail verification");
   const privacyExtendedSnapshot = { ...snapshot, observations: snapshot.observations.map(item => ({ ...item, latitude: 48.1 })) };
   assert.equal((await workspace.verifyObservationSnapshot(privacyExtendedSnapshot)).valid, false,
     "unexpected extra fields must not be accepted as part of a canonical snapshot");
