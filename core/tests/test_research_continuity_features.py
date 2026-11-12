@@ -542,6 +542,54 @@ def test_broad_scholarly_provider_caps_results_and_reports_partial_provider_fail
     assert "failing-provider:TimeoutError" in result.summary
     assert "failing-provider" in result.summary
 
+def test_review_queue_discloses_bounded_source_scan_completeness(monkeypatch):
+    from ssswet_core.dataset_registry import DatasetRegistry
+    from ssswet_core.research_review_queue import build_review_queue
+    from ssswet_core.scientific_memory import ScientificMemoryService
+
+    class FakeStore:
+        def literature_watch_history(self, limit=50):
+            assert limit == 101
+            return [
+                {
+                    "created_at": "2026-11-12T00:00:00+00:00",
+                    "candidates": [
+                        {
+                            "candidate_id": f"{report_index}-{candidate_index}",
+                            "classification": "candidate_for_review",
+                        }
+                        for candidate_index in range(51)
+                    ],
+                }
+                for report_index in range(101)
+            ]
+
+    monkeypatch.setattr(
+        ScientificMemoryService,
+        "overview",
+        lambda self, limit=500: {"versions": [{} for _ in range(500)]},
+    )
+    monkeypatch.setattr(
+        ScientificMemoryService,
+        "evolution_alerts",
+        lambda self, limit=500: {"alerts": []},
+    )
+    monkeypatch.setattr(
+        DatasetRegistry,
+        "overview",
+        lambda self, limit=500: {"governance": {"versions": [{} for _ in range(500)]}},
+    )
+
+    result = build_review_queue(FakeStore(), limit=10)
+    scan = result["source_scan"]
+    assert scan["scientific_memory_versions"]["may_be_truncated"] is True
+    assert scan["dataset_versions"]["may_be_truncated"] is True
+    assert scan["literature_watch_reports"]["may_be_truncated"] is True
+    assert scan["literature_candidates"]["omitted_from_scanned_reports"] == 100
+    assert result["scan_may_be_incomplete"] is True
+    assert result["total_matching_items_scope"] == "scanned_records_only"
+
+
 def _start_server(tmp_path):
     store = _memory_fixture(tmp_path)
     _campaign(store)

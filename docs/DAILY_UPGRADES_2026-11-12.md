@@ -69,8 +69,12 @@ The regression suite is in core/tests/test_research_continuity_features.py. It c
 
 Synthetic provider fixtures validate parsing and reconciliation logic; they do not establish current upstream API availability. Provider discovery returns bibliographic metadata only, not full-text access or claim verification. The four-index provider is opt-in: instantiate BroadScholarlyLiteratureProvider and pass it to LiteratureWatchService rather than changing the existing two-index default. For example:
 
-    provider = BroadScholarlyLiteratureProvider(max_results=5)
-    watch = LiteratureWatchService(provider, store)
-    report = watch.run("wave propagation") The context pack's character budget is a deterministic size bound, not a model-token guarantee. A synthetic one-query retrieval evaluation checks recall, provenance-group recall, contradiction retention, measured latency and SQLite file size; it is a regression fixture, not a representative production benchmark. Review priorities are workflow cues, not scientific truth rankings. The legacy full-lineage endpoint remains for compatibility; consumers handling long histories should use the new paginated endpoint.
+```python
+provider = BroadScholarlyLiteratureProvider(max_results=5)
+watch = LiteratureWatchService(provider, store)
+report = watch.run("wave propagation")
+```
+
+The context pack's character budget is a deterministic size bound, not a model-token guarantee. A synthetic one-query retrieval evaluation checks recall, provenance-group recall, contradiction retention, measured latency and SQLite file size; it is a regression fixture, not a representative production benchmark. Review priorities are workflow cues, not scientific truth rankings. The legacy full-lineage endpoint remains for compatibility; consumers handling long histories should use the new paginated endpoint.
 
 No payment, tax, refund, customer-data, credential, legal-policy or commercial-promise settings are changed.

@@ -39,8 +39,15 @@ def build_review_queue(store: Any, *, limit: int = 100) -> dict[str, Any]:
             current["created_at"] = created_at
 
     memory_service = ScientificMemoryService(store)
-    overview = memory_service.overview(limit=500)
-    for memory in overview.get("versions", []):
+    memory_scan_limit = 500
+    dataset_scan_limit = 500
+    literature_report_scan_limit = 100
+    literature_candidate_scan_limit = 50
+
+    overview = memory_service.overview(limit=memory_scan_limit)
+    memory_versions = overview.get("versions", [])
+    memory_scan_may_be_truncated = len(memory_versions) >= memory_scan_limit
+    for memory in memory_versions:
         version_id = str(memory.get("version_id", ""))
         if not version_id:
             continue
@@ -62,8 +69,22 @@ def build_review_queue(store: Any, *, limit: int = 100) -> dict[str, Any]:
             add("scientific_memory_version", version_id, "later_contradiction_recorded", "critical",
                 alert.get("discovery_recorded_at", ""), "A later graph record is linked by a contradicts edge.")
 
-    for report in store.literature_watch_history(limit=100):
-        for candidate in report.get("candidates", [])[:50]:
+    literature_probe = store.literature_watch_history(limit=literature_report_scan_limit + 1)
+    literature_reports = literature_probe[:literature_report_scan_limit]
+    literature_reports_may_be_truncated = len(literature_probe) > literature_report_scan_limit
+    literature_candidates_scanned = 0
+    literature_candidates_omitted = 0
+    for report in literature_reports:
+        if not isinstance(report, dict):
+            continue
+        candidates = report.get("candidates", [])
+        if not isinstance(candidates, list):
+            continue
+        literature_candidates_scanned += min(len(candidates), literature_candidate_scan_limit)
+        literature_candidates_omitted += max(0, len(candidates) - literature_candidate_scan_limit)
+        for candidate in candidates[:literature_candidate_scan_limit]:
+            if not isinstance(candidate, dict):
+                continue
             candidate_id = str(candidate.get("candidate_id", ""))
             if not candidate_id:
                 continue
@@ -81,8 +102,10 @@ def build_review_queue(store: Any, *, limit: int = 100) -> dict[str, Any]:
                 add("literature_candidate", candidate_id, "new_metadata_candidate", "normal",
                     report.get("created_at", ""), "Bibliographic metadata requires source and methods review.")
 
-    dataset_report = DatasetRegistry(store).overview(limit=500)
-    for record in dataset_report.get("governance", {}).get("versions", []):
+    dataset_report = DatasetRegistry(store).overview(limit=dataset_scan_limit)
+    dataset_versions = dataset_report.get("governance", {}).get("versions", [])
+    dataset_scan_may_be_truncated = len(dataset_versions) >= dataset_scan_limit
+    for record in dataset_versions:
         issues = record.get("issues", [])
         if not issues:
             continue
@@ -123,6 +146,35 @@ def build_review_queue(store: Any, *, limit: int = 100) -> dict[str, Any]:
             priority: sum(1 for item in ordered if item["priority"] == priority)
             for priority in ("critical", "high", "normal")
         },
+        "source_scan": {
+            "scientific_memory_versions": {
+                "scanned": len(memory_versions),
+                "limit": memory_scan_limit,
+                "may_be_truncated": memory_scan_may_be_truncated,
+            },
+            "dataset_versions": {
+                "scanned": len(dataset_versions),
+                "limit": dataset_scan_limit,
+                "may_be_truncated": dataset_scan_may_be_truncated,
+            },
+            "literature_watch_reports": {
+                "scanned": len(literature_reports),
+                "limit": literature_report_scan_limit,
+                "may_be_truncated": literature_reports_may_be_truncated,
+            },
+            "literature_candidates": {
+                "scanned": literature_candidates_scanned,
+                "omitted_from_scanned_reports": literature_candidates_omitted,
+                "per_report_limit": literature_candidate_scan_limit,
+            },
+        },
+        "scan_may_be_incomplete": (
+            memory_scan_may_be_truncated
+            or dataset_scan_may_be_truncated
+            or literature_reports_may_be_truncated
+            or literature_candidates_omitted > 0
+        ),
+        "total_matching_items_scope": "scanned_records_only",
         "automatic_task_creation": False,
         "automatic_status_change": False,
         "scientific_validity_established": False,
