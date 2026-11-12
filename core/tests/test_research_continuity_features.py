@@ -590,38 +590,47 @@ def test_review_queue_discloses_bounded_source_scan_completeness(monkeypatch):
     assert result["total_matching_items_scope"] == "scanned_records_only"
 
 
-def _start_server(tmp_path):
+TEST_ADMIN_TOKEN = "ssswet-test-admin-token-0123456789abcdef"
+
+
+def _start_server(tmp_path, admin_token=None):
     store = _memory_fixture(tmp_path)
     _campaign(store)
     server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(
         __import__("ssswet_core.engine", fromlist=["SSSWETEngine"]).SSSWETEngine(store=store),
         store,
+        admin_token=admin_token,
     ))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     return store, server, thread, f"http://127.0.0.1:{server.server_port}"
 
 
+def _admin_urlopen(url):
+    from urllib.request import Request
+    return urlopen(Request(url, headers={"X-SSSWET-Admin-Token": TEST_ADMIN_TOKEN}))
+
+
 def test_new_research_read_endpoints_are_bounded_and_read_only(tmp_path):
-    store, server, thread, base = _start_server(tmp_path)
+    store, server, thread, base = _start_server(tmp_path, admin_token=TEST_ADMIN_TOKEN)
     try:
-        with urlopen(base + "/api/research-context?q=wave%20propagation&limit=5&max_chars=8000") as response:
+        with _admin_urlopen(base + "/api/research-context?q=wave%20propagation&limit=5&max_chars=8000") as response:
             context = json.loads(response.read())
         assert context["memories"][0]["version_id"] == "memory-v1"
 
-        with urlopen(base + "/api/research-review-queue?limit=10") as response:
+        with _admin_urlopen(base + "/api/research-review-queue?limit=10") as response:
             queue = json.loads(response.read())
         assert queue["automatic_task_creation"] is False
 
-        with urlopen(base + "/api/knowledge-graph/neighborhood?node_ids=claim-a&depth=1") as response:
+        with _admin_urlopen(base + "/api/knowledge-graph/neighborhood?node_ids=claim-a&depth=1") as response:
             neighborhood = json.loads(response.read())
         assert neighborhood["contradiction_edge_count"] == 1
 
-        with urlopen(base + "/api/scientific-memory/lineage-page?version_id=memory-v1&limit=10") as response:
+        with _admin_urlopen(base + "/api/scientific-memory/lineage-page?version_id=memory-v1&limit=10") as response:
             lineage = json.loads(response.read())
         assert lineage["items"][0]["version_id"] == "memory-v1"
 
-        with urlopen(base + "/api/dataset-governance-gate?dataset_id=missing&version=1&scope=public") as response:
+        with _admin_urlopen(base + "/api/dataset-governance-gate?dataset_id=missing&version=1&scope=public") as response:
             gate = json.loads(response.read())
         assert gate["manifest_created"] is False
         assert "dataset_version_not_registered" in {
@@ -646,7 +655,7 @@ def test_new_research_read_endpoints_are_bounded_and_read_only(tmp_path):
 
 
 def test_literature_watch_diff_endpoint_returns_saved_report_comparison(tmp_path):
-    store, server, thread, base = _start_server(tmp_path)
+    store, server, thread, base = _start_server(tmp_path, admin_token=TEST_ADMIN_TOKEN)
     older = LiteratureWatchReport(
         "watch-old", "wave", "2026-11-10T00:00:00+00:00", "fixture",
         "old metadata",
@@ -660,7 +669,7 @@ def test_literature_watch_diff_endpoint_returns_saved_report_comparison(tmp_path
     store.save_literature_watch(older)
     store.save_literature_watch(newer)
     try:
-        with urlopen(base + "/api/literature-watch/diff?older_watch_id=watch-old&newer_watch_id=watch-new") as response:
+        with _admin_urlopen(base + "/api/literature-watch/diff?older_watch_id=watch-old&newer_watch_id=watch-new") as response:
             result = json.loads(response.read())
         assert result["counts"]["added"] == 1
         assert result["counts"]["absent_from_newer"] == 1
@@ -671,18 +680,44 @@ def test_literature_watch_diff_endpoint_returns_saved_report_comparison(tmp_path
         thread.join(timeout=2)
 
 
-def test_public_provider_redirect_handler_refuses_redirect_targets():
+def test_public_provider_redirect_handler_checks_target_before_following():
     from urllib.request import Request
-    from ssswet_core.providers import _RejectRedirectHandler
+    from ssswet_core.providers import _AllowlistedRedirectHandler
 
-    handler = _RejectRedirectHandler()
+    handler = _AllowlistedRedirectHandler({"export.arxiv.org"})
     request = Request("https://export.arxiv.org/api/query")
     assert handler.redirect_request(
         request, None, 302, "Found", {}, "https://127.0.0.1/internal"
     ) is None
     assert handler.redirect_request(
-        request, None, 302, "Found", {}, "https://export.arxiv.org/other"
+        request, None, 302, "Found", {}, "http://export.arxiv.org/other"
     ) is None
+    allowed = handler.redirect_request(
+        request, None, 302, "Found", {}, "https://export.arxiv.org/other"
+    )
+    assert allowed is not None
+    assert allowed.full_url == "https://export.arxiv.org/other"
+
+
+def test_extended_research_reads_require_local_admin_authentication(tmp_path):
+    _, server, thread, base = _start_server(tmp_path)
+    protected_paths = (
+        "/api/research-context?q=wave",
+        "/api/research-review-queue",
+        "/api/knowledge-graph/neighborhood?node_ids=claim-a",
+        "/api/scientific-memory/lineage-page?version_id=memory-v1",
+        "/api/literature-watch/diff?older_watch_id=a&newer_watch_id=b",
+        "/api/dataset-governance-gate?dataset_id=missing&version=1&scope=public",
+    )
+    try:
+        for path in protected_paths:
+            with pytest.raises(HTTPError) as error:
+                urlopen(base + path)
+            assert error.value.code == 401
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
 
 
 def test_literature_watch_diff_normalizes_arxiv_version_suffixes():
