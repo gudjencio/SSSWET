@@ -285,6 +285,14 @@ class OpenAlexProvider:
         )
 
 
+def _validate_provider_response_url(response, request_url: str, allowed_hosts: set[str]) -> None:
+    from urllib.parse import urlsplit
+    final_url = getattr(response, "geturl", lambda: request_url)() or request_url
+    parsed = urlsplit(final_url)
+    if parsed.scheme != "https" or parsed.hostname not in allowed_hosts:
+        raise ValueError("provider redirected outside its HTTPS host allowlist")
+
+
 def _read_bounded(response, max_bytes: int) -> bytes:
     data = response.read(max_bytes + 1)
     if len(data) > max_bytes:
@@ -321,6 +329,8 @@ class ArxivProvider:
         query = objective.strip()
         if not query:
             return ProviderResult("The literature search objective is empty.", uncertainty=1.0)
+        if len(query) > 1_000:
+            raise ValueError("literature search objective exceeds 1000 characters")
         request = Request(
             self.endpoint + "?" + urlencode({
                 "search_query": "all:" + query,
@@ -331,6 +341,7 @@ class ArxivProvider:
         )
         try:
             with (self.opener or urlopen)(request, timeout=self.timeout) as response:
+                _validate_provider_response_url(response, request.full_url, {"export.arxiv.org"})
                 raw = _read_bounded(response, 2_000_000)
             upper = raw.upper()
             if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
@@ -408,6 +419,8 @@ class EuropePMCProvider:
         query = objective.strip()
         if not query:
             return ProviderResult("The literature search objective is empty.", uncertainty=1.0)
+        if len(query) > 1_000:
+            raise ValueError("literature search objective exceeds 1000 characters")
         request = Request(
             self.endpoint + "?" + urlencode({
                 "query": query,
@@ -419,6 +432,9 @@ class EuropePMCProvider:
         )
         try:
             with (self.opener or urlopen)(request, timeout=self.timeout) as response:
+                _validate_provider_response_url(
+                    response, request.full_url, {"www.ebi.ac.uk", "ebi.ac.uk"}
+                )
                 payload = json.loads(_read_bounded(response, 2_000_000).decode("utf-8"))
         except (HTTPError, URLError, TimeoutError, OSError, ValueError, UnicodeDecodeError) as exc:
             return ProviderResult(
@@ -566,12 +582,16 @@ class BroadScholarlyLiteratureProvider:
                 uncertainty=1.0,
             )
         successful = sum(1 for _, result in provider_results if result.evidence)
+        empty_providers = sorted(
+            provider.name for provider, result in provider_results if not result.evidence
+        )
         return ProviderResult(
             summary=(
                 f"Broad discovery returned {len(evidence_items)} unique bibliographic lead(s) "
                 f"from {successful}/{len(self.providers)} provider(s). Provider observations are retained; "
                 "metadata conflicts require human inspection and no source is treated as ground truth."
-                + (" Partial failures: " + "; ".join(failures) if failures else "")
+                + (" Providers with no usable records: " + ", ".join(empty_providers) if empty_providers else "")
+                + (" Provider exceptions: " + "; ".join(failures) if failures else "")
             ),
             evidence=tuple(evidence_items),
             uncertainty=1.0,
