@@ -26,7 +26,7 @@ The inspected baseline already had append-only scientific-memory versions, a kno
 | 6 | Bounded knowledge-graph neighbourhood retrieval | Depth at most 3, 200 nodes and 500 edges; contradiction edges are ordered first; missing seeds and truncation are explicit. |
 | 7 | Paginated scientific-memory lineage | SQL query returns at most limit + 1 rows; public page limit at most 100; consecutive pages do not overlap; the existing full-lineage endpoint remains unchanged. |
 | 8 | Literature-watch run comparison | At most 200 candidates per report; strong DOI/arXiv/URL identities; reports added, absent and metadata-changed candidates; absence is never labelled retraction. |
-| 9 | Expanded scholarly discovery with provenance reconciliation | Four official metadata sources (Crossref, OpenAlex, arXiv and Europe PMC); each provider capped at 20 results and 30 seconds; arXiv response capped at 2 MB with DTD/entity rejection; duplicate identities are grouped while every provider observation and detected title/year/DOI conflict is retained. |
+| 9 | Expanded scholarly discovery with provenance reconciliation | Four official metadata sources (Crossref, OpenAlex, arXiv and Europe PMC); each provider capped at 20 results and 30 seconds; arXiv and Europe PMC responses capped at 2 MB with HTTPS host allowlists, and arXiv DTD/entity declarations are rejected; duplicate identities are grouped while every provider observation and detected title/year/DOI conflict is retained. |
 | 10 | Dataset-governed reproducibility manifests | Public manifests require an explicit public privacy classification, a recorded consent basis, public access scope, known licence and dataset content digest; personal/sensitive datasets require a traceable consent-basis reference for non-public project manifests. Withdrawn consent, tampered dataset records and unapproved personal/sensitive data block manifest creation; valid manifests pass digest verification. |
 
 ## Regression risks identified and controls
@@ -49,7 +49,7 @@ The inspected baseline already had append-only scientific-memory versions, a kno
 6. knowledge_graph_neighborhood.py provides bounded breadth-first graph retrieval with contradiction-first edge ordering.
 7. ScientificMemoryService.lineage_page() and SQLiteResearchStore.scientific_memory_history_page_for_key() provide SQL-bounded predecessor pages without changing the legacy endpoint.
 8. literature_watch_diff.py compares saved watch reports and explicitly distinguishes disappearance from retraction and metadata change from correction.
-9. ArxivProvider, EuropePMCProvider and opt-in BroadScholarlyLiteratureProvider extend scholarly discovery. ProviderResult and literature-watch candidates retain per-provider observations and metadata conflict fields.
+9. ArxivProvider, EuropePMCProvider and opt-in BroadScholarlyLiteratureProvider extend scholarly discovery. The new endpoints enforce fixed HTTPS host allowlists, bounded query lengths, 2 MB response caps, and DTD/entity rejection for arXiv. ProviderResult and literature-watch candidates retain per-provider observations and metadata conflict fields.
 10. governed_reproducibility.py blocks manifest creation when recorded dataset governance is insufficient for the requested scope and keeps governance-gate metadata inside the manifest digest.
 
 ## Public API additions
@@ -67,6 +67,10 @@ The governance-gate endpoint returns eligibility and issue codes only; it does n
 
 The regression suite is in core/tests/test_research_continuity_features.py. It covers deterministic hashes, character and graph limits, contradiction retention, review priorities, watch diffs, governance blocks, provider parsing/size safeguards, metadata conflicts, paginated lineage and HTTP endpoint behaviour.
 
-Synthetic provider fixtures validate parsing and reconciliation logic; they do not establish current upstream API availability. Provider discovery returns bibliographic metadata only, not full-text access or claim verification. The four-index provider is opt-in: instantiate BroadScholarlyLiteratureProvider and pass it to LiteratureWatchService rather than changing the existing two-index default. The context pack's character budget is a deterministic size bound, not a model-token guarantee. Review priorities are workflow cues, not scientific truth rankings. The legacy full-lineage endpoint remains for compatibility; consumers handling long histories should use the new paginated endpoint.
+Synthetic provider fixtures validate parsing and reconciliation logic; they do not establish current upstream API availability. Provider discovery returns bibliographic metadata only, not full-text access or claim verification. The four-index provider is opt-in: instantiate BroadScholarlyLiteratureProvider and pass it to LiteratureWatchService rather than changing the existing two-index default. For example:
+
+    provider = BroadScholarlyLiteratureProvider(max_results=5)
+    watch = LiteratureWatchService(provider, store)
+    report = watch.run("wave propagation") The context pack's character budget is a deterministic size bound, not a model-token guarantee. A synthetic one-query retrieval evaluation checks recall, provenance-group recall, contradiction retention, measured latency and SQLite file size; it is a regression fixture, not a representative production benchmark. Review priorities are workflow cues, not scientific truth rankings. The legacy full-lineage endpoint remains for compatibility; consumers handling long histories should use the new paginated endpoint.
 
 No payment, tax, refund, customer-data, credential, legal-policy or commercial-promise settings are changed.
