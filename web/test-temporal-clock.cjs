@@ -103,7 +103,10 @@ const html = fs.readFileSync(path.join(__dirname, "virtual-time-travel.html"), "
 assert.ok(html.indexOf('<script src="temporal-clock.js"></script>') < html.indexOf('<script src="virtual-time-travel.js"></script>'),
   "the clock helper must load before the mapping application");
 const serviceWorker = fs.readFileSync(path.join(__dirname, "sw.js"), "utf8");
-assert.match(serviceWorker, /ssswet-web-v196/, "the service-worker cache must be bumped for the new asset");
+const cacheVersion = serviceWorker.match(/const CACHE = "ssswet-web-v(\d+)";/);
+assert.ok(cacheVersion, "the service-worker cache must use a versioned key");
+assert.ok(Number(cacheVersion[1]) >= 193,
+  "the cache version must be at least v193, when the temporal/GPS modules entered the precache");
 assert.match(serviceWorker, /\.\/temporal-clock\.js/, "the new clock helper must be precached");
 
 console.log("Temporal clock regression tests passed (synthetic clock probes; not a real-world clock-accuracy benchmark).");

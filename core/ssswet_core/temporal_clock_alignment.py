@@ -344,13 +344,23 @@ def align_events(model: dict, events: list[dict]) -> dict:
         })
 
     reports = []
+    seen_event_ids = set()
     for index, event in enumerate(events):
         if not isinstance(event, dict):
             raise ValueError("each event must be an object")
         event_id = event.get("event_id", str(index))
         if not isinstance(event_id, str) or not event_id.strip() or len(event_id) > MAX_ID_LENGTH:
             raise ValueError(f"event_id must contain 1 to {MAX_ID_LENGTH} characters")
-        if event.get("session_id") != model["session_id"] or event.get("source_id") != model["source_id"]:
+        event_id = event_id.strip()
+        matches_model = (
+            event.get("session_id") == model["session_id"]
+            and event.get("source_id") == model["source_id"]
+        )
+        if matches_model:
+            if event_id in seen_event_ids:
+                raise ValueError("event_id values must be unique within a session and source")
+            seen_event_ids.add(event_id)
+        else:
             reports.append({
                 "event_id": event_id, "status": "different_session_or_source",
                 "aligned_at": None, "extrapolation_used": False,
