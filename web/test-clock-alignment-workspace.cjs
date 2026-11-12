@@ -58,6 +58,8 @@ async function main() {
   assert.equal(model.schema_version, 2);
   assert.equal(model.model_sha256, reversedModel.model_sha256, "anchor input order must not change the deterministic digest");
   assert.equal(model.model_sha256.length, 64);
+  assert.equal(model.model_sha256, "f945063082a6295e40ef1aa691412385cd20e9c13d26a02b919c5c58261b0b39",
+    "browser canonical model digest must match the Python research engine fixture");
   assert.equal(model.anchors[0].anchor_id, "anchor-0001");
   assert.equal(model.anchor_evidence_ref_count, 2);
   assert.equal(model.all_anchor_uncertainties_declared, true);
