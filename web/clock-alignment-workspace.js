@@ -146,11 +146,18 @@
   const OBSERVATION_SNAPSHOT_FORMAT = "ssswet-clock-observation-snapshot-v1";
   const MAX_OBSERVATION_KIND_LENGTH = 80;
 
+  function compareCanonicalText(left, right) {
+    return left < right ? -1 : left > right ? 1 : 0;
+  }
+
   function observationSnapshotPayload(sessionId, sourceId, clockBasis, observations) {
     const session = identifier(sessionId, "session_id");
     const source = identifier(sourceId, "source_id");
     if (clockBasis !== "monotonic" && clockBasis !== "wall") {
       fail("clock_basis must be monotonic or wall");
+    }
+    if (source !== SOURCE_ID + "-" + clockBasis) {
+      fail("clock_basis must match the declared browser clock source");
     }
     if (!Array.isArray(observations) || observations.length > MAX_EVENTS) {
       fail("observations must be a list of at most " + MAX_EVENTS + " records");
@@ -172,8 +179,8 @@
         source_timestamp: sourceTime.iso
       };
     }).sort((left, right) =>
-      left.source_timestamp.localeCompare(right.source_timestamp) ||
-      left.event_id.localeCompare(right.event_id)
+      compareCanonicalText(left.source_timestamp, right.source_timestamp) ||
+      compareCanonicalText(left.event_id, right.event_id)
     );
     const ids = normalized.map(item => item.event_id);
     if (new Set(ids).size !== ids.length) fail("snapshot event_id values must be unique");
@@ -1537,7 +1544,9 @@
           setStatusKey("invalid");
           return;
         }
-        sessionEvents = sessionRows.sort((a, b) => a.timestamp - b.timestamp);
+        sessionEvents = sessionRows.sort((a, b) =>
+          a.timestamp - b.timestamp || compareCanonicalText(String(a.id), String(b.id))
+        );
         if (!sessionEvents.length) {
           activeSourceId = null;
           renderRows();
