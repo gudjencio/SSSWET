@@ -103,6 +103,14 @@ async function main() {
   assert.equal(snapshot.event_count, 2);
   assert.equal(snapshot.sha256.length, 64);
   assert.equal(snapshot.sha256, reversedSnapshot.sha256, "snapshot fingerprint must ignore IndexedDB cursor order");
+  assert.deepEqual(snapshot.observations.map(item => item.event_id), ["event-a", "event-b"],
+    "snapshot records must use deterministic source-time ordering");
+  const tied = await workspace.buildObservationSnapshot(SESSION, SOURCE, "monotonic", [
+    { event_id: "event-z", kind: "gps", source_timestamp: "2026-11-12T10:05:00Z" },
+    { event_id: "event-a", kind: "gps", source_timestamp: "2026-11-12T10:05:00Z" }
+  ]);
+  assert.deepEqual(tied.observations.map(item => item.event_id), ["event-a", "event-z"],
+    "equal timestamps must use locale-independent event-ID ordering");
   assert.equal((await workspace.verifyObservationSnapshot(snapshot)).valid, true);
   assert.deepEqual(Object.keys(snapshot.observations[0]).sort(), ["event_id", "kind", "source_timestamp"],
     "snapshot metadata must exclude coordinates, media and free-text annotation content");
@@ -131,6 +139,7 @@ async function main() {
     snapshotInput[0], { ...snapshotInput[1], event_id: "event-b" }
   ]), /unique/);
   await assert.rejects(() => workspace.buildObservationSnapshot(SESSION, SOURCE, "invalid", snapshotInput), /clock_basis/);
+  await assert.rejects(() => workspace.buildObservationSnapshot(SESSION, SOURCE, "wall", snapshotInput), /match the declared browser clock source/);
 
   const observations = [
     event("outside-before", "2026-11-12T09:59:59Z", 0.5),
