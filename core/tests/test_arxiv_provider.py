@@ -28,7 +28,7 @@ class FakeResponse:
         return payload if size < 0 else payload[:size]
 
 
-def test_arxiv_returns_traceable_preprint_metadata(monkeypatch):
+def test_arxiv_returns_traceable_preprint_metadata():
     seen = {}
 
     def fake_urlopen(request, timeout):
@@ -36,8 +36,7 @@ def test_arxiv_returns_traceable_preprint_metadata(monkeypatch):
         seen["timeout"] = timeout
         return FakeResponse()
 
-    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
-    result = ArxivProvider().investigate("quantum spacetime", "literature")
+    result = ArxivProvider(opener=fake_urlopen).investigate("quantum spacetime", "literature")
 
     assert result.source_ids == ("arxiv:2601.01234",)
     assert "A study of quantum spacetime" in result.evidence[0]
@@ -51,12 +50,11 @@ def test_arxiv_returns_traceable_preprint_metadata(monkeypatch):
     assert seen["timeout"] <= 30
 
 
-def test_arxiv_network_failure_does_not_fabricate_records(monkeypatch):
+def test_arxiv_network_failure_does_not_fabricate_records():
     def failed_urlopen(request, timeout):
         raise TimeoutError("network timeout")
 
-    monkeypatch.setattr("urllib.request.urlopen", failed_urlopen)
-    result = ArxivProvider().investigate("quantum spacetime", "literature")
+    result = ArxivProvider(opener=failed_urlopen).investigate("quantum spacetime", "literature")
 
     assert result.evidence == ()
     assert result.source_ids == ()
@@ -64,12 +62,11 @@ def test_arxiv_network_failure_does_not_fabricate_records(monkeypatch):
     assert "unavailable" in result.summary
 
 
-def test_arxiv_empty_query_skips_network(monkeypatch):
+def test_arxiv_empty_query_skips_network():
     def unexpected_urlopen(request, timeout):
         raise AssertionError("network should not be called")
 
-    monkeypatch.setattr("urllib.request.urlopen", unexpected_urlopen)
-    result = ArxivProvider().investigate(" ", "literature")
+    result = ArxivProvider(opener=unexpected_urlopen).investigate(" ", "literature")
 
     assert result.evidence == ()
     assert "empty" in result.summary
