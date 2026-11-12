@@ -61,6 +61,7 @@ def build_governed_manifest(
         privacy = record.get("privacy_classification", "unspecified")
         consent = record.get("consent_status", "not_recorded")
         access = record.get("access_scope", "restricted")
+        metadata = record.get("metadata") if isinstance(record.get("metadata"), dict) else {}
         license_value = str(record.get("license", "")).strip().casefold()
         if consent == "withdrawn":
             blockers.append({"dataset_id": key[0], "version": version, "code": "consent_withdrawn"})
@@ -69,6 +70,13 @@ def build_governed_manifest(
                 "dataset_id": key[0], "version": version,
                 "code": "personal_or_sensitive_data_lacks_recorded_basis",
             })
+        if privacy in {"personal_data", "sensitive_data"} and consent in {"documented", "not_required"}:
+            basis_reference = str(metadata.get("consent_basis_reference", "")).strip()
+            if not basis_reference or len(basis_reference) > 1000:
+                blockers.append({
+                    "dataset_id": key[0], "version": version,
+                    "code": "consent_basis_reference_missing",
+                })
         if publication_scope == "public" and privacy != "public":
             blockers.append({
                 "dataset_id": key[0], "version": version,
@@ -78,11 +86,6 @@ def build_governed_manifest(
             blockers.append({
                 "dataset_id": key[0], "version": version,
                 "code": "public_scope_requires_recorded_consent_basis",
-            })
-        if publication_scope == "public" and privacy in {"personal_data", "sensitive_data"}:
-            blockers.append({
-                "dataset_id": key[0], "version": version,
-                "code": "personal_or_sensitive_data_not_public",
             })
         if publication_scope == "public" and access != "public":
             blockers.append({
