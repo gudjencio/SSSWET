@@ -36,8 +36,12 @@ jobs:
           node --check web/app.js
           node --check web/bot-personality.js
           node --check web/bot-live-room.js
+          node --check web/temporal-clock.js
+          node --check web/gps-scenario-model.js
           node web/test-locales.cjs
           node web/test-bot-personality.cjs
+          node web/test-temporal-clock.cjs
+          node web/test-gps-scenario-model.cjs
       - name: Run complete core test suite
         working-directory: core
         run: python -m pytest -q
