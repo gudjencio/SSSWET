@@ -515,6 +515,33 @@ def test_broad_scholarly_provider_preserves_provider_observations_and_conflicts(
     assert report.scientific_validity_established is False
 
 
+
+def test_broad_scholarly_provider_caps_results_and_reports_partial_provider_failure():
+    from ssswet_core.providers import BroadScholarlyLiteratureProvider, ProviderResult
+
+    class ManyProvider:
+        name = "many-records"
+        def investigate(self, objective, strategy):
+            source_ids = tuple("10.9999/paper-" + str(index) for index in range(25))
+            evidence = tuple(
+                "Paper " + str(index) + " | Author | 2026 | Journal | DOI: " + source_id
+                + " | URL: https://example.org/" + str(index)
+                for index, source_id in enumerate(source_ids)
+            )
+            return ProviderResult("Fixture records", evidence, 1.0, source_ids)
+
+    class FailingProvider:
+        name = "failing-provider"
+        def investigate(self, objective, strategy):
+            raise TimeoutError("fixture timeout")
+
+    provider = BroadScholarlyLiteratureProvider(providers=[ManyProvider(), FailingProvider()])
+    result = provider.investigate("bounded discovery", "test")
+    assert len(result.source_ids) == 20
+    assert len(result.evidence) == 20
+    assert "failing-provider:TimeoutError" in result.summary
+    assert "failing-provider" in result.summary
+
 def _start_server(tmp_path):
     store = _memory_fixture(tmp_path)
     _campaign(store)
