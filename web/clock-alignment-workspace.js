@@ -1167,9 +1167,11 @@
     let rows = [{ eventId: "", referenceTimestamp: "", uncertainty: "", evidenceRef: "" },
       { eventId: "", referenceTimestamp: "", uncertainty: "", evidenceRef: "" }];
     let sessionEvents = [];
+    let activeSourceId = null;
     let latest = null;
     let busy = false;
     let loadVersion = 0;
+    let selectionVersion = 0;
     let refreshTimer = null;
     let currentStatusKey = null;
 
@@ -1368,15 +1370,41 @@
           setStatusKey("legacy");
           return;
         }
-        sessionEvents = allEvents.filter(event => sessionKey(event) === key)
-          .filter(event => Number.isFinite(Number(event.timestamp)))
-          .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
-        if (sessionEvents.length > MAX_EVENTS) {
+        const sessionRows = allEvents.filter(event => sessionKey(event) === key);
+        if (sessionRows.length > MAX_EVENTS) {
           sessionEvents = [];
+          activeSourceId = null;
           renderRows();
           setStatusKey("tooMany");
           return;
         }
+        if (sessionRows.some(event => typeof event.timestamp !== "number" || !Number.isFinite(event.timestamp))) {
+          sessionEvents = [];
+          activeSourceId = null;
+          renderRows();
+          setStatusKey("invalid");
+          return;
+        }
+        sessionEvents = sessionRows.sort((a, b) => a.timestamp - b.timestamp);
+        const eventIds = sessionEvents.map(event => String(event.id || ""));
+        if (eventIds.some(id => !id || id.length > MAX_ID_LENGTH) || new Set(eventIds).size !== eventIds.length) {
+          sessionEvents = [];
+          activeSourceId = null;
+          renderRows();
+          setStatusKey("invalid");
+          return;
+        }
+        const clockBases = new Set(sessionEvents.map(event =>
+          typeof event.monotonicElapsedMs === "number" && Number.isFinite(event.monotonicElapsedMs) ? "monotonic" : "wall"
+        ));
+        if (clockBases.size !== 1) {
+          sessionEvents = [];
+          activeSourceId = null;
+          renderRows();
+          setStatusKey("invalid");
+          return;
+        }
+        activeSourceId = SOURCE_ID + "-" + Array.from(clockBases)[0];
         if (!sessionEvents.length) {
           renderRows();
           setStatusKey("noEvents");
@@ -1445,12 +1473,12 @@
       thead.append(header);
       table.append(thead);
       const tbody = document.createElement("tbody");
-      const eventById = new Map(sessionEvents.map(event => [String(event.id), event]));
+      const eventById = new Map(latest.observations.map(event => [event.id, event]));
       alignment.events.slice(0, 100).forEach(report => {
         const event = eventById.get(report.event_id);
         const row = document.createElement("tr");
         const observation = document.createElement("td");
-        observation.textContent = event ? String(event.kind || "observation") + " · " + report.event_id.slice(0, 12) : report.event_id;
+        observation.textContent = event ? event.kind + " · " + report.event_id.slice(0, 12) : report.event_id;
         const source = document.createElement("td");
         source.textContent = report.source_timestamp || "—";
         const aligned = document.createElement("td");
@@ -1511,7 +1539,7 @@
           }
           return {
             session_id: clockId,
-            source_id: SOURCE_ID,
+            source_id: sourceId,
             source_timestamp: sourceTimestamp,
             reference_timestamp: parsedReference.iso,
             uncertainty_seconds: uncertainty,
@@ -1521,11 +1549,11 @@
         busy = true;
         buildButton.disabled = true;
         const model = await buildClockModel(anchors);
-        if (sessionSelect.value !== buildSessionKey || loadVersion !== buildLoadVersion) fail("Selected session changed during alignment");
+        if (sessionSelect.value !== buildSessionKey || selectionVersion !== buildSelectionVersion) fail("Selected session changed during alignment");
         const eventRecords = selectedEventsSnapshot.map(event => ({
           event_id: String(event.id),
           session_id: clockId,
-          source_id: SOURCE_ID,
+          source_id: sourceId,
           timestamp: pythonIsoFromEpochMs(Number(event.timestamp)),
           uncertainty_seconds: eventBound
         }));
@@ -1537,7 +1565,13 @@
           alignment: alignment,
           eventBound: eventBound,
           observationCount: selectedEventsSnapshot.length,
-          observationIds: selectedEventsSnapshot.map(event => String(event.id))
+          observationIds: selectedEventsSnapshot.map(event => String(event.id)),
+          observations: selectedEventsSnapshot.map(event => ({
+            id: String(event.id),
+            kind: String(event.kind || "observation"),
+            timestamp: pythonIsoFromEpochMs(Number(event.timestamp))
+          })),
+          sourceSnapshotAt: new Date().toISOString()
         };
         renderResult();
         exportButton.disabled = false;
@@ -1555,17 +1589,18 @@
 
     function exportDerived() {
       if (!latest) return;
-      const eventById = new Map(sessionEvents.map(event => [String(event.id), event]));
+      const eventById = new Map(latest.observations.map(event => [event.id, event]));
       const observations = latest.alignment.events.map(report => ({
         event_id: report.event_id,
-        kind: eventById.get(report.event_id) ? String(eventById.get(report.event_id).kind || "observation") : "observation",
-        source_timestamp: report.source_timestamp || null,
+        kind: eventById.get(report.event_id) ? eventById.get(report.event_id).kind : "observation",
+        source_timestamp: report.source_timestamp || (eventById.get(report.event_id) && eventById.get(report.event_id).timestamp) || null,
         status: report.status,
         aligned_at: report.aligned_at || null
       }));
       const payload = {
         format: "ssswet-local-clock-alignment-export-v1",
         exported_at: new Date().toISOString(),
+        source_snapshot_at: latest.sourceSnapshotAt,
         local_only: true,
         source_observations_unchanged: true,
         media_included: false,
@@ -1608,7 +1643,10 @@
     exportButton.addEventListener("click", exportDerived);
     refreshButton.addEventListener("click", loadSession);
     eventBoundInput.addEventListener("input", invalidateForInput);
-    sessionSelect.addEventListener("change", loadSession);
+    sessionSelect.addEventListener("change", () => {
+      selectionVersion += 1;
+      loadSession();
+    });
     if (languageSelect) languageSelect.addEventListener("change", applyLocale);
     window.addEventListener("ssswet:observations-updated", scheduleReload);
     applyLocale();
