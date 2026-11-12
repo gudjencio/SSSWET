@@ -289,7 +289,14 @@ def _validate_provider_response_url(response, request_url: str, allowed_hosts: s
     from urllib.parse import urlsplit
     final_url = getattr(response, "geturl", lambda: request_url)() or request_url
     parsed = urlsplit(final_url)
-    if parsed.scheme != "https" or parsed.hostname not in allowed_hosts:
+    try:
+        port = parsed.port
+    except ValueError as exc:
+        raise ValueError("provider response URL has an invalid port") from exc
+    if (
+        parsed.scheme != "https" or parsed.hostname not in allowed_hosts
+        or parsed.username or parsed.password or port not in (None, 443)
+    ):
         raise ValueError("provider redirected outside its HTTPS host allowlist")
 
 
@@ -524,6 +531,10 @@ class BroadScholarlyLiteratureProvider:
         return "source:" + source
 
     def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        if not isinstance(objective, str) or not objective.strip() or len(objective) > 1_000:
+            raise ValueError("objective must contain 1 to 1000 characters")
+        if not isinstance(strategy, str) or len(strategy) > 1_000:
+            raise ValueError("strategy must be text of at most 1000 characters")
         with ThreadPoolExecutor(max_workers=len(self.providers), thread_name_prefix="ssswet-scholar") as executor:
             futures = {
                 executor.submit(provider.investigate, objective, strategy): provider
@@ -543,19 +554,18 @@ class BroadScholarlyLiteratureProvider:
 
         grouped: dict[str, list[dict]] = {}
         for provider, result in provider_results:
-            for source_id, evidence in zip(result.source_ids, result.evidence):
+            for source_id, evidence in zip(result.source_ids[:20], result.evidence[:20]):
+                source_id = str(source_id)[:500]
+                evidence = str(evidence)[:2_000]
                 identity = self._identity(source_id, evidence)
                 if not identity or identity == "source:":
                     continue
-                existing = next((item for item in result.provenance if item.get("source_id") == source_id), None)
-                observation = dict(existing) if isinstance(existing, dict) else {
-                    "identity": identity, "provider": provider.name,
-                    "source_id": source_id, "evidence": evidence,
+                observation = {
+                    "identity": identity,
+                    "provider": provider.name[:100],
+                    "source_id": source_id,
+                    "evidence": evidence,
                 }
-                observation["identity"] = identity
-                observation["provider"] = provider.name
-                observation["source_id"] = source_id
-                observation["evidence"] = evidence
                 grouped.setdefault(identity, []).append(observation)
 
         evidence_items, source_ids, provenance = [], [], []
