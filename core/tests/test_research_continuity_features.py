@@ -8,7 +8,6 @@ from urllib.request import urlopen
 
 import pytest
 
-from ssswet_core.collective_memory import CollectiveMemoryRecord
 from ssswet_core.dataset_registry import DatasetRegistry, DatasetVersion
 from ssswet_core.governed_reproducibility import build_governed_manifest
 from ssswet_core.knowledge_graph import KnowledgeEdge, KnowledgeNode
