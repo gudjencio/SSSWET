@@ -10,6 +10,7 @@ class ProviderResult:
     evidence: tuple[str, ...] = ()
     uncertainty: float = 1.0
     source_ids: tuple[str, ...] = ()
+    provenance: tuple[dict, ...] = ()
 
 
 class ResearchProvider(Protocol):
@@ -281,6 +282,299 @@ class OpenAlexProvider:
             evidence=tuple(evidence),
             uncertainty=1.0,
             source_ids=tuple(source_ids),
+        )
+
+
+def _read_bounded(response, max_bytes: int) -> bytes:
+    data = response.read(max_bytes + 1)
+    if len(data) > max_bytes:
+        raise ValueError("provider response exceeded the configured byte limit")
+    return data
+
+
+def _doi_identity(value: str) -> str:
+    value = str(value or "").strip().casefold()
+    for prefix in ("https://doi.org/", "http://doi.org/", "doi:"):
+        if value.startswith(prefix):
+            value = value[len(prefix):]
+    return value
+
+
+class ArxivProvider:
+    """Search arXiv's public Atom API for bounded bibliographic metadata."""
+
+    name = "arxiv-public-search"
+    endpoint = "https://export.arxiv.org/api/query"
+    atom_namespace = "{http://www.w3.org/2005/Atom}"
+
+    def __init__(self, max_results: int = 5, timeout: float = 12.0):
+        self.max_results = max(1, min(int(max_results), 20))
+        self.timeout = max(2.0, min(float(timeout), 30.0))
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        from urllib.error import HTTPError, URLError
+        from urllib.parse import urlencode
+        from urllib.request import Request, urlopen
+        import xml.etree.ElementTree as ET
+
+        query = objective.strip()
+        if not query:
+            return ProviderResult("The literature search objective is empty.", uncertainty=1.0)
+        request = Request(
+            self.endpoint + "?" + urlencode({
+                "search_query": "all:" + query,
+                "start": 0,
+                "max_results": self.max_results,
+            }),
+            headers={"Accept": "application/atom+xml", "User-Agent": "SSSWET/0.1 scholarly discovery"},
+        )
+        try:
+            with urlopen(request, timeout=self.timeout) as response:
+                raw = _read_bounded(response, 2_000_000)
+            upper = raw.upper()
+            if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
+                raise ValueError("DTD and entity declarations are not accepted")
+            root = ET.fromstring(raw)
+        except (HTTPError, URLError, TimeoutError, OSError, ValueError, ET.ParseError) as exc:
+            return ProviderResult(
+                f"arXiv metadata search unavailable: {type(exc).__name__}. No result was inferred.",
+                uncertainty=1.0,
+            )
+
+        evidence, source_ids, provenance = [], [], []
+        for entry in root.findall(self.atom_namespace + "entry")[:self.max_results]:
+            title = " ".join((entry.findtext(self.atom_namespace + "title") or "").split())
+            item_url = (entry.findtext(self.atom_namespace + "id") or "").strip()
+            if not title or not item_url:
+                continue
+            import re
+            match = re.search(r"/abs/([^/?#]+)", item_url)
+            if not match:
+                continue
+            full_id = match.group(1)
+            base_id = re.sub(r"v[0-9]+$", "", full_id)
+            identity = "arxiv:" + base_id.casefold()
+            authors = [
+                " ".join((author.findtext(self.atom_namespace + "name") or "").split())
+                for author in entry.findall(self.atom_namespace + "author")
+            ]
+            authors = [item for item in authors if item][:4]
+            published = (entry.findtext(self.atom_namespace + "published") or "")[:4]
+            doi = (entry.findtext("{http://arxiv.org/schemas/atom}doi") or "").strip()
+            canonical_url = "https://arxiv.org/abs/" + full_id
+            evidence_item = (
+                f"{title} | {', '.join(authors) or 'authors unavailable'} | "
+                f"{published or 'date unavailable'} | arXiv {full_id} "
+                f"| DOI: {doi or 'unavailable'} | URL: {canonical_url}"
+            )
+            source_ids.append(identity)
+            evidence.append(evidence_item)
+            provenance.append({
+                "identity": identity,
+                "provider": self.name,
+                "source_id": identity,
+                "evidence": evidence_item,
+            })
+        return ProviderResult(
+            summary=(
+                f"arXiv returned {len(evidence)} preprint metadata record(s). "
+                "Preprint status and metadata do not establish peer review or scientific validity."
+            ),
+            evidence=tuple(evidence),
+            uncertainty=1.0,
+            source_ids=tuple(source_ids),
+            provenance=tuple(provenance),
+        )
+
+
+class EuropePMCProvider:
+    """Search Europe PMC's public API for biomedical bibliographic metadata."""
+
+    name = "europe-pmc-public-search"
+    endpoint = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
+
+    def __init__(self, max_results: int = 5, timeout: float = 12.0):
+        self.max_results = max(1, min(int(max_results), 20))
+        self.timeout = max(2.0, min(float(timeout), 30.0))
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        from urllib.error import HTTPError, URLError
+        from urllib.parse import urlencode
+        from urllib.request import Request, urlopen
+        import json
+
+        query = objective.strip()
+        if not query:
+            return ProviderResult("The literature search objective is empty.", uncertainty=1.0)
+        request = Request(
+            self.endpoint + "?" + urlencode({
+                "query": query,
+                "format": "json",
+                "pageSize": self.max_results,
+                "resultType": "core",
+            }),
+            headers={"Accept": "application/json", "User-Agent": "SSSWET/0.1 scholarly discovery"},
+        )
+        try:
+            with urlopen(request, timeout=self.timeout) as response:
+                payload = json.loads(_read_bounded(response, 2_000_000).decode("utf-8"))
+        except (HTTPError, URLError, TimeoutError, OSError, ValueError, UnicodeDecodeError) as exc:
+            return ProviderResult(
+                f"Europe PMC metadata search unavailable: {type(exc).__name__}. No result was inferred.",
+                uncertainty=1.0,
+            )
+
+        result_list = payload.get("resultList", {}) if isinstance(payload, dict) else {}
+        results = result_list.get("result", []) if isinstance(result_list, dict) else []
+        evidence, source_ids, provenance = [], [], []
+        for item in results[:self.max_results]:
+            if not isinstance(item, dict):
+                continue
+            title = " ".join(str(item.get("title") or "").split())
+            if not title:
+                continue
+            doi = str(item.get("doi") or "").strip()
+            pmid = str(item.get("pmid") or "").strip()
+            pmcid = str(item.get("pmcid") or "").strip()
+            identity = _doi_identity(doi) if doi else ("pmid:" + pmid if pmid else "pmcid:" + pmcid)
+            if not identity or identity == "pmcid:":
+                continue
+            authors = str(item.get("authorString") or "authors unavailable").strip()
+            year = str(item.get("firstPublicationDate") or "")[:4] or "date unavailable"
+            venue = str(item.get("journalTitle") or "journal unavailable").strip()
+            url_value = (
+                "https://europepmc.org/article/MED/" + pmid if pmid
+                else ("https://doi.org/" + doi if doi else "")
+            )
+            evidence_item = (
+                f"{title} | {authors[:300]} | {year} | {venue[:200]} "
+                f"| DOI: {doi or 'unavailable'} | URL: {url_value}"
+                + (f" | PMID: {pmid}" if pmid else "")
+                + (f" | PMCID: {pmcid}" if pmcid else "")
+            )
+            source_ids.append(identity)
+            evidence.append(evidence_item)
+            provenance.append({
+                "identity": identity,
+                "provider": self.name,
+                "source_id": identity,
+                "evidence": evidence_item,
+            })
+        return ProviderResult(
+            summary=(
+                f"Europe PMC returned {len(evidence)} biomedical metadata record(s). "
+                "Metadata discovery is not clinical guidance, a full-text review or scientific validation."
+            ),
+            evidence=tuple(evidence),
+            uncertainty=1.0,
+            source_ids=tuple(source_ids),
+            provenance=tuple(provenance),
+        )
+
+
+class BroadScholarlyLiteratureProvider:
+    """Opt-in four-index discovery with deduplication and retained provider observations.
+
+    The existing Crossref/OpenAlex provider remains unchanged for compatibility.
+    """
+
+    name = "broad-scholarly-literature"
+
+    def __init__(self, max_results: int = 5, timeout: float = 12.0, mailto: str = "", providers=None):
+        self.providers = tuple(providers) if providers is not None else (
+            CrossrefProvider(max_results=max_results, timeout=timeout, mailto=mailto),
+            OpenAlexProvider(max_results=max_results, timeout=timeout, mailto=mailto),
+            ArxivProvider(max_results=max_results, timeout=timeout),
+            EuropePMCProvider(max_results=max_results, timeout=timeout),
+        )
+        if not self.providers or len(self.providers) > 4:
+            raise ValueError("one to four scholarly providers are required")
+        names = [getattr(provider, "name", "") for provider in self.providers]
+        if any(not isinstance(name, str) or not name.strip() for name in names) or len(set(names)) != len(names):
+            raise ValueError("scholarly provider names must be unique and non-empty")
+
+    @staticmethod
+    def _identity(source_id: str, evidence: str) -> str:
+        import re
+        doi_match = re.search(r"\bDOI:\s*([^|]+)", evidence, re.IGNORECASE)
+        doi = _doi_identity(doi_match.group(1)) if doi_match else _doi_identity(source_id)
+        if doi and doi not in {"unavailable", "unknown"} and "/" in doi:
+            return "doi:" + doi
+        source = str(source_id).strip().casefold()
+        if source.startswith("arxiv:"):
+            return "arxiv:" + re.sub(r"v[0-9]+$", "", source.split(":", 1)[1])
+        return "source:" + source
+
+    def investigate(self, objective: str, strategy: str) -> ProviderResult:
+        with ThreadPoolExecutor(max_workers=len(self.providers), thread_name_prefix="ssswet-scholar") as executor:
+            futures = {
+                executor.submit(provider.investigate, objective, strategy): provider
+                for provider in self.providers
+            }
+            provider_results = []
+            failures = []
+            for future, provider in futures.items():
+                try:
+                    result = future.result()
+                    provider_results.append((provider, result))
+                except Exception as exc:
+                    failures.append(f"{provider.name}:{type(exc).__name__}")
+                    provider_results.append((provider, ProviderResult(
+                        f"{provider.name} failed: {type(exc).__name__}", uncertainty=1.0
+                    )))
+
+        grouped: dict[str, list[dict]] = {}
+        for provider, result in provider_results:
+            for source_id, evidence in zip(result.source_ids, result.evidence):
+                identity = self._identity(source_id, evidence)
+                if not identity or identity == "source:":
+                    continue
+                existing = next((item for item in result.provenance if item.get("source_id") == source_id), None)
+                observation = dict(existing) if isinstance(existing, dict) else {
+                    "identity": identity, "provider": provider.name,
+                    "source_id": source_id, "evidence": evidence,
+                }
+                observation["identity"] = identity
+                observation["provider"] = provider.name
+                observation["source_id"] = source_id
+                observation["evidence"] = evidence
+                grouped.setdefault(identity, []).append(observation)
+
+        evidence_items, source_ids, provenance = [], [], []
+        for identity in sorted(grouped):
+            observations = sorted(
+                grouped[identity],
+                key=lambda item: (str(item.get("provider", "")), str(item.get("source_id", ""))),
+            )
+            provider_names = sorted({str(item.get("provider", "")) for item in observations})
+            first = observations[0].get("evidence", "")
+            evidence_items.append(f"[{'+'.join(provider_names)}] {first}")
+            source_ids.append(identity.removeprefix("doi:") if identity.startswith("doi:") else identity)
+            provenance.append({
+                "identity": source_ids[-1],
+                "provider_records": observations,
+                "provider_count": len(provider_names),
+                "provider_names": provider_names,
+            })
+
+        if not evidence_items:
+            failure_text = "; ".join(failures) if failures else "no usable records"
+            return ProviderResult(
+                "No usable scholarly metadata was returned (" + failure_text + "). No result was inferred.",
+                uncertainty=1.0,
+            )
+        successful = sum(1 for _, result in provider_results if result.evidence)
+        return ProviderResult(
+            summary=(
+                f"Broad discovery returned {len(evidence_items)} unique bibliographic lead(s) "
+                f"from {successful}/{len(self.providers)} provider(s). Provider observations are retained; "
+                "metadata conflicts require human inspection and no source is treated as ground truth."
+                + (" Partial failures: " + "; ".join(failures) if failures else "")
+            ),
+            evidence=tuple(evidence_items),
+            uncertainty=1.0,
+            source_ids=tuple(source_ids),
+            provenance=tuple(provenance),
         )
 
 
