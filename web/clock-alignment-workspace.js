@@ -1358,6 +1358,7 @@
         const key = sessionSelect.value;
         if (!key) {
           sessionEvents = [];
+          activeSourceId = null;
           rows.forEach(row => { row.eventId = ""; });
           renderRows();
           setStatusKey("noSession");
@@ -1520,6 +1521,7 @@
       const buildSessionKey = sessionSelect.value;
       const buildSelectionVersion = selectionVersion;
       const selectedEventsSnapshot = sessionEvents.slice();
+      const sourceSnapshotAt = new Date().toISOString();
       const sourceId = activeSourceId;
       const clockId = selectedEventsSnapshot[0] && String(selectedEventsSnapshot[0].clockSessionId || "");
       if (!clockId || !sourceId || !selectedEventsSnapshot.length || selectedEventsSnapshot.length > MAX_EVENTS) {
@@ -1578,7 +1580,7 @@
             kind: String(event.kind || "observation"),
             timestamp: pythonIsoFromEpochMs(Number(event.timestamp))
           })),
-          sourceSnapshotAt: new Date().toISOString()
+          sourceSnapshotAt: sourceSnapshotAt
         };
         renderResult();
         exportButton.disabled = false;
@@ -1587,7 +1589,7 @@
         latest = null;
         exportButton.disabled = true;
         results.replaceChildren();
-        setStatus(words().invalid + (error && error.message ? " " + error.message : ""));
+        setStatusKey(error && /SHA-256/.test(error.message || "") ? "noCrypto" : "invalid");
       } finally {
         busy = false;
         buildButton.disabled = !sessionEvents.length || !sessionEvents[0].clockSessionId || sessionEvents.length > MAX_EVENTS;
