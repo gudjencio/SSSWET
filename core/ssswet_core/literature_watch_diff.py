@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from .source_identity import canonicalize_url
@@ -18,7 +19,8 @@ def _identity(candidate: dict[str, Any]) -> str:
         return "doi:" + doi
     source_id = str(candidate.get("source_id", "")).strip()
     if source_id.casefold().startswith("arxiv:"):
-        return "arxiv:" + source_id.split(":", 1)[1].casefold()
+        arxiv_id = source_id.split(":", 1)[1].casefold()
+        return "arxiv:" + re.sub(r"v[0-9]+$", "", arxiv_id)
     url = str(candidate.get("url", "")).strip()
     if url:
         try:
