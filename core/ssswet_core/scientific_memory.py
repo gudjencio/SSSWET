@@ -136,6 +136,45 @@ class ScientificMemoryService:
             "automatic_adjudication": False,
         }
 
+    def lineage_page(
+        self, version_id: str, *, limit: int = 50,
+        before_version_number: int | None = None,
+    ) -> dict | None:
+        """Return one bounded page of a version's predecessor history."""
+        if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 100:
+            raise ValueError("limit must be an integer between 1 and 100")
+        selected = self.store.get_scientific_memory_version(version_id)
+        if selected is None:
+            return None
+        cursor = before_version_number
+        if cursor is None:
+            cursor = int(selected["version_number"]) + 1
+        page = self.store.scientific_memory_history_page_for_key(
+            selected["memory_key"], before_version_number=cursor, limit=limit + 1
+        )
+        raw_items = page["items"]
+        has_more = len(raw_items) > limit
+        items = raw_items[:limit]
+        next_cursor = items[-1]["version_number"] if has_more and items else None
+        latest = self.store.scientific_memory_history_page_for_key(
+            selected["memory_key"], before_version_number=None, limit=1
+        )["items"]
+        return {
+            "memory_key": selected["memory_key"],
+            "selected_version": selected,
+            "items": items,
+            "page_order": "newest_to_oldest",
+            "page_count": len(items),
+            "total_versions": page["total_count"],
+            "current_version_id": latest[0]["version_id"] if latest else "",
+            "has_more_predecessors": has_more,
+            "next_before_version_number": next_cursor,
+            "revision_chain_is_complete": not has_more and len(items) == page["total_count"],
+            "retrieval_is_sql_bounded": True,
+            "scientific_validity_established": False,
+            "automatic_adjudication": False,
+        }
+
     def evolution_alerts(self, limit: int = 500) -> dict:
         """Flag current memories challenged by later graph evidence for human review."""
         versions = self.store.scientific_memory_history(limit=limit)
