@@ -36,7 +36,10 @@ jobs:
           node --check web/donation-config.js
           node --check web/product-purchase-config.js
           node --check web/version-center.js
+          node --check web/service-worker-updates.js
+          node --check web/sw.js
           node web/test-locales.cjs
+          node web/test-service-worker.cjs
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
