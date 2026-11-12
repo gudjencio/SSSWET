@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import threading
+import time
 from http.server import ThreadingHTTPServer
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -14,6 +15,7 @@ from ssswet_core.knowledge_graph import KnowledgeEdge, KnowledgeNode
 from ssswet_core.knowledge_graph_neighborhood import build_neighborhood
 from ssswet_core.literature_watch import LiteratureWatchReport, WatchCandidate
 from ssswet_core.literature_watch_diff import compare_watch_reports
+from ssswet_core.memory_retrieval_evaluation import evaluate_retrieval
 from ssswet_core.persistence import SQLiteResearchStore
 from ssswet_core.reproducibility_manifest import verify_manifest
 from ssswet_core.research_context_pack import build_research_context
@@ -72,6 +74,32 @@ def test_research_context_pack_keeps_provenance_and_linked_contradictions(tmp_pa
     assert first["used_chars"] <= first["budget_chars"]
     assert first["scientific_validity_established"] is False
     assert first["automatic_adjudication"] is False
+
+
+def test_context_pack_retrieval_quality_provenance_contradiction_latency_and_storage(tmp_path):
+    store = _memory_fixture(tmp_path)
+    started = time.perf_counter()
+    pack = build_research_context(store, "wave propagation", limit=10, max_chars=8_000)
+    latency_ms = (time.perf_counter() - started) * 1000
+    retrieved_ids = [item["version_id"] for item in pack["memories"]]
+    metrics = evaluate_retrieval(
+        [{
+            "query_id": "wave-propagation",
+            "relevant_ids": ["memory-v1"],
+            "retrieved_ids": retrieved_ids,
+            "contradictory_ids": ["memory-v1"],
+            "latency_ms": latency_ms,
+        }],
+        top_k=10,
+        provenance_groups={"memory-v1": "publisher-a"},
+        storage_bytes=store.path.stat().st_size,
+    )
+    assert metrics["aggregate"]["precision_at_k"] > 0
+    assert metrics["aggregate"]["recall_at_k"] == 1.0
+    assert metrics["aggregate"]["provenance_group_recall_at_k"] == 1.0
+    assert metrics["aggregate"]["contradiction_retention_at_k"] == 1.0
+    assert metrics["latency_ms"]["sample_count"] == 1
+    assert metrics["storage_bytes"] > 0
 
 
 def test_research_context_pack_is_bounded_and_rejects_invalid_budgets(tmp_path):
