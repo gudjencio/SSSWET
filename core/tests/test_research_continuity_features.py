@@ -295,6 +295,66 @@ def test_scientific_memory_lineage_pages_are_bounded_and_complete_without_overla
         service.lineage_page("version-35", limit=101)
 
 
+def test_governed_manifest_requires_a_traceable_basis_for_personal_data(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "personal-governed.sqlite3")
+    _campaign(store)
+    DatasetRegistry(store).register_version(DatasetVersion(
+        "personal-approved", 1, "Restricted personal dataset",
+        "Metadata-only governance record", "campaign-a", "CC-BY-4.0", (),
+        "e" * 64, metadata={"consent_basis_reference": "internal-review-record-2026-11"},
+        privacy_classification="personal_data", consent_status="documented",
+        retention_policy="Project review date recorded", access_scope="project",
+    ))
+    result = build_governed_manifest(
+        store, protocol_id="p", protocol_version=1,
+        dataset_refs=[{"dataset_id": "personal-approved", "version": 1}],
+        software_version="test", parameters={}, source_ids=[],
+        publication_scope="project",
+    )
+    assert result["manifest_created"] is True
+    assert result["manifest"]["dataset_refs"][0]["privacy_classification"] == "personal_data"
+
+    store2 = SQLiteResearchStore(tmp_path / "personal-no-reference.sqlite3")
+    _campaign(store2)
+    DatasetRegistry(store2).register_version(DatasetVersion(
+        "personal-no-reference", 1, "Personal dataset",
+        "Metadata-only governance record", "campaign-a", "CC-BY-4.0", (),
+        "f" * 64, privacy_classification="personal_data", consent_status="documented",
+        retention_policy="Project review date recorded", access_scope="project",
+    ))
+    blocked = build_governed_manifest(
+        store2, protocol_id="p", protocol_version=1,
+        dataset_refs=[{"dataset_id": "personal-no-reference", "version": 1}],
+        software_version="test", parameters={}, source_ids=[],
+        publication_scope="project",
+    )
+    assert blocked["manifest_created"] is False
+    assert "consent_basis_reference_missing" in {
+        item["code"] for item in blocked["blocking_issues"]
+    }
+
+
+def test_governed_manifest_requires_dataset_content_digest(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "missing-digest.sqlite3")
+    _campaign(store)
+    DatasetRegistry(store).register_version(DatasetVersion(
+        "no-digest", 1, "Public dataset without a digest",
+        "Metadata-only governance record", "campaign-a", "CC-BY-4.0", (),
+        privacy_classification="public", consent_status="not_required",
+        retention_policy="Public archive", access_scope="public",
+    ))
+    result = build_governed_manifest(
+        store, protocol_id="p", protocol_version=1,
+        dataset_refs=[{"dataset_id": "no-digest", "version": 1}],
+        software_version="test", parameters={}, source_ids=[],
+        publication_scope="public",
+    )
+    assert result["manifest_created"] is False
+    assert "content_digest_not_recorded" in {
+        item["code"] for item in result["blocking_issues"]
+    }
+
+
 class _FakeResponse:
     def __init__(self, payload):
         self.payload = payload
