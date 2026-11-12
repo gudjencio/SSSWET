@@ -1,7 +1,7 @@
 /* SSSWET web shell: versioned cache, safe partial precache and network-first updates. */
 "use strict";
 
-const CACHE = "ssswet-web-v198";
+const CACHE = "ssswet-web-v199";
 const CORE_ASSETS = [
   "./",
   "./index.html",
