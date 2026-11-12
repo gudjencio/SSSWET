@@ -307,9 +307,10 @@ class ArxivProvider:
     endpoint = "https://export.arxiv.org/api/query"
     atom_namespace = "{http://www.w3.org/2005/Atom}"
 
-    def __init__(self, max_results: int = 5, timeout: float = 12.0):
+    def __init__(self, max_results: int = 5, timeout: float = 12.0, opener=None):
         self.max_results = max(1, min(int(max_results), 20))
         self.timeout = max(2.0, min(float(timeout), 30.0))
+        self.opener = opener
 
     def investigate(self, objective: str, strategy: str) -> ProviderResult:
         from urllib.error import HTTPError, URLError
@@ -329,7 +330,7 @@ class ArxivProvider:
             headers={"Accept": "application/atom+xml", "User-Agent": "SSSWET/0.1 scholarly discovery"},
         )
         try:
-            with urlopen(request, timeout=self.timeout) as response:
+            with (self.opener or urlopen)(request, timeout=self.timeout) as response:
                 raw = _read_bounded(response, 2_000_000)
             upper = raw.upper()
             if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
@@ -393,9 +394,10 @@ class EuropePMCProvider:
     name = "europe-pmc-public-search"
     endpoint = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 
-    def __init__(self, max_results: int = 5, timeout: float = 12.0):
+    def __init__(self, max_results: int = 5, timeout: float = 12.0, opener=None):
         self.max_results = max(1, min(int(max_results), 20))
         self.timeout = max(2.0, min(float(timeout), 30.0))
+        self.opener = opener
 
     def investigate(self, objective: str, strategy: str) -> ProviderResult:
         from urllib.error import HTTPError, URLError
@@ -416,7 +418,7 @@ class EuropePMCProvider:
             headers={"Accept": "application/json", "User-Agent": "SSSWET/0.1 scholarly discovery"},
         )
         try:
-            with urlopen(request, timeout=self.timeout) as response:
+            with (self.opener or urlopen)(request, timeout=self.timeout) as response:
                 payload = json.loads(_read_bounded(response, 2_000_000).decode("utf-8"))
         except (HTTPError, URLError, TimeoutError, OSError, ValueError, UnicodeDecodeError) as exc:
             return ProviderResult(
