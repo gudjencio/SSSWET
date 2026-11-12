@@ -224,3 +224,33 @@ The Python research core now provides a version-2 clock-alignment model that ret
 The browser timeline continues to use its existing session-monotonic capture timestamps. This core utility is not yet wired to automatically align or rewrite browser records; an explicit, consent-aware interface and a source-specific evidence workflow are required before that integration.
 
 **Regression acceptance criteria:** (1) reversing the input order of the same identified anchors produces the same model digest; (2) every aligned event reports its bracketing anchor IDs and interpolation fraction; (3) exact-anchor events cite one anchor once, not twice; (4) adjacent-interval drift is reproducible from the supplied pairs; (5) missing anchor or event uncertainty prevents a numeric declared envelope; (6) a complete declared-bound fixture reproduces the linear-sum result; (7) a model with extrapolation enabled or confidence-interval semantics is rejected even if its digest is recomputed; (8) duplicate/oversized IDs and evidence references are rejected; (9) out-of-range and cross-session/source events remain unaligned; and (10) version-1 models remain readable without overstating their uncertainty or provenance. These tests validate deterministic model behavior, not the accuracy of the external reference clock, the correctness of user-supplied anchors, or recovery of unrecorded history.
+
+
+## Local browser clock-calibration workspace
+
+The browser module now provides a local-only clock-calibration workspace for one selected capture session. It reads the existing events object store through a read-only IndexedDB transaction. It does not modify, replace, delete, upload, or automatically export source observations, and it does not read or include media blobs.
+
+The researcher selects at least two distinct recorded observations as clock anchors and enters the corresponding independently established reference timestamps. Reference timestamps must be ISO 8601 values with an explicit Z or ±HH:MM timezone offset; the browser implementation accepts millisecond precision or less. Both source-anchor times and reference-anchor times must be strictly increasing after source-time sorting. The interface supports at most 20 anchors per preview and refuses sessions containing more than 5,000 observations rather than silently truncating them.
+
+Only sessions with a stable clockSessionId are eligible. The older legacy grouping is intentionally excluded because it cannot reliably establish a unique capture-session clock. The browser model uses the selected session ID and the explicit source label browser-session-clock; it never combines events from other sessions or sources.
+
+The browser implementation uses the same schema-v2 anchor model, piecewise-linear interpolation assumptions, diagnostic drift calculations, declared absolute-bound semantics, and canonical SHA-256 model fingerprint as core/ssswet_core/temporal_clock_alignment.py. A deterministic regression fixture verifies that the browser and Python implementations produce the same model digest. This cross-runtime check covers the declared model representation; it does not authenticate source timestamps or user-supplied reference evidence.
+
+No extrapolation is performed. Events outside the first and last anchor timestamps receive an outside_anchor_range status and no derived reference time. Interval drift in parts per million is diagnostic only and is not used as proof of clock stability between anchors. The browser rounds derived timestamps to its 1 ms resolution; this is a representation limit, not a clock-accuracy claim.
+
+Anchor uncertainty bounds are optional and must be user-declared. An optional event timestamp bound can be supplied once for the session; if supplied, the workspace applies that same absolute bound uniformly to every event in that session. This uniform-bound choice is an explicit user assumption and should not be used when event uncertainty varies materially. Missing required bounds are not treated as zero: the numerical uncertainty envelope is withheld. When present, the envelope is a conditional sum of declared absolute bounds under the piecewise-linear model, not a standard deviation or confidence interval.
+
+Reference-evidence identifiers are optional user-supplied strings. The workspace records them for provenance but does not inspect or authenticate the referenced material. A complete identifier list is therefore not proof that the underlying evidence is genuine or correctly interpreted.
+
+The preview table displays at most the first 100 aligned-event reports for usability; the downloaded JSON contains all processed reports, the schema-v2 model, the model fingerprint, the assumptions, and compact observation metadata (IDs, event kinds and timestamps). The export contains no media. It is created only after the user explicitly presses the export button. The derived alignment is not written back into IndexedDB.
+
+### Evidence categories and limits
+
+- **Measured/recorded observation:** the original event timestamp and event metadata stored by the browser.
+- **User-supplied reference:** a reference timestamp and optional evidence identifier entered by the researcher; not independently verified by the application.
+- **Derived result:** the aligned reference timestamp calculated between declared anchors.
+- **Heuristic/diagnostic:** interval drift in ppm; it is not a probability or validation score.
+- **Model assumption:** piecewise-linear clock behaviour between anchors.
+- **Unknown:** clock behaviour outside the anchor range, undocumented timestamp corrections, authenticity of reference evidence, and any unrecorded event history.
+
+This workspace calibrates a recorded session's timeline under explicit assumptions. It does not recover unrecorded history, establish event identity, predict future events, or create a real time machine.
