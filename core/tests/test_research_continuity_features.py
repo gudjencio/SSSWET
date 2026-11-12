@@ -643,7 +643,7 @@ def test_new_research_read_endpoints_are_bounded_and_read_only(tmp_path):
             "/api/scientific-memory/lineage-page",
         ):
             try:
-                urlopen(base + path)
+                _admin_urlopen(base + path)
             except HTTPError as error:
                 assert error.code == 400
             else:
@@ -733,16 +733,23 @@ def test_literature_watch_diff_normalizes_arxiv_version_suffixes():
     assert result["counts"]["metadata_changed"] == 1
 
 
-def test_governed_manifest_rejects_malformed_dataset_digest(tmp_path):
+def test_governed_manifest_rejects_malformed_dataset_digest(tmp_path, monkeypatch):
     store = SQLiteResearchStore(tmp_path / "malformed-digest.sqlite3")
     _campaign(store)
     DatasetRegistry(store).register_version(DatasetVersion(
         "malformed-digest", 1, "Public dataset with malformed digest",
         "Metadata-only governance record", "campaign-a", "CC-BY-4.0", (),
-        "not-a-sha256", privacy_classification="public",
+        "a" * 64, privacy_classification="public",
         consent_status="not_required", retention_policy="Public archive",
         access_scope="public",
     ))
+    original_get = store.get_lab_dataset
+    def corrupted_record(dataset_id, version):
+        record = original_get(dataset_id, version)
+        record["content_sha256"] = "not-a-sha256"
+        return record
+    monkeypatch.setattr(store, "get_lab_dataset", corrupted_record)
+    monkeypatch.setattr("ssswet_core.governed_reproducibility._valid_record", lambda record: True)
     result = build_governed_manifest(
         store, protocol_id="p", protocol_version=1,
         dataset_refs=[{"dataset_id": "malformed-digest", "version": 1}],
