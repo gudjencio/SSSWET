@@ -23,8 +23,9 @@ class FakeResponse:
     def __exit__(self, *args):
         return False
 
-    def read(self):
-        return ATOM.encode("utf-8")
+    def read(self, size=-1):
+        payload = ATOM.encode("utf-8")
+        return payload if size < 0 else payload[:size]
 
 
 def test_arxiv_returns_traceable_preprint_metadata(monkeypatch):
@@ -38,12 +39,13 @@ def test_arxiv_returns_traceable_preprint_metadata(monkeypatch):
     monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
     result = ArxivProvider().investigate("quantum spacetime", "literature")
 
-    assert result.source_ids == ("https://arxiv.org/abs/2601.01234v1",)
+    assert result.source_ids == ("arxiv:2601.01234",)
     assert "A study of quantum spacetime" in result.evidence[0]
     assert "Ada Lovelace" in result.evidence[0]
     assert "2026" in result.evidence[0]
-    assert "hypothetical model" in result.evidence[0]
-    assert "not necessarily peer reviewed" in result.summary
+    assert "arXiv 2601.01234v1" in result.evidence[0]
+    assert "URL: https://arxiv.org/abs/2601.01234v1" in result.evidence[0]
+    assert "do not establish peer review or scientific validity" in result.summary
     assert result.uncertainty == 1.0
     assert "search_query=all%3Aquantum" in seen["url"]
     assert seen["timeout"] <= 30
