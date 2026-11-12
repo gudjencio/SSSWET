@@ -68,6 +68,9 @@ def build_review_queue(store: Any, *, limit: int = 100) -> dict[str, Any]:
             if not candidate_id:
                 continue
             classification = candidate.get("classification")
+            if candidate.get("metadata_conflicts"):
+                add("literature_candidate", candidate_id, "cross_provider_metadata_conflict", "high",
+                    report.get("created_at", ""), "Provider metadata differs for: " + ", ".join(candidate.get("metadata_conflicts", [])))
             if classification == "possible_duplicate":
                 add("literature_candidate", candidate_id, "possible_exact_source_duplicate", "high",
                     report.get("created_at", ""), "Compare strong identifiers before registering a new source.")
