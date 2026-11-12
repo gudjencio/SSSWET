@@ -40,7 +40,6 @@ jobs:
           node --check web/technology-categories.js
           node --check web/technology-supercategories-data.js
           node --check web/technology-supercategories.js
-          node web/test-technology-supercategories.cjs
           node --check web/donation-config.js
           node --check web/product-purchase-config.js
           node --check web/temporal-clock.js
@@ -49,6 +48,8 @@ jobs:
           node --check web/keyframe-continuity.js
           node --check web/keyframe-correspondence.js
           node --check web/virtual-time-travel-link.js
+          node --check web/service-worker-updates.js
+          node --check web/sw.js
           node --check desktop/main.cjs
           node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8')); JSON.parse(require('fs').readFileSync('capacitor.config.json', 'utf8')); JSON.parse(require('fs').readFileSync('web/manifest.json', 'utf8'))"
           node --check web/report-project.js
@@ -56,6 +57,8 @@ jobs:
           node --check web/bot-personality.js
           node --check web/bot-live-room.js
           node web/test-locales.cjs
+          node web/test-service-worker.cjs
+          node web/test-technology-supercategories.cjs
           node web/test-keyframe-continuity.cjs
           node web/test-keyframe-correspondence.cjs
           node web/test-temporal-clock.cjs
