@@ -366,7 +366,7 @@ class _FakeResponse:
         return self.payload[:limit]
 
 
-def test_arxiv_provider_parses_public_metadata_and_rejects_dtd(monkeypatch):
+def test_arxiv_provider_parses_public_metadata_and_rejects_dtd():
     from ssswet_core.providers import ArxivProvider
     atom = b"""<?xml version='1.0'?>
     <feed xmlns='http://www.w3.org/2005/Atom' xmlns:arxiv='http://arxiv.org/schemas/atom'>
@@ -378,20 +378,18 @@ def test_arxiv_provider_parses_public_metadata_and_rejects_dtd(monkeypatch):
         <arxiv:doi>10.5555/example</arxiv:doi>
       </entry>
     </feed>"""
-    monkeypatch.setattr("urllib.request.urlopen", lambda *args, **kwargs: _FakeResponse(atom))
-    result = ArxivProvider().investigate("wave propagation", "test")
+    result = ArxivProvider(opener=lambda *args, **kwargs: _FakeResponse(atom)).investigate("wave propagation", "test")
     assert result.source_ids == ("arxiv:2401.01234",), result.summary
     assert "10.5555/example" in result.evidence[0]
     assert result.provenance[0]["provider"] == "arxiv-public-search"
 
     malicious = b"<!DOCTYPE feed [<!ENTITY x 'boom'>]><feed/>"
-    monkeypatch.setattr("urllib.request.urlopen", lambda *args, **kwargs: _FakeResponse(malicious))
-    rejected = ArxivProvider().investigate("wave propagation", "test")
+    rejected = ArxivProvider(opener=lambda *args, **kwargs: _FakeResponse(malicious)).investigate("wave propagation", "test")
     assert rejected.evidence == ()
     assert "ValueError" in rejected.summary
 
 
-def test_europe_pmc_provider_parses_public_metadata(monkeypatch):
+def test_europe_pmc_provider_parses_public_metadata():
     from ssswet_core.providers import EuropePMCProvider
     payload = {
         "resultList": {"result": [{
@@ -403,11 +401,9 @@ def test_europe_pmc_provider_parses_public_metadata(monkeypatch):
             "journalTitle": "Methods Journal",
         }]}
     }
-    monkeypatch.setattr(
-        "urllib.request.urlopen",
-        lambda *args, **kwargs: _FakeResponse(json.dumps(payload).encode()),
-    )
-    result = EuropePMCProvider().investigate("biomedical methods", "test")
+    result = EuropePMCProvider(
+        opener=lambda *args, **kwargs: _FakeResponse(json.dumps(payload).encode())
+    ).investigate("biomedical methods", "test")
     assert result.source_ids == ("10.5555/biomed",)
     assert "PMID: 123456" in result.evidence[0]
     assert result.provenance[0]["provider"] == "europe-pmc-public-search"
