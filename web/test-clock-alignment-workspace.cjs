@@ -6,6 +6,7 @@ const workspace = require("./clock-alignment-workspace.js");
 
 const SESSION = "clock-session-fixture";
 const SOURCE = "browser-session-clock";
+const MONOTONIC_SOURCE = SOURCE + "-monotonic";
 
 function anchor(id, source, reference, uncertainty, evidence) {
   return {
@@ -77,6 +78,77 @@ async function main() {
   assert.equal(model.drift_is_diagnostic_only, true);
   assert.equal(JSON.stringify(anchors), originalAnchors, "model building must not mutate anchor inputs");
   assert.equal((await workspace.verifyClockModel(model)).valid, true);
+
+  assert.deepEqual(Object.keys(workspace.snapshotHashLabels).sort(), workspace.locales.slice().sort(),
+    "the observation fingerprint label must be translated in all 15 locales");
+  assert.equal(Object.values(workspace.snapshotHashLabels).every(label => typeof label === "string" && label.length > 0), true);
+  const snapshotInput = [
+    {
+      event_id: "event-b",
+      kind: "gps",
+      source_timestamp: "2026-11-12T10:10:00Z",
+      latitude: 48.1,
+      longitude: 7.2,
+      media_blob: "must-not-be-exported"
+    },
+    {
+      event_id: "event-a",
+      kind: "annotation",
+      source_timestamp: "2026-11-12T10:00:00Z",
+      description: "private free text must not enter the fingerprint payload"
+    }
+  ];
+  const snapshot = await workspace.buildObservationSnapshot(SESSION, MONOTONIC_SOURCE, "monotonic", snapshotInput);
+  const reversedSnapshot = await workspace.buildObservationSnapshot(SESSION, MONOTONIC_SOURCE, "monotonic", snapshotInput.slice().reverse());
+  assert.equal(snapshot.format, "ssswet-clock-observation-snapshot-v1");
+  assert.equal(snapshot.event_count, 2);
+  assert.equal(snapshot.sha256.length, 64);
+  assert.equal(snapshot.sha256, reversedSnapshot.sha256, "snapshot fingerprint must ignore IndexedDB cursor order");
+  assert.deepEqual(snapshot.observations.map(item => item.event_id), ["event-a", "event-b"],
+    "snapshot records must use deterministic source-time ordering");
+  const tied = await workspace.buildObservationSnapshot(SESSION, MONOTONIC_SOURCE, "monotonic", [
+    { event_id: "event-z", kind: "gps", source_timestamp: "2026-11-12T10:05:00Z" },
+    { event_id: "event-a", kind: "gps", source_timestamp: "2026-11-12T10:05:00Z" }
+  ]);
+  assert.deepEqual(tied.observations.map(item => item.event_id), ["event-a", "event-z"],
+    "equal timestamps must use locale-independent event-ID ordering");
+  assert.equal((await workspace.verifyObservationSnapshot(snapshot)).valid, true);
+  assert.deepEqual(Object.keys(snapshot.observations[0]).sort(), ["event_id", "kind", "source_timestamp"],
+    "snapshot metadata must exclude coordinates, media and free-text annotation content");
+  const changedTimestamp = await workspace.buildObservationSnapshot(SESSION, MONOTONIC_SOURCE, "monotonic", [
+    snapshotInput[0],
+    { ...snapshotInput[1], source_timestamp: "2026-11-12T10:00:01Z" }
+  ]);
+  assert.notEqual(snapshot.sha256, changedTimestamp.sha256, "source timestamp changes must alter the snapshot fingerprint");
+  const changedKind = await workspace.buildObservationSnapshot(SESSION, MONOTONIC_SOURCE, "monotonic", [
+    snapshotInput[0],
+    { ...snapshotInput[1], kind: "different-kind" }
+  ]);
+  assert.notEqual(snapshot.sha256, changedKind.sha256, "event kind changes must alter the snapshot fingerprint");
+  const changedId = await workspace.buildObservationSnapshot(SESSION, MONOTONIC_SOURCE, "monotonic", [
+    snapshotInput[0],
+    { ...snapshotInput[1], event_id: "renamed-event" }
+  ]);
+  assert.notEqual(snapshot.sha256, changedId.sha256, "event ID changes must alter the snapshot fingerprint");
+  const tamperedSnapshot = {
+    ...snapshot,
+    observations: snapshot.observations.map((item, index) =>
+      index === 0 ? { ...item, source_timestamp: "2026-11-12T10:00:02+00:00" } : item
+    )
+  };
+  assert.equal((await workspace.verifyObservationSnapshot(tamperedSnapshot)).valid, false,
+    "tampered snapshot content must fail verification");
+  const countTamperedSnapshot = { ...snapshot, event_count: snapshot.event_count + 1 };
+  assert.equal((await workspace.verifyObservationSnapshot(countTamperedSnapshot)).valid, false,
+    "tampered snapshot counts must fail verification");
+  const privacyExtendedSnapshot = { ...snapshot, observations: snapshot.observations.map(item => ({ ...item, latitude: 48.1 })) };
+  assert.equal((await workspace.verifyObservationSnapshot(privacyExtendedSnapshot)).valid, false,
+    "unexpected extra fields must not be accepted as part of a canonical snapshot");
+  await assert.rejects(() => workspace.buildObservationSnapshot(SESSION, MONOTONIC_SOURCE, "monotonic", [
+    snapshotInput[0], { ...snapshotInput[1], event_id: "event-b" }
+  ]), /unique/);
+  await assert.rejects(() => workspace.buildObservationSnapshot(SESSION, MONOTONIC_SOURCE, "invalid", snapshotInput), /clock_basis/);
+  await assert.rejects(() => workspace.buildObservationSnapshot(SESSION, MONOTONIC_SOURCE, "wall", snapshotInput), /match the declared browser clock source/);
 
   const observations = [
     event("outside-before", "2026-11-12T09:59:59Z", 0.5),
@@ -170,10 +242,12 @@ async function main() {
   assert.match(script, /clockBases\.size !== 1/);
   assert.match(script, /selectionVersion/);
   assert.match(script, /inputVersion/);
+  assert.match(script, /source_observation_snapshot/);
+  assert.match(script, /SNAPSHOT_HASH_LABELS/);
   assert.match(script, /ssswet:virtual-time-unavailable/);
   assert.match(css, /:focus-visible/);
   const sw = fs.readFileSync(path.join(__dirname, "sw.js"), "utf8");
-  assert.match(sw, /ssswet-web-v198/);
+  assert.match(sw, /ssswet-web-v199/);
   assert.match(sw, /clock-alignment-workspace\.js/);
 
   console.log("Clock alignment workspace: deterministic model, strict timestamps, provenance, uncertainty, no-extrapolation, session isolation, local-read-only access and 15 locales verified.");

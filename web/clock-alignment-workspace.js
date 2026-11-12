@@ -143,6 +143,96 @@
     fail("SHA-256 is unavailable; use a secure browser context");
   }
 
+  const OBSERVATION_SNAPSHOT_FORMAT = "ssswet-clock-observation-snapshot-v1";
+  const MAX_OBSERVATION_KIND_LENGTH = 80;
+
+  function compareCanonicalText(left, right) {
+    return left < right ? -1 : left > right ? 1 : 0;
+  }
+
+  function observationSnapshotPayload(sessionId, sourceId, clockBasis, observations) {
+    const session = identifier(sessionId, "session_id");
+    const source = identifier(sourceId, "source_id");
+    if (clockBasis !== "monotonic" && clockBasis !== "wall") {
+      fail("clock_basis must be monotonic or wall");
+    }
+    if (source !== SOURCE_ID + "-" + clockBasis) {
+      fail("clock_basis must match the declared browser clock source");
+    }
+    if (!Array.isArray(observations) || observations.length > MAX_EVENTS) {
+      fail("observations must be a list of at most " + MAX_EVENTS + " records");
+    }
+    const normalized = observations.map(item => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) {
+        fail("every snapshot observation must be an object");
+      }
+      const eventId = identifier(item.event_id, "event_id");
+      const kind = item.kind === undefined || item.kind === null || item.kind === ""
+        ? "observation" : item.kind;
+      if (typeof kind !== "string" || kind.length > MAX_OBSERVATION_KIND_LENGTH) {
+        fail("observation kind must be a string of at most " + MAX_OBSERVATION_KIND_LENGTH + " characters");
+      }
+      const sourceTime = parseZonedTimestamp(item.source_timestamp, "source_timestamp");
+      return {
+        event_id: eventId,
+        kind: kind,
+        source_timestamp: sourceTime.iso
+      };
+    }).sort((left, right) =>
+      compareCanonicalText(left.source_timestamp, right.source_timestamp) ||
+      compareCanonicalText(left.event_id, right.event_id)
+    );
+    const ids = normalized.map(item => item.event_id);
+    if (new Set(ids).size !== ids.length) fail("snapshot event_id values must be unique");
+    return {
+      format: OBSERVATION_SNAPSHOT_FORMAT,
+      schema_version: 1,
+      session_id: session,
+      source_id: source,
+      clock_basis: clockBasis,
+      event_count: normalized.length,
+      observations: normalized
+    };
+  }
+
+  async function buildObservationSnapshot(sessionId, sourceId, clockBasis, observations) {
+    const payload = observationSnapshotPayload(sessionId, sourceId, clockBasis, observations);
+    return Object.assign({}, payload, {
+      sha256: await sha256Hex(canonicalJson(payload, null))
+    });
+  }
+
+  async function verifyObservationSnapshot(snapshot) {
+    try {
+      if (!snapshot || typeof snapshot !== "object" || Array.isArray(snapshot) ||
+          typeof snapshot.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(snapshot.sha256)) {
+        return { valid: false, tampered_or_incomplete: true, expected_sha256: null, recorded_sha256: snapshot && snapshot.sha256 || null };
+      }
+      const rebuilt = await buildObservationSnapshot(
+        snapshot.session_id, snapshot.source_id, snapshot.clock_basis, snapshot.observations
+      );
+      const recordedPayload = Object.assign({}, snapshot);
+      delete recordedPayload.sha256;
+      const expectedPayload = Object.assign({}, rebuilt);
+      delete expectedPayload.sha256;
+      const valid = snapshot.sha256 === rebuilt.sha256 &&
+        canonicalJson(recordedPayload, null) === canonicalJson(expectedPayload, null);
+      return {
+        valid: valid,
+        tampered_or_incomplete: !valid,
+        expected_sha256: rebuilt.sha256,
+        recorded_sha256: snapshot.sha256
+      };
+    } catch (_) {
+      return {
+        valid: false,
+        tampered_or_incomplete: true,
+        expected_sha256: null,
+        recorded_sha256: snapshot && snapshot.sha256 || null
+      };
+    }
+  }
+
   function drift(previousSource, currentSource, previousReference, currentReference) {
     const sourceSeconds = (currentSource - previousSource) / 1000;
     const referenceSeconds = (currentReference - previousReference) / 1000;
@@ -1104,6 +1194,25 @@
     }
   };
 
+
+  const SNAPSHOT_HASH_LABELS = Object.freeze({
+    en: "Observation snapshot SHA-256",
+    fr: "Empreinte SHA-256 des observations",
+    es: "Huella SHA-256 de las observaciones",
+    de: "SHA-256-Fingerabdruck des Beobachtungssatzes",
+    it: "Impronta SHA-256 delle osservazioni",
+    pt: "Impressão SHA-256 das observações",
+    nl: "SHA-256-vingerafdruk van de waarnemingen",
+    ru: "SHA-256-отпечаток набора наблюдений",
+    uk: "SHA-256-відбиток набору спостережень",
+    ar: "بصمة SHA-256 لمجموعة الملاحظات",
+    he: "טביעת SHA-256 של מערך התצפיות",
+    ja: "観測スナップショットの SHA-256",
+    ko: "관측 스냅샷 SHA-256",
+    zh: "观测快照 SHA-256",
+    hi: "अवलोकन स्नैपशॉट SHA-256"
+  });
+
   function copyFor(locale) {
     return COPY[locale] || COPY.en;
   }
@@ -1435,7 +1544,9 @@
           setStatusKey("invalid");
           return;
         }
-        sessionEvents = sessionRows.sort((a, b) => a.timestamp - b.timestamp);
+        sessionEvents = sessionRows.sort((a, b) =>
+          a.timestamp - b.timestamp || compareCanonicalText(String(a.id), String(b.id))
+        );
         if (!sessionEvents.length) {
           activeSourceId = null;
           renderRows();
@@ -1509,6 +1620,9 @@
       const hash = document.createElement("p");
       hash.className = "vt-clock-hash";
       hash.textContent = words().hash + ": " + latest.model.model_sha256;
+      const snapshotHash = document.createElement("p");
+      snapshotHash.className = "vt-clock-hash";
+      snapshotHash.textContent = SNAPSHOT_HASH_LABELS[locale] + ": " + latest.observationSnapshot.sha256;
 
       const tableWrap = document.createElement("div");
       tableWrap.className = "vt-clock-table-wrap";
@@ -1550,7 +1664,7 @@
       limitation.textContent = words().limitation;
       const previewLimit = document.createElement("p");
       previewLimit.textContent = words().previewLimit;
-      results.replaceChildren(summary, provenance, uncertainty, missing, drift, hash, tableWrap, previewLimit, limitation);
+      results.replaceChildren(summary, provenance, uncertainty, missing, drift, hash, snapshotHash, tableWrap, previewLimit, limitation);
     }
 
     function invalidateForInput() {
@@ -1621,6 +1735,16 @@
           timestamp: pythonIsoFromEpochMs(Number(event.timestamp)),
           uncertainty_seconds: eventBound
         }));
+        const observationSnapshot = await buildObservationSnapshot(
+          clockId,
+          sourceId,
+          sourceId.endsWith("-monotonic") ? "monotonic" : "wall",
+          selectedEventsSnapshot.map(event => ({
+            event_id: String(event.id),
+            kind: typeof event.kind === "string" && event.kind ? event.kind : "observation",
+            source_timestamp: pythonIsoFromEpochMs(Number(event.timestamp))
+          }))
+        );
         const alignment = alignEvents(model, eventRecords);
         const verification = await verifyClockModel(model);
         if (!verification.valid) fail("The generated clock model did not pass integrity verification");
@@ -1633,10 +1757,11 @@
           eventBound: eventBound,
           observationCount: selectedEventsSnapshot.length,
           observationIds: selectedEventsSnapshot.map(event => String(event.id)),
-          observations: selectedEventsSnapshot.map(event => ({
-            id: String(event.id),
-            kind: String(event.kind || "observation"),
-            timestamp: pythonIsoFromEpochMs(Number(event.timestamp))
+          observationSnapshot: observationSnapshot,
+          observations: observationSnapshot.observations.map(event => ({
+            id: event.event_id,
+            kind: event.kind,
+            timestamp: event.source_timestamp
           })),
           sourceSnapshotAt: sourceSnapshotAt
         };
@@ -1685,6 +1810,7 @@
         ],
         model: latest.model,
         alignment: latest.alignment,
+        source_observation_snapshot: latest.observationSnapshot,
         observations: observations
       };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -1750,7 +1876,10 @@
     buildClockModel: buildClockModel,
     verifyClockModel: verifyClockModel,
     alignEvents: alignEvents,
+    buildObservationSnapshot: buildObservationSnapshot,
+    verifyObservationSnapshot: verifyObservationSnapshot,
     locales: Object.freeze(Object.keys(COPY)),
+    snapshotHashLabels: SNAPSHOT_HASH_LABELS,
     localeKeyCount: localeKeys.length,
     localeCoverage: localeCoverage,
     constants: Object.freeze({

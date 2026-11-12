@@ -254,3 +254,14 @@ The preview table displays at most the first 100 aligned-event reports for usabi
 - **Unknown:** clock behaviour outside the anchor range, undocumented timestamp corrections, authenticity of reference evidence, and any unrecorded event history.
 
 This workspace calibrates a recorded session's timeline under explicit assumptions. It does not recover unrecorded history, establish event identity, predict future events, or create a real time machine.
+
+### Deterministic observation-snapshot fingerprint
+
+Each explicit calibration preview now includes a separate SHA-256 fingerprint for the exact bounded observation metadata used as its source snapshot. The canonical snapshot contains the local session identifier, source-clock identifier, clock basis (monotonic or wall), event count, and observations sorted by normalized UTC source timestamp then event ID. Each observation contributes only its event ID, event kind, and normalized source timestamp.
+
+The snapshot deliberately excludes coordinates, sensor payloads, media blobs, annotation descriptions, and other free-text fields. This keeps the calibration export metadata-only while binding the derived timeline to the exact event identities, kinds and timestamps consumed by the alignment step. The export includes the canonical snapshot and its digest; the browser module exposes a verification helper that rejects altered, incomplete, or non-canonical snapshot content.
+
+The model fingerprint and observation-snapshot fingerprint answer different questions: the model digest binds the anchor pairs and modelling assumptions, while the snapshot digest binds the bounded source-observation metadata. Both are unkeyed SHA-256 content fingerprints. They detect content changes when independently recomputed, but they are not digital signatures, do not authenticate the device or user, do not prove the truth of a timestamp, and do not verify the external reference evidence.
+
+The digest is deterministic regardless of IndexedDB cursor order. Its regression criteria are: (1) reversing the same observation set produces the same digest; (2) changing an event ID, kind, or source timestamp changes the digest; (3) coordinates, media and free-text annotation fields are absent from the canonical snapshot; (4) unexpected fields or altered snapshot contents fail verification; (5) duplicate IDs and unsupported clock bases are rejected; and (6) all 15 interface locales label the fingerprint. These tests establish deterministic serialization and privacy-field exclusion, not timestamp authenticity or historical reconstruction.
+
