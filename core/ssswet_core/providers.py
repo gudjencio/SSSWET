@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 import re
 from typing import Protocol
+from urllib.request import HTTPRedirectHandler
 
 
 @dataclass(frozen=True)
@@ -300,6 +301,34 @@ def _validate_provider_response_url(response, request_url: str, allowed_hosts: s
         raise ValueError("provider redirected outside its HTTPS host allowlist")
 
 
+
+class _RejectRedirectHandler(HTTPRedirectHandler):
+    """Refuse redirects before urllib can issue a request to the target."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def _open_public_provider_request(request, timeout: float, allowed_hosts: set[str], opener=None):
+    """Open a fixed HTTPS provider URL without following redirects."""
+    from urllib.parse import urlsplit
+    from urllib.request import build_opener
+
+    parsed = urlsplit(request.full_url)
+    try:
+        port = parsed.port
+    except ValueError as exc:
+        raise ValueError("provider request URL has an invalid port") from exc
+    if (
+        parsed.scheme != "https" or parsed.hostname not in allowed_hosts
+        or parsed.username or parsed.password or port not in (None, 443)
+    ):
+        raise ValueError("provider request URL is outside its HTTPS host allowlist")
+    if opener is not None:
+        return opener(request, timeout=timeout)
+    return build_opener(_RejectRedirectHandler()).open(request, timeout=timeout)
+
+
 def _read_bounded(response, max_bytes: int) -> bytes:
     data = response.read(max_bytes + 1)
     if len(data) > max_bytes:
@@ -330,7 +359,7 @@ class ArxivProvider:
     def investigate(self, objective: str, strategy: str) -> ProviderResult:
         from urllib.error import HTTPError, URLError
         from urllib.parse import urlencode
-        from urllib.request import Request, urlopen
+        from urllib.request import Request
         import xml.etree.ElementTree as ET
 
         query = objective.strip()
@@ -347,7 +376,7 @@ class ArxivProvider:
             headers={"Accept": "application/atom+xml", "User-Agent": "SSSWET/0.1 scholarly discovery"},
         )
         try:
-            with (self.opener or urlopen)(request, timeout=self.timeout) as response:
+            with _open_public_provider_request(request, self.timeout, {"export.arxiv.org"}, self.opener) as response:
                 _validate_provider_response_url(response, request.full_url, {"export.arxiv.org"})
                 raw = _read_bounded(response, 2_000_000)
             upper = raw.upper()
@@ -420,7 +449,7 @@ class EuropePMCProvider:
     def investigate(self, objective: str, strategy: str) -> ProviderResult:
         from urllib.error import HTTPError, URLError
         from urllib.parse import urlencode
-        from urllib.request import Request, urlopen
+        from urllib.request import Request
         import json
 
         query = objective.strip()
@@ -438,7 +467,7 @@ class EuropePMCProvider:
             headers={"Accept": "application/json", "User-Agent": "SSSWET/0.1 scholarly discovery"},
         )
         try:
-            with (self.opener or urlopen)(request, timeout=self.timeout) as response:
+            with _open_public_provider_request(request, self.timeout, {"www.ebi.ac.uk", "ebi.ac.uk"}, self.opener) as response:
                 _validate_provider_response_url(
                     response, request.full_url, {"www.ebi.ac.uk", "ebi.ac.uk"}
                 )
