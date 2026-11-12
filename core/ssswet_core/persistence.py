@@ -707,6 +707,46 @@ class SQLiteResearchStore:
         ]
 
 
+    def scientific_memory_history_page_for_key(
+        self, memory_key: str, before_version_number: int | None = None, limit: int = 50
+    ) -> dict:
+        """Return a bounded newest-first page for one immutable memory lineage."""
+        if not isinstance(memory_key, str) or not memory_key.strip():
+            raise ValueError("memory_key is required")
+        if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 101:
+            raise ValueError("limit must be an integer between 1 and 101")
+        if before_version_number is not None and (
+            isinstance(before_version_number, bool)
+            or not isinstance(before_version_number, int)
+            or before_version_number < 1
+        ):
+            raise ValueError("before_version_number must be a positive integer")
+        with self._connect() as connection:
+            total = connection.execute(
+                "SELECT COUNT(*) FROM scientific_memory_versions WHERE memory_key = ?",
+                (memory_key,),
+            ).fetchone()[0]
+            if before_version_number is None:
+                rows = connection.execute(
+                    """SELECT version_number, record_json FROM scientific_memory_versions
+                       WHERE memory_key = ? ORDER BY version_number DESC LIMIT ?""",
+                    (memory_key, limit),
+                ).fetchall()
+            else:
+                rows = connection.execute(
+                    """SELECT version_number, record_json FROM scientific_memory_versions
+                       WHERE memory_key = ? AND version_number < ?
+                       ORDER BY version_number DESC LIMIT ?""",
+                    (memory_key, before_version_number, limit),
+                ).fetchall()
+        return {
+            "items": [
+                {"version_number": row["version_number"], **json.loads(row["record_json"])}
+                for row in rows
+            ],
+            "total_count": total,
+        }
+
     def save_literature_watch(self, report: object) -> None:
         """Persist a metadata-watch report without changing research memory."""
         from .literature_watch import report_to_dict
