@@ -1,7 +1,7 @@
 /* SSSWET web shell: versioned cache, safe partial precache and network-first updates. */
 "use strict";
 
-const CACHE = "ssswet-web-v197";
+const CACHE = "ssswet-web-v198";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -55,6 +55,7 @@ const OPTIONAL_ASSETS = [
   "./virtual-time-travel.html",
   "./virtual-time-travel.css",
   "./virtual-time-travel.js",
+  "./clock-alignment-workspace.js",
   "./keyframe-continuity.js",
   "./keyframe-correspondence.js",
   "./temporal-clock.js",
