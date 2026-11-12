@@ -69,6 +69,16 @@ def build_governed_manifest(
                 "dataset_id": key[0], "version": version,
                 "code": "personal_or_sensitive_data_lacks_recorded_basis",
             })
+        if publication_scope == "public" and privacy != "public":
+            blockers.append({
+                "dataset_id": key[0], "version": version,
+                "code": "public_scope_requires_explicit_public_privacy_classification",
+            })
+        if publication_scope == "public" and consent not in {"documented", "not_required"}:
+            blockers.append({
+                "dataset_id": key[0], "version": version,
+                "code": "public_scope_requires_recorded_consent_basis",
+            })
         if publication_scope == "public" and privacy in {"personal_data", "sensitive_data"}:
             blockers.append({
                 "dataset_id": key[0], "version": version,
@@ -95,6 +105,15 @@ def build_governed_manifest(
                 "dataset_id": key[0], "version": version,
                 "code": "content_digest_not_recorded",
             })
+        for issue in governance_issues(record):
+            if issue not in {"consent_withdrawn", "consent_review_pending",
+                             "consent_or_other_lawful_basis_review_required",
+                             "public_access_for_personal_data", "license_terms_not_recorded",
+                             "retention_policy_not_recorded"}:
+                warnings.append({
+                    "dataset_id": key[0], "version": version,
+                    "code": issue,
+                })
         if "retention_policy_not_recorded" in governance_issues(record):
             warnings.append({
                 "dataset_id": key[0], "version": version,
