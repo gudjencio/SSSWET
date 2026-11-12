@@ -355,6 +355,31 @@ def test_governed_manifest_requires_dataset_content_digest(tmp_path):
     }
 
 
+def test_governed_manifest_blocks_tampered_dataset_record(tmp_path, monkeypatch):
+    store = SQLiteResearchStore(tmp_path / "tampered.sqlite3")
+    _campaign(store)
+    DatasetRegistry(store).register_version(DatasetVersion(
+        "tampered-data", 1, "Public dataset",
+        "Metadata-only governance record", "campaign-a", "CC-BY-4.0", (),
+        "1" * 64, privacy_classification="public", consent_status="not_required",
+        retention_policy="Public archive", access_scope="public",
+    ))
+    original = store.get_lab_dataset
+    def tampered(dataset_id, version):
+        record = original(dataset_id, version)
+        record["license"] = "CC0-1.0"
+        return record
+    monkeypatch.setattr(store, "get_lab_dataset", tampered)
+    result = build_governed_manifest(
+        store, protocol_id="p", protocol_version=1,
+        dataset_refs=[{"dataset_id": "tampered-data", "version": 1}],
+        software_version="test", parameters={}, source_ids=[],
+        publication_scope="public",
+    )
+    assert result["manifest_created"] is False
+    assert result["blocking_issues"][0]["code"] == "dataset_record_integrity_failed"
+
+
 class _FakeResponse:
     def __init__(self, payload):
         self.payload = payload
