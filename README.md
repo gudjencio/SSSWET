@@ -143,3 +143,6 @@ The core research toolkit now adds deterministic provenance-graph diagnostics, v
 The 12 November 2026 research upgrade adds bounded agent context packs, human-review triage, contradiction-aware graph neighbourhoods, paginated scientific-memory lineage, literature-watch comparisons, expanded scholarly metadata discovery, and dataset-governed reproducibility checks. It also records the temporal identity, browser-origin security and reduced-motion safeguards.
 
 See the public implementation and limitations record: [Research continuity and evidence workflow upgrades](docs/DAILY_UPGRADES_2026-11-12.md).
+
+
+The extended research-continuity API routes are local-administrator interfaces. They require a loopback request and the configured `SSSWET_ADMIN_TOKEN`; they are not exposed as unauthenticated public research-data endpoints. The public website displays only the selected project information described above.
