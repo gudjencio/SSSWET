@@ -14,7 +14,7 @@ def _identity(candidate: dict[str, Any]) -> str:
     for prefix in ("https://doi.org/", "http://doi.org/", "doi:"):
         if doi.startswith(prefix):
             doi = doi[len(prefix):]
-    if doi:
+    if doi and doi not in {"unavailable", "unknown", "n/a", "not available"}:
         return "doi:" + doi
     source_id = str(candidate.get("source_id", "")).strip()
     if source_id.casefold().startswith("arxiv:"):
