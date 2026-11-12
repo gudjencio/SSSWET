@@ -2,6 +2,7 @@
 "use strict";
 const $=id=>document.getElementById(id);
 const temporalClock=window.SSSWETTemporalClock?.createSessionClock()||null;
+const REDUCED_MOTION=typeof window.matchMedia==="function"&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const MAX_DISPLAYED_ACCURACY_FOOTPRINTS=500;
 function captureClockSnapshot(){
  if(temporalClock)return temporalClock.capture();
@@ -87,7 +88,7 @@ function showEvent(index){
  if(e.accuracy)detail+=" · "+t().accuracy+": ±"+Math.round(e.accuracy)+" m";
  if(e.eventType){const typeOption=$("vt-event-type").querySelector('option[value="'+e.eventType+'"]');if(typeOption)detail+=" · "+typeOption.textContent;}if(e.description)detail+=" · "+e.description;
  $("vt-selected").textContent=detail;
- if(e.coords&&map)map.flyTo({center:[e.coords.longitude,e.coords.latitude],zoom:Math.max(map.getZoom(),17),essential:true});
+ if(e.coords&&map)map.flyTo({center:[e.coords.longitude,e.coords.latitude],zoom:Math.max(map.getZoom(),17),duration:REDUCED_MOTION?0:500,essential:!REDUCED_MOTION});
  const selectedKey=window.SSSWETGpsScenarioModel?.sessionKey(e)||"legacy",sessionMedia=media.filter(item=>(window.SSSWETGpsScenarioModel?.sessionKey(item)||"legacy")===selectedKey);
  const clip=sessionMedia.find(m=>m.timestamp<=e.timestamp&&m.timestamp+Math.max(1000,m.duration||0)>=e.timestamp)||sessionMedia.filter(m=>m.timestamp<=e.timestamp).slice(-1)[0];
  if(clip?.blob){const video=$("vt-playback");if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(clip.blob);video.src=objectUrl;video.hidden=false;}else{$("vt-playback").hidden=true;}
@@ -172,7 +173,7 @@ function initMap(){
   map.on("error",()=>{if(!map.isStyleLoaded())setStatus("noMap")});
  }catch(_){setStatus("mapError")}
 }
-function locate(){if(!navigator.geolocation){setStatus("locationDenied");return}setStatus("locating");navigator.geolocation.getCurrentPosition(pos=>{currentPosition=pos;const c=[pos.coords.longitude,pos.coords.latitude];if(map)map.flyTo({center:c,zoom:19,pitch:68,duration:1200});$("vt-coordinates").textContent=c[1].toFixed(6)+", "+c[0].toFixed(6)+" · ±"+Math.round(pos.coords.accuracy)+" m";setStatus("located")},()=>setStatus("locationDenied"),{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
+function locate(){if(!navigator.geolocation){setStatus("locationDenied");return}setStatus("locating");navigator.geolocation.getCurrentPosition(pos=>{currentPosition=pos;const c=[pos.coords.longitude,pos.coords.latitude];if(map)map.flyTo({center:c,zoom:19,pitch:68,duration:REDUCED_MOTION?0:1200});$("vt-coordinates").textContent=c[1].toFixed(6)+", "+c[0].toFixed(6)+" · ±"+Math.round(pos.coords.accuracy)+" m";setStatus("located")},()=>setStatus("locationDenied"),{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
 let lastAcceptedGps=null;
 function onPosition(pos){
  const elapsedNow=elapsedClockNow();
@@ -188,7 +189,7 @@ function onPosition(pos){
  }
  currentPosition=pos;lastAcceptedGps={coords,elapsedMs:elapsedNow};
  $("vt-coordinates").textContent=coords.latitude.toFixed(6)+", "+coords.longitude.toFixed(6)+" · ±"+Math.round(accuracy)+" m";
- if(elapsedNow-lastGpsWrite>1800){lastGpsWrite=elapsedNow;saveEvent("gps",{coords,accuracy:pos.coords.accuracy,altitude:pos.coords.altitude,altitudeAccuracy:pos.coords.altitudeAccuracy,speed:pos.coords.speed,heading:pos.coords.heading}).catch(()=>{})}if(map&&scanActive&&followPosition)map.easeTo({center:[coords.longitude,coords.latitude],zoom:Math.max(map.getZoom(),18),pitch:66,duration:700})}
+ if(elapsedNow-lastGpsWrite>1800){lastGpsWrite=elapsedNow;saveEvent("gps",{coords,accuracy:pos.coords.accuracy,altitude:pos.coords.altitude,altitudeAccuracy:pos.coords.altitudeAccuracy,speed:pos.coords.speed,heading:pos.coords.heading}).catch(()=>{})}if(map&&scanActive&&followPosition)map.easeTo({center:[coords.longitude,coords.latitude],zoom:Math.max(map.getZoom(),18),pitch:66,duration:REDUCED_MOTION?0:700})}
 function requestOrientationPermission(){const tasks=[];for(const type of ["DeviceOrientationEvent","DeviceMotionEvent"]){const C=window[type];if(C&&typeof C.requestPermission==="function")tasks.push(C.requestPermission().catch(()=> "denied"))}return Promise.all(tasks)}
 function onOrientation(e){const elapsedNow=elapsedClockNow();if(!scanActive||elapsedNow-lastOrientationWrite<900)return;lastOrientationWrite=elapsedNow;saveEvent("orientation",{alpha:e.alpha,beta:e.beta,gamma:e.gamma,absolute:e.absolute}).catch(()=>{})}
 function onMotion(e){const elapsedNow=elapsedClockNow();if(!scanActive||elapsedNow-lastMotionWrite<900)return;lastMotionWrite=elapsedNow;const a=e.accelerationIncludingGravity||e.acceleration;if(a)saveEvent("motion",{x:a.x,y:a.y,z:a.z,interval:e.interval}).catch(()=>{})}
@@ -234,7 +235,7 @@ function runModel(){
  $("vt-model-result").textContent=[auditText,kind==="past"?t().modelPast:t().modelFuture,result].filter(Boolean).join(" ");
  const source=map?.getSource("vt-scenario");
  if(source)source.setData({type:"FeatureCollection",features:[{type:"Feature",geometry:{type:"LineString",coordinates:[[estimate.origin.longitude,estimate.origin.latitude],[estimate.target.longitude,estimate.target.latitude]]},properties:{kind:"model-scenario",sampleCount:estimate.sampleCount,uncertaintyRadiusM:estimate.uncertaintyRadiusM}}]});
- if(map)map.fitBounds([[estimate.origin.longitude,estimate.origin.latitude],[estimate.target.longitude,estimate.target.latitude]],{padding:80,maxZoom:18});
+ if(map)map.fitBounds([[estimate.origin.longitude,estimate.origin.latitude],[estimate.target.longitude,estimate.target.latitude]],{padding:80,maxZoom:18,duration:REDUCED_MOTION?0:500});
 }
 
 let keyframeCandidates=[];

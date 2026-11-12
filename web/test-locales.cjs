@@ -483,6 +483,20 @@ for (const control of ["vt-start","vt-stop","vt-locate","vt-time","vt-model","vt
   if (!virtualHtml.includes('id="' + control + '"')) throw new Error("Virtual Time Travel control missing: " + control);
 }
 if (!virtualScript.includes("map provider") || !virtualScript.includes("modelPast")) throw new Error("Virtual Time Travel disclosure or model distinction is missing.");
+const virtualCss = fs.readFileSync(__dirname + "/virtual-time-travel.css", "utf8");
+if (!virtualCss.includes("@media (prefers-reduced-motion: reduce)") ||
+    !virtualCss.includes("animation-duration: 0.01ms") ||
+    !virtualCss.includes("transition-duration: 0.01ms")) {
+  throw new Error("Virtual Time Travel must suppress non-essential CSS motion for reduced-motion users.");
+}
+if (!virtualScript.includes('window.matchMedia("(prefers-reduced-motion: reduce)")') ||
+    !virtualScript.includes("duration:REDUCED_MOTION?0:1200") ||
+    !virtualScript.includes("duration:REDUCED_MOTION?0:700") ||
+    !virtualScript.includes("duration:REDUCED_MOTION?0:500") ||
+    !virtualScript.includes("essential:!REDUCED_MOTION")) {
+  throw new Error("Virtual Time Travel map camera transitions must respect reduced-motion preferences.");
+}
+
 console.log("Validated Virtual Time Travel scripts, controls and 15 interface locales.");
 
 const voiceSource = fs.readFileSync(__dirname + "/bot-live-room.js", "utf8");
