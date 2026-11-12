@@ -38,6 +38,18 @@ if not ALLOWED_WRITE_ORIGINS:
     ALLOWED_WRITE_ORIGINS = set(DEFAULT_WRITE_ORIGINS)
 
 
+# Research records may contain unpublished or confidential material. These
+# extended read APIs are local-administrator tools, not public website APIs.
+PRIVATE_RESEARCH_READ_PATHS = frozenset({
+    "/api/research-context",
+    "/api/research-review-queue",
+    "/api/scientific-memory/lineage-page",
+    "/api/literature-watch/diff",
+    "/api/knowledge-graph/neighborhood",
+    "/api/dataset-governance-gate",
+})
+
+
 def public_status(engine: SSSWETEngine, store: SQLiteResearchStore | None = None) -> dict[str, Any]:
     agents = list(engine.orchestrator.bot_manager.agents.values())
     return {
@@ -160,6 +172,9 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             from urllib.parse import parse_qs, urlsplit
             parsed = urlsplit(self.path)
             path = parsed.path
+            if path in PRIVATE_RESEARCH_READ_PATHS and not self._private_admin_allowed():
+                self._json({"error": "Local administrator authentication required"}, 401)
+                return
             if path.startswith("/api/private/orders"):
                 if not self._private_admin_allowed():
                     self._json({"error": "Local administrator authentication required"}, 401)
