@@ -1624,6 +1624,7 @@
     buildClockModel: buildClockModel,
     verifyClockModel: verifyClockModel,
     alignEvents: alignEvents,
+    locales: Object.freeze(Object.keys(COPY)),
     constants: Object.freeze({
       MAX_ANCHORS: MAX_ANCHORS,
       MAX_EVENTS: MAX_EVENTS,
