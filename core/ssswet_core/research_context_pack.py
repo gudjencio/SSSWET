@@ -153,7 +153,12 @@ def build_research_context(
     payload["omitted_source_count"] += max(0, len(selected_source_ids) - len(unique_source_ids))
     unsigned = dict(payload)
     payload["context_sha256"] = hashlib.sha256(_canonical(unsigned).encode("utf-8")).hexdigest()
-    payload["used_chars"] = len(_canonical(payload))
-    if payload["used_chars"] > max_chars:
+    payload["used_chars"] = 0
+    for _ in range(3):
+        measured = len(_canonical(payload))
+        if measured == payload["used_chars"]:
+            break
+        payload["used_chars"] = measured
+    if len(_canonical(payload)) > max_chars:
         raise RuntimeError("context budget accounting exceeded max_chars")
     return payload
