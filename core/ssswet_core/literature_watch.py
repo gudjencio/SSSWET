@@ -102,13 +102,13 @@ class LiteratureWatchReport:
             )
             provenance_record = next(
                 (
-                    item for item in getattr(result, "provenance", ())
+                    item for item in (getattr(result, "provenance", ()) or ())
                     if isinstance(item, dict) and item.get("identity") == source_id
                 ),
                 None,
             )
             observations = tuple(
-                item for item in (provenance_record or {}).get("provider_records", [])
+                item for item in ((provenance_record or {}).get("provider_records", []) or [])
                 if isinstance(item, dict)
             )
             if not observations:
