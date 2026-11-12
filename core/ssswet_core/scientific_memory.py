@@ -169,7 +169,7 @@ class ScientificMemoryService:
             "current_version_id": latest[0]["version_id"] if latest else "",
             "has_more_predecessors": has_more,
             "next_before_version_number": next_cursor,
-            "revision_chain_is_complete": not has_more and len(items) == page["total_count"],
+            "revision_chain_is_complete": not has_more,
             "retrieval_is_sql_bounded": True,
             "scientific_validity_established": False,
             "automatic_adjudication": False,
