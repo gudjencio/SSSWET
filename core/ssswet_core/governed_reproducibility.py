@@ -121,10 +121,18 @@ def build_governed_manifest(
         "legal_compliance_established": False,
         "ethics_or_consent_approval_established": False,
         "raw_dataset_files_included": False,
+        "scientific_validity_established": False,
     }
     if blockers:
         return {**report, "manifest": None, "manifest_created": False}
 
+    environment_payload = dict(environment or {})
+    if "ssswet_dataset_governance_gate" in environment_payload:
+        raise ValueError("environment reserves ssswet_dataset_governance_gate")
+    environment_payload["ssswet_dataset_governance_gate"] = {
+        "publication_scope": publication_scope,
+        "gate_version": 1,
+    }
     manifest = build_manifest(
         protocol_id=protocol_id,
         protocol_version=protocol_version,
@@ -132,12 +140,10 @@ def build_governed_manifest(
         software_version=software_version,
         parameters=parameters,
         source_ids=source_ids,
-        environment=environment,
+        environment=environment_payload,
         random_seed=random_seed,
         input_checksums=input_checksums,
     )
-    manifest["governance_scope"] = publication_scope
-    manifest["governance_gate_version"] = 1
     return {
         **report,
         "manifest": manifest,
