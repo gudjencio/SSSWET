@@ -37,6 +37,7 @@ async function main() {
     "all 15 locales must contain every workspace translation key");
   assert.equal(workspace.constants.UI_MAX_ANCHORS, 20);
   assert.equal(workspace.constants.MAX_EVENTS, 5000);
+  assert.equal(workspace.constants.MAX_LOCAL_EVENTS, 20000);
 
   const parsed = workspace.parseZonedTimestamp("2026-11-12T10:00:00+01:00");
   assert.equal(parsed.iso, "2026-11-12T09:00:00+00:00");
@@ -162,6 +163,8 @@ async function main() {
   assert.match(html, /aria-live="polite"/);
   assert.match(script, /indexedDB\.open\(DB_NAME\)/);
   assert.match(script, /db\.transaction\("events", "readonly"\)/);
+  assert.match(script, /openCursor\(\)/);
+  assert.doesNotMatch(script, /getAll\(\)/);
   assert.doesNotMatch(script, /transaction\("events",\s*"readwrite"\)/);
   assert.match(script, /UI_MAX_ANCHORS = 20/);
   assert.match(script, /clockBases\.size !== 1/);
