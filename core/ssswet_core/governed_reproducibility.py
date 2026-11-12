@@ -1,6 +1,7 @@
 """Governance-gated reproducibility manifests for registered datasets."""
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from .dataset_registry import _valid_record, governance_issues
@@ -111,10 +112,16 @@ def build_governed_manifest(
                 "dataset_id": key[0], "version": version,
                 "code": "license_terms_not_recorded",
             })
-        if not str(record.get("content_sha256", "")).strip():
+        content_digest = str(record.get("content_sha256", "")).strip().casefold()
+        if not content_digest:
             blockers.append({
                 "dataset_id": key[0], "version": version,
                 "code": "content_digest_not_recorded",
+            })
+        elif not re.fullmatch(r"[0-9a-f]{64}", content_digest):
+            blockers.append({
+                "dataset_id": key[0], "version": version,
+                "code": "content_digest_invalid",
             })
         for issue in governance_issues(record):
             if issue not in {"consent_withdrawn", "consent_review_pending",
@@ -135,7 +142,7 @@ def build_governed_manifest(
             "dataset_id": key[0],
             "version": version,
             "title": str(record.get("title", ""))[:300],
-            "content_sha256": record.get("content_sha256", ""),
+            "content_sha256": content_digest,
             "license": record.get("license", ""),
             "privacy_classification": privacy,
             "consent_status": consent,
