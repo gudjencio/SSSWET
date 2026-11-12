@@ -1396,6 +1396,7 @@
         buildButton.disabled = false;
         setStatusKey("ready");
       } catch (_) {
+        if (thisLoad !== loadVersion) return;
         sessionEvents = [];
         renderRows();
         setStatus(words().unsupported);
@@ -1500,7 +1501,7 @@
       }
       try {
         const anchors = rows.map(row => {
-          const event = sessionEvents.find(item => String(item.id) === row.eventId);
+          const event = selectedEventsSnapshot.find(item => String(item.id) === row.eventId);
           if (!event) fail("Selected observation is no longer available");
           const sourceTimestamp = pythonIsoFromEpochMs(Number(event.timestamp));
           const parsedReference = parseZonedTimestamp(row.referenceTimestamp, "reference_timestamp");
@@ -1520,8 +1521,8 @@
         busy = true;
         buildButton.disabled = true;
         const model = await buildClockModel(anchors);
-        if (sessionSelect.value !== buildSessionKey) fail("Selected session changed during alignment");
-        const eventRecords = sessionEvents.map(event => ({
+        if (sessionSelect.value !== buildSessionKey || loadVersion !== buildLoadVersion) fail("Selected session changed during alignment");
+        const eventRecords = selectedEventsSnapshot.map(event => ({
           event_id: String(event.id),
           session_id: clockId,
           source_id: SOURCE_ID,
@@ -1535,14 +1536,12 @@
           model: model,
           alignment: alignment,
           eventBound: eventBound,
-          observationCount: sessionEvents.length,
-          observationIds: sessionEvents.map(event => String(event.id))
+          observationCount: selectedEventsSnapshot.length,
+          observationIds: selectedEventsSnapshot.map(event => String(event.id))
         };
         renderResult();
         exportButton.disabled = false;
-        setStatus(words().resultSummary.replace("{aligned}", String(alignment.aligned_count))
-          .replace("{total}", String(alignment.event_count))
-          .replace("{outside}", String(alignment.event_count - alignment.aligned_count)));
+        setStatusKey("ready");
       } catch (error) {
         latest = null;
         exportButton.disabled = true;
