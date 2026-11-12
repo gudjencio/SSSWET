@@ -1365,6 +1365,7 @@
         }
         if (key === "legacy") {
           sessionEvents = [];
+          activeSourceId = null;
           rows.forEach(row => { row.eventId = ""; });
           renderRows();
           setStatusKey("legacy");
@@ -1386,6 +1387,12 @@
           return;
         }
         sessionEvents = sessionRows.sort((a, b) => a.timestamp - b.timestamp);
+        if (!sessionEvents.length) {
+          activeSourceId = null;
+          renderRows();
+          setStatusKey("noEvents");
+          return;
+        }
         const eventIds = sessionEvents.map(event => String(event.id || ""));
         if (eventIds.some(id => !id || id.length > MAX_ID_LENGTH) || new Set(eventIds).size !== eventIds.length) {
           sessionEvents = [];
@@ -1405,14 +1412,10 @@
           return;
         }
         activeSourceId = SOURCE_ID + "-" + Array.from(clockBases)[0];
-        if (!sessionEvents.length) {
-          renderRows();
-          setStatusKey("noEvents");
-          return;
-        }
         const clockId = String(sessionEvents[0].clockSessionId || "");
         if (!clockId || sessionEvents.some(event => String(event.clockSessionId || "") !== clockId)) {
           sessionEvents = [];
+          activeSourceId = null;
           renderRows();
           setStatusKey("legacy");
           return;
@@ -1514,8 +1517,12 @@
         setStatusKey("invalid");
         return;
       }
-      const clockId = sessionEvents[0] && String(sessionEvents[0].clockSessionId || "");
-      if (!clockId || !sessionEvents.length || sessionEvents.length > MAX_EVENTS) {
+      const buildSessionKey = sessionSelect.value;
+      const buildSelectionVersion = selectionVersion;
+      const selectedEventsSnapshot = sessionEvents.slice();
+      const sourceId = activeSourceId;
+      const clockId = selectedEventsSnapshot[0] && String(selectedEventsSnapshot[0].clockSessionId || "");
+      if (!clockId || !sourceId || !selectedEventsSnapshot.length || selectedEventsSnapshot.length > MAX_EVENTS) {
         setStatusKey("invalid");
         return;
       }
