@@ -498,7 +498,7 @@ class BroadScholarlyLiteratureProvider:
         import re
         doi_match = re.search(r"\bDOI:\s*([^|]+)", evidence, re.IGNORECASE)
         doi = _doi_identity(doi_match.group(1)) if doi_match else _doi_identity(source_id)
-        if doi and doi not in {"unavailable", "unknown"} and "/" in doi:
+        if re.fullmatch(r"10\.\d{4,9}/[^\s|]+", doi) and doi not in {"unavailable", "unknown"}:
             return "doi:" + doi
         source = str(source_id).strip().casefold()
         if source.startswith("arxiv:"):
