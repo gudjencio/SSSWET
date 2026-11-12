@@ -302,11 +302,27 @@ def _validate_provider_response_url(response, request_url: str, allowed_hosts: s
 
 
 
-class _RejectRedirectHandler(HTTPRedirectHandler):
-    """Refuse redirects before urllib can issue a request to the target."""
+class _AllowlistedRedirectHandler(HTTPRedirectHandler):
+    """Follow only HTTPS redirects that remain on the exact provider host."""
+
+    def __init__(self, allowed_hosts: set[str]):
+        super().__init__()
+        self.allowed_hosts = set(allowed_hosts)
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        return None
+        from urllib.parse import urlsplit
+
+        parsed = urlsplit(newurl)
+        try:
+            port = parsed.port
+        except ValueError:
+            return None
+        if (
+            parsed.scheme != "https" or parsed.hostname not in self.allowed_hosts
+            or parsed.username or parsed.password or port not in (None, 443)
+        ):
+            return None
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
 def _open_public_provider_request(request, timeout: float, allowed_hosts: set[str], opener=None):
@@ -326,7 +342,7 @@ def _open_public_provider_request(request, timeout: float, allowed_hosts: set[st
         raise ValueError("provider request URL is outside its HTTPS host allowlist")
     if opener is not None:
         return opener(request, timeout=timeout)
-    return build_opener(_RejectRedirectHandler()).open(request, timeout=timeout)
+    return build_opener(_AllowlistedRedirectHandler(allowed_hosts)).open(request, timeout=timeout)
 
 
 def _read_bounded(response, max_bytes: int) -> bytes:
