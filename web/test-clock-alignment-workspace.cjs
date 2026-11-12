@@ -39,7 +39,7 @@ async function main() {
   const parsed = workspace.parseZonedTimestamp("2026-11-12T10:00:00+01:00");
   assert.equal(parsed.iso, "2026-11-12T09:00:00+00:00");
   assert.equal(workspace.parseZonedTimestamp("2026-11-12T09:00:00Z").epochMs, parsed.epochMs);
-  assert.throws(() => workspace.parseZonedTimestamp("2026-11-12T09:00:00"), /explicit timezone/);
+  assert.throws(() => workspace.parseZonedTimestamp("2026-11-12T09:00:00"), /explicit.*offset/);
   assert.throws(() => workspace.parseZonedTimestamp("2026-02-30T09:00:00Z"), /invalid calendar/);
   assert.throws(() => workspace.parseZonedTimestamp("2026-11-12T09:00:00.1234Z"), /millisecond precision/);
 
