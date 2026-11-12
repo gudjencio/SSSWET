@@ -5,6 +5,7 @@
   const MAX_ANCHORS = 500;
   const UI_MAX_ANCHORS = 20;
   const MAX_EVENTS = 5000;
+  const MAX_LOCAL_EVENTS = 20000;
   const MAX_ID_LENGTH = 160;
   const MAX_EVIDENCE_REF_LENGTH = 500;
   const ALIGNMENT_METHOD = "piecewise_linear_interpolation";
@@ -367,6 +368,7 @@
 
   const COPY = {
     en: {
+      tooManyLocal: "The local event store exceeds the 20,000-record read limit. No records were truncated or changed; remove or archive older sessions before calibration.",
       drift: "Maximum absolute interval drift: {value} ppm (diagnostic only).",
       previewLimit: "The table previews at most 100 rows; the JSON export contains every processed observation.",
       title: "Local clock calibration",
@@ -415,6 +417,7 @@
       unsupported: "This browser cannot open the local observation database."
     },
     fr: {
+      tooManyLocal: "Le stockage local dépasse la limite de lecture de 20 000 enregistrements. Aucun enregistrement n’a été tronqué ni modifié ; supprimez ou archivez d’anciennes sessions avant la calibration.",
       drift: "Dérive absolue maximale entre intervalles : {value} ppm (diagnostic uniquement).",
       previewLimit: "Le tableau affiche au maximum 100 lignes ; l’export JSON contient toutes les observations traitées.",
       title: "Calibration locale des horloges",
@@ -463,6 +466,7 @@
       unsupported: "Ce navigateur ne peut pas ouvrir la base d’observations locales."
     },
     es: {
+      tooManyLocal: "El almacén local supera el límite de lectura de 20.000 registros. No se truncó ni modificó ningún registro; elimine o archive sesiones antiguas antes de calibrar.",
       drift: "Deriva absoluta máxima entre intervalos: {value} ppm (solo diagnóstico).",
       previewLimit: "La tabla muestra como máximo 100 filas; el JSON exportado contiene todas las observaciones procesadas.",
       title: "Calibración local de relojes",
@@ -511,6 +515,7 @@
       unsupported: "Este navegador no puede abrir la base de observaciones locales."
     },
     de: {
+      tooManyLocal: "Der lokale Ereignisspeicher überschreitet das Leselimit von 20.000 Einträgen. Es wurden keine Einträge gekürzt oder geändert; entfernen oder archivieren Sie ältere Sitzungen vor der Kalibrierung.",
       drift: "Maximale absolute Intervallabweichung: {value} ppm (nur Diagnose).",
       previewLimit: "Die Tabelle zeigt höchstens 100 Zeilen; der JSON-Export enthält alle verarbeiteten Beobachtungen.",
       title: "Lokale Uhrkalibrierung",
@@ -559,6 +564,7 @@
       unsupported: "Dieser Browser kann die lokale Beobachtungsdatenbank nicht öffnen."
     },
     it: {
+      tooManyLocal: "L’archivio locale supera il limite di lettura di 20.000 record. Nessun record è stato troncato o modificato; rimuovi o archivia le sessioni precedenti prima della calibrazione.",
       drift: "Deriva assoluta massima tra intervalli: {value} ppm (solo diagnostica).",
       previewLimit: "La tabella mostra al massimo 100 righe; l’esportazione JSON contiene tutte le osservazioni elaborate.",
       title: "Calibrazione locale degli orologi",
@@ -607,6 +613,7 @@
       unsupported: "Questo browser non può aprire il database locale delle osservazioni."
     },
     pt: {
+      tooManyLocal: "O armazenamento local excede o limite de leitura de 20.000 registos. Nenhum registo foi truncado ou alterado; remova ou arquive sessões antigas antes da calibração.",
       drift: "Deriva absoluta máxima entre intervalos: {value} ppm (apenas diagnóstico).",
       previewLimit: "A tabela mostra no máximo 100 linhas; o JSON exportado contém todas as observações processadas.",
       title: "Calibração local de relógios",
@@ -655,6 +662,7 @@
       unsupported: "Este navegador não consegue abrir a base de observações local."
     },
     nl: {
+      tooManyLocal: "De lokale gebeurtenisopslag overschrijdt de leeslimiet van 20.000 records. Er zijn geen records afgekapt of gewijzigd; verwijder of archiveer oudere sessies vóór kalibratie.",
       drift: "Maximale absolute intervaldrift: {value} ppm (alleen diagnostisch).",
       previewLimit: "De tabel toont maximaal 100 rijen; de JSON-export bevat alle verwerkte waarnemingen.",
       title: "Lokale klokkalibratie",
@@ -703,6 +711,7 @@
       unsupported: "Deze browser kan de lokale waarnemingsdatabase niet openen."
     },
     ru: {
+      tooManyLocal: "Локальное хранилище событий превышает лимит чтения в 20 000 записей. Записи не обрезались и не изменялись; перед калибровкой удалите или архивируйте старые сеансы.",
       drift: "Максимальный абсолютный дрейф интервала: {value} ppm (только диагностика).",
       previewLimit: "В таблице отображается не более 100 строк; экспорт JSON содержит все обработанные наблюдения.",
       title: "Локальная калибровка часов",
@@ -751,6 +760,7 @@
       unsupported: "Этот браузер не может открыть локальную базу наблюдений."
     },
     uk: {
+      tooManyLocal: "Локальне сховище подій перевищує ліміт читання у 20 000 записів. Записи не обрізалися й не змінювалися; перед калібруванням видаліть або архівуйте старі сеанси.",
       drift: "Максимальний абсолютний дрейф інтервалу: {value} ppm (лише діагностика).",
       previewLimit: "У таблиці показано не більше 100 рядків; експорт JSON містить усі оброблені спостереження.",
       title: "Локальне калібрування годинників",
@@ -799,6 +809,7 @@
       unsupported: "Цей браузер не може відкрити локальну базу спостережень."
     },
     ar: {
+      tooManyLocal: "يتجاوز مخزن الأحداث المحلي حد القراءة البالغ 20,000 سجل. لم يتم اقتطاع السجلات أو تعديلها؛ احذف الجلسات الأقدم أو أرشفها قبل المعايرة.",
       drift: "أقصى انجراف مطلق للفاصل: {value} جزء في المليون (للتشخيص فقط).",
       previewLimit: "يعرض الجدول 100 صف كحد أقصى؛ ويحتوي ملف JSON المُصدّر على جميع الملاحظات المعالجة.",
       title: "معايرة الساعة محليًا",
@@ -847,6 +858,7 @@
       unsupported: "لا يمكن لهذا المتصفح فتح قاعدة الملاحظات المحلية."
     },
     he: {
+      tooManyLocal: "מאגר האירועים המקומי חורג ממגבלת הקריאה של 20,000 רשומות. לא נחתכו או שונו רשומות; יש להסיר או לארכב הפעלות ישנות לפני הכיול.",
       drift: "הסחיפה המוחלטת המרבית במרווח: {value} ppm (לאבחון בלבד).",
       previewLimit: "הטבלה מציגה עד 100 שורות; ייצוא JSON כולל את כל התצפיות שעובדו.",
       title: "כיול שעון מקומי",
@@ -895,6 +907,7 @@
       unsupported: "הדפדפן אינו יכול לפתוח את מסד הנתונים המקומי של התצפיות."
     },
     ja: {
+      tooManyLocal: "ローカルイベントストアが読み取り上限の20,000件を超えています。レコードの切り捨てや変更は行っていません。校正前に古いセッションを削除またはアーカイブしてください。",
       drift: "区間の最大絶対ドリフト: {value} ppm（診断専用）。",
       previewLimit: "表には最大100行を表示します。JSON エクスポートには処理したすべての観測が含まれます。",
       title: "ローカル時計校正",
@@ -943,6 +956,7 @@
       unsupported: "このブラウザーではローカル観測データベースを開けません。"
     },
     ko: {
+      tooManyLocal: "로컬 이벤트 저장소가 20,000개 읽기 한도를 초과합니다. 레코드를 자르거나 변경하지 않았습니다. 보정 전에 오래된 세션을 삭제하거나 보관하세요.",
       drift: "구간 최대 절대 드리프트: {value} ppm(진단 전용).",
       previewLimit: "표에는 최대 100개 행이 표시되며 JSON 내보내기에는 처리된 모든 관측값이 포함됩니다.",
       title: "로컬 시계 보정",
@@ -991,6 +1005,7 @@
       unsupported: "이 브라우저는 로컬 관측 데이터베이스를 열 수 없습니다."
     },
     zh: {
+      tooManyLocal: "本地事件存储超过 20,000 条读取上限。未截断或修改任何记录；校准前请删除或归档较早的会话。",
       drift: "区间最大绝对漂移：{value} ppm（仅用于诊断）。",
       previewLimit: "表格最多预览 100 行；JSON 导出包含所有已处理观测。",
       title: "本地时钟校准",
@@ -1039,6 +1054,7 @@
       unsupported: "此浏览器无法打开本地观测数据库。"
     },
     hi: {
+      tooManyLocal: "स्थानीय इवेंट स्टोर 20,000 रिकॉर्ड की पठन सीमा से अधिक है। कोई रिकॉर्ड काटा या बदला नहीं गया; अंशांकन से पहले पुराने सत्र हटाएँ या संग्रहित करें।",
       drift: "अंतराल का अधिकतम निरपेक्ष ड्रिफ्ट: {value} ppm (केवल निदान)।",
       previewLimit: "तालिका में अधिकतम 100 पंक्तियाँ दिखाई जाती हैं; JSON निर्यात में सभी संसाधित अवलोकन शामिल हैं।",
       title: "स्थानीय घड़ी अंशांकन",
@@ -1123,14 +1139,29 @@
     const db = await openDatabase();
     return new Promise((resolve, reject) => {
       let settled = false;
+      const rows = [];
       const transaction = db.transaction("events", "readonly");
-      const request = transaction.objectStore("events").getAll();
+      const request = transaction.objectStore("events").openCursor();
       request.onsuccess = () => {
         if (settled) return;
-        settled = true;
-        const rows = Array.isArray(request.result) ? request.result : [];
-        db.close();
-        resolve(rows);
+        const cursor = request.result;
+        if (!cursor) {
+          settled = true;
+          db.close();
+          resolve(rows);
+          return;
+        }
+        rows.push(cursor.value);
+        if (rows.length > MAX_LOCAL_EVENTS) {
+          settled = true;
+          try { transaction.abort(); } catch (_) {}
+          db.close();
+          const error = new Error("LOCAL_STORE_LIMIT");
+          error.code = "LOCAL_STORE_LIMIT";
+          reject(error);
+          return;
+        }
+        cursor.continue();
       };
       request.onerror = () => {
         if (settled) return;
@@ -1434,7 +1465,8 @@
         sessionEvents = [];
         activeSourceId = null;
         renderRows();
-        setStatus(words().unsupported);
+        if (_ && _.code === "LOCAL_STORE_LIMIT") setStatusKey("tooManyLocal");
+        else setStatus(words().unsupported);
       }
     }
 
@@ -1709,6 +1741,7 @@
     constants: Object.freeze({
       MAX_ANCHORS: MAX_ANCHORS,
       MAX_EVENTS: MAX_EVENTS,
+      MAX_LOCAL_EVENTS: MAX_LOCAL_EVENTS,
       UI_MAX_ANCHORS: UI_MAX_ANCHORS,
       ALIGNMENT_METHOD: ALIGNMENT_METHOD,
       CLOCK_MAPPING_ASSUMPTION: CLOCK_MAPPING_ASSUMPTION
