@@ -1577,6 +1577,9 @@
         const alignment = alignEvents(model, eventRecords);
         const verification = await verifyClockModel(model);
         if (!verification.valid) fail("The generated clock model did not pass integrity verification");
+        if (sessionSelect.value !== buildSessionKey || selectionVersion !== buildSelectionVersion || inputVersion !== buildInputVersion) {
+          fail("Calibration inputs or selected session changed during alignment");
+        }
         latest = {
           model: model,
           alignment: alignment,
