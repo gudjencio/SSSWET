@@ -75,6 +75,7 @@ def build_research_context(
     }
 
     selected = overview.get("versions", [])[:limit]
+    effective_budget = max_chars - 160  # reserve space for final counters and digest
     selected_node_ids: set[str] = set()
     selected_source_ids: list[str] = []
     for item in selected:
@@ -94,7 +95,7 @@ def build_research_context(
             "scientific_validity_established": False,
         }
         candidate = {**payload, "memories": payload["memories"] + [memory]}
-        if _size(candidate) > max_chars:
+        if _size(candidate) > effective_budget:
             payload["omitted_memory_count"] += len(selected) - len(payload["memories"])
             payload["truncated"] = True
             break
@@ -102,8 +103,7 @@ def build_research_context(
         selected_node_ids.update(memory["graph_node_ids"])
         selected_source_ids.extend(memory["source_ids"])
 
-    if not payload["truncated"]:
-        payload["omitted_memory_count"] = max(0, len(overview.get("versions", [])) - len(payload["memories"]))
+    payload["omitted_memory_count"] = max(0, int(overview.get("total_versions", len(overview.get("versions", [])))) - len(payload["memories"]))
 
     contradiction_candidates = []
     for edge in edges:
@@ -151,7 +151,9 @@ def build_research_context(
         payload["sources"].append(source_record)
 
     payload["omitted_source_count"] += max(0, len(selected_source_ids) - len(unique_source_ids))
-    canonical = _canonical(payload)
-    payload["used_chars"] = len(canonical)
-    payload["context_sha256"] = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    unsigned = dict(payload)
+    payload["context_sha256"] = hashlib.sha256(_canonical(unsigned).encode("utf-8")).hexdigest()
+    payload["used_chars"] = len(_canonical(payload))
+    if payload["used_chars"] > max_chars:
+        raise RuntimeError("context budget accounting exceeded max_chars")
     return payload
