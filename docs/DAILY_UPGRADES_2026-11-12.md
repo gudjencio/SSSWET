@@ -2,7 +2,7 @@
 
 ## Pre-implementation inspection
 
-The implementation was planned against public main at 8c0bc15409af58453a5ecdcaef3f226a37f03c3e, with immediate predecessor 0a932a960ab49bfbd5281a728bad516bf0232a0b. The Git comparison showed one intervening commit: the public-read/browser-write origin separation and its HTTP regression tests. The preceding commit already contained temporal event-identity validation and scheduled temporal/GPS regression coverage.
+The seven feature additions in this pull request were based on public main at 9835d1bd32ad8f4a03594065d233f7af23d01fc8; its immediate predecessor was 8c0bc15409af58453a5ecdcaef3f226a37f03c3e. The direct comparison showed that the latest main commit adds reduced-motion handling to Virtual Time Travel Mapping and its regression checks. Its parent separates public browser reads from browser writes and adds origin-security tests. The preceding temporal-event identity and scheduled GPS/temporal regression work is present in the same mainline sequence. These three mainline changes are counted as improvements 1–3 in this run; this pull request adds improvements 4–10.
 
 The inspected baseline already had append-only scientific-memory versions, a knowledge graph with explicit supports and contradicts edges, source provenance records, Crossref/OpenAlex metadata discovery, literature-watch history, dataset governance metadata, and reproducibility manifests. The gaps addressed here were narrower and measurable:
 
