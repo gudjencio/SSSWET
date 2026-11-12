@@ -1430,6 +1430,7 @@
       } catch (_) {
         if (thisLoad !== loadVersion) return;
         sessionEvents = [];
+        activeSourceId = null;
         renderRows();
         setStatus(words().unsupported);
       }
@@ -1658,6 +1659,13 @@
     });
     if (languageSelect) languageSelect.addEventListener("change", applyLocale);
     window.addEventListener("ssswet:observations-updated", scheduleReload);
+    window.addEventListener("ssswet:virtual-time-unavailable", () => {
+      sessionEvents = [];
+      activeSourceId = null;
+      buildButton.disabled = true;
+      exportButton.disabled = true;
+      setStatus(words().unsupported);
+    });
     applyLocale();
     setStatusKey("loading");
     if (window.SSSWETVirtualTimeReady) loadSession();
