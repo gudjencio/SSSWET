@@ -1172,6 +1172,7 @@
     let busy = false;
     let loadVersion = 0;
     let selectionVersion = 0;
+    let inputVersion = 0;
     let refreshTimer = null;
     let currentStatusKey = null;
 
@@ -1190,6 +1191,7 @@
     }
 
     function markStale() {
+      inputVersion += 1;
       if (!latest) return;
       latest = null;
       exportButton.disabled = true;
@@ -1510,6 +1512,10 @@
 
     async function buildPreview() {
       if (busy) return;
+      const buildInputVersion = inputVersion;
+      latest = null;
+      exportButton.disabled = true;
+      results.replaceChildren();
       if (rows.length < 2) {
         setStatusKey("needsTwo");
         return;
@@ -1560,6 +1566,7 @@
         buildButton.disabled = true;
         const model = await buildClockModel(anchors);
         if (sessionSelect.value !== buildSessionKey || selectionVersion !== buildSelectionVersion) fail("Selected session changed during alignment");
+        if (inputVersion !== buildInputVersion) fail("Calibration inputs changed during alignment");
         const eventRecords = selectedEventsSnapshot.map(event => ({
           event_id: String(event.id),
           session_id: clockId,
@@ -1651,7 +1658,10 @@
     });
     buildButton.addEventListener("click", buildPreview);
     exportButton.addEventListener("click", exportDerived);
-    refreshButton.addEventListener("click", loadSession);
+    refreshButton.addEventListener("click", () => {
+      selectionVersion += 1;
+      loadSession();
+    });
     eventBoundInput.addEventListener("input", invalidateForInput);
     sessionSelect.addEventListener("change", () => {
       selectionVersion += 1;
