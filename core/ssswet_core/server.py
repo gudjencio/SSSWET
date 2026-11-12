@@ -279,6 +279,46 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                         limit=limit,
                     ),
                 })
+            elif path == "/api/research-context":
+                from .research_context_pack import build_research_context
+                params = parse_qs(parsed.query)
+                query = params.get("q", [""])[0]
+                try:
+                    limit = int(params.get("limit", ["20"])[0])
+                    max_chars = int(params.get("max_chars", ["16000"])[0])
+                    self._json(build_research_context(
+                        store, query, limit=limit, max_chars=max_chars
+                    ))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
+            elif path == "/api/research-review-queue":
+                from .research_review_queue import build_review_queue
+                params = parse_qs(parsed.query)
+                try:
+                    limit = int(params.get("limit", ["100"])[0])
+                    self._json(build_review_queue(store, limit=limit))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
+            elif path == "/api/scientific-memory/lineage-page":
+                from .scientific_memory import ScientificMemoryService
+                params = parse_qs(parsed.query)
+                version_id = params.get("version_id", [""])[0].strip()
+                if not version_id:
+                    self._json({"error": "The version_id parameter is required"}, 400)
+                    return
+                try:
+                    limit = int(params.get("limit", ["50"])[0])
+                    raw_cursor = params.get("before_version_number", [""])[0]
+                    cursor = int(raw_cursor) if raw_cursor else None
+                    result = ScientificMemoryService(store).lineage_page(
+                        version_id, limit=limit, before_version_number=cursor
+                    )
+                    if result is None:
+                        self._json({"error": "Scientific memory version not found"}, 404)
+                        return
+                    self._json(result)
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/scientific-memory/lineage":
                 from .scientific_memory import ScientificMemoryService
                 params = parse_qs(parsed.query)
@@ -360,6 +400,25 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     "automatic_task_creation": False,
                     "scientific_validity_established": False,
                 })
+            elif path == "/api/literature-watch/diff":
+                from .literature_watch_diff import compare_watch_reports
+                params = parse_qs(parsed.query)
+                older_id = params.get("older_watch_id", [""])[0].strip()
+                newer_id = params.get("newer_watch_id", [""])[0].strip()
+                if not older_id or not newer_id:
+                    self._json({"error": "older_watch_id and newer_watch_id are required"}, 400)
+                    return
+                reports = store.literature_watch_history(limit=200)
+                by_id = {item.get("watch_id"): item for item in reports}
+                if older_id not in by_id or newer_id not in by_id:
+                    self._json({
+                        "error": "One or both reports were not found in the latest 200 literature-watch records"
+                    }, 404)
+                    return
+                try:
+                    self._json(compare_watch_reports(by_id[older_id], by_id[newer_id]))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/literature-watch":
                 self._json({"reports": store.literature_watch_history(limit=100)})
             elif path == "/api/literature-watch/campaigns":
@@ -367,6 +426,27 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     "subscriptions": store.campaign_watch_subscriptions(),
                     "runs": store.campaign_watch_run_history(limit=200),
                 })
+            elif path == "/api/knowledge-graph/neighborhood":
+                from .knowledge_graph_neighborhood import build_neighborhood
+                params = parse_qs(parsed.query)
+                node_ids = list(dict.fromkeys(
+                    item.strip() for item in params.get("node_ids", [""])[0].split(",")
+                    if item.strip()
+                ))
+                if not node_ids:
+                    self._json({"error": "A non-empty node_ids parameter is required"}, 400)
+                    return
+                try:
+                    depth = int(params.get("depth", ["2"])[0])
+                    max_nodes = int(params.get("max_nodes", ["100"])[0])
+                    max_edges = int(params.get("max_edges", ["200"])[0])
+                    graph = store.knowledge_graph(limit=2000)
+                    self._json(build_neighborhood(
+                        graph, node_ids, depth=depth,
+                        max_nodes=max_nodes, max_edges=max_edges,
+                    ))
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/knowledge-graph":
                 self._json(store.knowledge_graph(limit=500))
             elif path == "/api/research-observatory":
@@ -444,6 +524,30 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
                     self._json({"error": "The limit parameter must be an integer"}, 400)
                     return
                 self._json(DigitalLabService(store).reproduction_matrix(limit=limit))
+            elif path == "/api/dataset-governance-gate":
+                from .governed_reproducibility import build_governed_manifest
+                params = parse_qs(parsed.query)
+                dataset_id = params.get("dataset_id", [""])[0].strip()
+                raw_version = params.get("version", [""])[0]
+                scope = params.get("scope", ["internal"])[0]
+                if not dataset_id or not raw_version:
+                    self._json({"error": "dataset_id and version are required"}, 400)
+                    return
+                try:
+                    version = int(raw_version)
+                    report = build_governed_manifest(
+                        store,
+                        protocol_id="governance-eligibility-check",
+                        protocol_version=1,
+                        dataset_refs=[{"dataset_id": dataset_id, "version": version}],
+                        software_version="governance-eligibility-check",
+                        parameters={},
+                        source_ids=[],
+                        publication_scope=scope,
+                    )
+                    self._json({key: value for key, value in report.items() if key != "manifest"})
+                except ValueError as exc:
+                    self._json({"error": str(exc)}, 400)
             elif path == "/api/digital-lab/datasets":
                 from .dataset_registry import DatasetRegistry
                 params = parse_qs(parsed.query)
