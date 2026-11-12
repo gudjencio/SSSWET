@@ -1691,6 +1691,11 @@
     }
   }
 
+  const localeKeys = Object.keys(COPY.en).sort();
+  const localeCoverage = Object.freeze(Object.fromEntries(Object.keys(COPY).map(locale => [
+    locale,
+    localeKeys.filter(key => Object.prototype.hasOwnProperty.call(COPY[locale], key)).length
+  ])));
   const api = Object.freeze({
     parseZonedTimestamp: parseZonedTimestamp,
     pythonIsoFromEpochMs: pythonIsoFromEpochMs,
@@ -1699,6 +1704,8 @@
     verifyClockModel: verifyClockModel,
     alignEvents: alignEvents,
     locales: Object.freeze(Object.keys(COPY)),
+    localeKeyCount: localeKeys.length,
+    localeCoverage: localeCoverage,
     constants: Object.freeze({
       MAX_ANCHORS: MAX_ANCHORS,
       MAX_EVENTS: MAX_EVENTS,
