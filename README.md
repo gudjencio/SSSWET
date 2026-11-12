@@ -137,3 +137,12 @@ The research knowledge graph connects individual memories, claims, decisions, ex
 ## Research workflow quality
 
 The core research toolkit now adds deterministic provenance-graph diagnostics, versioned agent-capability matching, dataset governance review flags, preregistration deviation records, verifiable reproducibility manifests, uncertainty-aware temporal alignment, fair civil-rescue resource allocation, static accessibility checks, localization QA and dossier-level provenance audits. These are decision-support and review tools; they do not automate scientific approval, legal compliance, dispatch or real-world operations. See [Research workflow quality upgrades](docs/RESEARCH_WORKFLOW_QUALITY_UPGRADES_2026-11-06.md).
+
+## Research continuity and evidence workflows
+
+The 12 November 2026 research upgrade adds bounded agent context packs, human-review triage, contradiction-aware graph neighbourhoods, paginated scientific-memory lineage, literature-watch comparisons, expanded scholarly metadata discovery, and dataset-governed reproducibility checks. It also records the temporal identity, browser-origin security and reduced-motion safeguards.
+
+See the public implementation and limitations record: [Research continuity and evidence workflow upgrades](docs/DAILY_UPGRADES_2026-11-12.md).
+
+
+The extended research-continuity API routes are local-administrator interfaces. They require a loopback request and the configured `SSSWET_ADMIN_TOKEN`; they are not exposed as unauthenticated public research-data endpoints. The public website displays only the selected project information described above.
