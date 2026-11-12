@@ -29,6 +29,29 @@
     <video id="vt-playback" controls playsinline hidden></video>
   </section>
   </section>
+  <section class="vt-grid vt-clock-grid">
+    <article class="vt-panel vt-clock-workspace" id="vt-clock-workspace" aria-labelledby="vt-clock-title">
+      <h2 id="vt-clock-title" data-vtcal="title">Local clock calibration</h2>
+      <p data-vtcal="intro">Create a derived timeline for one selected recording session by pairing recorded observations with independently known reference times. The original observations are never changed.</p>
+      <div class="vt-clock-status" id="vt-clock-status" role="status" aria-live="polite">Reading local observations…</div>
+      <div class="vt-clock-actions">
+        <button id="vt-clock-refresh" class="secondary" type="button" data-vtcal="refresh">Refresh observations</button>
+        <button id="vt-clock-add" class="secondary" type="button" data-vtcal="add">Add anchor</button>
+      </div>
+      <p class="vt-small vt-clock-help" data-vtcal="anchorHelp">Choose distinct observations in increasing source-time order. Reference times must also increase strictly.</p>
+      <div id="vt-clock-anchors" class="vt-clock-anchors"></div>
+      <label class="vt-clock-event-bound" for="vt-clock-event-bound"><span data-vtcal="eventBound">Event timestamp absolute bound in seconds (optional; applied uniformly to this session)</span>
+        <input id="vt-clock-event-bound" type="number" min="0" max="31536000" step="any" inputmode="decimal" aria-describedby="vt-clock-event-bound-help">
+      </label>
+      <p id="vt-clock-event-bound-help" class="vt-small" data-vtcal="eventBoundHelp">Leave blank when unknown. A declared value is an absolute bound, not a standard deviation or confidence interval.</p>
+      <div class="vt-actions">
+        <button id="vt-clock-build" class="primary" type="button" disabled data-vtcal="build">Build aligned preview</button>
+        <button id="vt-clock-export" class="secondary" type="button" disabled data-vtcal="export">Export derived JSON</button>
+      </div>
+      <div id="vt-clock-results" class="vt-clock-results" aria-live="polite" aria-relevant="additions text"></div>
+      <p class="vt-small vt-clock-local-note" data-vtcal="localNote">Local-only preview. The workspace reads IndexedDB in read-only mode, includes no media, makes no network request for alignment, and never writes to the original observations.</p>
+    </article>
+  </section>
   <section class="vt-grid">
     <article class="vt-panel"><h2 data-i="captureTitle">Capture a new visit</h2><p data-i="captureIntro">All capture is optional. Nothing is uploaded to SSSWET servers; observations and media stay in this browser's local storage.</p>
       <div class="vt-consents">
@@ -78,6 +101,7 @@
 <script src="temporal-clock.js"></script>
 <script src="gps-scenario-model.js"></script>
 <script src="virtual-time-travel.js"></script>
+<script src="clock-alignment-workspace.js"></script>
 <script src="keyframe-continuity.js"></script>
 <script src="keyframe-correspondence.js"></script>
 </body></html>
