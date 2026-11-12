@@ -1,0 +1,130 @@
+"""Live, read-only smoke checks for multilingual scholarly and social discovery."""
+from __future__ import annotations
+
+from datetime import datetime, timezone
+import json
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from ssswet_core.providers import MultiSourceLiteratureProvider
+from ssswet_core.social_expansion import BlueskySearchProvider, QiitaSearchProvider
+from ssswet_core.social_research import query_relevance
+
+QUERIES = {
+    "en": "solid-state battery",
+    "fr": "batterie à l'état solide",
+    "ja": "全固体電池",
+    "zh": "固态电池",
+}
+
+
+def smoke_exit_code(successful_requests: int, failed_requests: int) -> int:
+    """Fail the live smoke check when any provider request fails.
+
+    A successful response with zero matches is still a successful request;
+    partial provider outages must not be reported as a green smoke run.
+    """
+    if successful_requests < 0 or failed_requests < 0:
+        raise ValueError("Request counts cannot be negative.")
+    return 0 if successful_requests > 0 and failed_requests == 0 else 1
+
+
+def main() -> int:
+    social_providers = (
+        ("bluesky", BlueskySearchProvider(max_results=3)),
+        ("qiita", QiitaSearchProvider(max_results=1)),
+    )
+    scholarly = MultiSourceLiteratureProvider(max_results=3)
+    report = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "mode": "public_read_only_multilingual_smoke_test",
+        "queries": {},
+        "limitations": [
+            "Bibliographic metadata and social posts are discovery leads, not scientific validation.",
+            "Crossref and OpenAlex records must be checked against the original publication.",
+            "Qiita and Bluesky are community discovery sources, not peer-reviewed literature indexes.",
+            "Zero results are reported as zero results, never replaced with invented matches.",
+            "Only bounded metadata and bibliographic snippets are retained; no full papers are downloaded.",
+        ],
+    }
+    successful_requests = failed_requests = 0
+    for language, query in QUERIES.items():
+        report["queries"][language] = {"query": query, "providers": {}}
+
+        try:
+            result = scholarly.investigate(query, "multilingual live smoke test")
+            successful_requests += 1
+            report["queries"][language]["providers"]["crossref_openalex"] = {
+                "status": "ok" if result.source_ids else "no_records",
+                "count": len(result.source_ids),
+                "records": [
+                    {
+                        "source_id": source_id[:240],
+                        "citation": evidence[:900],
+                        "verification_status": "not_verified",
+                    }
+                    for source_id, evidence in zip(result.source_ids[:6], result.evidence[:6])
+                ],
+                "summary": result.summary[:500],
+            }
+        except Exception as exc:
+            failed_requests += 1
+            report["queries"][language]["providers"]["crossref_openalex"] = {
+                "status": "error", "error": type(exc).__name__, "detail": str(exc)[:180]
+            }
+
+        for name, provider in social_providers:
+            entry = {"status": "ok", "count": 0, "raw_count": 0, "items": []}
+            try:
+                raw_items = provider.search(query)
+                successful_requests += 1
+                items = []
+                for item in raw_items:
+                    score, matched_terms = query_relevance(query, item.title + " " + item.text)
+                    if score > 0.0:
+                        items.append((item, score, matched_terms))
+                entry["raw_count"] = len(raw_items)
+                entry["count"] = len(items)
+                entry["filtered_out_count"] = len(raw_items) - len(items)
+                entry["items"] = [
+                    {
+                        "platform": item.platform,
+                        "source_id": item.source_id[:220],
+                        "title": item.title[:300],
+                        "url": item.url[:1500],
+                        "author": item.author[:120],
+                        "published_at": item.published_at[:40],
+                        "language_hint": str(item.metadata.get("language") or "")[:12],
+                        "triage": "not_verified",
+                        "query_relevance": {
+                            "score": round(score, 3),
+                            "matched_terms": list(matched_terms[:12]),
+                            "method": "lexical_overlap_only_not_evidence",
+                        },
+                    }
+                    for item, score, matched_terms in items[:3]
+                ]
+            except Exception as exc:
+                failed_requests += 1
+                entry["status"] = "error"
+                entry["error"] = type(exc).__name__
+                entry["detail"] = str(exc)[:180]
+            report["queries"][language]["providers"][name] = entry
+
+    report["summary"] = {
+        "successful_requests": successful_requests,
+        "failed_requests": failed_requests,
+        "languages_tested": list(QUERIES),
+        "providers_tested": ["Crossref", "OpenAlex", "Bluesky", "Qiita"],
+    }
+    Path("social-live-smoke-report.json").write_text(
+        json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    print(json.dumps(report["summary"], ensure_ascii=False))
+    return smoke_exit_code(successful_requests, failed_requests)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

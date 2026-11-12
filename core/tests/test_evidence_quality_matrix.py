@@ -28,6 +28,8 @@ def test_reports_source_metadata_and_review_coverage_without_truth_score():
     assert result["review_coverage"]["multiple_positions_recorded"] is True
     assert result["review_coverage"]["independent_review_established"] is False
     assert result["evidence_quality_score"] is None
+    assert result["bibliographic_integrity"]["record_count"] == 1
+    assert "peer_review_status_not_established" in result["bibliographic_integrity"]["records"][0]["flags"]
     assert result["scientific_validity_established"] is False
 
 

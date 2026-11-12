@@ -23,6 +23,9 @@ def test_openalex_returns_traceable_metadata_without_claiming_validation(monkeyp
         "doi": "https://doi.org/10.5555/example",
         "title": "A study of orbital dynamics",
         "publication_year": 2025,
+        "publication_date": "2025-03-14",
+        "type": "preprint",
+        "is_retracted": True,
         "cited_by_count": 12,
         "authorships": [{"author": {"display_name": "Ada Lovelace"}}],
         "primary_location": {"source": {"display_name": "Journal of Examples"}},
@@ -45,6 +48,12 @@ def test_openalex_returns_traceable_metadata_without_claiming_validation(monkeyp
     assert "Journal of Examples" in result.evidence[0]
     assert "cited-by count: 12" in result.evidence[0]
     assert result.uncertainty == 1.0
+    record = result.bibliographic_records[0]
+    assert record["publication_date"] == "2025-03-14"
+    assert record["type"] == "preprint"
+    assert record["is_preprint"] is True
+    assert record["is_retracted"] is True
+    assert record["peer_review_status"] == "not_established_by_openalex_metadata"
     assert "do not establish" in result.summary
     assert "mailto=research%40example.org" in seen["url"]
     assert seen["timeout"] <= 30

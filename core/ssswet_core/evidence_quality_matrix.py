@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Any
 from .sources import SourceRecord, SourceQualityAssessor, analyze_source_independence
+from .bibliographic_integrity import analyze_bibliographic_integrity
 
 MAX_DOSSIER_RECORDS = 2000
 MAX_REVIEW_RECORDS = 1000
@@ -148,6 +149,7 @@ class EvidenceQualityMatrix:
         return {
             "dossier_id": dossier.get("dossier_id"), "record_counts": categories,
             "source_assessments": source_assessments, "source_independence": independence,
+            "bibliographic_integrity": analyze_bibliographic_integrity(raw_sources),
             "review_coverage": review_coverage, "provenance_integrity": self._provenance_audit(dossier),
             "limitations_recorded": sum(1 for item in raw_sources if (item.get("metadata") or {}).get("limitations")),
             "missing_areas": [key for key in ("sources", "protocols", "runs", "datasets", "comparisons") if categories[key] == 0],
