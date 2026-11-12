@@ -43,6 +43,7 @@ jobs:
           node --check web/donation-config.js
           node --check web/product-purchase-config.js
           node --check web/temporal-clock.js
+          node --check web/clock-alignment-workspace.js
           node --check web/gps-scenario-model.js
           node --check web/virtual-time-travel.js
           node --check web/keyframe-continuity.js
@@ -62,6 +63,7 @@ jobs:
           node web/test-keyframe-continuity.cjs
           node web/test-keyframe-correspondence.cjs
           node web/test-temporal-clock.cjs
+          node web/test-clock-alignment-workspace.cjs
           node web/test-gps-scenario-model.cjs
           node web/test-keyframe-spatial-distribution.cjs
           node web/test-bot-personality.cjs
