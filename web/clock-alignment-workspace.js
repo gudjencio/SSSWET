@@ -259,11 +259,9 @@
       const expected = rebuilt.model_sha256;
       const payload = Object.assign({}, model);
       delete payload.model_sha256;
-      const valid = model.model_sha256 === expected && canonicalJson(payload, null) === canonicalJson(Object.assign({}, rebuilt, { model_sha256: undefined }) && (() => {
-        const copy = Object.assign({}, rebuilt);
-        delete copy.model_sha256;
-        return copy;
-      })(), null);
+      const expectedPayload = Object.assign({}, rebuilt);
+      delete expectedPayload.model_sha256;
+      const valid = model.model_sha256 === expected && canonicalJson(payload, null) === canonicalJson(expectedPayload, null);
       return { valid: valid, tampered_or_incomplete: !valid, expected_sha256: expected, recorded_sha256: model.model_sha256 || null };
     } catch (_) {
       return { valid: false, tampered_or_incomplete: true, expected_sha256: null, recorded_sha256: model && model.model_sha256 || null };
@@ -369,6 +367,8 @@
 
   const COPY = {
     en: {
+      drift: "Maximum absolute interval drift: {value} ppm (diagnostic only).",
+      previewLimit: "The table previews at most 100 rows; the JSON export contains every processed observation.",
       title: "Local clock calibration",
       intro: "Create a derived timeline for one selected recording session by pairing recorded observations with independently known reference times. The original observations are never changed.",
       anchor: "Anchor",
@@ -415,6 +415,8 @@
       unsupported: "This browser cannot open the local observation database."
     },
     fr: {
+      drift: "Dérive absolue maximale entre intervalles : {value} ppm (diagnostic uniquement).",
+      previewLimit: "Le tableau affiche au maximum 100 lignes ; l’export JSON contient toutes les observations traitées.",
       title: "Calibration locale des horloges",
       intro: "Créez une chronologie dérivée pour une seule session en associant des observations enregistrées à des heures de référence connues indépendamment. Les observations originales ne sont jamais modifiées.",
       anchor: "Ancre",
@@ -461,6 +463,8 @@
       unsupported: "Ce navigateur ne peut pas ouvrir la base d’observations locales."
     },
     es: {
+      drift: "Deriva absoluta máxima entre intervalos: {value} ppm (solo diagnóstico).",
+      previewLimit: "La tabla muestra como máximo 100 filas; el JSON exportado contiene todas las observaciones procesadas.",
       title: "Calibración local de relojes",
       intro: "Cree una cronología derivada para una sola sesión emparejando observaciones grabadas con horas de referencia conocidas de forma independiente. Las observaciones originales nunca se modifican.",
       anchor: "Ancla",
@@ -507,6 +511,8 @@
       unsupported: "Este navegador no puede abrir la base de observaciones locales."
     },
     de: {
+      drift: "Maximale absolute Intervallabweichung: {value} ppm (nur Diagnose).",
+      previewLimit: "Die Tabelle zeigt höchstens 100 Zeilen; der JSON-Export enthält alle verarbeiteten Beobachtungen.",
       title: "Lokale Uhrkalibrierung",
       intro: "Erstellen Sie eine abgeleitete Zeitachse für eine Aufnahmesitzung, indem Sie aufgezeichnete Beobachtungen mit unabhängig bekannten Referenzzeiten verknüpfen. Originalbeobachtungen werden nie geändert.",
       anchor: "Anker",
@@ -553,6 +559,8 @@
       unsupported: "Dieser Browser kann die lokale Beobachtungsdatenbank nicht öffnen."
     },
     it: {
+      drift: "Deriva assoluta massima tra intervalli: {value} ppm (solo diagnostica).",
+      previewLimit: "La tabella mostra al massimo 100 righe; l’esportazione JSON contiene tutte le osservazioni elaborate.",
       title: "Calibrazione locale degli orologi",
       intro: "Crea una cronologia derivata per una sola sessione associando osservazioni registrate a orari di riferimento noti indipendentemente. Le osservazioni originali non vengono mai modificate.",
       anchor: "Ancora",
@@ -599,6 +607,8 @@
       unsupported: "Questo browser non può aprire il database locale delle osservazioni."
     },
     pt: {
+      drift: "Deriva absoluta máxima entre intervalos: {value} ppm (apenas diagnóstico).",
+      previewLimit: "A tabela mostra no máximo 100 linhas; o JSON exportado contém todas as observações processadas.",
       title: "Calibração local de relógios",
       intro: "Crie uma linha temporal derivada para uma única sessão associando observações gravadas a horas de referência conhecidas independentemente. As observações originais nunca são alteradas.",
       anchor: "Âncora",
@@ -645,6 +655,8 @@
       unsupported: "Este navegador não consegue abrir a base de observações local."
     },
     nl: {
+      drift: "Maximale absolute intervaldrift: {value} ppm (alleen diagnostisch).",
+      previewLimit: "De tabel toont maximaal 100 rijen; de JSON-export bevat alle verwerkte waarnemingen.",
       title: "Lokale klokkalibratie",
       intro: "Maak een afgeleide tijdlijn voor één opnamesessie door opgenomen waarnemingen te koppelen aan onafhankelijk bekende referentietijden. Oorspronkelijke waarnemingen worden nooit gewijzigd.",
       anchor: "Anker",
@@ -691,6 +703,8 @@
       unsupported: "Deze browser kan de lokale waarnemingsdatabase niet openen."
     },
     ru: {
+      drift: "Максимальный абсолютный дрейф интервала: {value} ppm (только диагностика).",
+      previewLimit: "В таблице отображается не более 100 строк; экспорт JSON содержит все обработанные наблюдения.",
       title: "Локальная калибровка часов",
       intro: "Создайте производную временную шкалу для одного сеанса записи, сопоставив записанные наблюдения с независимо известными опорными моментами времени. Исходные наблюдения не изменяются.",
       anchor: "Опорная точка",
@@ -737,6 +751,8 @@
       unsupported: "Этот браузер не может открыть локальную базу наблюдений."
     },
     uk: {
+      drift: "Максимальний абсолютний дрейф інтервалу: {value} ppm (лише діагностика).",
+      previewLimit: "У таблиці показано не більше 100 рядків; експорт JSON містить усі оброблені спостереження.",
       title: "Локальне калібрування годинників",
       intro: "Створіть похідну часову шкалу для одного сеансу запису, зіставивши записані спостереження з незалежно відомим опорним часом. Початкові спостереження ніколи не змінюються.",
       anchor: "Опорна точка",
@@ -783,6 +799,8 @@
       unsupported: "Цей браузер не може відкрити локальну базу спостережень."
     },
     ar: {
+      drift: "أقصى انجراف مطلق للفاصل: {value} جزء في المليون (للتشخيص فقط).",
+      previewLimit: "يعرض الجدول 100 صف كحد أقصى؛ ويحتوي ملف JSON المُصدّر على جميع الملاحظات المعالجة.",
       title: "معايرة الساعة محليًا",
       intro: "أنشئ خطًا زمنيًا مشتقًا لجلسة تسجيل واحدة بربط الملاحظات المسجلة بأوقات مرجعية معروفة بشكل مستقل. لا تتغير الملاحظات الأصلية مطلقًا.",
       anchor: "مرساة",
@@ -829,6 +847,8 @@
       unsupported: "لا يمكن لهذا المتصفح فتح قاعدة الملاحظات المحلية."
     },
     he: {
+      drift: "הסחיפה המוחלטת המרבית במרווח: {value} ppm (לאבחון בלבד).",
+      previewLimit: "הטבלה מציגה עד 100 שורות; ייצוא JSON כולל את כל התצפיות שעובדו.",
       title: "כיול שעון מקומי",
       intro: "יצירת ציר זמן נגזר עבור הפעלת הקלטה אחת באמצעות התאמת תצפיות מוקלטות לזמני ייחוס הידועים ממקור עצמאי. התצפיות המקוריות אינן משתנות.",
       anchor: "עוגן",
@@ -875,6 +895,8 @@
       unsupported: "הדפדפן אינו יכול לפתוח את מסד הנתונים המקומי של התצפיות."
     },
     ja: {
+      drift: "区間の最大絶対ドリフト: {value} ppm（診断専用）。",
+      previewLimit: "表には最大100行を表示します。JSON エクスポートには処理したすべての観測が含まれます。",
       title: "ローカル時計校正",
       intro: "記録済みの観測と独立して確認された基準時刻を対応付け、1つの記録セッションの派生タイムラインを作成します。元の観測データは変更しません。",
       anchor: "アンカー",
@@ -921,6 +943,8 @@
       unsupported: "このブラウザーではローカル観測データベースを開けません。"
     },
     ko: {
+      drift: "구간 최대 절대 드리프트: {value} ppm(진단 전용).",
+      previewLimit: "표에는 최대 100개 행이 표시되며 JSON 내보내기에는 처리된 모든 관측값이 포함됩니다.",
       title: "로컬 시계 보정",
       intro: "기록된 관측값을 독립적으로 확인된 기준 시각과 연결하여 하나의 기록 세션에 대한 파생 타임라인을 만듭니다. 원본 관측값은 변경하지 않습니다.",
       anchor: "기준점",
@@ -967,6 +991,8 @@
       unsupported: "이 브라우저는 로컬 관측 데이터베이스를 열 수 없습니다."
     },
     zh: {
+      drift: "区间最大绝对漂移：{value} ppm（仅用于诊断）。",
+      previewLimit: "表格最多预览 100 行；JSON 导出包含所有已处理观测。",
       title: "本地时钟校准",
       intro: "将已记录的观测与独立确认的参考时间配对，为单个记录会话创建派生时间线。原始观测不会被修改。",
       anchor: "锚点",
@@ -1013,6 +1039,8 @@
       unsupported: "此浏览器无法打开本地观测数据库。"
     },
     hi: {
+      drift: "अंतराल का अधिकतम निरपेक्ष ड्रिफ्ट: {value} ppm (केवल निदान)।",
+      previewLimit: "तालिका में अधिकतम 100 पंक्तियाँ दिखाई जाती हैं; JSON निर्यात में सभी संसाधित अवलोकन शामिल हैं।",
       title: "स्थानीय घड़ी अंशांकन",
       intro: "रिकॉर्ड किए गए अवलोकनों को स्वतंत्र रूप से ज्ञात संदर्भ समय से जोड़कर एक रिकॉर्डिंग सत्र के लिए व्युत्पन्न समयरेखा बनाएँ। मूल अवलोकन कभी नहीं बदले जाते।",
       anchor: "एंकर",
@@ -1139,20 +1167,23 @@
     let rows = [{ eventId: "", referenceTimestamp: "", uncertainty: "", evidenceRef: "" },
       { eventId: "", referenceTimestamp: "", uncertainty: "", evidenceRef: "" }];
     let sessionEvents = [];
-    let allEvents = [];
     let latest = null;
     let busy = false;
+    let refreshTimer = null;
+    let currentStatusKey = null;
 
     function words() {
       return copyFor(locale);
     }
 
     function setStatus(message) {
+      currentStatusKey = null;
       status.textContent = message;
     }
 
     function setStatusKey(key) {
-      setStatus(words()[key] || COPY.en[key] || "");
+      currentStatusKey = key;
+      status.textContent = words()[key] || COPY.en[key] || "";
     }
 
     function markStale() {
@@ -1299,7 +1330,16 @@
         if (words()[key]) node.textContent = words()[key];
       });
       renderRows();
+      if (currentStatusKey) setStatusKey(currentStatusKey);
       if (latest) renderResult();
+    }
+
+    function scheduleReload() {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        loadSession();
+      }, 250);
     }
 
     async function loadSession() {
@@ -1308,7 +1348,7 @@
       results.replaceChildren();
       setStatusKey("loading");
       try {
-        allEvents = await readLocalEvents();
+        const allEvents = await readLocalEvents();
         const key = sessionSelect.value;
         if (!key) {
           sessionEvents = [];
@@ -1374,6 +1414,10 @@
       uncertainty.textContent = interpolate(words().uncertaintyComplete, { count: alignment.complete_declared_uncertainty_input_count });
       const missing = document.createElement("p");
       missing.textContent = words().uncertaintyMissing;
+      const drift = document.createElement("p");
+      drift.textContent = interpolate(words().drift, {
+        value: Number(latest.model.max_absolute_drift_ppm).toLocaleString(locale, { maximumFractionDigits: 3 })
+      });
       const hash = document.createElement("p");
       hash.className = "vt-clock-hash";
       hash.textContent = words().hash + ": " + latest.model.model_sha256;
@@ -1416,7 +1460,9 @@
       const limitation = document.createElement("p");
       limitation.className = "vt-clock-note";
       limitation.textContent = words().limitation;
-      results.replaceChildren(summary, provenance, uncertainty, missing, hash, tableWrap, limitation);
+      const previewLimit = document.createElement("p");
+      previewLimit.textContent = words().previewLimit;
+      results.replaceChildren(summary, provenance, uncertainty, missing, drift, hash, tableWrap, previewLimit, limitation);
     }
 
     function invalidateForInput() {
@@ -1559,7 +1605,7 @@
     eventBoundInput.addEventListener("input", invalidateForInput);
     sessionSelect.addEventListener("change", loadSession);
     if (languageSelect) languageSelect.addEventListener("change", applyLocale);
-    window.addEventListener("ssswet:observations-updated", loadSession);
+    window.addEventListener("ssswet:observations-updated", scheduleReload);
     applyLocale();
     setStatusKey("loading");
     if (window.SSSWETVirtualTimeReady) loadSession();
