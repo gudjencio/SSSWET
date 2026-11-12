@@ -1169,6 +1169,7 @@
     let sessionEvents = [];
     let latest = null;
     let busy = false;
+    let loadVersion = 0;
     let refreshTimer = null;
     let currentStatusKey = null;
 
@@ -1343,12 +1344,15 @@
     }
 
     async function loadSession() {
+      const thisLoad = ++loadVersion;
+      buildButton.disabled = true;
       latest = null;
       exportButton.disabled = true;
       results.replaceChildren();
       setStatusKey("loading");
       try {
         const allEvents = await readLocalEvents();
+        if (thisLoad !== loadVersion) return;
         const key = sessionSelect.value;
         if (!key) {
           sessionEvents = [];
@@ -1389,6 +1393,7 @@
           if (!sessionEvents.some(event => String(event.id) === row.eventId)) row.eventId = "";
         });
         renderRows();
+        buildButton.disabled = false;
         setStatusKey("ready");
       } catch (_) {
         sessionEvents = [];
@@ -1515,6 +1520,7 @@
         busy = true;
         buildButton.disabled = true;
         const model = await buildClockModel(anchors);
+        if (sessionSelect.value !== buildSessionKey) fail("Selected session changed during alignment");
         const eventRecords = sessionEvents.map(event => ({
           event_id: String(event.id),
           session_id: clockId,
@@ -1544,7 +1550,7 @@
         setStatus(words().invalid + (error && error.message ? " " + error.message : ""));
       } finally {
         busy = false;
-        buildButton.disabled = false;
+        buildButton.disabled = !sessionEvents.length || !sessionEvents[0].clockSessionId || sessionEvents.length > MAX_EVENTS;
       }
     }
 
