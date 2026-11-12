@@ -54,3 +54,5 @@
 .vt-clock-workspace[dir="rtl"] .vt-clock-table-wrap th,.vt-clock-workspace[dir="rtl"] .vt-clock-table-wrap td{text-align:right}
 @media(max-width:640px){.vt-clock-fields{grid-template-columns:1fr}.vt-clock-actions{display:grid;grid-template-columns:1fr}.vt-clock-actions button,.vt-clock-workspace .vt-actions button{width:100%}.vt-clock-table-wrap th,.vt-clock-table-wrap td{white-space:normal;min-width:110px}}
 @media(prefers-reduced-motion:reduce){.vt-clock-workspace *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+.vt-clock-grid{grid-template-columns:minmax(0,1fr)}
