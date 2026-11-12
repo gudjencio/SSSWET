@@ -62,6 +62,13 @@ async function main() {
   assert.equal(model.model_sha256.length, 64);
   assert.equal(model.model_sha256, "f945063082a6295e40ef1aa691412385cd20e9c13d26a02b919c5c58261b0b39",
     "browser canonical model digest must match the Python research engine fixture");
+  const fractionalModel = await workspace.buildClockModel([
+    anchor(null, "2026-11-12T10:10:00.789Z", "2026-11-12T10:11:01.234Z", 0.375, "ref:ms-later"),
+    anchor(null, "2026-11-12T10:00:00.123Z", "2026-11-12T10:01:00.456Z", 0.125, "ref:ms-earlier")
+  ]);
+  assert.equal(fractionalModel.model_sha256, "564b15a95a0ef8e2d0428a733e5769ee7e5a4006e5557dedd66a5e788d4ddc77",
+    "fractional timestamps and non-zero drift must preserve Python canonical fingerprint parity");
+  assert.ok(Math.abs(fractionalModel.max_absolute_drift_ppm - 186.45969640362915) < 1e-9);
   assert.equal(model.anchors[0].anchor_id, "anchor-0001");
   assert.equal(model.anchor_evidence_ref_count, 2);
   assert.equal(model.all_anchor_uncertainties_declared, true);
