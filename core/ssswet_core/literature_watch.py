@@ -42,6 +42,8 @@ class WatchCandidate:
     related_memory_ids: tuple[str, ...] = ()
     classification: str = "candidate_for_review"
     note: str = "Bibliographic metadata only; inspect the publication and its methods."
+    provider_observations: tuple[dict, ...] = ()
+    metadata_conflicts: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -98,13 +100,55 @@ class LiteratureWatchReport:
             classification = "possible_duplicate" if exact else (
                 "possible_title_match" if similar else "candidate_for_review"
             )
+            provenance_record = next(
+                (
+                    item for item in getattr(result, "provenance", ())
+                    if isinstance(item, dict) and item.get("identity") == source_id
+                ),
+                None,
+            )
+            observations = tuple(
+                item for item in (provenance_record or {}).get("provider_records", [])
+                if isinstance(item, dict)
+            )
+            if not observations:
+                observations = ({
+                    "identity": source_id,
+                    "provider": provider_name,
+                    "source_id": source_id,
+                    "evidence": raw,
+                },)
+
+            observed_fields = {"title": set(), "year": set(), "doi": set()}
+            for observation in observations:
+                observed_text = re.sub(r"^\[[^]]+\]\s*", "", str(observation.get("evidence", "")))
+                observed_parts = [part.strip() for part in observed_text.split("|")]
+                if observed_parts and observed_parts[0]:
+                    observed_fields["title"].add(re.sub(r"\s+", " ", observed_parts[0]).casefold())
+                year_match = re.search(r"\b(?:19|20)\d{2}\b", observed_text)
+                if year_match:
+                    observed_fields["year"].add(year_match.group(0))
+                doi_value = re.search(r"\bDOI:\s*([^|]+)", observed_text, re.IGNORECASE)
+                if doi_value:
+                    normalized_doi = _normalize_doi(doi_value.group(1))
+                    if normalized_doi and normalized_doi not in {"unavailable", "unknown"}:
+                        observed_fields["doi"].add(normalized_doi)
+            metadata_conflicts = tuple(sorted(
+                field for field, values in observed_fields.items() if len(values) > 1
+            ))
+            provider_names = sorted({
+                str(item.get("provider", "")).strip()
+                for item in observations if str(item.get("provider", "")).strip()
+            })
             candidates.append(WatchCandidate(
-                candidate_id=str(uuid.uuid4()), provider=provider_name,
+                candidate_id=str(uuid.uuid4()), provider="+".join(provider_names) or provider_name,
                 source_id=source_id, title=title, doi=doi, url=url,
                 duplicate_source_ids=tuple(sorted(set(exact))),
                 similar_source_ids=tuple(sorted(set(similar))),
                 related_memory_ids=tuple(sorted(set(related_memory))),
                 classification=classification,
+                provider_observations=observations,
+                metadata_conflicts=metadata_conflicts,
             ))
         return cls(
             watch_id=str(uuid.uuid4()), query=query.strip(),
