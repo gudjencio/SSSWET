@@ -33,6 +33,8 @@ async function main() {
   assert.deepEqual(workspace.locales, [
     "en", "fr", "es", "de", "it", "pt", "nl", "ru", "uk", "ar", "he", "ja", "ko", "zh", "hi"
   ]);
+  assert.equal(workspace.localeCoverage && Object.values(workspace.localeCoverage).every(count => count === workspace.localeKeyCount), true,
+    "all 15 locales must contain every workspace translation key");
   assert.equal(workspace.constants.UI_MAX_ANCHORS, 20);
   assert.equal(workspace.constants.MAX_EVENTS, 5000);
 
@@ -155,6 +157,10 @@ async function main() {
   assert.match(script, /db\.transaction\("events", "readonly"\)/);
   assert.doesNotMatch(script, /transaction\("events",\s*"readwrite"\)/);
   assert.match(script, /UI_MAX_ANCHORS = 20/);
+  assert.match(script, /clockBases\.size !== 1/);
+  assert.match(script, /selectionVersion/);
+  assert.match(script, /inputVersion/);
+  assert.match(script, /ssswet:virtual-time-unavailable/);
   assert.match(css, /:focus-visible/);
   const sw = fs.readFileSync(path.join(__dirname, "sw.js"), "utf8");
   assert.match(sw, /ssswet-web-v198/);
