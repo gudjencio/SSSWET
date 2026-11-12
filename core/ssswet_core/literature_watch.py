@@ -125,7 +125,8 @@ class LiteratureWatchReport:
                 observed_parts = [part.strip() for part in observed_text.split("|")]
                 if observed_parts and observed_parts[0]:
                     observed_fields["title"].add(re.sub(r"\s+", " ", observed_parts[0]).casefold())
-                year_match = re.search(r"\b(?:19|20)\d{2}\b", observed_text)
+                year_text = observed_parts[2] if len(observed_parts) > 2 else ""
+                year_match = re.search(r"\b(?:19|20)\d{2}\b", year_text)
                 if year_match:
                     observed_fields["year"].add(year_match.group(0))
                 doi_value = re.search(r"\bDOI:\s*([^|]+)", observed_text, re.IGNORECASE)
