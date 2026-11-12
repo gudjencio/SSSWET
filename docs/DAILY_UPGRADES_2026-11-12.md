@@ -26,7 +26,7 @@ The inspected baseline already had append-only scientific-memory versions, a kno
 | 6 | Bounded knowledge-graph neighbourhood retrieval | Depth at most 3, 200 nodes and 500 edges; contradiction edges are ordered first; missing seeds and truncation are explicit. |
 | 7 | Paginated scientific-memory lineage | SQL query returns at most limit + 1 rows; public page limit at most 100; consecutive pages do not overlap; the existing full-lineage endpoint remains unchanged. |
 | 8 | Literature-watch run comparison | At most 200 candidates per report; strong DOI/arXiv/URL identities; reports added, absent and metadata-changed candidates; absence is never labelled retraction. |
-| 9 | Expanded scholarly discovery with provenance reconciliation | Four official metadata sources (Crossref, OpenAlex, arXiv and Europe PMC); each provider capped at 20 results and 30 seconds; arXiv and Europe PMC requests are restricted to fixed HTTPS host allowlists, redirects are refused before a second request can be sent, responses are capped at 2 MB, and arXiv DTD/entity declarations are rejected; duplicate identities are grouped while every provider observation and detected title/year/DOI conflict is retained. |
+| 9 | Expanded scholarly discovery with provenance reconciliation | Four official metadata sources (Crossref, OpenAlex, arXiv and Europe PMC); each provider capped at 20 results and 30 seconds; arXiv and Europe PMC requests are restricted to fixed HTTPS host allowlists, redirects are followed only when they remain HTTPS on the exact provider host, responses are capped at 2 MB, and arXiv DTD/entity declarations are rejected; duplicate identities are grouped while every provider observation and detected title/year/DOI conflict is retained. |
 | 10 | Dataset-governed reproducibility manifests | Public manifests require an explicit public privacy classification, a recorded consent basis, public access scope, known licence and dataset content digest; personal/sensitive datasets require a traceable consent-basis reference for non-public project manifests. Withdrawn consent, tampered dataset records and unapproved personal/sensitive data block manifest creation; valid manifests pass digest verification. |
 
 ## Regression risks identified and controls
@@ -52,7 +52,7 @@ The inspected baseline already had append-only scientific-memory versions, a kno
 9. ArxivProvider, EuropePMCProvider and opt-in BroadScholarlyLiteratureProvider extend scholarly discovery. The new endpoints enforce fixed HTTPS host allowlists, bounded query lengths, 2 MB response caps, and DTD/entity rejection for arXiv. ProviderResult and literature-watch candidates retain per-provider observations and metadata conflict fields.
 10. governed_reproducibility.py blocks manifest creation when recorded dataset governance is insufficient for the requested scope and keeps governance-gate metadata inside the manifest digest.
 
-## Public API additions
+## Local administrator API additions
 
 - GET /api/research-context?q=...&limit=20&max_chars=16000
 - GET /api/research-review-queue?limit=100
@@ -61,7 +61,7 @@ The inspected baseline already had append-only scientific-memory versions, a kno
 - GET /api/literature-watch/diff?older_watch_id=...&newer_watch_id=...
 - GET /api/dataset-governance-gate?dataset_id=...&version=1&scope=public
 
-The governance-gate endpoint returns eligibility and issue codes only; it does not expose raw dataset contents or create a stored experiment.
+These six research endpoints are restricted to loopback requests with the configured local administrator token. They are not unauthenticated public website APIs. The governance-gate endpoint returns eligibility and issue codes only; it does not expose raw dataset contents or create a stored experiment.
 
 ## Validation and limitations
 
@@ -81,4 +81,4 @@ No payment, tax, refund, customer-data, credential, legal-policy or commercial-p
 
 ## Post-validation hardening
 
-A follow-up review identified that validating a response URL after urllib returns is not sufficient to prevent urllib from first following a redirect. The arXiv and Europe PMC adapters now refuse redirects before a second request can be sent, validate the fixed HTTPS request host before opening it, and still validate the returned response URL. Regression tests cover both off-host and same-host redirects. The dataset-governed manifest gate now rejects malformed content-digest strings unless they are exactly 64 hexadecimal characters; this is a format and registry-integrity gate only and cannot recompute the digest without the dataset bytes. Literature-watch comparison also normalizes arXiv version suffixes so v1 and v3 observations are compared as revisions of the same preprint rather than unrelated additions and disappearances.
+A follow-up review identified that validating a response URL after urllib returns is not sufficient to prevent urllib from first following a redirect. The arXiv and Europe PMC adapters now validate each proposed redirect target before following it and allow only HTTPS redirects to the exact provider host, validate the fixed HTTPS request host before opening it, and still validate the returned response URL. Regression tests cover off-host, insecure same-host and permitted HTTPS same-host redirects. All six extended research-read routes now require the existing loopback-only local administrator check and token; unauthenticated requests return HTTP 401 before accessing the research store. The dataset-governed manifest gate now rejects malformed content-digest strings unless they are exactly 64 hexadecimal characters; this is a format and registry-integrity gate only and cannot recompute the digest without the dataset bytes. Literature-watch comparison also normalizes arXiv version suffixes so v1 and v3 observations are compared as revisions of the same preprint rather than unrelated additions and disappearances.
