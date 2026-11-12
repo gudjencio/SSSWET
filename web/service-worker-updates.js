@@ -43,7 +43,7 @@
 
   let waitingWorker = null;
   let refreshing = false;
-  let hadController = Boolean(navigator.serviceWorker.controller);
+  const hadController = Boolean(navigator.serviceWorker.controller);
 
   function showUpdate(worker) {
     waitingWorker = worker;
@@ -69,7 +69,10 @@
 
   async function registerUpdates() {
     try {
-      const registration = await navigator.serviceWorker.register("./sw.js");
+      const registration = await navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" });
+      // Check the deployed worker on every online page visit rather than
+      // waiting for the browser's periodic service-worker update interval.
+      await registration.update().catch(() => {});
       if (registration.waiting && navigator.serviceWorker.controller) showUpdate(registration.waiting);
       registration.addEventListener("updatefound", () => {
         const installing = registration.installing;
@@ -79,6 +82,9 @@
         });
       });
       window.addEventListener("online", () => registration.update().catch(() => {}));
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && navigator.onLine) registration.update().catch(() => {});
+      });
       document.getElementById("language")?.addEventListener("change", () => {
         if (waitingWorker && !banner.hidden) {
           const words = copy();
