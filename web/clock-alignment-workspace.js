@@ -1120,18 +1120,33 @@
   function openDatabase() {
     return new Promise((resolve, reject) => {
       if (!globalThis.indexedDB) return reject(new Error("IndexedDB unavailable"));
+      let settled = false;
       const request = indexedDB.open(DB_NAME);
       request.onsuccess = () => {
         const db = request.result;
+        if (settled) {
+          db.close();
+          return;
+        }
         if (!db.objectStoreNames.contains("events")) {
+          settled = true;
           db.close();
           reject(new Error("Local observation store unavailable"));
           return;
         }
+        settled = true;
         resolve(db);
       };
-      request.onerror = () => reject(request.error || new Error("IndexedDB open failed"));
-      request.onblocked = () => reject(new Error("IndexedDB open blocked"));
+      request.onerror = () => {
+        if (settled) return;
+        settled = true;
+        reject(request.error || new Error("IndexedDB open failed"));
+      };
+      request.onblocked = () => {
+        if (settled) return;
+        settled = true;
+        reject(new Error("IndexedDB open blocked"));
+      };
     });
   }
 
