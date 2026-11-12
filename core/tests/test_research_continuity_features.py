@@ -414,6 +414,29 @@ def test_arxiv_provider_parses_public_metadata_and_rejects_dtd():
     assert "ValueError" in rejected.summary
 
 
+def test_arxiv_provider_rejects_untrusted_redirects_and_oversized_responses():
+    from ssswet_core.providers import ArxivProvider
+
+    class RedirectResponse(_FakeResponse):
+        def geturl(self):
+            return "http://127.0.0.1/internal"
+
+    redirect = ArxivProvider(
+        opener=lambda *args, **kwargs: RedirectResponse(b"<feed/>")
+    ).investigate("wave propagation", "test")
+    assert redirect.evidence == ()
+    assert "ValueError" in redirect.summary
+
+    oversized = ArxivProvider(
+        opener=lambda *args, **kwargs: _FakeResponse(b"x" * 2_000_001)
+    ).investigate("wave propagation", "test")
+    assert oversized.evidence == ()
+    assert "ValueError" in oversized.summary
+
+    with pytest.raises(ValueError):
+        ArxivProvider().investigate("x" * 1_001, "test")
+
+
 def test_europe_pmc_provider_parses_public_metadata():
     from ssswet_core.providers import EuropePMCProvider
     payload = {
