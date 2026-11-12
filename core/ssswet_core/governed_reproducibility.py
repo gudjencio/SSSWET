@@ -30,6 +30,8 @@ def build_governed_manifest(
     """
     if publication_scope not in SCOPES:
         raise ValueError("publication_scope must be internal, project or public")
+    if environment is not None and not isinstance(environment, dict):
+        raise ValueError("environment must be an object")
     if not isinstance(dataset_refs, list) or len(dataset_refs) > MAX_DATASET_REFS:
         raise ValueError(f"dataset_refs must be a list of at most {MAX_DATASET_REFS} records")
 
@@ -104,7 +106,7 @@ def build_governed_manifest(
                 "code": "license_terms_not_recorded",
             })
         if not str(record.get("content_sha256", "")).strip():
-            warnings.append({
+            blockers.append({
                 "dataset_id": key[0], "version": version,
                 "code": "content_digest_not_recorded",
             })
