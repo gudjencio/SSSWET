@@ -1151,8 +1151,7 @@
           resolve(rows);
           return;
         }
-        rows.push(cursor.value);
-        if (rows.length > MAX_LOCAL_EVENTS) {
+        if (rows.length >= MAX_LOCAL_EVENTS) {
           settled = true;
           try { transaction.abort(); } catch (_) {}
           db.close();
@@ -1161,6 +1160,7 @@
           reject(error);
           return;
         }
+        rows.push(cursor.value);
         cursor.continue();
       };
       request.onerror = () => {
