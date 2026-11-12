@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .dataset_registry import governance_issues
+from .dataset_registry import _valid_record, governance_issues
 from .reproducibility_manifest import build_manifest
 
 MAX_DATASET_REFS = 500
@@ -57,6 +57,12 @@ def build_governed_manifest(
             blockers.append({
                 "dataset_id": key[0], "version": version,
                 "code": "dataset_version_not_registered",
+            })
+            continue
+        if not _valid_record(record):
+            blockers.append({
+                "dataset_id": key[0], "version": version,
+                "code": "dataset_record_integrity_failed",
             })
             continue
 
