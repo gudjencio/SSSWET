@@ -669,3 +669,52 @@ def test_literature_watch_diff_endpoint_returns_saved_report_comparison(tmp_path
         server.shutdown()
         server.server_close()
         thread.join(timeout=2)
+
+
+def test_public_provider_redirect_handler_refuses_redirect_targets():
+    from urllib.request import Request
+    from ssswet_core.providers import _RejectRedirectHandler
+
+    handler = _RejectRedirectHandler()
+    request = Request("https://export.arxiv.org/api/query")
+    assert handler.redirect_request(
+        request, None, 302, "Found", {}, "https://127.0.0.1/internal"
+    ) is None
+    assert handler.redirect_request(
+        request, None, 302, "Found", {}, "https://export.arxiv.org/other"
+    ) is None
+
+
+def test_literature_watch_diff_normalizes_arxiv_version_suffixes():
+    older = {"watch_id": "older", "candidates": [{
+        "source_id": "arxiv:2401.01234v1", "title": "A preprint",
+    }]}
+    newer = {"watch_id": "newer", "candidates": [{
+        "source_id": "arxiv:2401.01234v3", "title": "A revised preprint",
+    }]}
+    result = compare_watch_reports(older, newer)
+    assert result["counts"]["added"] == 0
+    assert result["counts"]["absent_from_newer"] == 0
+    assert result["counts"]["metadata_changed"] == 1
+
+
+def test_governed_manifest_rejects_malformed_dataset_digest(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "malformed-digest.sqlite3")
+    _campaign(store)
+    DatasetRegistry(store).register_version(DatasetVersion(
+        "malformed-digest", 1, "Public dataset with malformed digest",
+        "Metadata-only governance record", "campaign-a", "CC-BY-4.0", (),
+        "not-a-sha256", privacy_classification="public",
+        consent_status="not_required", retention_policy="Public archive",
+        access_scope="public",
+    ))
+    result = build_governed_manifest(
+        store, protocol_id="p", protocol_version=1,
+        dataset_refs=[{"dataset_id": "malformed-digest", "version": 1}],
+        software_version="test", parameters={}, source_ids=[],
+        publication_scope="public",
+    )
+    assert result["manifest_created"] is False
+    assert "content_digest_invalid" in {
+        item["code"] for item in result["blocking_issues"]
+    }
