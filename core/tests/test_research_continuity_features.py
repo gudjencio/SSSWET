@@ -380,7 +380,7 @@ def test_arxiv_provider_parses_public_metadata_and_rejects_dtd(monkeypatch):
     </feed>"""
     monkeypatch.setattr("urllib.request.urlopen", lambda *args, **kwargs: _FakeResponse(atom))
     result = ArxivProvider().investigate("wave propagation", "test")
-    assert result.source_ids == ("arxiv:2401.01234",)
+    assert result.source_ids == ("arxiv:2401.01234",), result.summary
     assert "10.5555/example" in result.evidence[0]
     assert result.provenance[0]["provider"] == "arxiv-public-search"
 
