@@ -38,8 +38,10 @@ jobs:
           node --check web/version-center.js
           node --check web/service-worker-updates.js
           node --check web/sw.js
+          node --check web/clock-alignment-workspace.js
           node web/test-locales.cjs
           node web/test-service-worker.cjs
+          node web/test-clock-alignment-workspace.cjs
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

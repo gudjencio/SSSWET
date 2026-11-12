@@ -24,3 +24,35 @@
     scroll-behavior: auto !important;
   }
 }
+
+
+/* Local clock-alignment workspace: semantic controls, bounded layout and visible focus. */
+.vt-clock-workspace{min-width:0}
+.vt-clock-status{margin:10px 0 14px;padding:10px 12px;border:1px solid #30465c;border-radius:10px;background:#08131e;color:#c8dced;font-size:12px;line-height:1.55}
+.vt-clock-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.vt-clock-help{margin:0 0 12px}
+.vt-clock-anchors{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px;margin:12px 0}
+.vt-clock-anchor{min-width:0;margin:0;padding:12px;border:1px solid #2a4055;border-radius:12px;background:#08111b}
+.vt-clock-anchor legend{padding:0 7px;color:#c6dff2;font-size:12px;font-weight:750}
+.vt-clock-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.vt-clock-field{display:grid;gap:5px;min-width:0}
+.vt-clock-field label,.vt-clock-event-bound{display:grid;gap:5px;color:#a9bfd1;font-size:11px;line-height:1.45}
+.vt-clock-field input,.vt-clock-field select,.vt-clock-event-bound input{width:100%;min-width:0;min-height:40px;padding:9px 10px;border:1px solid #344b61;border-radius:9px;background:#07111b;color:#edf5fc;font:inherit;font-size:12px}
+.vt-clock-field input:focus-visible,.vt-clock-field select:focus-visible,.vt-clock-event-bound input:focus-visible,.vt-clock-workspace button:focus-visible{outline:3px solid #e8c65d;outline-offset:2px}
+.vt-clock-remove{margin-top:10px}
+.vt-clock-event-bound{max-width:540px;margin:12px 0 4px}
+.vt-clock-results{min-width:0;margin-top:14px}
+.vt-clock-summary{color:#e3eff8;font-weight:700}
+.vt-clock-hash{overflow-wrap:anywhere;padding:9px 10px;border:1px solid #26384b;border-radius:9px;background:#07111b;color:#b9d7ee;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px}
+.vt-clock-table-wrap{max-width:100%;overflow-x:auto;border:1px solid #26384b;border-radius:10px}
+.vt-clock-table-wrap table{width:100%;border-collapse:collapse;font-size:11px}
+.vt-clock-table-wrap caption{text-align:left;padding:9px;color:#c8dced;font-weight:700}
+.vt-clock-table-wrap th,.vt-clock-table-wrap td{padding:8px 9px;border-top:1px solid #26384b;text-align:left;vertical-align:top;white-space:nowrap}
+.vt-clock-table-wrap th{color:#b5cadd;background:#0b1723}
+.vt-clock-table-wrap td{color:#d6e3ee}
+.vt-clock-note,.vt-clock-local-note{padding:10px 12px;border:1px solid #26384b;border-radius:10px;background:#08111b;color:#91a7ba;font-size:11px;line-height:1.6}
+.vt-clock-workspace[dir="rtl"] .vt-clock-table-wrap th,.vt-clock-workspace[dir="rtl"] .vt-clock-table-wrap td{text-align:right}
+@media(max-width:640px){.vt-clock-fields{grid-template-columns:1fr}.vt-clock-actions{display:grid;grid-template-columns:1fr}.vt-clock-actions button,.vt-clock-workspace .vt-actions button{width:100%}.vt-clock-table-wrap th,.vt-clock-table-wrap td{white-space:normal;min-width:110px}}
+@media(prefers-reduced-motion:reduce){.vt-clock-workspace *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+.vt-clock-grid{grid-template-columns:minmax(0,1fr)}
