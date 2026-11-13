@@ -95,6 +95,14 @@ def compare_dataset_summaries(
         a, b = left[name], right[name]
         flags = []
         row = {"feature": name, "reference_kind": a["kind"], "candidate_kind": b["kind"]}
+        if a["missing_rate"] is not None and b["missing_rate"] is not None:
+            delta = b["missing_rate"] - a["missing_rate"]
+            row["missingness_delta"] = delta
+            if abs(delta) > thresholds["missingness_delta"]:
+                flags.append("missingness_shift")
+        else:
+            row["missingness_delta"] = None
+            flags.append("missingness_unavailable")
         if a["kind"] != b["kind"]:
             row["status"] = "type_changed"
             flags.append("feature_type_changed")
@@ -103,14 +111,6 @@ def compare_dataset_summaries(
             flags.append("unit_mismatch")
         else:
             row["status"] = "comparable"
-            if a["missing_rate"] is not None and b["missing_rate"] is not None:
-                delta = b["missing_rate"] - a["missing_rate"]
-                row["missingness_delta"] = delta
-                if abs(delta) > thresholds["missingness_delta"]:
-                    flags.append("missingness_shift")
-            else:
-                row["missingness_delta"] = None
-                flags.append("missingness_unavailable")
             if a["kind"] == "numeric":
                 n1, n2 = a["observed_count"], b["observed_count"]
                 pooled_variance = (
