@@ -137,6 +137,27 @@ coverage = audit_claim_coverage(
 print(coverage["claims"][0]["supporting_independent_group_count"])
 ```
 
+## Synthetic performance and bounded-storage measurements
+
+The CI benchmark is available at `.github/scripts/benchmark_research_workbench.py`. On 13 November 2026 it ran three samples per workload on a GitHub Actions Python 3.12 runner. Every workload remained below the 5,000 ms maximum-per-sample guard:
+
+| Workload | Median per batch | Bounded output checked |
+|---|---:|---|
+| 100 hypothesis assessments | 1.861 ms | Protocol-review readiness only |
+| 500 replication attempts | 29.852 ms | 500 records; 538 serialized JSON bytes/record |
+| 500 claims / 1,000 evidence links | 4.138 ms | 500 supporting groups, 500 contradicting groups, 500 contested claims, 0 dangling links |
+| 5,000 source audits | 8.614 ms | 1,000 source/domain/field groups, all meeting the five-audit minimum |
+| 300 dataset features | 2.434 ms | 300 flagged feature summaries; no row-level data |
+| 500 dependency tasks | 4.123 ms | 500-hour declared critical path |
+| 100 designs / 5 objectives | 4.961 ms | 70 Pareto-frontier candidates |
+| 500 safety-case nodes / 300 edges | 1.548 ms | Structured for independent review, not approved |
+| 200 VTT landmarks | 0.989 ms | RMS residual 0 in the synthetic rigid-transform fixture |
+| 500 rescue-route segments | 1.530 ms | Within the declared synthetic screening limits |
+
+The replication registry's canonical JSON export was 134,501 bytes for 250 attempts and 269,001 bytes for 500 attempts. This demonstrates approximately linear serialized-export growth for that fixture; it is **not** a measurement of Python heap use, database storage, long-term retention cost or production traffic.
+
+These are synthetic microbenchmarks on one ephemeral runner, not service-latency guarantees or a comparison against a previous implementation. The figures must not be generalized to larger datasets, different hardware, live sources, physical systems or real rescue operations.
+
 ## Validation
 
-The new regression suite covers normal, incomplete, malformed, boundary, contradiction, missing-reference, cycle, degenerate-geometry, unit, safety-floor and route-continuity cases. The full existing test suite and the CI workflow are the release gate. Benchmark claims are intentionally not made unless repeatable measurements are available.
+The new regression suite covers normal, incomplete, malformed, boundary, contradiction, missing-reference, cycle, degenerate-geometry, unit, safety-floor and route-continuity cases. The full existing test suite and the CI workflow are the release gate. No claim of improved scientific intelligence or scientific validity is made.
