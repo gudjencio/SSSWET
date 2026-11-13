@@ -483,6 +483,13 @@ for (const control of ["vt-start","vt-stop","vt-locate","vt-time","vt-model","vt
   if (!virtualHtml.includes('id="' + control + '"')) throw new Error("Virtual Time Travel control missing: " + control);
 }
 if (!virtualScript.includes("map provider") || !virtualScript.includes("modelPast")) throw new Error("Virtual Time Travel disclosure or model distinction is missing.");
+const adminCssSource = fs.readFileSync(__dirname + "/admin.css", "utf8");
+if (!adminCssSource.includes(":focus-visible") ||
+    !adminCssSource.includes("outline: 3px solid") ||
+    !adminCssSource.includes("outline-offset: 3px")) {
+  throw new Error("The standalone administration page must provide a visible keyboard focus indicator.");
+}
+
 const virtualCss = fs.readFileSync(__dirname + "/virtual-time-travel.css", "utf8");
 if (!virtualCss.includes("@media (prefers-reduced-motion: reduce)") ||
     !virtualCss.includes("animation-duration: 0.01ms") ||
