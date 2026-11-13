@@ -265,3 +265,10 @@ The model fingerprint and observation-snapshot fingerprint answer different ques
 
 The digest is deterministic regardless of IndexedDB cursor order. Its regression criteria are: (1) reversing the same observation set produces the same digest; (2) changing an event ID, kind, or source timestamp changes the digest; (3) coordinates, media and free-text annotation fields are absent from the canonical snapshot; (4) unexpected fields or altered snapshot contents fail verification; (5) duplicate IDs and unsupported clock bases are rejected; and (6) all 15 interface locales label the fingerprint. These tests establish deterministic serialization and privacy-field exclusion, not timestamp authenticity or historical reconstruction.
 
+## Independent local-frame validation
+
+The Python core now includes a separate hold-out validation utility. It applies an already-fitted 2D rigid local-frame transform to distinct validation landmark IDs without refitting. The report includes per-check residuals, RMS and maximum residuals, declared-bound comparisons, and deterministic fingerprints for the transform and validation inputs.
+
+This is a screening check, not a general accuracy guarantee. At least three hold-out landmarks are required only to meet the utility's minimum screening-count flag; that count does not establish spatial coverage or statistical generalization. Distinct identifiers do not prove independent surveying. See [the dedicated local-frame validation guide](VTT_LOCAL_FRAME_VALIDATION.md) for the API, uncertainty semantics, limits and regression criteria.
+
+The utility performs no geographic CRS conversion, camera-pose estimation, 3D reconstruction, missing-location inference or historical/future recovery. It does not access browser storage or request camera, microphone or location permissions.
