@@ -80,6 +80,7 @@ def audit_claim_coverage(
         group = record["provenance_group"]
         if record["state"] == "under_review":
             target["under_review_groups"].add(group)
+            continue
         if stance == "supports":
             target["supporting_groups"].add(group)
         elif stance == "contradicts":
