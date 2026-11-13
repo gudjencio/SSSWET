@@ -62,7 +62,7 @@ def _read_alignment(alignment: Any) -> dict[str, Any]:
     if not isinstance(alignment, dict):
         raise ValueError("alignment must be an object")
     version = alignment.get("schema_version")
-    if isinstance(version, bool) or version != 1:
+    if not isinstance(version, int) or isinstance(version, bool) or version != 1:
         raise ValueError("alignment schema_version 1 is required")
 
     source_frame_id = _identifier(alignment.get("source_frame_id"), "source_frame_id", maximum=120)
@@ -203,6 +203,7 @@ def validate_local_frame_alignment(
             "source_ref": source_ref,
         })
 
+    normalized.sort(key=lambda row: row["landmark_id"])
     matrix = fitted["matrix"]
     residuals = []
     residual_values = []
