@@ -38,6 +38,9 @@ def fit_local_frame_alignment(
     ):
         if not isinstance(value, str) or not value.strip() or len(value) > 120:
             raise ValueError(f"{field} must contain 1 to 120 characters")
+    source_frame_id = source_frame_id.strip()
+    target_frame_id = target_frame_id.strip()
+    coordinate_unit = coordinate_unit.strip()
     if source_frame_id == target_frame_id:
         raise ValueError("source and target frames must be distinct")
     if not isinstance(landmarks, list) or not 2 <= len(landmarks) <= MAX_LANDMARKS:
@@ -59,10 +62,13 @@ def fit_local_frame_alignment(
         target = _point(item.get("target"), "target")
         source_bound = _number(item.get("source_uncertainty"), "source_uncertainty", nonnegative=True)
         target_bound = _number(item.get("target_uncertainty"), "target_uncertainty", nonnegative=True)
+        source_ref = item.get("source_ref", "")
+        if not isinstance(source_ref, str) or len(source_ref) > 500:
+            raise ValueError("source_ref must be text of at most 500 characters")
         normalized.append({
             "landmark_id": landmark_id, "source": source, "target": target,
             "declared_bound": source_bound + target_bound,
-            "source_ref": item.get("source_ref") if isinstance(item.get("source_ref"), str) else "",
+            "source_ref": source_ref,
         })
 
     source_center = tuple(sum(item["source"][axis] for item in normalized) / len(normalized) for axis in (0, 1))
@@ -74,8 +80,10 @@ def fit_local_frame_alignment(
         dot += sx * tx + sy * ty
         cross += sx * ty - sy * tx
         spread += sx * sx + sy * sy
+    if not all(isfinite(value) for value in (dot, cross, spread, *source_center, *target_center)):
+        raise ValueError("landmark geometry exceeds finite numeric range")
     covariance_norm = hypot(dot, cross)
-    if spread <= 1e-12 or covariance_norm <= 1e-12:
+    if not isfinite(covariance_norm) or spread <= 1e-12 or covariance_norm <= 1e-12:
         raise ValueError("landmarks are geometrically degenerate for 2D rigid alignment")
 
     angle = atan2(cross, dot)
@@ -88,6 +96,8 @@ def fit_local_frame_alignment(
         x, y = item["source"]
         predicted = (c * x - s * y + tx, s * x + c * y + ty)
         residual = hypot(predicted[0] - item["target"][0], predicted[1] - item["target"][1])
+        if not isfinite(residual):
+            raise ValueError("alignment residual exceeds finite numeric range")
         within = residual <= item["declared_bound"] + 1e-9
         residuals.append({
             "landmark_id": item["landmark_id"], "residual": residual,
