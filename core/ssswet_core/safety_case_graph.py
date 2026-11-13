@@ -168,6 +168,7 @@ def audit_safety_case(
         "status": "review_gaps_found" if (
             invalid_top or dangling or cycles or unsupported_claims
             or unsupported_arguments or unmitigated_hazards or review_gaps
+            or bool(rebutted_claims & set(top_ids))
         ) else "structured_for_independent_review",
         "safety_case_approved": False,
         "certification_granted": False,
