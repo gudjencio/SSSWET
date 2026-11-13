@@ -74,8 +74,10 @@ def assess_hypothesis(specification: dict[str, Any]) -> dict[str, Any]:
     normalized = {}
     for field in required_text:
         value = specification.get(field)
-        if not isinstance(value, str) or not value.strip():
+        if value is None or value == "":
             missing.append(field)
+        elif not isinstance(value, str):
+            raise ValueError(f"{field} must be text")
         else:
             normalized[field] = _text(value, field)
 
@@ -85,22 +87,23 @@ def assess_hypothesis(specification: dict[str, Any]) -> dict[str, Any]:
         ("independent_variables", "operational_definition", variables),
         ("outcomes", "measurement_method", outcomes),
     ):
-        try:
-            target.extend(_variable_records(specification.get(field), field, measure_field))
-        except ValueError as exc:
+        raw = specification.get(field)
+        if raw is None or raw == []:
             missing.append(field)
-            target.clear()
+        else:
+            target.extend(_variable_records(raw, field, measure_field))
 
     list_fields = (
         "falsification_conditions", "alternative_explanations", "safety_constraints",
     )
     lists = {}
     for field in list_fields:
-        try:
-            lists[field] = _items(specification.get(field), field)
-        except ValueError:
+        raw = specification.get(field)
+        if raw is None or raw == []:
             missing.append(field)
             lists[field] = []
+        else:
+            lists[field] = _items(raw, field)
 
     missing = sorted(set(missing))
     return {
