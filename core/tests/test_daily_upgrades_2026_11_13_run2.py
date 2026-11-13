@@ -190,7 +190,8 @@ def test_dataset_shift_detects_numeric_categorical_and_missingness_changes():
     result = compare_dataset_summaries(reference, candidate)
     assert result["added_features"] == ["temperature"]
     assert result["removed_features"] == ["removed"]
-    mass, classes = result["feature_comparisons"]
+    by_name = {row["feature"]: row for row in result["feature_comparisons"]}
+    mass, classes = by_name["mass"], by_name["class"]
     assert "numeric_distribution_shift" in mass["flags"]
     assert "missingness_shift" in mass["flags"]
     assert classes["categorical_total_variation_distance"] == pytest.approx(0.3)
