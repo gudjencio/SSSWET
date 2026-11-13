@@ -69,7 +69,36 @@ def analyze_dependencies(tasks: list[dict[str, Any]]) -> dict[str, Any]:
             if indegree[child] == 0:
                 ready.append(child)
                 ready.sort()
-    cyclic = sorted(key for key, degree in indegree.items() if degree > 0)
+    cycle_nodes = set()
+    state = {}
+    for start in sorted(records):
+        if state.get(start, 0):
+            continue
+        path = [start]
+        position = {start: 0}
+        stack = [(start, 0)]
+        state[start] = 1
+        while stack:
+            current, index = stack[-1]
+            neighbours = sorted(dependents[current])
+            if index >= len(neighbours):
+                stack.pop()
+                state[current] = 2
+                position.pop(current, None)
+                path.pop()
+                continue
+            target = neighbours[index]
+            stack[-1] = (current, index + 1)
+            target_state = state.get(target, 0)
+            if target_state == 1:
+                cycle_nodes.update(path[position[target]:])
+            elif target_state == 0:
+                state[target] = 1
+                position[target] = len(path)
+                path.append(target)
+                stack.append((target, 0))
+    cyclic = sorted(cycle_nodes)
+    cycle_affected = sorted(key for key, degree in indegree.items() if degree > 0)
 
     blocked_reasons = {}
     for task_id in order:
@@ -84,8 +113,14 @@ def analyze_dependencies(tasks: list[dict[str, Any]]) -> dict[str, Any]:
                 reasons.append("dependency_not_ready:" + dep)
         blocked_reasons[task_id] = sorted(reasons)
 
+    for task_id in cycle_affected:
+        if task_id not in blocked_reasons or not blocked_reasons[task_id]:
+            blocked_reasons[task_id] = [
+                "dependency_cycle" if task_id in cycle_nodes else "depends_on_cycle"
+            ]
+
     critical_path = []
-    if order and not cyclic:
+    if order and not cycle_affected:
         endpoint = max(order, key=lambda key: (earliest_finish[key], key))
         cursor = endpoint
         while cursor is not None:
@@ -96,13 +131,14 @@ def analyze_dependencies(tasks: list[dict[str, Any]]) -> dict[str, Any]:
         "topological_order": order,
         "missing_dependency_ids": missing,
         "cycle_task_ids": cyclic,
+        "cycle_affected_task_ids": cycle_affected,
         "earliest_finish_hours": {key: earliest_finish[key] for key in order},
         "critical_path_task_ids": critical_path,
-        "critical_path_duration_hours": max(earliest_finish.values(), default=0.0) if not cyclic else None,
+        "critical_path_duration_hours": max(earliest_finish.values(), default=0.0) if not cycle_affected else None,
         "tasks_blocked_from_ready_state": {
             key: reasons for key, reasons in sorted(blocked_reasons.items()) if reasons
         },
-        "schedule_computable": not cyclic and not missing,
+        "schedule_computable": not cycle_affected and not missing,
         "task_execution_started": False,
         "gate_approval_granted": False,
     }
