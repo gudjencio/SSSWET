@@ -78,3 +78,9 @@ jobs:
       - name: Benchmark bounded research workflow utilities
         if: matrix.python-version == '3.12'
         run: python .github/scripts/benchmark_research_quality.py
+
+      - name: Benchmark research workbench bounded workloads
+        if: matrix.python-version == '3.12'
+        run: |
+          python -m py_compile .github/scripts/benchmark_research_workbench.py
+          python .github/scripts/benchmark_research_workbench.py
