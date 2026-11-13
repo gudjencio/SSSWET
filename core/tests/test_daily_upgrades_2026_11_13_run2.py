@@ -105,6 +105,7 @@ def test_evidence_coverage_deduplicates_provenance_and_keeps_counterevidence():
         {"evidence_id": "e2", "source_id": "s2", "provenance_group": "publisher-a"},
         {"evidence_id": "e3", "source_id": "s3", "provenance_group": "publisher-b"},
         {"evidence_id": "e4", "source_id": "s4", "provenance_group": "publisher-c", "state": "withdrawn"},
+        {"evidence_id": "e5", "source_id": "s5", "provenance_group": "publisher-d", "state": "under_review"},
     ]
     links = [
         {"claim_id": "c1", "evidence_id": "e1", "stance": "supports"},
@@ -112,11 +113,13 @@ def test_evidence_coverage_deduplicates_provenance_and_keeps_counterevidence():
         {"claim_id": "c1", "evidence_id": "e3", "stance": "contradicts"},
         {"claim_id": "c1", "evidence_id": "e4", "stance": "supports"},
         {"claim_id": "c1", "evidence_id": "missing", "stance": "supports"},
+        {"claim_id": "c1", "evidence_id": "e5", "stance": "supports"},
     ]
     result = audit_claim_coverage(claims, evidence, links)
     row = result["claims"][0]
     assert row["supporting_independent_group_count"] == 1
     assert row["contradicting_independent_group_count"] == 1
+    assert row["under_review_group_count"] == 1
     assert row["contested"] is True
     assert row["withdrawn_evidence_ids"] == ["e4"]
     assert len(result["dangling_links"]) == 1
@@ -200,8 +203,10 @@ def test_dataset_shift_detects_numeric_categorical_and_missingness_changes():
 
 def test_dataset_shift_flags_unit_changes_and_rejects_bad_counts():
     a = {"features": [{"name": "x", "kind": "numeric", "unit": "m", "count": 2, "missing_count": 0, "mean": 1, "stddev": 1}]}
-    b = {"features": [{"name": "x", "kind": "numeric", "unit": "cm", "count": 2, "missing_count": 0, "mean": 1, "stddev": 1}]}
-    assert "unit_mismatch" in compare_dataset_summaries(a, b)["feature_comparisons"][0]["flags"]
+    b = {"features": [{"name": "x", "kind": "numeric", "unit": "cm", "count": 2, "missing_count": 1, "mean": 1, "stddev": 1}]}
+    unit_result = compare_dataset_summaries(a, b)["feature_comparisons"][0]
+    assert "unit_mismatch" in unit_result["flags"]
+    assert "missingness_shift" in unit_result["flags"]
     bad = {"features": [{"name": "x", "kind": "numeric", "unit": "m", "count": 2, "missing_count": 3, "mean": 1, "stddev": 1}]}
     with pytest.raises(ValueError):
         compare_dataset_summaries(a, bad)
@@ -404,4 +409,16 @@ def test_rescue_route_rejects_duplicate_segment_ids():
             [segment, {**segment, "from_node": "B", "to_node": "C"}],
             minimum_clear_width_m=1.2, maximum_slope_percent=8,
             allowed_surfaces=["paved"],
+        )
+
+
+
+def test_vtt_local_frame_alignment_rejects_overflowing_geometry():
+    landmarks = [
+        {"landmark_id": "p1", "source": [1e308, 0], "target": [0, 0], "source_uncertainty": 0, "target_uncertainty": 0},
+        {"landmark_id": "p2", "source": [-1e308, 0], "target": [1, 0], "source_uncertainty": 0, "target_uncertainty": 0},
+    ]
+    with pytest.raises(ValueError):
+        fit_local_frame_alignment(
+            landmarks, source_frame_id="a", target_frame_id="b", coordinate_unit="m",
         )
