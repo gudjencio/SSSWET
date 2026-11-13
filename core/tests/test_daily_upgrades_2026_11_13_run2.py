@@ -249,7 +249,7 @@ def test_pareto_frontier_has_no_composite_score_and_respects_safety_floor():
         safety_floors=[{"metric": "durability", "operator": "min", "value": 7}],
     )
     assert result["pareto_frontier"] == ["A", "B", "D"]
-    assert result["dominated_by"]["C"] == ["A", "B"]
+    assert result["dominated_by"]["C"] == ["A", "B", "D"]
     assert "E" in result["ineligible"]
     assert result["weighted_composite_score"] is None
     assert result["safety_certification_granted"] is False
