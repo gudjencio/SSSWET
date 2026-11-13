@@ -41,6 +41,7 @@ def review_route_accessibility(
     results = []
     previous_end = None
     continuity_gaps = []
+    seen_segment_ids = set()
     for index, item in enumerate(segments):
         if not isinstance(item, dict):
             raise ValueError("every route segment must be an object")
@@ -49,6 +50,9 @@ def review_route_accessibility(
         end = item.get("to_node")
         if not isinstance(segment_id, str) or not segment_id.strip() or len(segment_id) > 160:
             raise ValueError("segment_id must contain 1 to 160 characters")
+        if segment_id.strip() in seen_segment_ids:
+            raise ValueError("segment IDs must be unique")
+        seen_segment_ids.add(segment_id.strip())
         if not isinstance(start, str) or not start.strip() or not isinstance(end, str) or not end.strip():
             raise ValueError("from_node and to_node are required")
         start, end = start.strip(), end.strip()
