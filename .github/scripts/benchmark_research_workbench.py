@@ -41,8 +41,10 @@ def workload_hypothesis():
         "alternative_explanations": ["Instrument drift"],
         "safety_constraints": ["No human or animal subjects"],
     }
+    result = None
     for _ in range(100):
-        assess_hypothesis(spec)
+        result = assess_hypothesis(spec)
+    return {"assessments": 100, "last_status": result["status"]}
 
 
 def workload_replication():
@@ -53,7 +55,15 @@ def workload_replication():
             dataset_fingerprints=[DIGEST_B], environment_fingerprint=DIGEST_A,
             analysis_fingerprint=DIGEST_B, outcome="inconclusive",
         )
-    registry.compare("run-0000", "run-0499")
+    comparison = registry.compare("run-0000", "run-0499")
+    export_250 = json.dumps(registry.export(limit=250), sort_keys=True, separators=(",", ":")).encode("utf-8")
+    export_500 = json.dumps(registry.export(limit=500), sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return {
+        "records": 500, "protocol_match": comparison["protocol_match"],
+        "serialized_bytes_250": len(export_250), "serialized_bytes_500": len(export_500),
+        "serialized_bytes_per_record_at_500": round(len(export_500) / 500, 2),
+        "storage_measurement": "canonical_json_export_bytes_not_heap_or_database_size",
+    }
 
 
 def workload_evidence_coverage():
@@ -66,16 +76,27 @@ def workload_evidence_coverage():
     for i in range(500):
         links.append({"claim_id": f"c-{i}", "evidence_id": f"e-{2*i}", "stance": "supports"})
         links.append({"claim_id": f"c-{i}", "evidence_id": f"e-{2*i+1}", "stance": "contradicts"})
-    audit_claim_coverage(claims, evidence, links)
+    result = audit_claim_coverage(claims, evidence, links)
+    return {
+        "claims": result["claim_count"],
+        "supporting_independent_groups": sum(item["supporting_independent_group_count"] for item in result["claims"]),
+        "contradicting_independent_groups": sum(item["contradicting_independent_group_count"] for item in result["claims"]),
+        "contested_claims": len(result["contested_claim_ids"]),
+        "dangling_links": len(result["dangling_links"]),
+    }
 
 
 def workload_source_audits():
     records = [{
         "audit_id": f"a-{i}", "source_id": f"s-{i // 5}",
-        "domain": f"d-{i % 3}", "field": f"f-{i % 4}",
+        "domain": "materials", "field": "title",
         "observed_correct": i % 7 != 0,
     } for i in range(5000)]
-    summarize_source_audits(records, minimum_sample=5)
+    result = summarize_source_audits(records, minimum_sample=5)
+    return {
+        "audit_records": result["audit_count"], "source_field_groups": result["group_count"],
+        "sufficient_sample_groups": sum(item["wilson_95_interval"] is not None for item in result["groups"]),
+    }
 
 
 def workload_dataset_shift():
@@ -89,7 +110,12 @@ def workload_dataset_shift():
             "name": f"feature-{i:03d}", "kind": "numeric", "unit": "unit",
             "count": 1000, "missing_count": 10, "mean": float(i) + 0.5, "stddev": 2.1,
         })
-    compare_dataset_summaries({"features": reference_features}, {"features": candidate_features})
+    result = compare_dataset_summaries({"features": reference_features}, {"features": candidate_features})
+    return {
+        "features": len(result["feature_comparisons"]),
+        "flagged_features": sum(bool(item["flags"]) for item in result["feature_comparisons"]),
+        "row_level_data_used": result["row_level_data_used"],
+    }
 
 
 def workload_dependency_plan():
@@ -97,7 +123,11 @@ def workload_dependency_plan():
         "task_id": f"task-{i:04d}", "duration_hours": 1.0,
         "depends_on": [f"task-{i-1:04d}"] if i else [],
     } for i in range(500)]
-    analyze_dependencies(tasks)
+    result = analyze_dependencies(tasks)
+    return {
+        "tasks": len(tasks), "critical_path_hours": result["critical_path_duration_hours"],
+        "schedule_computable": result["schedule_computable"],
+    }
 
 
 def workload_pareto():
@@ -109,7 +139,11 @@ def workload_pareto():
         {"name": f"m{j}", "direction": "minimize" if j % 2 == 0 else "maximize"}
         for j in range(5)
     ]
-    compare_designs(candidates, objectives)
+    result = compare_designs(candidates, objectives)
+    return {
+        "candidates": len(candidates), "pareto_frontier_size": len(result["pareto_frontier"]),
+        "ineligible_candidates": len(result["ineligible"]),
+    }
 
 
 def workload_safety_case():
@@ -131,11 +165,12 @@ def workload_safety_case():
         ])
         top_claims.append(claim)
         reviewed.extend([claim, hazard])
-    audit_safety_case(
+    result = audit_safety_case(
         owner_id="owner", owner_independence_group="design-team",
         nodes=nodes, edges=edges, top_level_claim_ids=top_claims,
         reviewers=[{"reviewer_id": "independent-reviewer", "independence_group": "external", "reviewed_node_ids": reviewed}],
     )
+    return {"nodes": len(nodes), "edges": len(edges), "review_status": result["status"]}
 
 
 def workload_vtt_alignment():
@@ -147,10 +182,14 @@ def workload_vtt_alignment():
             "target": [100.0 - y, 200.0 + x],
             "source_uncertainty": 0.01, "target_uncertainty": 0.01,
         })
-    fit_local_frame_alignment(
+    result = fit_local_frame_alignment(
         landmarks, source_frame_id="frame-a", target_frame_id="frame-b",
         coordinate_unit="m",
     )
+    return {
+        "landmarks": result["landmark_count"], "rms_residual": result["rms_residual"],
+        "all_residuals_within_declared_bounds": result["all_residuals_within_declared_bounds"],
+    }
 
 
 def workload_rescue_route():
@@ -159,10 +198,11 @@ def workload_rescue_route():
         "to_node": f"n-{i+1:04d}", "clear_width_m": 1.5,
         "slope_percent": 4.0, "surface": "paved", "obstruction_count": 0,
     } for i in range(500)]
-    review_route_accessibility(
+    result = review_route_accessibility(
         segments, minimum_clear_width_m=1.2, maximum_slope_percent=8.0,
         allowed_surfaces=["paved"], maximum_obstructions=0,
     )
+    return {"segments": len(segments), "screening_status": result["status"]}
 
 
 WORKLOADS = [
@@ -183,9 +223,10 @@ def main():
     results = []
     for name, workload in WORKLOADS:
         durations = []
+        measurement = None
         for _ in range(REPEATS):
             started = time.perf_counter()
-            workload()
+            measurement = workload()
             durations.append(time.perf_counter() - started)
         median = statistics.median(durations)
         maximum = max(durations)
@@ -196,6 +237,7 @@ def main():
             "maximum_ms": round(maximum * 1000, 3),
             "budget_ms": int(BUDGET_SECONDS * 1000),
             "within_budget": maximum <= BUDGET_SECONDS,
+            "measurement": measurement,
         })
     print(json.dumps({"benchmark": "SSSWET research workbench bounded workloads", "results": results}, indent=2))
     failed = [item["workload"] for item in results if not item["within_budget"]]
