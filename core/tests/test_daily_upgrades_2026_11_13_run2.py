@@ -235,15 +235,16 @@ def test_pareto_frontier_has_no_composite_score_and_respects_safety_floor():
         [
             {"candidate_id": "A", "metrics": {"mass": 5, "durability": 8}},
             {"candidate_id": "B", "metrics": {"mass": 6, "durability": 9}},
-            {"candidate_id": "C", "metrics": {"mass": 7, "durability": 6}},
+            {"candidate_id": "C", "metrics": {"mass": 7, "durability": 7}},
+            {"candidate_id": "E", "metrics": {"mass": 3, "durability": 6}},
             {"candidate_id": "D", "metrics": {"mass": 4, "durability": 7}},
         ],
         [{"name": "mass", "direction": "minimize"}, {"name": "durability", "direction": "maximize"}],
         safety_floors=[{"metric": "durability", "operator": "min", "value": 7}],
     )
     assert result["pareto_frontier"] == ["A", "B", "D"]
-    assert result["dominated_by"]["C"] == []
-    assert "C" in result["ineligible"]
+    assert result["dominated_by"]["C"] == ["A", "B"]
+    assert "E" in result["ineligible"]
     assert result["weighted_composite_score"] is None
     assert result["safety_certification_granted"] is False
 
