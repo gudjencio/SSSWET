@@ -120,7 +120,7 @@ def analyze_dependencies(tasks: list[dict[str, Any]]) -> dict[str, Any]:
             ]
 
     critical_path = []
-    if order and not cycle_affected:
+    if order and not cycle_affected and not missing:
         endpoint = max(order, key=lambda key: (earliest_finish[key], key))
         cursor = endpoint
         while cursor is not None:
@@ -134,7 +134,7 @@ def analyze_dependencies(tasks: list[dict[str, Any]]) -> dict[str, Any]:
         "cycle_affected_task_ids": cycle_affected,
         "earliest_finish_hours": {key: earliest_finish[key] for key in order},
         "critical_path_task_ids": critical_path,
-        "critical_path_duration_hours": max(earliest_finish.values(), default=0.0) if not cycle_affected else None,
+        "critical_path_duration_hours": max(earliest_finish.values(), default=0.0) if not cycle_affected and not missing else None,
         "tasks_blocked_from_ready_state": {
             key: reasons for key, reasons in sorted(blocked_reasons.items()) if reasons
         },
