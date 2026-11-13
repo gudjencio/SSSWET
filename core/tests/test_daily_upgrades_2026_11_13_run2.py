@@ -362,3 +362,45 @@ def test_rescue_route_accessibility_reports_failures_and_disconnection():
     assert result["status"] == "route_disconnected"
     assert "clear_width_below_declared_minimum" in result["segments"][0]["criteria_failures"]
     assert len(result["continuity_gaps"]) == 1
+
+
+
+def test_dataset_shift_rejects_fractional_row_counts():
+    bad = {"features": [{
+        "name": "x", "kind": "numeric", "unit": "m",
+        "count": 2.5, "missing_count": 0, "mean": 1, "stddev": 1,
+    }]}
+    with pytest.raises(ValueError):
+        compare_dataset_summaries(bad, bad)
+
+
+def test_dependency_cycle_diagnostics_exclude_downstream_nodes_from_cycle():
+    result = analyze_dependencies([
+        {"task_id": "a", "duration_hours": 1, "depends_on": ["b"]},
+        {"task_id": "b", "duration_hours": 1, "depends_on": ["a"]},
+        {"task_id": "c", "duration_hours": 1, "depends_on": ["b"]},
+    ])
+    assert result["cycle_task_ids"] == ["a", "b"]
+    assert result["cycle_affected_task_ids"] == ["a", "b", "c"]
+
+
+def test_safety_case_rebuttal_prevents_clean_review_status():
+    case = valid_safety_case()
+    case["edges"].append({"source_id": "evidence", "target_id": "claim", "relation": "rebuts"})
+    result = audit_safety_case(**case)
+    assert result["claims_with_rebuttals"] == ["claim"]
+    assert result["status"] == "review_gaps_found"
+
+
+def test_rescue_route_rejects_duplicate_segment_ids():
+    segment = {
+        "segment_id": "same", "from_node": "A", "to_node": "B",
+        "clear_width_m": 1.5, "slope_percent": 2, "surface": "paved",
+        "obstruction_count": 0,
+    }
+    with pytest.raises(ValueError):
+        review_route_accessibility(
+            [segment, {**segment, "from_node": "B", "to_node": "C"}],
+            minimum_clear_width_m=1.2, maximum_slope_percent=8,
+            allowed_surfaces=["paved"],
+        )
