@@ -1,42 +1,53 @@
-# SSSWET daily upgrade plan — 13 November 2026
+# SSSWET daily upgrades — 13 November 2026
 
-## Baseline inspected before implementation
+## Baseline and pre-implementation controls
 
-- Current `main`: `bd906b86bae2379b36f4d5ac48f743c161f1003d` (12 November 2026).
-- Immediate predecessor: `09f118132ac8c0c17f3b708ad2612dab3016166d`.
-- The direct comparison confirms the latest change adds deterministic, privacy-bounded observation-snapshot fingerprints to the local clock-calibration workspace, regression tests, documentation and service-worker cache version `v199`.
-- The predecessor comparison confirms the local clock-calibration workspace was added immediately before that, with a 5,000-event workspace bound, 15 locale dictionaries, explicit clock-basis semantics and model/snapshot verification.
-- The preceding mainline commits repaired the public interface and added bounded research context/review/graph/lineage/literature/dataset-governance workflows.
-- Latest recorded core CI run for the inspected baseline: run 43288598711, completed successfully on 12 November 2026.
+The work was based on main at `bd906b86bae2379b36f4d5ac48f743c161f1003d`, with immediate predecessor `09f118132ac8c0c17f3b708ad2612dab3016166d`. The direct comparison showed that the current head adds deterministic, privacy-bounded observation-snapshot fingerprints to the local clock-calibration workspace, verification tests, documentation and service-worker cache version v199. The predecessor adds the local clock-calibration workspace. The previous two mainline commits repaired the public interface and added bounded research context, human-review queues, graph-neighbour retrieval, paginated memory lineage, literature-watch diffs, broader official scholarly metadata discovery and dataset-governed reproducibility manifests. The inspected baseline CI run 43288598711 passed.
 
-The existing tree already contains versioned scientific memory, contradiction links, provenance and source-independence utilities, multilingual title triage in 21 languages, permission-aware query planning for public social/video channels, bounded research context packs, evidence packet validation, reproducibility manifests, temporal calibration, GPS accuracy footprints, rescue resource allocation, protective-design assurance, a static accessibility audit and service-worker regression tests. The additions below are deliberately complementary: they add missing operational bridges rather than duplicate those existing facilities.
+The existing modules already cover versioned scientific memory, contradiction links, provenance, 21-language clickbait cue triage, permission-aware search planning for social/video channels, reproducibility, rescue allocation, protective-design assurance, Virtual Time Travel Mapping and a static accessibility audit. The ten changes below add missing bridges around those facilities; none replaces their existing APIs.
 
-## Ten acceptance criteria defined before implementation
+## Ten implemented improvements
 
-| # | Candidate improvement | Acceptance criteria |
-|---|---|---|
-| 1 | Permission-aware public media intake | Normalize at least 14 public channels; require public visibility and an allowed access mode; enforce a 500-record batch bound; discard unapproved fields; flag sensitive-field presence without returning values; stable fingerprints; never fetch or persist private content. |
-| 2 | Multilingual translation-fidelity audit | Compare original/translated numeric quantities, signs, units, configured term pairs and negation cues across at least 20 language families; preserve both texts; report mismatches; never translate or certify correctness. |
-| 3 | Claim/evidence corroboration matrix | Bound claims, sources and links; resolve every link; count unique provenance groups rather than duplicate publishers; retain support and contradiction separately; separate withdrawn evidence; emit no truth score. |
-| 4 | Evidence-change impact propagation | Traverse a bounded dependency graph from changed source/artifact IDs; return direct and downstream review targets, shortest paths, missing references and cycle diagnostics; never delete or automatically retract records. |
-| 5 | Integrity-checked research checkpoint bundles | Canonical SHA-256 digest and 64 KiB cap; tampering must fail verification; resume assessment must block when query/context/memory/source fingerprints changed or review blockers remain. |
-| 6 | Agent execution provenance receipts | Bind task/contract, agent, model label, tool versions, input digests, output digest, budgets and parent receipts; verify hashes and parent chains; reject secret-bearing fields; never claim correctness or intelligence. |
-| 7 | Spatiotemporal uncertainty envelopes | Propagate declared timestamp and GPS uncertainty into distance/speed bounds; handle antimeridian and overlapping time intervals; do not infer event identity or extrapolate missing observations. |
-| 8 | Civil-rescue demand stress testing | Evaluate min/expected/max supply and demand for allowlisted civil resources; report best/worst shortages and criticality; no dispatch, triage or medical/evacuation decision. |
-| 9 | Protective/rescue design change-impact review | Map changed requirements, hazards, controls and evidence to stale verifications and required independent reviews; preserve unrelated checks; never approve a design or certify safety. |
-| 10 | Web accessibility/performance quality gate | Audit the deployed HTML entry points with the existing static accessibility rules; enforce explicit JS/CSS/HTML size budgets and local asset existence; run in CI and report measured byte counts/issues. |
+1. **Permission-aware public media intake** — `public_media_ingestion.py` normalizes public metadata for YouTube, X, Instagram, Facebook, Threads, Bluesky, Reddit, Snapchat, MeWe, Weibo, Bilibili, Niconico, Qiita and public forums. It enforces per-platform access modes, public visibility, HTTPS links and bounded metadata fields; it flags sensitive field names without returning their values and retains duplicate candidates rather than discarding records.
+2. **Multilingual translation-fidelity audit** — `translation_fidelity.py` compares supplied original/translated text for quantities, recognized units, configured critical term pairs and negation cues across 27 language families. It never translates or certifies meaning.
+3. **Claim/evidence corroboration matrix** — `claim_evidence_matrix.py` separates support, contradiction, neutral, withdrawn and under-review links; counts distinct provenance groups rather than repeated sources from the same group; exposes unresolved links and emits no truth score.
+4. **Evidence-change impact propagation** — `evidence_change_impact.py` traverses bounded dependency graphs from changed source/artifact IDs, returns shortest downstream paths, missing references and cycle diagnostics, and leaves stored records untouched.
+5. **Integrity-checked research checkpoint bundles** — `research_checkpoint_bundle.py` creates canonical SHA-256 bundles capped at 65,536 bytes and blocks safe-resume assessment when the query plan, context digest, memory versions, source fingerprints or review blockers differ.
+6. **Agent execution provenance receipts** — `agent_execution_receipts.py` hashes bounded execution metadata, toolchain versions, input references, output digests, budgets and parent receipt IDs; it verifies receipt chains and rejects arbitrary/secret-bearing fields. Receipts do not store prompts or raw outputs.
+7. **Spatiotemporal uncertainty envelopes** — `spatiotemporal_uncertainty.py` propagates declared clock and GPS uncertainty into distance/speed intervals, including antimeridian-safe distance calculation. It withholds an upper speed bound when time intervals overlap.
+8. **Civil-rescue demand stress testing** — `rescue_scenario_robustness.py` compares best/expected/worst supply and demand ranges for the existing civil-rescue resource allowlist; it does not allocate supplies or dispatch responders.
+9. **Protective/rescue design change-impact review** — `protective_design_change_impact.py` maps changed requirements, hazards, controls and evidence to stale verification records and critical hazards requiring renewed independent review. It never approves a design.
+10. **Public web accessibility/performance quality gate** — `web_quality_gate.py` runs the existing static accessibility audit against the main and Virtual Time Travel HTML entry points, checks local assets and measures JavaScript/CSS/HTML bytes against explicit budgets. CI invokes `.github/scripts/check_web_quality.py`.
 
-## Regression risks and controls
+## Acceptance checks
 
-- **Platform terms and privacy:** social/video intake is a metadata normalizer for official APIs or permitted public feeds only. It does not log in, scrape restricted pages, download media, or bypass rate limits. Unknown fields are excluded.
-- **Translation false positives:** lexical negation and unit matching are review prompts, not semantic translation verification. Original and translated text remain available to the reviewer.
-- **Evidence overcounting:** repeated publishers/provenance groups must not inflate independent corroboration. Conflicting evidence remains visible.
-- **Invalidation blast radius:** dependency traversal is advisory and bounded. It reports impacted artifacts without changing stored verification states.
-- **Checkpoint compatibility:** bundles are additive and schema-versioned; old checkpoint APIs remain unchanged.
-- **Agent trace confidentiality:** receipts contain hashes and bounded metadata only, never raw prompts, private messages, credentials or secret values.
-- **Temporal/spatial overclaiming:** uncertainty envelopes use declared bounds only. If the time interval crosses zero, speed is withheld rather than made artificially precise.
-- **Rescue/design safety:** outputs are planning and review aids, not operational authorization, engineering certification or clinical guidance.
-- **Web gate compatibility:** budgets are set above the inspected current asset sizes; any accessibility fixes must preserve all existing interactions and translations.
-- No payments, taxes, refunds, customer data, credentials, legal policies or commercial promises are in scope.
+The shared regression suite is `core/tests/test_daily_upgrades_2026_11_13.py`. It checks the 14-channel public metadata allowlist, sensitive-field exclusion, batch bounds, quantity/unit/negation drift, provenance-group deduplication, retained counterevidence, dependency propagation/cycles, checkpoint tampering and stale resume inputs, agent receipt hash chains, antimeridian and overlapping-time uncertainty, rescue worst-case shortages, design-change impact and web accessibility/asset budgets.
 
-Implementation will be accepted only if each feature has deterministic regression tests, public-facing usage/limitations documentation, and the full existing CI suite remains green.
+### Previous behaviour versus this release
+
+- Social/video channels previously had permission-aware query-plan descriptions but no common normalized public-record envelope. The new intake layer provides one while deliberately leaving actual API credentials and network access to separately authorized providers.
+- Translation checks previously had title clickbait cues but no cross-language quantity/unit/negation drift report.
+- Contradictions and provenance existed in separate structures; the new matrix reports claim-level support and counterevidence without collapsing them into a score.
+- Existing snapshots and ledgers preserved history, but downstream derived artifacts did not have a reusable dependency-impact report when an upstream source changed.
+- Existing task checkpoints were in-memory state snapshots; the new bundle is digest-verifiable and compares exact resume dependencies.
+- Agent task contracts and decision ledgers existed, but there was no hash-linked per-execution receipt chain binding input/output digests and tool versions.
+- Virtual Time Travel already stored GPS accuracy and clock uncertainty separately; the new segment utility propagates both into bounded distance/speed intervals.
+- Existing rescue planning allocated fixed quantities; the new scenario utility stress-tests uncertain ranges without performing allocation.
+- Existing protective-design assurance evaluated a design snapshot; the new utility identifies verification and review records affected by design changes.
+- Existing accessibility checks were reusable but not enforced as a public-web CI gate with explicit asset budgets.
+
+## Safety, privacy and limitations
+
+- Public media intake is a normalizer for records already returned by official APIs or permitted public feeds. It does not scrape restricted pages, authenticate, download media, access private accounts or bypass platform terms. Instagram/Facebook/Threads records require their approved API access modes.
+- Translation matching is lexical and may miss idioms, scope, modality, sarcasm or equivalent wording. A clean report is not a translation certificate.
+- A provenance group is only as accurate as its source metadata. The matrix does not infer publisher independence from titles.
+- Change-impact output is advisory. It does not automatically retract, delete, invalidate or modify stored research.
+- Checkpoint and receipt hashes detect payload changes; they are not digital signatures and do not prove source authenticity or execution correctness.
+- Spatiotemporal results use declared bounds only; no missing history is recovered and no future trajectory is predicted.
+- Rescue/design outputs are non-operational review aids. They do not authorize dispatch, medical decisions, evacuation, deployment or safe use.
+- The web gate is a static automated check, not a complete WCAG audit. Contrast and real keyboard/screen-reader behaviour still require manual review.
+- No payment, tax, refund, customer-data, credential, legal-policy or commercial-promise settings were changed.
+
+## Validation status
+
+Implementation tests and CI are being run against the updated mainline. Final measured results and any remaining limitations will be recorded after the workflows complete.
