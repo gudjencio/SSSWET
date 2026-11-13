@@ -59,7 +59,7 @@ class ReplicationRegistry:
         datasets = [_digest(item, "dataset_fingerprint") for item in dataset_fingerprints]
         if len(datasets) != len(set(datasets)):
             raise ValueError("dataset_fingerprints must be unique")
-        if outcome not in _OUTCOMES:
+        if not isinstance(outcome, str) or outcome not in _OUTCOMES:
             raise ValueError("outcome must be positive, negative, inconclusive, failed or not_run")
         deviations = deviation_ids or []
         if not isinstance(deviations, list) or len(deviations) > 100:
