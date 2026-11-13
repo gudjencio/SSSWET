@@ -17,6 +17,13 @@ def _number(value: Any, field: str, *, minimum: float | None = None) -> float:
     return result
 
 
+def _integer(value: Any, field: str) -> int:
+    number = _number(value, field, minimum=0)
+    if not number.is_integer():
+        raise ValueError(f"{field} must be an integer")
+    return int(number)
+
+
 def _summary(dataset: dict[str, Any], label: str) -> dict[str, dict[str, Any]]:
     if not isinstance(dataset, dict):
         raise ValueError(f"{label} must be an aggregate summary object")
@@ -36,8 +43,8 @@ def _summary(dataset: dict[str, Any], label: str) -> dict[str, dict[str, Any]]:
         kind = item.get("kind")
         if kind not in {"numeric", "categorical"}:
             raise ValueError("feature kind must be numeric or categorical")
-        count = int(_number(item.get("count"), f"{name}.count", minimum=0))
-        missing = int(_number(item.get("missing_count"), f"{name}.missing_count", minimum=0))
+        count = _integer(item.get("count"), f"{name}.count")
+        missing = _integer(item.get("missing_count"), f"{name}.missing_count")
         if missing > count:
             raise ValueError(f"{name}.missing_count cannot exceed count")
         unit = item.get("unit", "")
@@ -60,7 +67,7 @@ def _summary(dataset: dict[str, Any], label: str) -> dict[str, dict[str, Any]]:
             for category, raw_count in counts.items():
                 if not isinstance(category, str) or not category or len(category) > 160:
                     raise ValueError("category labels must contain 1 to 160 characters")
-                clean_counts[category] = int(_number(raw_count, f"{name}.{category}", minimum=0))
+                clean_counts[category] = _integer(raw_count, f"{name}.{category}")
             if sum(clean_counts.values()) != count - missing:
                 raise ValueError(f"{name}.category_counts must sum to the non-missing count")
             normalized["category_counts"] = clean_counts
