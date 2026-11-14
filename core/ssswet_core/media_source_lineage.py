@@ -4,6 +4,7 @@ from collections import defaultdict
 from .assurance_common import identifier, sha256_hex
 
 MAX_RECORDS = 500
+SCHEMA_VERSION = 1
 RELATIONS = {"repost", "translation", "quotation", "adaptation", "syndication"}
 
 
@@ -55,4 +56,4 @@ def analyze_source_lineage(records: list[dict]) -> dict:
         if start not in state:
             state[start] = start if start not in parent_map else None
     exact_groups = [{"content_sha256": key, "source_ids": sorted(ids), "origin_equivalence_inferred": False} for key, ids in sorted(hashes.items()) if len(ids) > 1]
-    return {"source_count": len(records), "declared_lineage_edges": sorted(edges, key=lambda edge: (edge["source_id"], edge["parent_source_id"])), "missing_parent_source_ids": missing, "cycles": sorted(cycles), "root_by_source_id": {key: state.get(key) for key in sorted(by_id)}, "exact_text_match_groups": exact_groups, "sources_deleted_or_merged": False, "scientific_independence_established": False}
+    return {"schema_version": SCHEMA_VERSION, "source_count": len(records), "declared_lineage_edges": sorted(edges, key=lambda edge: (edge["source_id"], edge["parent_source_id"])), "missing_parent_source_ids": missing, "cycles": sorted(cycles), "root_by_source_id": {key: state.get(key) for key in sorted(by_id)}, "exact_text_match_groups": exact_groups, "sources_deleted_or_merged": False, "scientific_independence_established": False}
