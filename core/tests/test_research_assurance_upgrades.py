@@ -28,6 +28,8 @@ def test_agent_handoff_contract_is_versioned_bounded_and_never_authorizes_execut
     }
     built = build_handoff(raw)
     assert built["schema_version"] == 1
+    with pytest.raises(ValueError, match="object"):
+        validate_handoff(None)
     assert len(built["handoff_sha256"]) == 64
     assert validate_handoff(built, now="2026-11-14T08:30:00Z")["ready_for_human_review"] is True
     assert validate_handoff(built, now="2026-11-14T10:00:00Z")["expired"] is True
@@ -53,6 +55,7 @@ def test_memory_snapshot_preserves_conflicts_provenance_and_deterministic_bounde
     rows = [memory("m1", "Alloy fatigue under thermal cycling", "supports"), memory("m2", "Alloy fatigue under thermal cycling", "contradicts"), memory("m3", "Ocean salinity observation", "neutral")]
     snapshot = build_memory_snapshot(rows)
     assert verify_memory_snapshot(snapshot)["valid"]
+    assert snapshot["schema_version"] == 1
     assert snapshot["memory_count"] == 3
     assert snapshot["source_reference_count"] == 3
     assert snapshot["memories_deleted_or_merged"] is False
@@ -86,6 +89,7 @@ def test_source_lineage_uses_declared_edges_and_never_equates_duplicate_text_wit
         {"source_id": "c", "platform": "reddit", "content_sha256": "b" * 64, "parent_source_id": "missing", "relation_type": "quotation"},
     ]
     result = analyze_source_lineage(rows)
+    assert result["schema_version"] == 1
     assert result["source_count"] == 3
     assert result["root_by_source_id"]["b"] == "a"
     assert result["missing_parent_source_ids"] == ["missing"]
@@ -114,6 +118,7 @@ def claim(cid, value, **changes):
 
 def test_claim_context_comparison_blocks_incompatible_contexts_without_calling_contradictions():
     result = compare_claim_contexts([claim("a", 100), claim("b", 120), claim("c", 120, condition="80 C humid air"), claim("d", 150, unit="hours")])
+    assert result["schema_version"] == 1
     by_pair = {(row["left_claim_id"], row["right_claim_id"]): row for row in result["comparisons"]}
     assert by_pair[("a", "b")]["status"] == "comparable_for_human_review"
     assert by_pair[("a", "b")]["value_disagreement_for_review"] is True
@@ -132,6 +137,7 @@ def test_claim_context_comparison_blocks_incompatible_contexts_without_calling_c
 
 def test_translation_integrity_flags_numbers_units_negation_and_protected_terms():
     good = audit_translation_integrity("The sample did not exceed 12.5 mm.", "L'échantillon n'a pas dépassé 12,5 mm.", source_language="en", target_language="fr", protected_terms=["mm"])
+    assert good["schema_version"] == 1
     assert "numeric_tokens_differ" not in good["flags"]
     assert "unit_tokens_differ" not in good["flags"]
     assert "possible_negation_omission" not in good["flags"]
@@ -152,6 +158,7 @@ def test_reviewer_concordance_reports_pairwise_kappa_and_prevalence_caveat():
         label = "accept" if i < 8 else "needs_revision"
         ratings.extend([{"item_id": f"i{i}", "reviewer_id": "r1", "decision": label}, {"item_id": f"i{i}", "reviewer_id": "r2", "decision": label}])
     result = measure_reviewer_concordance(ratings)
+    assert result["schema_version"] == 1
     pair = result["pairwise_results"][0]
     assert pair["matched_item_count"] == 10
     assert pair["raw_agreement"] == 1.0
@@ -176,10 +183,13 @@ def test_temporal_window_retains_stale_future_and_missing_timestamps():
         {"source_id": "bad-order", "published_at": "2026-11-13T00:00:00Z", "captured_at": "2026-11-12T00:00:00Z"},
     ]
     result = audit_temporal_window(rows, now="2026-11-14T00:00:00Z", maximum_age_days=30)
+    assert result["schema_version"] == 1
     by_id = {row["source_id"]: row for row in result["records"]}
     assert by_id["fresh"]["status"] == "within_window"
     assert by_id["old"]["status"] == "older_than_window"
     assert by_id["future"]["status"] == "future_dated"
+    tolerated = audit_temporal_window([{"source_id": "slight", "published_at": "2026-11-14T00:02:00Z"}], now="2026-11-14T00:00:00Z", maximum_age_days=1)
+    assert "publication_timestamp_slightly_future_within_tolerance" in tolerated["records"][0]["flags"]
     assert by_id["unknown"]["status"] == "unknown_publication_time"
     assert "capture_precedes_publication" in by_id["bad-order"]["flags"]
     assert result["records_discarded"] == 0
@@ -193,6 +203,7 @@ def test_temporal_window_retains_stale_future_and_missing_timestamps():
 def test_privacy_export_gate_redacts_without_returning_matched_values():
     source = "Contact me at researcher@example.org, phone +33 6 12 34 56 78; api_key=AbCdEf1234567890; lat=48.8566, lon=2.3522"
     result = scan_and_redact(source)
+    assert result["schema_version"] == 1
     assert result["finding_count"] >= 4
     assert "researcher@example.org" not in result["redacted_text"]
     assert "AbCdEf1234567890" not in result["redacted_text"]
@@ -200,6 +211,7 @@ def test_privacy_export_gate_redacts_without_returning_matched_values():
     assert result["matched_values_returned"] is False
     assert result["publication_authorized"] is False
     assert all("value" not in finding for finding in result["findings"])
+    assert scan_and_redact("  preserve spacing  ")["redacted_text"] == "  preserve spacing  "
     empty = scan_and_redact("No contact details in this excerpt")
     assert empty["finding_count"] == 0
     assert empty["redacted_text"] == "No contact details in this excerpt"
@@ -209,6 +221,7 @@ def test_privacy_export_gate_redacts_without_returning_matched_values():
 
 def test_vtt_spatial_uncertainty_propagates_covariance_and_rejects_invalid_rotations():
     result = transform_point_with_covariance([1, 0], [[0, -1], [1, 0]], [10, 20], [[4, 0], [0, 1]], [[1, 0], [0, 1]], coordinate_unit="m")
+    assert result["schema_version"] == 1
     assert result["transformed_point"] == [10.0, 21.0]
     assert result["covariance"] == [[2.0, 0.0], [0.0, 5.0]]
     assert result["major_95_ellipse_axis"] > result["minor_95_ellipse_axis"]
@@ -231,6 +244,7 @@ def test_rescue_route_redundancy_finds_edge_disjoint_paths_and_unknown_cut_edges
         {"segment_id": "f", "from_node": "S", "to_node": "C", "status": "blocked"},
     ]
     result = analyze_route_redundancy(segments, start_node="S", destination_node="T")
+    assert result["schema_version"] == 1
     assert result["maximum_edge_disjoint_path_count"] == 2
     assert result["status"] == "multiple_edge_disjoint_paths"
     assert result["unknown_segment_ids"] == ["e"]
