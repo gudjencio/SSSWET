@@ -101,7 +101,15 @@ def make_handler(engine: SSSWETEngine, store: SQLiteResearchStore, order_registr
             from urllib.parse import urlsplit
             if self.client_address[0] not in {"127.0.0.1", "::1"}:
                 return False
-            host = (self.headers.get("Host") or "").split(":")[0].strip("[]").lower()
+            host_header = (self.headers.get("Host") or "").strip()
+            try:
+                parsed_host = urlsplit(f"//{host_header}")
+                host = (parsed_host.hostname or "").lower()
+                parsed_host.port
+            except ValueError:
+                return False
+            if parsed_host.username is not None or parsed_host.password is not None:
+                return False
             if host not in {"localhost", "127.0.0.1", "::1"}:
                 return False
             origin = self.headers.get("Origin")
