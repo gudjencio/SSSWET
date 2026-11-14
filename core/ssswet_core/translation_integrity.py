@@ -6,6 +6,7 @@ from decimal import Decimal, InvalidOperation
 from .assurance_common import text
 
 MAX_TEXT = 20_000
+SCHEMA_VERSION = 1
 _NEGATION = {
     "en": ("not", "no", "never", "without", "cannot", "none"),
     "fr": ("ne", "pas", "non", "sans", "jamais", "aucun", "aucune"),
@@ -84,4 +85,4 @@ def audit_translation_integrity(original_text: str, translated_text: str, *, sou
         flags.append("possible_negation_addition")
     if missing_terms:
         flags.append("protected_terms_missing")
-    return {"source_language": source, "target_language": target, "original_numeric_tokens": original_numbers, "translated_numeric_tokens": translated_numbers, "original_unit_tokens": original_units, "translated_unit_tokens": translated_units, "source_negation_signal": source_negation, "target_negation_signal": target_negation, "missing_protected_terms": missing_terms, "flags": flags, "human_review_required": True, "translation_accuracy_established": False, "machine_translation_performed": False}
+    return {"schema_version": SCHEMA_VERSION, "source_language": source, "target_language": target, "original_numeric_tokens": original_numbers, "translated_numeric_tokens": translated_numbers, "original_unit_tokens": original_units, "translated_unit_tokens": translated_units, "source_negation_signal": source_negation, "target_negation_signal": target_negation, "missing_protected_terms": missing_terms, "flags": flags, "human_review_required": True, "translation_accuracy_established": False, "machine_translation_performed": False}
