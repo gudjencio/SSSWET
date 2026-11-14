@@ -14,7 +14,7 @@ from ssswet_core.claim_context_audit import compare_claim_contexts
 from ssswet_core.translation_integrity import audit_translation_integrity
 from ssswet_core.reviewer_concordance import measure_reviewer_concordance
 from ssswet_core.temporal_evidence_window import audit_temporal_window
-from ssswet_core.privacy_export_gate import scan_and_redact
+from ssswet_core.source_coverage_audit import audit_source_coverage
 from ssswet_core.vtt_spatial_uncertainty import transform_point_with_covariance
 from ssswet_core.rescue_route_redundancy import analyze_route_redundancy
 from ssswet_core.agent_handoff_contract import build_handoff
@@ -34,6 +34,7 @@ def workloads():
     claims = [{"claim_id": f"c{i:03d}", "metric": "fatigue life", "value": float(i), "unit": "cycles", "population": "alloy A", "condition": "20 C dry", "method": "bend test", "observation_window": "2025-Q1"} for i in range(200)]
     ratings = [{"item_id": f"i{i:03d}", "reviewer_id": reviewer, "decision": "accept" if i % 4 else "needs_revision"} for i in range(100) for reviewer in ("r1", "r2")]
     rescue = [{"segment_id": f"e{i:04d}", "from_node": f"n{i:04d}", "to_node": f"n{i+1:04d}", "status": "open"} for i in range(500)]
+    coverage = [{"source_id": f"s{i:05d}", "platform": ("youtube", "x", "reddit", "bsky")[i % 4], "language": ("en", "fr", "ja", "zh")[i % 4], "domain": f"source{i % 25}.example", "region": ("eu", "na", "apac")[i % 3], "topic": ("materials", "rescue", "energy")[i % 3]} for i in range(5000)]
     handoff = {"handoff_id":"bench-1","created_at":"2026-11-14T08:00:00Z","expires_at":"2026-11-14T09:00:00Z","from_agent":"a","to_agent":"b","objective":"Compare public evidence","constraints":["public only"],"source_refs":[{"source_id":"s1","sha256":D,"source_type":"paper"}],"requested_outputs":["summary"],"requires_human_review":True,"safety_state":"review_required","budget":{"max_steps":100,"max_runtime_seconds":60,"max_output_chars":10000}}
     return [
         ("memory_snapshot_250", lambda: build_memory_snapshot(memories)),
@@ -43,7 +44,7 @@ def workloads():
         ("translation_integrity_100", lambda: [audit_translation_integrity("not above 12.5 mm", "pas plus de 12,5 mm", source_language="en", target_language="fr") for _ in range(100)]),
         ("reviewer_concordance_100", lambda: measure_reviewer_concordance(ratings)),
         ("temporal_window_250", lambda: audit_temporal_window([{"source_id":f"s{i}","published_at":"2026-11-13T00:00:00Z","captured_at":"2026-11-13T01:00:00Z"} for i in range(250)], now="2026-11-14T00:00:00Z", maximum_age_days=30)),
-        ("privacy_scan_100", lambda: [scan_and_redact("Public research contact: contact@example.org") for _ in range(100)]),
+        ("source_coverage_5000", lambda: audit_source_coverage(coverage, target_quotas=[{"dimension":"platform","value":"youtube","minimum_count":1400},{"dimension":"language","value":"ja","minimum_count":1400},{"dimension":"region","value":"eu","minimum_count":1800}])),
         ("vtt_uncertainty_100", lambda: [transform_point_with_covariance([1,2],[[0,-1],[1,0]],[10,20],[[1,0],[0,1]],[[0.1,0],[0,0.1]],coordinate_unit="m") for _ in range(100)]),
         ("rescue_redundancy_500", lambda: analyze_route_redundancy(rescue, start_node="n0000", destination_node="n0500")),
         ("agent_handoff", lambda: build_handoff(handoff)),
