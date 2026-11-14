@@ -26,7 +26,7 @@ def text(value: Any, field: str, maximum: int, *, allow_empty: bool = False) -> 
     result = value.strip()
     if not result and not allow_empty:
         raise ValueError(f"{field} must not be empty")
-    if any(ord(ch) < 32 and ch not in "\\t\\n\\r" for ch in result):
+    if any(ord(ch) < 32 and ch not in "\t\n\r" for ch in result):
         raise ValueError(f"{field} contains control characters")
     return result
 
