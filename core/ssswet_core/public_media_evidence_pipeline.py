@@ -1215,6 +1215,11 @@ def build_human_review_packet(
         cue_ids = item.get("transcript_cue_ids", [])
         if not isinstance(cue_ids, list) or any(not isinstance(value, str) for value in cue_ids):
             raise ValueError("transcript_cue_ids must be a list of strings")
+        claim_language = item.get("language")
+        if claim_language is not None:
+            claim_language = _clean(claim_language, "claim language", 20).lower()
+            if not _LANGUAGE_TAG.fullmatch(claim_language):
+                raise ValueError("claim language must be a BCP-47-like tag")
         safe_claims.append({
             "claim_id": _clean(item.get("claim_id"), "claim_id", 100),
             "source_id": source_id,
@@ -1225,11 +1230,12 @@ def build_human_review_packet(
             "claim_text_sha256": claim_hash,
             "claim_text_redacted_for_packet": bool(report["finding_count"]),
             "transcript_cue_ids": sorted(set(cue_ids)),
-            "language": item.get("language"),
+            "language": claim_language,
             "verification_state": "unverified_candidate",
         })
 
     safe_cues = []
+    cue_identity_set = set()
     for item in transcript_cues:
         if not isinstance(item, dict):
             raise ValueError("transcript cues must be objects")
@@ -1250,17 +1256,32 @@ def build_human_review_packet(
             or start_ms < 0 or end_ms <= start_ms
         ):
             raise ValueError("transcript cue times must be valid non-negative millisecond spans")
+        cue_id = _clean(item.get("cue_id"), "cue_id", 200)
+        if (source_id, cue_id) in cue_identity_set:
+            raise ValueError("transcript cue IDs must be unique per source")
+        cue_identity_set.add((source_id, cue_id))
+        cue_start, cue_end = item.get("start_char"), item.get("end_char")
+        if cue_start is not None or cue_end is not None:
+            if (
+                isinstance(cue_start, bool) or not isinstance(cue_start, int)
+                or isinstance(cue_end, bool) or not isinstance(cue_end, int)
+                or not 0 <= cue_start < cue_end
+            ):
+                raise ValueError("transcript cue offsets must be positive integer spans")
         safe_cues.append({
             "source_id": source_id,
-            "cue_id": _clean(item.get("cue_id"), "cue_id", 200),
+            "cue_id": cue_id,
             "start_ms": start_ms,
             "end_ms": end_ms,
             "text": cue_text,
             "text_sha256": cue_hash,
             "text_redacted_for_packet": bool(report["finding_count"]),
-            "start_char": item.get("start_char"),
-            "end_char": item.get("end_char"),
+            "start_char": cue_start,
+            "end_char": cue_end,
         })
+    for claim in safe_claims:
+        if any((claim["source_id"], cue_id) not in cue_identity_set for cue_id in claim["transcript_cue_ids"]):
+            raise ValueError("claim binding references a missing transcript cue")
 
     safe_translations = []
     for item in translation_reviews:
@@ -1281,17 +1302,27 @@ def build_human_review_packet(
         translated, translated_report = _packet_text(raw_translated, "translated text")
         privacy_counts["findings"] += original_report["finding_count"] + translated_report["finding_count"]
         privacy_counts["fields_redacted"] += int(bool(original_report["finding_count"])) + int(bool(translated_report["finding_count"]))
+        source_language = _clean(item.get("source_language"), "source_language", 20).lower()
+        target_language = _clean(item.get("target_language"), "target_language", 20).lower()
+        if not _LANGUAGE_TAG.fullmatch(source_language) or not _LANGUAGE_TAG.fullmatch(target_language):
+            raise ValueError("translation review languages must be BCP-47-like tags")
+        review_state = item.get("review_state")
+        if review_state not in {"unreviewed", "reviewer_accepted", "revision_requested", "blocked_protected_terms_missing"}:
+            raise ValueError("translation review state is unsupported")
+        reviewer_attested = item.get("reviewer_attested")
+        if not isinstance(reviewer_attested, bool):
+            raise ValueError("reviewer_attested must be boolean")
         safe_translations.append({
             "record_id": record_id,
-            "source_language": item.get("source_language"),
-            "target_language": item.get("target_language"),
+            "source_language": source_language,
+            "target_language": target_language,
             "original_text": original,
             "translated_text": translated,
             "original_sha256": original_hash,
             "translated_sha256": translated_hash,
             "text_redacted_for_packet": bool(original_report["finding_count"] or translated_report["finding_count"]),
-            "review_state": item.get("review_state"),
-            "reviewer_attested": bool(item.get("reviewer_attested")),
+            "review_state": review_state,
+            "reviewer_attested": reviewer_attested,
             "translation_accuracy_established": False,
         })
 
@@ -1434,7 +1465,7 @@ def build_human_review_packet(
             "private_content": "not accessed",
             "raw_cursor_tokens": "not retained",
             "unapproved_fields": "not copied",
-            "author_display_names": "omitted from export",
+            "author_display_fields": "omitted from export",
         },
         "scientific_evidence_established": False,
         "automatic_adjudication": False,
