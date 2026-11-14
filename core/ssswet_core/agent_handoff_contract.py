@@ -81,7 +81,9 @@ def build_handoff(envelope: dict) -> dict:
 
 
 def validate_handoff(envelope: dict, *, now: str | None = None) -> dict:
-    supplied_hash = envelope.get("handoff_sha256") if isinstance(envelope, dict) else None
+    if not isinstance(envelope, dict):
+        raise ValueError("handoff must be an object")
+    supplied_hash = envelope.get("handoff_sha256")
     normalized = build_handoff({key: value for key, value in envelope.items() if key != "handoff_sha256"})
     if supplied_hash is not None and sha256_hex(supplied_hash, "handoff_sha256") != normalized["handoff_sha256"]:
         raise ValueError("handoff digest mismatch")
