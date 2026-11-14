@@ -73,12 +73,32 @@ def build_memory_snapshot(memories: list[dict]) -> dict:
 def verify_memory_snapshot(snapshot: dict) -> dict:
     if not isinstance(snapshot, dict) or snapshot.get("schema_version") != SCHEMA_VERSION:
         raise ValueError("unsupported or malformed memory snapshot")
+    memories = snapshot.get("memories")
+    if not isinstance(memories, list) or len(memories) > MAX_MEMORIES:
+        raise ValueError("memory snapshot records are malformed or exceed capacity")
     payload = {key: value for key, value in snapshot.items() if key != "manifest_sha256"}
     if digest(payload) != sha256_hex(snapshot.get("manifest_sha256"), "manifest_sha256"):
         raise ValueError("memory snapshot digest mismatch")
-    if snapshot.get("memory_count") != len(snapshot.get("memories", [])) or len(snapshot.get("memories", [])) > MAX_MEMORIES:
-        raise ValueError("memory snapshot count mismatch or capacity exceeded")
-    return {"valid": True, "memory_count": snapshot["memory_count"], "source_reference_count": snapshot["source_reference_count"], "contradictory_stances_retained": True, "manifest_sha256": snapshot["manifest_sha256"]}
+    seen, total_text, reference_count = set(), 0, 0
+    for item in memories:
+        if not isinstance(item, dict):
+            raise ValueError("memory snapshot contains a malformed record")
+        memory_id = identifier(item.get("memory_id"), "memory_id")
+        if memory_id in seen:
+            raise ValueError("memory snapshot contains duplicate memory IDs")
+        seen.add(memory_id)
+        total_text += len(text(item.get("text"), "memory.text", MAX_MEMORY_TEXT).encode("utf-8"))
+        refs = item.get("source_refs")
+        if not isinstance(refs, list) or len(refs) > MAX_REFS_PER_MEMORY:
+            raise ValueError("memory snapshot source references are malformed or exceed capacity")
+        reference_count += len(refs)
+        if item.get("review_state") not in {"unreviewed", "review_required", "reviewed", "superseded", "withdrawn"}:
+            raise ValueError("memory snapshot contains an unsupported review state")
+        if item.get("stance") not in {"supports", "contradicts", "neutral", "unspecified"}:
+            raise ValueError("memory snapshot contains an unsupported stance")
+    if total_text > MAX_TOTAL_TEXT or snapshot.get("memory_count") != len(memories) or snapshot.get("source_reference_count") != reference_count:
+        raise ValueError("memory snapshot count or storage budget mismatch")
+    return {"valid": True, "memory_count": snapshot["memory_count"], "source_reference_count": reference_count, "contradictory_stances_retained": True, "manifest_sha256": snapshot["manifest_sha256"]}
 
 
 def retrieve_memory(snapshot: dict, query: str, *, limit: int = 20, review_states: list[str] | None = None) -> dict:
