@@ -52,6 +52,19 @@ review = analyze_route_redundancy(
 # Unknown and blocked segments are not treated as open.
 ```
 
+```python
+from ssswet_core.source_coverage_audit import audit_source_coverage
+
+coverage = audit_source_coverage(
+    source_records,
+    target_quotas=[
+        {"dimension": "platform", "value": "youtube", "minimum_count": 40},
+        {"dimension": "language", "value": "ja", "minimum_count": 15},
+    ],
+)
+# Review concentration and quota gaps; no source is ranked or collected.
+```
+
 ## Baseline comparison
 
 The inspected baseline was main commit `6d8291c420ad23b946e6553707d7638d32ac9e24`; its immediate predecessor was `b8b600847e2871ea56300a30c7015a110e20986a`.
