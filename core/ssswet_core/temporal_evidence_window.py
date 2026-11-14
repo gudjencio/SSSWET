@@ -38,6 +38,9 @@ def audit_temporal_window(records: list[dict], *, now: str, maximum_age_days: fl
             if published > instant + timedelta(minutes=future_tolerance_minutes):
                 status = "future_dated"
                 flags.append("publication_timestamp_in_future")
+            elif published > instant:
+                status = "within_window"
+                flags.append("publication_timestamp_slightly_future_within_tolerance")
             elif age_days > maximum_age_days:
                 status = "older_than_window"
                 flags.append("outside_requested_age_window")
