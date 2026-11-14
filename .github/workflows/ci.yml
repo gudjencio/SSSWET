@@ -88,3 +88,9 @@ jobs:
         run: |
           python -m py_compile .github/scripts/benchmark_public_media_workbench.py
           python .github/scripts/benchmark_public_media_workbench.py
+      - name: Benchmark public media evidence pipeline expansion
+        if: matrix.python-version == '3.12'
+        run: |
+          python -m py_compile .github/scripts/benchmark_public_media_evidence_pipeline.py
+          python -m py_compile core/ssswet_core/public_media_evidence_pipeline.py
+          python .github/scripts/benchmark_public_media_evidence_pipeline.py
