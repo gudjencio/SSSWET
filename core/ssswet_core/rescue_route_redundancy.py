@@ -4,6 +4,7 @@ from collections import deque
 from .assurance_common import identifier
 
 MAX_SEGMENTS = 1000
+SCHEMA_VERSION = 1
 
 
 def analyze_route_redundancy(segments: list[dict], *, start_node: str, destination_node: str) -> dict:
@@ -84,4 +85,4 @@ def analyze_route_redundancy(segments: list[dict], *, start_node: str, destinati
                 queue.append(nxt)
     cut = sorted(edge["segment_id"] for edge in open_edges if "edge-in:" + edge["segment_id"] in reachable and "edge-out:" + edge["segment_id"] not in reachable)
     status = "no_verified_path" if flow == 0 else "single_path_only" if flow == 1 else "multiple_edge_disjoint_paths"
-    return {"start_node": start, "destination_node": destination, "node_count": len(nodes), "segment_count": len(segments), "open_segment_count": len(open_edges), "blocked_segment_ids": sorted(edge["segment_id"] for edge in blocked), "unknown_segment_ids": sorted(edge["segment_id"] for edge in unknown), "maximum_edge_disjoint_path_count": flow, "status": status, "minimum_cut_segment_ids": cut, "unknown_segments_treated_as_open": False, "segments_deleted": False, "route_generated": False, "dispatch_authorized": False, "accessibility_or_safety_certified": False}
+    return {"schema_version": SCHEMA_VERSION, "start_node": start, "destination_node": destination, "node_count": len(nodes), "segment_count": len(segments), "open_segment_count": len(open_edges), "blocked_segment_ids": sorted(edge["segment_id"] for edge in blocked), "unknown_segment_ids": sorted(edge["segment_id"] for edge in unknown), "maximum_edge_disjoint_path_count": flow, "status": status, "minimum_cut_segment_ids": cut, "unknown_segments_treated_as_open": False, "segments_deleted": False, "route_generated": False, "dispatch_authorized": False, "accessibility_or_safety_certified": False}
