@@ -4,6 +4,7 @@ import math
 from .assurance_common import finite_number, text
 
 CHI2_2D_95 = 5.991464547107979
+SCHEMA_VERSION = 1
 
 
 def _vector(value, field):
@@ -47,4 +48,4 @@ def transform_point_with_covariance(point, rotation, translation, source_covaria
     radius = math.sqrt(max(0.0, ((a - d) / 2) ** 2 + b ** 2))
     eigen_max, eigen_min = max(0.0, mean + radius), max(0.0, mean - radius)
     angle = 0.5 * math.atan2(2 * b, a - d) if abs(a - d) + abs(b) > 1e-15 else 0.0
-    return {"transformed_point": [round(value, 12) for value in mapped], "covariance": [[round(value, 12) for value in row] for row in propagated], "major_95_ellipse_axis": math.sqrt(eigen_max * CHI2_2D_95), "minor_95_ellipse_axis": math.sqrt(eigen_min * CHI2_2D_95), "major_axis_angle_radians": angle, "coordinate_unit": unit, "uncertainty_model": "independent_gaussian_2d_covariance_approximation", "geographic_conversion_performed": False, "3d_reconstruction_performed": False, "physical_accuracy_certified": False}
+    return {"schema_version": SCHEMA_VERSION, "transformed_point": [round(value, 12) for value in mapped], "covariance": [[round(value, 12) for value in row] for row in propagated], "major_95_ellipse_axis": math.sqrt(eigen_max * CHI2_2D_95), "minor_95_ellipse_axis": math.sqrt(eigen_min * CHI2_2D_95), "major_axis_angle_radians": angle, "coordinate_unit": unit, "uncertainty_model": "independent_gaussian_2d_covariance_approximation", "geographic_conversion_performed": False, "3d_reconstruction_performed": False, "physical_accuracy_certified": False}
