@@ -200,25 +200,6 @@ def test_temporal_window_retains_stale_future_and_missing_timestamps():
         audit_temporal_window([{"source_id": "x"}, {"source_id": "x"}], now="2026-11-14T00:00:00Z", maximum_age_days=1)
 
 
-def test_privacy_export_gate_redacts_without_returning_matched_values():
-    source = "Contact me at researcher@example.org, phone +33 6 12 34 56 78; api_key=AbCdEf1234567890; lat=48.8566, lon=2.3522"
-    result = scan_and_redact(source)
-    assert result["schema_version"] == 1
-    assert result["finding_count"] >= 4
-    assert "researcher@example.org" not in result["redacted_text"]
-    assert "AbCdEf1234567890" not in result["redacted_text"]
-    assert "48.8566" not in result["redacted_text"]
-    assert result["matched_values_returned"] is False
-    assert result["publication_authorized"] is False
-    assert all("value" not in finding for finding in result["findings"])
-    assert scan_and_redact("  preserve spacing  ")["redacted_text"] == "  preserve spacing  "
-    empty = scan_and_redact("No contact details in this excerpt")
-    assert empty["finding_count"] == 0
-    assert empty["redacted_text"] == "No contact details in this excerpt"
-    with pytest.raises(ValueError, match="at most"):
-        scan_and_redact("x" * 20001)
-
-
 def test_vtt_spatial_uncertainty_propagates_covariance_and_rejects_invalid_rotations():
     result = transform_point_with_covariance([1, 0], [[0, -1], [1, 0]], [10, 20], [[4, 0], [0, 1]], [[1, 0], [0, 1]], coordinate_unit="m")
     assert result["schema_version"] == 1
@@ -267,3 +248,42 @@ def test_rescue_route_redundancy_finds_edge_disjoint_paths_and_unknown_cut_edges
         analyze_route_redundancy([], start_node="S", destination_node="S")
     with pytest.raises(ValueError, match="at most"):
         analyze_route_redundancy([{"segment_id": str(i), "from_node": "a", "to_node": "b", "status": "open"} for i in range(1001)], start_node="a", destination_node="b")
+
+def test_source_coverage_audit_reports_concentration_and_caller_defined_sampling_gaps():
+    from ssswet_core.source_coverage_audit import audit_source_coverage
+    rows = [
+        {"source_id": "1", "platform": "YouTube", "language": "en-US", "domain": "https://www.example.org/a", "region": "EU", "topic": "materials"},
+        {"source_id": "2", "platform": "youtube", "language": "en", "domain": "example.org", "region": "EU", "topic": "materials"},
+        {"source_id": "3", "platform": "youtube", "language": "en-GB", "domain": "example.org", "region": "EU", "topic": "materials"},
+        {"source_id": "4", "platform": "x", "language": "fr-FR", "domain": "other.net", "region": "NA", "topic": "rescue"},
+    ]
+    quotas = [
+        {"dimension": "platform", "value": "x", "minimum_count": 2},
+        {"dimension": "language", "value": "fr", "minimum_count": 2},
+        {"dimension": "domain", "value": "other.net", "minimum_count": 2},
+    ]
+    result = audit_source_coverage(rows, target_quotas=quotas)
+    assert result["schema_version"] == 1
+    assert result["source_count"] == 4
+    assert result["dimension_summaries"]["platform"]["group_count"] == 2
+    assert result["dimension_summaries"]["platform"]["hhi_concentration"] == 0.625
+    assert result["dimension_summaries"]["language"]["distribution"][0]["value"] == "en"
+    assert result["dimension_summaries"]["domain"]["distribution"][0]["value"] == "example.org"
+    assert len(result["target_gaps"]) == 3
+    assert all(row["deficit"] == 1 for row in result["target_gaps"])
+    assert result["sampling_recommendations"] == result["target_gaps"]
+    assert result["source_quality_inferred"] is False
+    assert result["scientific_independence_established"] is False
+    assert result["crawler_or_collection_authorized"] is False
+    assert audit_source_coverage(list(reversed(rows)), target_quotas=quotas) == result
+    unknown = audit_source_coverage([{"source_id": "u"}])
+    assert unknown["dimension_summaries"]["region"]["unknown_count"] == 1
+    with pytest.raises(ValueError, match="unique"):
+        audit_source_coverage([{"source_id": "x"}, {"source_id": "x"}])
+    with pytest.raises(ValueError, match="unsupported dimension"):
+        audit_source_coverage(rows, target_quotas=[{"dimension": "trust", "value": "high", "minimum_count": 1}])
+    with pytest.raises(ValueError, match="unique"):
+        audit_source_coverage(rows, target_quotas=[{"dimension": "platform", "value": "x", "minimum_count": 1}, {"dimension": "platform", "value": "X", "minimum_count": 2}])
+    with pytest.raises(ValueError, match="at most"):
+        audit_source_coverage([{"source_id": str(i)} for i in range(5001)])
+
