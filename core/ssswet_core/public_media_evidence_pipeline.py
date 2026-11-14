@@ -1232,7 +1232,7 @@ def build_human_review_packet(
             "language_identification_performed": False,
         })
     ledger = publisher_status_ledger or {
-        "schema_version": SCHEMA_VERSION, "event_count": 0, "events", "head_sha256": "0" * 64,
+        "schema_version": SCHEMA_VERSION, "event_count": 0, "events": [], "head_sha256": "0" * 64,
     }
     if not isinstance(ledger, dict) or not verify_publisher_status_ledger(ledger)["valid"]:
         raise ValueError("publisher_status_ledger must be a valid hash chain")
