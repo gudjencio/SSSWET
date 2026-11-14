@@ -24,8 +24,8 @@
 
 - Add at least 50 focused regression assertions across ten independently importable modules.
 - Keep each feature deterministic, versioned, input-bounded and dependency-free.
-- Add explicit malformed-input, capacity, Unicode, contradiction-preservation, provenance, temporal, privacy, uncertainty and graph-boundary tests.
-- Synthetic benchmark: 250 memory records, 250 source-lineage records, 200 claim comparisons, 100 translation audits, 100 reviewer pairs, 500 rescue segments; all measured operations under 5 seconds per sample on the CI runner.
+- Add explicit malformed-input, capacity, Unicode, contradiction-preservation, provenance, temporal, coverage-quota, uncertainty and graph-boundary tests.
+- Synthetic benchmark: 250 memory records, 250 source-lineage records, 200 claim comparisons, 100 translation audits, 100 reviewer pairs, 5,000 source-coverage records and 500 rescue segments; all measured operations under 5 seconds per sample on the CI runner.
 - Report retrieval hit/recall on a deterministic labelled fixture, provenance retention, contradiction preservation, serialized snapshot size at two capacities, and median/max latency. Do not claim production performance or increased agent intelligence.
 - Preserve the existing public-media workbench, VTT hold-out validation, GPS/local storage, locale fallback and rescue-screening behavior.
 - Run the complete Python test suite on Python 3.11, 3.12 and 3.13 plus existing JavaScript, locale, accessibility and asset-budget checks.
@@ -55,7 +55,7 @@
 | Translation | Protected-term checks and human decision record | Numeric/unit/negation integrity signals |
 | Review quality | Human decisions and reviewer-selection safeguards | Pairwise inter-reviewer concordance statistics with caveats |
 | Temporal evidence | Timestamped source records and VTT clock calibration | Explicit evidence-window and capture-order audit |
-| Privacy | Sensitive metadata key-name flags | Bounded content-level redaction preview with no matched-value retention |
+| Source coverage | Feed-level round-robin intake diversity and language/script checks | Post-ingestion platform, language, domain, region and topic concentration metrics plus caller-defined quota gaps |
 | VTT | 2D rigid alignment and independent hold-out residual checks | Covariance propagation through a validated transform |
 | Rescue | Per-segment accessibility screening | Network redundancy and single-edge bottleneck analysis |
 
