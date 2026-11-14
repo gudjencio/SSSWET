@@ -4,6 +4,7 @@ from datetime import timedelta
 from .assurance_common import aware_datetime, identifier
 
 MAX_RECORDS = 1000
+SCHEMA_VERSION = 1
 
 
 def audit_temporal_window(records: list[dict], *, now: str, maximum_age_days: float, future_tolerance_minutes: int = 5) -> dict:
@@ -50,4 +51,4 @@ def audit_temporal_window(records: list[dict], *, now: str, maximum_age_days: fl
     counts = {}
     for row in rows:
         counts[row["status"]] = counts.get(row["status"], 0) + 1
-    return {"record_count": len(rows), "maximum_age_days": float(maximum_age_days), "status_counts": dict(sorted(counts.items())), "records": sorted(rows, key=lambda row: row["source_id"]), "recency_is_reliability": False, "records_discarded": 0}
+    return {"schema_version": SCHEMA_VERSION, "record_count": len(rows), "maximum_age_days": float(maximum_age_days), "status_counts": dict(sorted(counts.items())), "records": sorted(rows, key=lambda row: row["source_id"]), "recency_is_reliability": False, "records_discarded": 0}
