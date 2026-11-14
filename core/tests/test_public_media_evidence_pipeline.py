@@ -433,3 +433,53 @@ def test_review_packet_rejects_unknown_translation_source():
     )
     with pytest.raises(ValueError, match="does not exist"):
         build_human_review_packet([normalized_record()], translation_reviews=[translation])
+
+
+def test_review_packet_resolves_claim_to_transcript_cue_and_rejects_dangling_cue():
+    record = normalized_record()
+    text = record["metadata"]["text"]
+    bound = bind_claim_candidates_to_source(record, text)
+    claim = dict(bound["claims"][0], transcript_cue_ids=["cue-1"])
+    cue_text = text
+    cue = {
+        "source_id": record["source_id"],
+        "cue_id": "cue-1",
+        "start_ms": 0,
+        "end_ms": 1500,
+        "text": cue_text,
+        "text_sha256": hashlib.sha256(cue_text.encode()).hexdigest(),
+        "start_char": 0,
+        "end_char": len(cue_text),
+    }
+    packet = build_human_review_packet([record], claim_bindings=[claim], transcript_cues=[cue])
+    assert packet["claim_bindings"][0]["transcript_cue_ids"] == ["cue-1"]
+    with pytest.raises(ValueError, match="missing transcript cue"):
+        build_human_review_packet([record], claim_bindings=[claim])
+
+
+def test_review_packet_rejects_untrusted_review_queue_reason_text():
+    record = normalized_record()
+    queue = {
+        "items": [{
+            "record_id": record["source_id"],
+            "priority": "medium",
+            "reason_codes": ["reviewer@example.org"],
+            "claim_candidate_count": 1,
+        }]
+    }
+    with pytest.raises(ValueError, match="reason-code tokens"):
+        build_human_review_packet([record], review_queue=queue)
+
+
+def test_review_packet_omits_public_author_display_names():
+    record = normalized_record()
+    record["metadata"]["author_display_name"] = "Public Author Name"
+    packet = build_human_review_packet([record])
+    assert "author_display_name" not in json.dumps(packet)
+    assert "Public Author Name" not in json.dumps(packet)
+
+
+def test_vtt_header_and_first_cue_without_blank_line_keep_correct_offsets():
+    payload = "WEBVTT\ncue-a\n00:00:01.000 --> 00:00:02.000\nA measured result.\n"
+    cue = parse_caption_transcript(payload, format_hint="vtt")["cues"][0]
+    assert payload[cue["start_char"]:cue["end_char"]] == cue["text"]
