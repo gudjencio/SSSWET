@@ -17,10 +17,10 @@ MAX_RETRIEVAL = 50
 
 def _tokens(value: str) -> list[str]:
     normalized = unicodedata.normalize("NFKC", value).casefold()
-    words = re.findall(r"[^\\W_]+", normalized, flags=re.UNICODE)
+    words = re.findall(r"[^\W_]+", normalized, flags=re.UNICODE)
     extra = []
     for word in words:
-        if any("\\u3040" <= ch <= "\\u30ff" or "\\u3400" <= ch <= "\\u9fff" for ch in word):
+        if any("\u3040" <= ch <= "\u30ff" or "\u3400" <= ch <= "\u9fff" for ch in word):
             extra.extend(word[i:i + 2] for i in range(max(0, len(word) - 1)))
     return list(dict.fromkeys(words + extra))
 
