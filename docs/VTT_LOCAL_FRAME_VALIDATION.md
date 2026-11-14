@@ -51,7 +51,7 @@ print(report["rms_residual"], report["maximum_residual"])
 
 ## Uncertainty semantics
 
-`source_uncertainty` and `target_uncertainty` are interpreted as user-declared absolute radial coordinate bounds expressed in the same `coordinate_unit` as the landmarks. Their sum is used as a conservative residual bound by the triangle inequality. These values are not standard deviations, confidence intervals, or calibrated probability distributions. If the input bounds have different meanings or units, the result is not interpretable and must not be used.
+`source_uncertainty` and `target_uncertainty` are interpreted as user-declared absolute radial coordinate bounds expressed in the same `coordinate_unit` as the landmarks. Their sum is used as a conservative residual bound by the triangle inequality. These values are not standard deviations, confidence intervals, or calibrated probability distributions. The fit and hold-out utilities do not propagate uncertainty in the estimated transform parameters; a passing result is only a coordinate-residual screen, not a complete uncertainty budget. If the input bounds have different meanings or units, the result is not interpretable and must not be used.
 
 ## Scientific and spatial limits
 
