@@ -16,7 +16,7 @@
 5. **Translation integrity audit** — compare numeric values, declared units, language-specific negation signals and protected terms; flag discrepancies for human review; never claim translation accuracy.
 6. **Reviewer concordance measurement** — compute raw agreement and pairwise Cohen's kappa only on matched items; enforce minimum sample size; expose prevalence caveats; never treat agreement as correctness.
 7. **Temporal evidence-window audit** — require timezone-aware timestamps; classify stale, future-dated, missing and capture-order anomalies; preserve all records and never equate recency with reliability.
-8. **Privacy-aware public export gate** — detect and redact bounded email, phone, IP, coordinate and secret-like patterns; never return matched values; keep original and redacted digests; publication remains explicitly unauthorized pending human review.
+8. **Post-ingestion source coverage audit** — measure platform, primary-language, domain, region and topic distributions; report HHI concentration and normalized Shannon entropy; compare only caller-specified minimum quotas; cap source and quota counts; never infer source quality or authorize collection.
 9. **VTT spatial uncertainty propagation** — transform 2D points and covariance through a validated rigid rotation; include registration covariance; report 95% confidence-ellipse axes; reject invalid/non-PSD covariance; make no geodetic or 3D claim.
 10. **Civil-rescue route redundancy analysis** — compute bounded edge-disjoint path count and cut-edge bottlenecks on declared route graphs; only explicitly open segments count; unknown/blocked segments remain visible but unavailable; never dispatch or certify a route.
 
@@ -40,7 +40,7 @@
 - **Translation false positives:** preserve originals; numerical/unit/negation signals are heuristics and require a human reviewer.
 - **Reviewer kappa instability:** expose raw agreement, minimum sample and prevalence warnings; no individual ranking.
 - **Temporal bias:** recency is metadata only; missing/future timestamps are retained with explicit flags.
-- **Privacy false positives/negatives:** output only redaction categories and offsets; all exports require human review; scanner is not a privacy guarantee.
+- **Coverage quota bias:** target minima can encode a biased sampling policy; require caller-specified quotas, expose unknown metadata and concentration by dimension, and never treat suggested quota slots as unique records or collection authorization.
 - **VTT covariance misuse:** explicit coordinate units and covariance assumptions; reject invalid matrices; no conversion to geographic coordinates.
 - **Rescue graph overconfidence:** unknown segments are never treated as open; output is topology analysis only, not operational routing.
 
@@ -60,3 +60,8 @@
 | Rescue | Per-segment accessibility screening | Network redundancy and single-edge bottleneck analysis |
 
 No existing API is replaced. All new functionality is opt-in and additive.
+
+
+## Candidate replacement after overlap review
+
+The initial privacy-export candidate was removed before release after inspection of the simultaneously open public-media evidence pipeline PR #57, which already adds content-level privacy scanning and packet redaction. It is not counted in this batch. The replacement is the post-ingestion source coverage audit: it measures concentration and caller-defined sampling gaps across five dimensions, a separate capability from feed ingestion round-robin scheduling and language/script consistency checks.
