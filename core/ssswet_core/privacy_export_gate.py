@@ -16,7 +16,9 @@ _PATTERNS = [
 
 
 def scan_and_redact(text_value: str) -> dict:
-    original = text(text_value, "text", MAX_TEXT, allow_empty=True)
+    if not isinstance(text_value, str) or len(text_value) > MAX_TEXT:
+        raise ValueError(f"text must be text of at most {MAX_TEXT} characters")
+    original = text_value
     candidates = []
     for kind, pattern in _PATTERNS:
         for match in pattern.finditer(original):
