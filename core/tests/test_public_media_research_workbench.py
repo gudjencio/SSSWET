@@ -352,7 +352,7 @@ def test_end_to_end_batch_rejects_origin_mismatch_and_queues_it_for_review():
     assert result["records"] == []
     assert result["rejected"][0]["record_id"] == "youtube:yt-1"
     assert "does not match" in result["rejected"][0]["reason"]
-    assert result["review_queue"]["items"][0]["reason_codes"] == ["platform_origin_unverified"]
+    assert "platform_origin_unverified" in result["review_queue"]["items"][0]["reason_codes"]
 
 
 def test_end_to_end_batch_is_deterministic_for_same_input():

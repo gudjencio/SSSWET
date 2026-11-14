@@ -6,22 +6,22 @@ The workbench connects the existing public metadata normalizer, source identity 
 
 ## Ten independently usable capabilities
 
-1. **Platform-origin binding** — \`validate_platform_origin\` checks exact HTTPS hostnames for supported platforms. Generic forums require an explicit exact-host allowlist. It rejects embedded credentials, IP-literal hosts, non-standard ports and suffix lookalikes. It does not follow redirects.
-2. **Exact cross-platform text clustering** — \`content_fingerprint\` and \`cluster_exact_content\` use NFKC, case-folding and whitespace normalization. Exact matches are review candidates only. Original records remain intact; no semantic similarity or scientific independence is inferred.
-3. **Explainable topic retrieval** — \`score_topic_relevance\` uses the existing multilingual tokenizer and reports matched/missing tokens. Its unique-token recall score is a lexical retrieval aid, not a truth, source-quality or expertise score.
-4. **Caption readiness** — \`assess_caption_readiness\` distinguishes provider-reported caption availability from a transcript actually supplied to the workbench. It reports token/character counts and language mismatches but does not establish completeness or transcript accuracy.
-5. **Translation review** — \`build_translation_review\` preserves original and supplied translation text separately, fingerprints both, checks reviewer-declared protected terms and records a human decision. It never performs machine translation.
-6. **Claim candidates** — \`extract_claim_candidates\` returns sentence spans with Unicode code-point offsets and transparent lexical signals. Every span remains unverified and has no evidence link by default.
-7. **Human review queue** — \`prioritize_review_queue\` produces deterministic priorities and reason codes for origin, privacy, translation, sensationalism, transcript and candidate-claim review. It never adjudicates claims.
-8. **Snapshot comparison** — \`compare_record_snapshots\` reports additions, absence and field-level changes. Absence is not a retraction; changed metadata is not a correction.
-9. **Fair intake budgeting** — \`plan_intake_budget\` uses deterministic round-robin platform selection and whole-record budgets. Exclusions include explicit reasons; individual records are never silently truncated.
-10. **Tamper-evident audit chain** — \`build_audit_chain\` and \`verify_audit_chain\` provide a bounded SHA-256 chain over event metadata and payload digests. The chain stops at 1,000 events rather than pruning history. Store payloads separately under an appropriate retention policy.
+1. **Platform-origin binding** — `validate_platform_origin` checks exact HTTPS hostnames for supported platforms. Generic forums require an explicit exact-host allowlist. It rejects embedded credentials, IP-literal hosts, non-standard ports and suffix lookalikes. It does not follow redirects.
+2. **Exact cross-platform text clustering** — `content_fingerprint` and `cluster_exact_content` use NFKC, case-folding and whitespace normalization. Exact matches are review candidates only. Original records remain intact; no semantic similarity or scientific independence is inferred.
+3. **Explainable topic retrieval** — `score_topic_relevance` uses the existing multilingual tokenizer and reports matched/missing tokens. Its unique-token recall score is a lexical retrieval aid, not a truth, source-quality or expertise score.
+4. **Caption readiness** — `assess_caption_readiness` distinguishes provider-reported caption availability from a transcript actually supplied to the workbench. It reports token/character counts and language mismatches but does not establish completeness or transcript accuracy.
+5. **Translation review** — `build_translation_review` preserves original and supplied translation text separately, fingerprints both, checks reviewer-declared protected terms and records a human decision. It never performs machine translation.
+6. **Claim candidates** — `extract_claim_candidates` returns sentence spans with Unicode code-point offsets and transparent lexical signals. Every span remains unverified and has no evidence link by default.
+7. **Human review queue** — `prioritize_review_queue` produces deterministic priorities and reason codes for origin, privacy, translation, sensationalism, transcript and candidate-claim review. It never adjudicates claims.
+8. **Snapshot comparison** — `compare_record_snapshots` reports additions, absence and field-level changes. Absence is not a retraction; changed metadata is not a correction.
+9. **Fair intake budgeting** — `plan_intake_budget` uses deterministic round-robin platform selection and whole-record budgets. Exclusions include explicit reasons; individual records are never silently truncated.
+10. **Tamper-evident audit chain** — `build_audit_chain` and `verify_audit_chain` provide a bounded SHA-256 chain over event metadata and payload digests. The chain stops at 1,000 events rather than pruning history. Store payloads separately under an appropriate retention policy.
 
 ## End-to-end use
 
-\`prepare_public_media_batch(records, query, approved_forum_hosts=..., transcripts=..., translations=...)\` composes origin validation, legacy normalization, multilingual cue triage, lexical relevance, caption readiness, candidate sentence extraction, exact-content clustering and review prioritization. The output includes a deterministic manifest fingerprint.
+`prepare_public_media_batch(records, query, approved_forum_hosts=..., transcripts=..., translations=...)` composes origin validation, legacy normalization, multilingual cue triage, lexical relevance, caption readiness, candidate sentence extraction, exact-content clustering and review prioritization. The output includes a deterministic manifest fingerprint.
 
-A record rejected by the strict origin check is retained in the \`rejected\` report and the review queue with a reason; it is not silently dropped. Existing \`normalize_public_record\` and \`normalize_public_batch\` APIs are unchanged. The new strict origin gate is opt-in through this workbench.
+A record rejected by the strict origin check is retained in the `rejected` report and the review queue with a reason; it is not silently dropped. Existing `normalize_public_record` and `normalize_public_batch` APIs are unchanged. The new strict origin gate is opt-in through this workbench.
 
 ## Reproducibility and limits
 
@@ -40,12 +40,12 @@ A record rejected by the strict origin check is retained in the \`rejected\` rep
 
 Run from the repository root:
 
-\`\`\`bash
+```bash
 python -m py_compile core/ssswet_core/public_media_research_workbench.py
 cd core
 python -m pytest -q tests/test_public_media_research_workbench.py
 cd ..
 python .github/scripts/benchmark_public_media_workbench.py
-\`\`\`
+```
 
 The CI benchmark uses 250 synthetic metadata records, three measured repeats and a five-second per-workload ceiling. It reports median and maximum wall-clock time. Results are environment-specific and are not intelligence or scientific-quality evaluations.
