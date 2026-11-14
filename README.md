@@ -153,7 +153,7 @@ See the public implementation and limitations record: [Research continuity and e
 
 ## Research assurance upgrades — 14 November 2026
 
-Ten additional opt-in core modules add versioned agent handoffs, portable scientific-memory snapshots, explicit cross-platform source lineage, claim-context comparability checks, translation-integrity prompts, inter-reviewer concordance, temporal evidence-window audits, privacy-aware export previews, VTT covariance propagation and civil-rescue route redundancy analysis.
+Ten additional opt-in core modules add versioned agent handoffs, portable scientific-memory snapshots, explicit cross-platform source lineage, claim-context comparability checks, translation-integrity prompts, inter-reviewer concordance, temporal evidence-window audits, post-ingestion source coverage and concentration audits, VTT covariance propagation and civil-rescue route redundancy analysis.
 
 These bounded utilities preserve provenance and conflicting interpretations, keep human review mandatory, and do not authorize execution, establish scientific truth, certify physical systems or dispatch responders. They add no runtime dependencies. See the [Research Assurance Upgrade guide](docs/RESEARCH_ASSURANCE_UPGRADES_2026-11-14.md) and its [pre-implementation acceptance plan](docs/RESEARCH_ASSURANCE_UPGRADE_PLAN_2026-11-14.md).
 
