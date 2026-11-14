@@ -88,3 +88,9 @@ jobs:
         run: |
           python -m py_compile .github/scripts/benchmark_public_media_workbench.py
           python .github/scripts/benchmark_public_media_workbench.py
+      - name: Validate and benchmark research assurance upgrades
+        if: matrix.python-version == '3.12'
+        run: |
+          python -m py_compile core/ssswet_core/assurance_common.py core/ssswet_core/agent_handoff_contract.py core/ssswet_core/research_memory_snapshot.py core/ssswet_core/media_source_lineage.py core/ssswet_core/claim_context_audit.py core/ssswet_core/translation_integrity.py core/ssswet_core/reviewer_concordance.py core/ssswet_core/temporal_evidence_window.py core/ssswet_core/privacy_export_gate.py core/ssswet_core/vtt_spatial_uncertainty.py core/ssswet_core/rescue_route_redundancy.py
+          python -m py_compile .github/scripts/benchmark_research_assurance.py
+          python .github/scripts/benchmark_research_assurance.py
