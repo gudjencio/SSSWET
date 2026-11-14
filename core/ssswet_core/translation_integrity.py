@@ -20,8 +20,8 @@ _NEGATION = {
     "ru": ("не", "нет", "никогда", "без"),
 }
 _UNITS = ("mm", "cm", "km", "kg", "mg", "ms", "min", "mpa", "kpa", "pa", "kn", "nm", "hz", "db", "ppm", "kw", "kwh", "mw", "°c", "°f", "°", "m", "g", "s", "h", "n", "j", "w", "v", "a", "l", "ml")
-_NUMBER_RE = re.compile(r"(?<![\\w])[-+]?\\d+(?:[.,]\\d+)?%?(?![\\w])")
-_NUMBER_UNIT_RE = re.compile(r"(?<![\\w])[-+]?\\d+(?:[.,]\\d+)?%?\\s*(" + "|".join(re.escape(x) for x in sorted(set(_UNITS), key=len, reverse=True)) + r")(?![\\w])", re.IGNORECASE)
+_NUMBER_RE = re.compile(r"(?<![\w])[-+]?\d+(?:[.,]\d+)?%?(?![\w])")
+_NUMBER_UNIT_RE = re.compile(r"(?<![\w])[-+]?\d+(?:[.,]\d+)?%?\s*(" + "|".join(re.escape(x) for x in sorted(set(_UNITS), key=len, reverse=True)) + r")(?![\w])", re.IGNORECASE)
 
 
 def _language(value: str, field: str) -> str:
@@ -51,7 +51,7 @@ def _number_token(value: str) -> str:
 def _has_negation(value: str, language: str) -> bool:
     if language in {"ja", "ko", "zh"}:
         return any(cue in value for cue in _NEGATION[language])
-    return any(re.search(r"(?<!\\w)" + re.escape(cue) + r"(?!\\w)", value, re.UNICODE) for cue in _NEGATION[language])
+    return any(re.search(r"(?<!\w)" + re.escape(cue) + r"(?!\w)", value, re.UNICODE) for cue in _NEGATION[language])
 
 
 def audit_translation_integrity(original_text: str, translated_text: str, *, source_language: str, target_language: str, protected_terms: list[str] | tuple[str, ...] = ()) -> dict:
