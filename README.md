@@ -151,4 +151,11 @@ The 12 November 2026 research upgrade adds bounded agent context packs, human-re
 See the public implementation and limitations record: [Research continuity and evidence workflow upgrades](docs/DAILY_UPGRADES_2026-11-12.md).
 
 
+## Research assurance upgrades — 14 November 2026
+
+Ten additional opt-in core modules add versioned agent handoffs, portable scientific-memory snapshots, explicit cross-platform source lineage, claim-context comparability checks, translation-integrity prompts, inter-reviewer concordance, temporal evidence-window audits, post-ingestion source coverage and concentration audits, VTT covariance propagation and civil-rescue route redundancy analysis.
+
+These bounded utilities preserve provenance and conflicting interpretations, keep human review mandatory, and do not authorize execution, establish scientific truth, certify physical systems or dispatch responders. They add no runtime dependencies. The source-coverage audit reports caller-defined sampling gaps without scoring source quality or initiating collection. See the [Research Assurance Upgrade guide](docs/RESEARCH_ASSURANCE_UPGRADES_2026-11-14.md) and its [pre-implementation acceptance plan](docs/RESEARCH_ASSURANCE_UPGRADE_PLAN_2026-11-14.md).
+
+
 The extended research-continuity API routes are local-administrator interfaces. They require a loopback request and the configured `SSSWET_ADMIN_TOKEN`; they are not exposed as unauthenticated public research-data endpoints. The public website displays only the selected project information described above.
