@@ -72,11 +72,11 @@ The inspected baseline was main commit `6d8291c420ad23b946e6553707d7638d32ac9e24
 | Capability | Before this release | Added behavior |
 |---|---|---|
 | Agent handoff | Agent capability matching and context packs existed, but no portable, expiring envelope joined task constraints to hashed source references | Versioned handoff contract with strict schema, bounded budgets and non-authorizing safety states |
-| Memory continuity | Cross-agent memory, graph and decision-lineage tools existed | Deterministic portable snapshots, explicit exact-text groups, bounded retrieval and digest verification |
-| Media provenance | Exact-content clusters and source snapshot comparison existed | Declared lineage graph, missing-parent and cycle checks; exact text never proves origin |
-| Claim comparison | Candidate extraction and evidence coverage existed | Explicit context compatibility gate before value comparison |
+| Memory continuity | Immutable versioned scientific-memory records, lexical retrieval, graph and decision-lineage tools existed | Deterministic portable snapshot manifests, explicit exact-text groups, bounded retrieval and digest verification |
+| Media provenance | Publisher/domain grouping, exact-content clusters and source snapshot comparison existed | Explicit declared lineage graph, missing-parent and cycle checks; exact text never proves origin |
+| Claim comparison | A basic subject/predicate/scope/conditions/unit comparator and evidence coverage existed | Explicit metric/unit/population/condition/method/observation-window compatibility gate before value comparison |
 | Translation QA | Protected-term presence and reviewer state existed | Number, unit and negation discrepancy prompts |
-| Review calibration | Human review and reviewer selection safeguards existed | Matched-item inter-reviewer concordance statistics with prevalence caveats |
+| Review calibration | Human peer-review records and reviewer-selection safeguards existed | Matched-item pairwise Cohen's kappa and raw agreement with prevalence caveats |
 | Temporal review | Timestamped media and local clock calibration existed | Explicit age-window and capture-order classifications |
 | Source coverage | Feed-level round-robin intake diversity and language/script checks | Post-ingestion five-dimension concentration metrics and explicit caller-defined quota gaps |
 | VTT | Local 2D alignment and independent hold-out residual validation existed | Covariance propagation through a validated local rigid transform |
