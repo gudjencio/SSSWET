@@ -10,7 +10,10 @@ MAX_LANDMARKS = 200
 def _number(value: Any, field: str, *, nonnegative: bool = False) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise ValueError(f"{field} must be numeric")
-    result = float(value)
+    try:
+        result = float(value)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise ValueError(f"{field} must be finite") from exc
     if not isfinite(result) or (nonnegative and result < 0):
         raise ValueError(f"{field} must be finite" + (" and non-negative" if nonnegative else ""))
     return result
@@ -65,9 +68,12 @@ def fit_local_frame_alignment(
         source_ref = item.get("source_ref", "")
         if not isinstance(source_ref, str) or len(source_ref) > 500:
             raise ValueError("source_ref must be text of at most 500 characters")
+        combined_bound = source_bound + target_bound
+        if not isfinite(combined_bound):
+            raise ValueError("combined declared uncertainty bound exceeds finite numeric range")
         normalized.append({
             "landmark_id": landmark_id, "source": source, "target": target,
-            "declared_bound": source_bound + target_bound,
+            "declared_bound": combined_bound,
             "source_ref": source_ref,
         })
 
@@ -91,7 +97,7 @@ def fit_local_frame_alignment(
     tx = target_center[0] - (c * source_center[0] - s * source_center[1])
     ty = target_center[1] - (s * source_center[0] + c * source_center[1])
     residuals = []
-    squared = []
+    residual_values = []
     for item in sorted(normalized, key=lambda row: row["landmark_id"]):
         x, y = item["source"]
         predicted = (c * x - s * y + tx, s * x + c * y + ty)
@@ -104,8 +110,8 @@ def fit_local_frame_alignment(
             "declared_combined_uncertainty_bound": item["declared_bound"],
             "within_declared_bound": within, "source_ref": item["source_ref"],
         })
-        squared.append(residual * residual)
-    rms = sqrt(sum(squared) / len(squared))
+        residual_values.append(residual)
+    rms = hypot(*residual_values) / sqrt(len(residual_values))
     maximum = max((item["residual"] for item in residuals), default=0.0)
     return {
         "schema_version": 1,
