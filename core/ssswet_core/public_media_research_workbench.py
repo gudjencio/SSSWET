@@ -93,6 +93,8 @@ def _identifier(value: object, field: str, maximum: int = 200) -> str:
 
 def _normalize_host(value: object, field: str) -> str:
     host = _text(value, field, 253).lower().rstrip(".")
+    if re.fullmatch(r"[0-9.]+", host):
+        raise ValueError(f"{field} must not be a numeric IP-like host")
     if "://" in host or "/" in host or "@" in host or ":" in host:
         raise ValueError(f"{field} must be a hostname, not a URL")
     try:
@@ -124,6 +126,8 @@ def _https_host(value: object, field: str) -> str:
     if port not in (None, 443):
         raise ValueError(f"{field} must not use a non-standard port")
     raw_host = parts.hostname.rstrip(".").lower()
+    if re.fullmatch(r"[0-9.]+", raw_host):
+        raise ValueError(f"{field} must not use a numeric IP-like host")
     try:
         ipaddress.ip_address(raw_host)
     except ValueError:

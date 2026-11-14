@@ -81,6 +81,8 @@ def test_platform_origin_rejects_mismatched_permalink_and_ip_allowlist():
     forum = record(platform="web_forum", url="https://127.0.0.1/topic")
     with pytest.raises(ValueError):
         validate_platform_origin(forum, approved_forum_hosts=["127.0.0.1"])
+    with pytest.raises(ValueError):
+        validate_platform_origin(forum, approved_forum_hosts=["999.999.999.999"])
 
 
 def test_content_fingerprint_normalizes_unicode_case_and_whitespace():

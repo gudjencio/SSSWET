@@ -26,7 +26,7 @@ A record rejected by the strict origin check is retained in the `rejected` repor
 ## Reproducibility and limits
 
 - All input sizes and outputs are bounded; no network calls or new runtime dependencies are required.
-- Text hashes and audit hashes are integrity identifiers, not proof that content is authentic or true.
+- Text hashes and audit hashes are integrity identifiers, not proof that content is authentic or true. A hash chain without an independently retained trusted head hash is not a digital signature or non-repudiation mechanism.
 - Exact duplicate candidates may be syndicated copies, quotations or coincidentally identical short text. They are not merged.
 - Lexical matching can miss synonyms, slang, negation, sarcasm and domain-specific phrasing. No cue is not a reliability signal.
 - Japanese and other CJK text use the existing script-aware tokenizer for retrieval and sentence punctuation for span extraction. This is not a full Japanese parser or translation engine.
