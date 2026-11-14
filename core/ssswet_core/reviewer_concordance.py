@@ -4,6 +4,7 @@ from itertools import combinations
 from .assurance_common import identifier
 
 MAX_RATINGS = 2000
+SCHEMA_VERSION = 1
 MIN_MATCHED_ITEMS = 5
 LABELS = {"accept", "needs_revision", "reject", "uncertain"}
 
@@ -42,4 +43,4 @@ def measure_reviewer_concordance(ratings: list[dict], *, minimum_items: int = MI
             if expected < 1:
                 kappa = (observed - expected) / (1 - expected)
         pairs.append({"reviewer_pair": [left, right], "matched_item_count": n, "raw_agreement": round(observed, 6) if observed is not None else None, "chance_expected_agreement": round(expected, 6) if expected is not None else None, "cohen_kappa": round(kappa, 6) if kappa is not None else None, "minimum_sample_met": n >= minimum_items, "prevalence_caveat": "Kappa can be unstable under prevalence imbalance; inspect raw counts and context."})
-    return {"reviewer_count": len(reviewers), "rating_count": len(ratings), "pairwise_results": pairs, "reviewer_rankings_created": False, "agreement_is_correctness": False, "unmatched_ratings_retained": True}
+    return {"schema_version": SCHEMA_VERSION, "reviewer_count": len(reviewers), "rating_count": len(ratings), "pairwise_results": pairs, "reviewer_rankings_created": False, "agreement_is_correctness": False, "unmatched_ratings_retained": True}
