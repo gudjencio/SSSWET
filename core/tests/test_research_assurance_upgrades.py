@@ -10,7 +10,6 @@ from ssswet_core.claim_context_audit import compare_claim_contexts
 from ssswet_core.translation_integrity import audit_translation_integrity
 from ssswet_core.reviewer_concordance import measure_reviewer_concordance
 from ssswet_core.temporal_evidence_window import audit_temporal_window
-from ssswet_core.privacy_export_gate import scan_and_redact
 from ssswet_core.vtt_spatial_uncertainty import transform_point_with_covariance
 from ssswet_core.rescue_route_redundancy import analyze_route_redundancy
 
