@@ -4,8 +4,8 @@
 
 - Current public main: `6d8291c420ad23b946e6553707d7638d32ac9e24` — bounded multilingual public-media research workbench.
 - Immediately preceding main revision: `b8b600847e2871ea56300a30c7015a110e20986a` — independent hold-out validation for VTT local-frame transforms.
-- The current workbench already has platform-origin checks, exact-text candidate clustering, lexical retrieval, caption readiness, human translation records, bounded claim spans, review ordering, snapshot comparison, intake budgets and a verifiable event hash chain. This run must extend those capabilities rather than reimplement or silently change them.
-- Existing cross-agent memory, decision lineage, knowledge graph, source review, VTT temporal capture and rescue accessibility components remain authoritative and unchanged.
+- The current workbench already has platform-origin checks, exact-text candidate clustering, lexical retrieval, caption readiness, human translation records, bounded claim spans, review ordering, snapshot comparison, intake budgets and a verifiable event hash chain. Adjacent modules also provide immutable scientific-memory versions, basic scope/condition/unit claim comparison, peer-review records and publisher/domain source grouping. This run must extend those capabilities rather than reimplement or silently change them.
+- Existing cross-agent memory, decision lineage, knowledge graph, source review, VTT temporal capture and rescue accessibility components remain authoritative and unchanged. The new snapshot, claim-context and reviewer-concordance utilities are complementary exports/audits, not replacements for those services.
 
 ## Ten feature candidates and measurable acceptance criteria
 
@@ -49,11 +49,11 @@
 | Area | Immediately before this run | Planned additive behavior |
 |---|---|---|
 | Agent coordination | Existing agent capability matching and context packs, but no single portable handoff envelope in this public-media workflow | Versioned bounded handoff with source hashes and explicit non-authorization |
-| Scientific memory | Existing cross-agent retrieval, graph and decision lineage | Portable deterministic snapshots with bounded retrieval and retained contradictions |
-| Media provenance | Exact text clusters and snapshot diffs | Explicit repost/translation lineage graph with cycle and missing-parent diagnostics |
-| Claims | Sentence candidates and evidence coverage | Explicit context comparability audit before any human contradiction review |
+| Scientific memory | Immutable versioned records, lexical retrieval, graph and decision lineage | Portable deterministic snapshot manifests, bounded retrieval and retained contradictions |
+| Media provenance | Publisher/domain source grouping, exact text clusters and snapshot diffs | Explicit declared repost/translation lineage graph with cycle and missing-parent diagnostics |
+| Claims | Basic subject/predicate/scope/conditions/unit comparator and evidence coverage | Pairwise metric/unit/population/condition/method/observation-window compatibility statuses before human review |
 | Translation | Protected-term checks and human decision record | Numeric/unit/negation integrity signals |
-| Review quality | Human decisions and reviewer-selection safeguards | Pairwise inter-reviewer concordance statistics with caveats |
+| Review quality | Human peer-review records and reviewer-selection safeguards | Matched-item pairwise Cohen's kappa and raw agreement with sample/prevalence caveats |
 | Temporal evidence | Timestamped source records and VTT clock calibration | Explicit evidence-window and capture-order audit |
 | Source coverage | Feed-level round-robin intake diversity and language/script checks | Post-ingestion platform, language, domain, region and topic concentration metrics plus caller-defined quota gaps |
 | VTT | 2D rigid alignment and independent hold-out residual checks | Covariance propagation through a validated transform |
