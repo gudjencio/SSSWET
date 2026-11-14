@@ -49,3 +49,21 @@ python .github/scripts/benchmark_public_media_workbench.py
 ```
 
 The CI benchmark uses 250 synthetic metadata records, three measured repeats and a five-second per-workload ceiling. It reports median and maximum wall-clock time. Results are environment-specific and are not intelligence or scientific-quality evaluations.
+
+
+## Baseline comparison
+
+| Capability | Immediately before this workbench | New behavior |
+|---|---|---|
+| Platform identity | Public metadata normalization accepted HTTPS URLs without a platform-host binding stage | New opt-in exact-host validation rejects mismatched origins and requires exact forum allowlists; legacy normalization remains compatible |
+| Cross-platform text duplicates | Strong identifiers and exact source hashes were available, but there was no normalized public-text candidate clustering across social/video records | New NFKC/case-folded text fingerprints expose exact-match candidates without merging or deleting sources |
+| Topic retrieval | Multilingual script-aware tokenization existed, but no record/query overlap report was produced by the public-media intake path | New deterministic matched/missing token report and normalized lexical recall score |
+| Captions | Provider metadata could say whether captions were available | New readiness output distinguishes provider-reported availability from a transcript actually supplied for review |
+| Translation | Script-aware triage could inspect configured sensationalism cues; it did not maintain a bilingual reviewer record | New original/translation hashes, protected-term checks and explicit human decision state |
+| Claim spans | Public metadata was normalized as discovery material, without stable sentence offsets | New bounded sentence candidates with Unicode code-point offsets and an unverified status |
+| Review ordering | Existing general review queues operated on registered research records | New deterministic media-specific queue exposes origin, privacy, translation, cue and transcript reason codes |
+| Revisions | Source identity and literature-watch comparisons existed for bibliographic candidates | New field-level comparison for normalized social/video snapshots; absence is explicitly not retraction |
+| Intake budgets | Batch normalization had a record cap but no multi-platform text/serialized-byte budget planner | New whole-record, round-robin selection with per-record exclusion reasons |
+| Audit history | Existing provenance and research ledgers served other research entities | New self-contained, bounded SHA-256 event chain for public-media intake events |
+
+The new workbench is opt-in and additive. It does not replace the existing literature watch, research memory, evidence dossier, or provenance graph. It is a Python core capability; this change does not add a new browser screen or claim that every live bot automatically invokes it.
