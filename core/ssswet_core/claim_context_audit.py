@@ -4,6 +4,7 @@ import math
 from .assurance_common import finite_number, identifier, text
 
 MAX_CLAIMS = 200
+SCHEMA_VERSION = 1
 CONTEXT_FIELDS = ("unit", "population", "condition", "method", "observation_window")
 
 
@@ -46,4 +47,4 @@ def compare_claim_contexts(claims: list[dict]) -> dict:
                     status, reasons = "comparable_for_human_review", []
             comparable = status == "comparable_for_human_review"
             comparisons.append({"left_claim_id": left["claim_id"], "right_claim_id": right["claim_id"], "status": status, "reason_codes": reasons, "value_difference": left["value"] - right["value"] if comparable else None, "value_disagreement_for_review": comparable and not math.isclose(left["value"], right["value"], rel_tol=1e-9, abs_tol=1e-12), "contradiction_inferred": False})
-    return {"claim_count": len(normalized), "comparison_count": len(comparisons), "comparisons": comparisons, "claims_deleted_or_rewritten": False, "scientific_truth_or_contradiction_determined": False}
+    return {"schema_version": SCHEMA_VERSION, "claim_count": len(normalized), "comparison_count": len(comparisons), "comparisons": comparisons, "claims_deleted_or_rewritten": False, "scientific_truth_or_contradiction_determined": False}
