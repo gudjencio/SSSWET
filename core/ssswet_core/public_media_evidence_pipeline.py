@@ -741,7 +741,9 @@ def parse_caption_transcript(
         lines = block.splitlines(keepends=True)
         if not lines:
             continue
+        header_prefix = 0
         if lines[0].lstrip("\ufeff").startswith("WEBVTT"):
+            header_prefix = len(lines[0])
             lines = lines[1:]
             if not lines:
                 continue
@@ -778,7 +780,7 @@ def parse_caption_transcript(
         cue_text = raw_body[left_trim:right_trim]
         if len(cue_text) > 20_000:
             raise ValueError("caption cue exceeds 20000 characters")
-        body_start = block_start + sum(len(line) for line in lines[:time_index + 1])
+        body_start = block_start + header_prefix + sum(len(line) for line in lines[:time_index + 1])
         cue_start, cue_end = body_start + left_trim, body_start + right_trim
         total_chars += len(cue_text)
         if total_chars > MAX_TRANSCRIPT_TEXT_CHARS:
@@ -1106,10 +1108,10 @@ def build_human_review_packet(
         raise ValueError("records must be a list of at most 500 normalized records")
     if isinstance(max_bytes, bool) or not isinstance(max_bytes, int) or not 1_000 <= max_bytes <= MAX_REVIEW_PACKET_BYTES:
         raise ValueError("max_bytes must be between 1000 and 5 MiB")
-    claim_bindings = claim_bindings or []
-    transcript_cues = transcript_cues or []
-    translation_reviews = translation_reviews or []
-    language_audits = language_audits or []
+    claim_bindings = [] if claim_bindings is None else claim_bindings
+    transcript_cues = [] if transcript_cues is None else transcript_cues
+    translation_reviews = [] if translation_reviews is None else translation_reviews
+    language_audits = [] if language_audits is None else language_audits
     for name, rows, maximum in (
         ("claim_bindings", claim_bindings, 1_000),
         ("transcript_cues", transcript_cues, MAX_TRANSCRIPT_CUES),
@@ -1118,37 +1120,75 @@ def build_human_review_packet(
     ):
         if not isinstance(rows, list) or len(rows) > maximum:
             raise ValueError(f"{name} must be a bounded list")
+
     source_map = {}
-    safe_records, privacy_counts = [], {"records_scanned": 0, "findings": 0, "fields_redacted": 0}
+    safe_records = []
+    privacy_counts = {"records_scanned": 0, "findings": 0, "fields_redacted": 0}
+    top_level_allowlist = {
+        "schema_version", "source_id", "platform", "content_type", "visibility",
+        "access_mode", "source_url", "published_at", "captured_at",
+        "discarded_field_names", "sensitive_field_names_flagged",
+        "private_content_accessed", "media_downloaded", "terms_of_service_bypass",
+        "scientific_evidence_established", "discovery_only", "snapshot_sha256",
+        "content_sha256",
+    }
     for record in records:
         if not isinstance(record, dict):
             raise ValueError("every record must be an object")
         source_id = _clean(record.get("source_id"), "source_id", 300)
         snapshot = _sha(record.get("snapshot_sha256"), "snapshot_sha256")
+        platform = _clean(record.get("platform"), "platform", 40).lower()
+        if platform not in CHANNEL_FIELDS:
+            raise ValueError("review packet contains an unsupported platform")
         if source_id in source_map:
             raise ValueError("source IDs must be unique in a review packet")
         source_map[source_id] = snapshot
-        safe = {key: value for key, value in record.items() if key != "metadata"}
+        safe = {key: value for key, value in record.items() if key in top_level_allowlist}
+        source_url = safe.get("source_url")
+        if isinstance(source_url, str):
+            _, _ = _host_from_url(source_url, "source_url")
+            parts = urlsplit(source_url)
+            safe["source_url"] = urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
+            safe["source_url_query_removed"] = bool(parts.query or parts.fragment)
+
         metadata = record.get("metadata", {})
         if not isinstance(metadata, dict):
             raise ValueError("record metadata must be an object")
         safe_metadata = {}
+        redacted_fields = []
         for key, value in sorted(metadata.items()):
-            if isinstance(value, str) and key in _TEXT_FIELDS:
-                preview, report = _packet_text(value, f"metadata.{key}")
+            if key not in CHANNEL_FIELDS[platform] or key == "author_display_name":
+                continue
+            if key == "public_permalink" and isinstance(value, str):
+                _, _ = _host_from_url(value, "metadata.public_permalink")
+                parts = urlsplit(value)
+                value = urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
+                if parts.query or parts.fragment:
+                    redacted_fields.append(key + ":tracking_query_removed")
+            if isinstance(value, str):
+                preview, report = _packet_text(value, f"metadata.{key}", 5_000)
                 privacy_counts["records_scanned"] += 1
                 privacy_counts["findings"] += report["finding_count"]
-                privacy_counts["fields_redacted"] += bool(report["finding_count"])
+                privacy_counts["fields_redacted"] += int(bool(report["finding_count"]))
+                if report["finding_count"]:
+                    redacted_fields.append(key)
                 safe_metadata[key] = preview
-            else:
+            elif isinstance(value, list):
+                safe_values = []
+                for entry in value[:50]:
+                    if isinstance(entry, str):
+                        preview, report = _packet_text(entry, f"metadata.{key}", 200)
+                        privacy_counts["records_scanned"] += 1
+                        privacy_counts["findings"] += report["finding_count"]
+                        privacy_counts["fields_redacted"] += int(bool(report["finding_count"]))
+                        if report["finding_count"]:
+                            redacted_fields.append(key)
+                        safe_values.append(preview)
+                safe_metadata[key] = safe_values
+            elif isinstance(value, (int, float, bool)) or value is None:
                 safe_metadata[key] = value
         safe["metadata"] = safe_metadata
-        source_url = safe.get("source_url")
-        if isinstance(source_url, str):
-            host, _ = _host_from_url(source_url, "source_url")
-            parts = urlsplit(source_url)
-            safe["source_url"] = urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
-            safe["source_url_query_removed"] = bool(parts.query or parts.fragment)
+        safe["packet_redacted_fields"] = sorted(set(redacted_fields))
         safe_records.append(safe)
 
     safe_claims = []
@@ -1158,21 +1198,37 @@ def build_human_review_packet(
         source_id = _clean(item.get("source_id"), "claim source_id", 300)
         if source_id not in source_map or item.get("source_snapshot_sha256") != source_map[source_id]:
             raise ValueError("claim binding does not resolve to the current source snapshot")
-        claim_text, report = _packet_text(item.get("claim_text", ""), "claim_text")
+        raw_text = _clean(item.get("claim_text", ""), "claim_text", 20_000, empty=True)
+        claim_hash = _sha(item.get("claim_text_sha256"), "claim_text_sha256")
+        if hashlib.sha256(raw_text.encode("utf-8")).hexdigest() != claim_hash:
+            raise ValueError("claim text does not match its retained source hash")
+        claim_text, report = _packet_text(raw_text, "claim_text")
         privacy_counts["findings"] += report["finding_count"]
-        privacy_counts["fields_redacted"] += bool(report["finding_count"])
+        privacy_counts["fields_redacted"] += int(bool(report["finding_count"]))
+        start, end = item.get("start_char"), item.get("end_char")
+        if (
+            isinstance(start, bool) or not isinstance(start, int)
+            or isinstance(end, bool) or not isinstance(end, int)
+            or not 0 <= start < end
+        ):
+            raise ValueError("claim offsets must be positive integer spans")
+        cue_ids = item.get("transcript_cue_ids", [])
+        if not isinstance(cue_ids, list) or any(not isinstance(value, str) for value in cue_ids):
+            raise ValueError("transcript_cue_ids must be a list of strings")
         safe_claims.append({
             "claim_id": _clean(item.get("claim_id"), "claim_id", 100),
             "source_id": source_id,
             "source_snapshot_sha256": source_map[source_id],
-            "start_char": item.get("start_char"),
-            "end_char": item.get("end_char"),
+            "start_char": start,
+            "end_char": end,
             "claim_text": claim_text,
-            "claim_text_sha256": _sha(item.get("claim_text_sha256"), "claim_text_sha256"),
-            "transcript_cue_ids": sorted(item.get("transcript_cue_ids", [])),
+            "claim_text_sha256": claim_hash,
+            "claim_text_redacted_for_packet": bool(report["finding_count"]),
+            "transcript_cue_ids": sorted(set(cue_ids)),
             "language": item.get("language"),
             "verification_state": "unverified_candidate",
         })
+
     safe_cues = []
     for item in transcript_cues:
         if not isinstance(item, dict):
@@ -1180,19 +1236,32 @@ def build_human_review_packet(
         source_id = _clean(item.get("source_id"), "cue source_id", 300)
         if source_id not in source_map:
             raise ValueError("transcript cue source does not exist in this packet")
-        cue_text, report = _packet_text(item.get("text", ""), "cue text")
+        raw_text = _clean(item.get("text", ""), "cue text", 20_000)
+        cue_hash = _sha(item.get("text_sha256"), "cue text_sha256")
+        if hashlib.sha256(raw_text.encode("utf-8")).hexdigest() != cue_hash:
+            raise ValueError("transcript cue text does not match its retained hash")
+        cue_text, report = _packet_text(raw_text, "cue text")
         privacy_counts["findings"] += report["finding_count"]
-        privacy_counts["fields_redacted"] += bool(report["finding_count"])
+        privacy_counts["fields_redacted"] += int(bool(report["finding_count"]))
+        start_ms, end_ms = item.get("start_ms"), item.get("end_ms")
+        if (
+            isinstance(start_ms, bool) or not isinstance(start_ms, int)
+            or isinstance(end_ms, bool) or not isinstance(end_ms, int)
+            or start_ms < 0 or end_ms <= start_ms
+        ):
+            raise ValueError("transcript cue times must be valid non-negative millisecond spans")
         safe_cues.append({
             "source_id": source_id,
             "cue_id": _clean(item.get("cue_id"), "cue_id", 200),
-            "start_ms": item.get("start_ms"),
-            "end_ms": item.get("end_ms"),
+            "start_ms": start_ms,
+            "end_ms": end_ms,
             "text": cue_text,
-            "text_sha256": _sha(item.get("text_sha256"), "cue text_sha256"),
+            "text_sha256": cue_hash,
+            "text_redacted_for_packet": bool(report["finding_count"]),
             "start_char": item.get("start_char"),
             "end_char": item.get("end_char"),
         })
+
     safe_translations = []
     for item in translation_reviews:
         if not isinstance(item, dict):
@@ -1200,22 +1269,32 @@ def build_human_review_packet(
         record_id = _clean(item.get("record_id"), "translation record_id", 300)
         if record_id not in source_map:
             raise ValueError("translation review source does not exist in this packet")
-        original, original_report = _packet_text(item.get("original_text", ""), "original translation text")
-        translated, translated_report = _packet_text(item.get("translated_text", ""), "translated text")
+        raw_original = _clean(item.get("original_text", ""), "original translation text", 20_000)
+        raw_translated = _clean(item.get("translated_text", ""), "translated text", 20_000)
+        original_hash = _sha(item.get("original_sha256"), "original_sha256")
+        translated_hash = _sha(item.get("translated_sha256"), "translated_sha256")
+        if hashlib.sha256(raw_original.encode("utf-8")).hexdigest() != original_hash:
+            raise ValueError("original translation text does not match its retained hash")
+        if hashlib.sha256(raw_translated.encode("utf-8")).hexdigest() != translated_hash:
+            raise ValueError("translated text does not match its retained hash")
+        original, original_report = _packet_text(raw_original, "original translation text")
+        translated, translated_report = _packet_text(raw_translated, "translated text")
         privacy_counts["findings"] += original_report["finding_count"] + translated_report["finding_count"]
-        privacy_counts["fields_redacted"] += bool(original_report["finding_count"]) + bool(translated_report["finding_count"])
+        privacy_counts["fields_redacted"] += int(bool(original_report["finding_count"])) + int(bool(translated_report["finding_count"]))
         safe_translations.append({
             "record_id": record_id,
             "source_language": item.get("source_language"),
             "target_language": item.get("target_language"),
             "original_text": original,
             "translated_text": translated,
-            "original_sha256": _sha(item.get("original_sha256"), "original_sha256"),
-            "translated_sha256": _sha(item.get("translated_sha256"), "translated_sha256"),
+            "original_sha256": original_hash,
+            "translated_sha256": translated_hash,
+            "text_redacted_for_packet": bool(original_report["finding_count"] or translated_report["finding_count"]),
             "review_state": item.get("review_state"),
             "reviewer_attested": bool(item.get("reviewer_attested")),
             "translation_accuracy_established": False,
         })
+
     safe_languages = []
     for item in language_audits:
         if not isinstance(item, dict):
@@ -1223,14 +1302,23 @@ def build_human_review_packet(
         source_id = _clean(item.get("source_id"), "language audit source_id", 300)
         if source_id not in source_map:
             raise ValueError("language audit source does not exist in this packet")
+        script_counts = item.get("script_counts", {})
+        flags = item.get("flags", [])
+        if (
+            not isinstance(script_counts, dict)
+            or any(not isinstance(key, str) or isinstance(value, bool) or not isinstance(value, int) or value < 0 for key, value in script_counts.items())
+            or not isinstance(flags, list) or any(not isinstance(flag, str) for flag in flags)
+        ):
+            raise ValueError("language audit script counts or flags are invalid")
         safe_languages.append({
             "source_id": source_id,
             "declared_language": item.get("declared_language"),
             "status": item.get("status"),
-            "script_counts": item.get("script_counts", {}),
-            "flags": item.get("flags", []),
+            "script_counts": dict(sorted(script_counts.items())),
+            "flags": sorted(set(flags)),
             "language_identification_performed": False,
         })
+
     ledger = publisher_status_ledger or {
         "schema_version": SCHEMA_VERSION, "event_count": 0, "events": [], "head_sha256": "0" * 64,
     }
@@ -1239,14 +1327,62 @@ def build_human_review_packet(
     ledger_sources = {item.get("source_id") for item in ledger["events"]}
     if not ledger_sources.issubset(source_map):
         raise ValueError("publisher status ledger contains unknown source IDs")
-    safe_events = []
+    safe_events, packet_previous = [], "0" * 64
     for item in ledger["events"]:
         statement, report = _packet_text(item["publisher_statement"], "publisher statement", 2_000)
         privacy_counts["findings"] += report["finding_count"]
-        privacy_counts["fields_redacted"] += bool(report["finding_count"])
-        safe_events.append({**item, "publisher_statement": statement})
-    if review_queue is not None and not isinstance(review_queue, dict):
-        raise ValueError("review_queue must be an object or null")
+        privacy_counts["fields_redacted"] += int(bool(report["finding_count"]))
+        safe_event = {
+            key: value for key, value in item.items()
+            if key not in {"event_sha256", "chain_sha256", "publisher_statement"}
+        }
+        safe_event["publisher_statement"] = statement
+        safe_event["publisher_statement_redacted_for_packet"] = bool(report["finding_count"])
+        if isinstance(safe_event.get("publisher_reference_url"), str):
+            _, _ = _host_from_url(safe_event["publisher_reference_url"], "publisher reference URL")
+            parts = urlsplit(safe_event["publisher_reference_url"])
+            safe_event["publisher_reference_url"] = urlunsplit((parts.scheme, parts.netloc, parts.path, "", ""))
+        safe_event["source_event_sha256"] = item["event_sha256"]
+        safe_event["source_chain_sha256"] = item["chain_sha256"]
+        packet_event_hash = _digest(safe_event)
+        packet_chain_hash = _digest({
+            "previous_event_sha256": packet_previous,
+            "event_sha256": packet_event_hash,
+        })
+        safe_event["packet_event_sha256"] = packet_event_hash
+        safe_event["packet_chain_sha256"] = packet_chain_hash
+        safe_events.append(safe_event)
+        packet_previous = packet_chain_hash
+
+    safe_queue = None
+    if review_queue is not None:
+        if not isinstance(review_queue, dict) or not isinstance(review_queue.get("items", []), list):
+            raise ValueError("review_queue must contain an items list")
+        queue_items = review_queue.get("items", [])
+        if len(queue_items) > 500:
+            raise ValueError("review_queue exceeds 500 items")
+        safe_queue_items = []
+        for item in queue_items:
+            if not isinstance(item, dict):
+                raise ValueError("review queue entries must be objects")
+            record_id = _clean(item.get("record_id"), "review queue record_id", 300)
+            if record_id not in source_map:
+                raise ValueError("review queue contains an unknown source ID")
+            reasons = item.get("reason_codes", [])
+            if not isinstance(reasons, list) or any(not isinstance(reason, str) for reason in reasons):
+                raise ValueError("review queue reason_codes must be strings")
+            safe_queue_items.append({
+                "record_id": record_id,
+                "priority": _clean(item.get("priority", "unranked"), "review priority", 40),
+                "reason_codes": sorted(set(reasons)),
+                "claim_candidate_count": item.get("claim_candidate_count", 0),
+            })
+        safe_queue = {
+            "items": sorted(safe_queue_items, key=lambda item: (item["priority"], item["record_id"])),
+            "item_count": len(safe_queue_items),
+            "automatic_adjudication": False,
+        }
+
     payload = {
         "schema_version": SCHEMA_VERSION,
         "packet_type": "public_media_human_review",
@@ -1256,26 +1392,37 @@ def build_human_review_packet(
         "translation_reviews": sorted(safe_translations, key=lambda item: item["record_id"]),
         "language_audits": sorted(safe_languages, key=lambda item: item["source_id"]),
         "publisher_status_events": safe_events,
-        "review_queue": review_queue,
+        "source_ledger_head_sha256": ledger["head_sha256"],
+        "source_ledger_verified": True,
+        "packet_event_chain_head_sha256": packet_previous,
+        "review_queue": safe_queue,
         "privacy_screening": privacy_counts,
         "omissions": {
             "media_bytes": "not collected",
             "private_content": "not accessed",
             "raw_cursor_tokens": "not retained",
             "unapproved_fields": "not copied",
+            "author_display_names": "omitted from export",
         },
         "scientific_evidence_established": False,
         "automatic_adjudication": False,
+        "byte_budget": max_bytes,
+        "raw_media_included": False,
+        "private_content_accessed": False,
+        "deterministic_for_identical_inputs": True,
+        "canonical_bytes": 0,
     }
-    unsigned = dict(payload)
-    payload["manifest_sha256"] = _digest(unsigned)
-    payload["canonical_bytes"] = len(_canonical(payload))
+    payload["manifest_sha256"] = _digest({
+        key: value for key, value in payload.items()
+        if key not in {"manifest_sha256", "canonical_bytes"}
+    })
+    for _ in range(4):
+        measured = len(_canonical(payload))
+        if measured == payload["canonical_bytes"]:
+            break
+        payload["canonical_bytes"] = measured
     if payload["canonical_bytes"] > max_bytes:
         raise ValueError("review packet exceeds its configured serialized-byte budget")
-    payload["byte_budget"] = max_bytes
-    payload["raw_media_included"] = False
-    payload["private_content_accessed"] = False
-    payload["deterministic_for_identical_inputs"] = True
     return payload
 
 
