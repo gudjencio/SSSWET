@@ -473,7 +473,7 @@ def build_pagination_checkpoint_chain(pages: list[dict]) -> dict:
                 raise ValueError("pagination cursor loop detected")
             seen_cursors.add(cursor_hash)
         if next_hash is not None and next_hash in seen_cursors:
-            raise ValueError("pagination next cursor repeats an earlier cursor")
+            raise ValueError("pagination cursor loop detected: next cursor repeats an earlier cursor")
         item_ids = page.get("item_ids")
         if not isinstance(item_ids, list) or len(item_ids) > MAX_PAGE_ITEMS:
             raise ValueError("item_ids must be a list of at most 1000 IDs")
