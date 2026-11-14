@@ -110,3 +110,27 @@ From the repository root:
     python .github/scripts/benchmark_public_media_evidence_pipeline.py
 
 The CI benchmark runs three samples per workload, reports median and maximum latency, and enforces a five-second maximum per workload. It also reports feed acceptance, cursor-chain validity, claim/source coverage, publisher-ledger validity, privacy findings and serialized packet growth at 125 versus 250 records. These are synthetic fixture measurements, not production latency, real-world retrieval accuracy or model-intelligence evaluations.
+
+
+## CI measurement snapshot — 14 November 2026
+
+The first passing PR CI run used Python 3.12 on a GitHub-hosted runner. Each workload was measured three times. Values below are median wall-clock milliseconds; every observed maximum remained below the five-second per-workload ceiling.
+
+| Workload | Fixture size | Median |
+|---|---:|---:|
+| RSS import | 250 feed entries | 32.835 ms |
+| Adapter contract audit | 14 platform contracts | 0.435 ms |
+| Pagination chain and verification | 250 pages | 9.442 ms |
+| Language/script audit | 250 texts | 18.010 ms |
+| Headline/context audit | 250 title/body pairs | 57.631 ms |
+| Transcript parsing | 250 SRT cues | 3.319 ms |
+| Claim binding | 250 source records | 9.717 ms |
+| Publisher status ledger | 250 events | 3.566 ms |
+| Privacy scanning | 250 texts | 3.830 ms |
+| Human-review packet export | 250 records, 300 claims, 250 cues | 88.820 ms |
+
+The same synthetic run retained all 250 imported feed records, verified all 250 pagination pages, bound claims for all 250 source records, verified all 250 publisher status events and emitted a packet containing all 250 source records and 300 claim spans. No raw cursor or media bytes were included. The synthetic privacy fixture produced 250 findings without echoing matched values.
+
+Serialized review-packet size was 344,653 bytes for 125 records and 758,246 bytes for 250 records (2.20× observed growth for a 2× record count). This is canonical JSON export size, not heap or database usage. These fixture results demonstrate bounded processing and reference retention only; they do not establish real-world language accuracy, semantic retrieval quality, scientific truth or model intelligence.
+
+The complete core test suite passed **780 tests** on Python 3.11, 3.12 and 3.13 in that CI run. Four additional packet-reference/privacy regression tests were added after that run; their results are pending the next CI run.
