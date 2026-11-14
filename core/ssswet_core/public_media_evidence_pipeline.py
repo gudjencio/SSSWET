@@ -1310,10 +1310,26 @@ def build_human_review_packet(
             or not isinstance(flags, list) or any(not isinstance(flag, str) for flag in flags)
         ):
             raise ValueError("language audit script counts or flags are invalid")
+        declared_language = item.get("declared_language")
+        if declared_language is not None:
+            declared_language = _clean(declared_language, "declared language", 20).lower()
+            if not _LANGUAGE_TAG.fullmatch(declared_language):
+                raise ValueError("declared language must be a BCP-47-like tag")
+        status = _clean(item.get("status"), "language audit status", 60)
+        if status not in {
+            "declared_language_not_checked", "insufficient_script_evidence",
+            "language_not_declared", "script_compatible", "ambiguous_han_only_text",
+            "script_mismatch", "language_script_rule_unavailable", "mixed_script_review",
+        }:
+            raise ValueError("language audit status is unsupported")
+        if any(not re.fullmatch(r"[a-z0-9_]{1,80}", flag) for flag in flags):
+            raise ValueError("language audit flags must be reason-code tokens")
+        if any(not re.fullmatch(r"[a-z_]{1,40}", key) for key in script_counts):
+            raise ValueError("script count keys must be identifiers")
         safe_languages.append({
             "source_id": source_id,
-            "declared_language": item.get("declared_language"),
-            "status": item.get("status"),
+            "declared_language": declared_language,
+            "status": status,
             "script_counts": dict(sorted(script_counts.items())),
             "flags": sorted(set(flags)),
             "language_identification_performed": False,
@@ -1362,20 +1378,36 @@ def build_human_review_packet(
         if len(queue_items) > 500:
             raise ValueError("review_queue exceeds 500 items")
         safe_queue_items = []
+        seen_queue_ids = set()
         for item in queue_items:
             if not isinstance(item, dict):
                 raise ValueError("review queue entries must be objects")
             record_id = _clean(item.get("record_id"), "review queue record_id", 300)
             if record_id not in source_map:
                 raise ValueError("review queue contains an unknown source ID")
+            if record_id in seen_queue_ids:
+                raise ValueError("review queue source IDs must be unique")
+            seen_queue_ids.add(record_id)
             reasons = item.get("reason_codes", [])
-            if not isinstance(reasons, list) or any(not isinstance(reason, str) for reason in reasons):
-                raise ValueError("review queue reason_codes must be strings")
+            if not isinstance(reasons, list) or any(
+                not isinstance(reason, str) or not re.fullmatch(r"[a-z0-9_]{1,80}", reason)
+                for reason in reasons
+            ):
+                raise ValueError("review queue reason_codes must be reason-code tokens")
+            priority = _clean(item.get("priority", "unranked"), "review priority", 40)
+            if priority not in {"critical", "high", "medium", "low", "unranked"}:
+                raise ValueError("review priority is unsupported")
+            candidate_count = item.get("claim_candidate_count", 0)
+            if (
+                isinstance(candidate_count, bool) or not isinstance(candidate_count, int)
+                or not 0 <= candidate_count <= 200
+            ):
+                raise ValueError("claim_candidate_count must be between 0 and 200")
             safe_queue_items.append({
                 "record_id": record_id,
-                "priority": _clean(item.get("priority", "unranked"), "review priority", 40),
+                "priority": priority,
                 "reason_codes": sorted(set(reasons)),
-                "claim_candidate_count": item.get("claim_candidate_count", 0),
+                "claim_candidate_count": candidate_count,
             })
         safe_queue = {
             "items": sorted(safe_queue_items, key=lambda item: (item["priority"], item["record_id"])),
