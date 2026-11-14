@@ -5,6 +5,7 @@ import re
 from .assurance_common import text
 
 MAX_TEXT = 20_000
+SCHEMA_VERSION = 1
 _PATTERNS = [
     ("email", re.compile(r"(?i)(?<![\w.+-])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![\w.-])")),
     ("secret_like_value", re.compile(r"(?i)\b(?:api[_-]?key|access[_-]?token|secret|password)\s*[:=]\s*[\"']?([A-Za-z0-9_./+=-]{8,})")),
@@ -43,4 +44,4 @@ def scan_and_redact(text_value: str) -> dict:
         cursor = end
     output.append(original[cursor:])
     redacted = "".join(output)
-    return {"redacted_text": redacted, "original_sha256": hashlib.sha256(original.encode("utf-8")).hexdigest(), "redacted_sha256": hashlib.sha256(redacted.encode("utf-8")).hexdigest(), "finding_count": len(findings), "findings": findings, "matched_values_returned": False, "human_review_required": True, "publication_authorized": False, "scanner_is_privacy_guarantee": False}
+    return {"schema_version": SCHEMA_VERSION, "redacted_text": redacted, "original_sha256": hashlib.sha256(original.encode("utf-8")).hexdigest(), "redacted_sha256": hashlib.sha256(redacted.encode("utf-8")).hexdigest(), "finding_count": len(findings), "findings": findings, "matched_values_returned": False, "human_review_required": True, "publication_authorized": False, "scanner_is_privacy_guarantee": False}
