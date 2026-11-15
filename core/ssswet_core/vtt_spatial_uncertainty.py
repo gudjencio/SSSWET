@@ -1,9 +1,9 @@
-"""Conservative 2D point-covariance propagation for Virtual Time Mapping.
+"""First-order 2D point-covariance propagation for Virtual Time Mapping.
 
-The rotation is treated as exact. transform_covariance is the covariance
-of translation only, expressed in the target frame. Point and translation
-errors are assumed independent; rotation-parameter uncertainty and
-cross-covariance are not represented.
+The legacy schema-v1 path treats rotation as exact. The opt-in schema-v2
+path accepts a declared scalar angle variance and adds its first-order
+small-angle contribution. Point, rotation and translation errors are assumed
+independent; cross-covariances are not represented.
 """
 from __future__ import annotations
 
@@ -12,6 +12,8 @@ from typing import Any
 
 CHI_SQUARE_2D_95 = 5.991464547107979
 MAX_ABSOLUTE_INPUT = 1e100
+MAX_ROTATION_STD_RADIANS = 0.25
+MAX_ROTATION_VARIANCE_RADIANS2 = MAX_ROTATION_STD_RADIANS ** 2
 _MATRIX_TOLERANCE = 1e-9
 _PSD_RELATIVE_TOLERANCE = 1e-12
 
@@ -61,6 +63,20 @@ def _rotation(value: Any) -> list[list[float]]:
     ):
         raise ValueError("rotation_matrix must be a proper orthonormal 2D rotation")
     return matrix
+
+
+def _rotation_variance(value: Any) -> float | None:
+    if value is None:
+        return None
+    variance = _number(value, "rotation_variance_radians2")
+    if variance < 0.0:
+        raise ValueError("rotation_variance_radians2 must be non-negative")
+    if variance > MAX_ROTATION_VARIANCE_RADIANS2:
+        raise ValueError(
+            "rotation_variance_radians2 exceeds the supported first-order "
+            f"small-angle limit ({MAX_ROTATION_STD_RADIANS} rad standard deviation)"
+        )
+    return variance
 
 
 def _project_covariance(value: Any, field: str) -> list[list[float]]:
@@ -118,16 +134,28 @@ def transform_point_with_covariance(
     transform_covariance: list[list[float]] | tuple[tuple[float, float], tuple[float, float]],
     *,
     coordinate_unit: str,
+    rotation_variance_radians2: float | None = None,
 ) -> dict:
     """Transform a 2D point and propagate its declared covariance.
 
-    point_covariance is expressed in the source frame. The rotation is
-    treated as exact and pushes it into the target frame as R C R^T.
-    transform_covariance is translation-only covariance in the target
-    frame. It is added under an explicit independence assumption.
+    point_covariance is expressed in the source frame. The nominal rotation
+    pushes it into the target frame as R C R^T. transform_covariance is
+    translation-only covariance in the target frame.
+
+    When rotation_variance_radians2 is omitted, the original schema-v1
+    exact-rotation behaviour and output are preserved. When supplied, it is
+    the declared variance of a zero-mean scalar angle perturbation (radians²)
+    around rotation_matrix. A first-order delta-method term J Var(theta) J^T
+    is added, where J = d(R(theta) x)/d(theta) at the nominal angle.
+
+    The optional rotation model assumes small-angle, zero-mean Gaussian
+    rotation error independent of point and translation errors. It omits
+    cross-covariances and higher-order terms. The standard deviation is
+    bounded to 0.25 radians as a conservative linearization-domain guard,
+    not as an empirical accuracy threshold.
 
     The reported 95% ellipse is conditional on a bivariate-Gaussian error
-    interpretation. It is not an absolute error bound or a calibrated GPS
+    interpretation. It is not an absolute error bound or calibrated GPS
     confidence region.
     """
     if not isinstance(coordinate_unit, str) or not coordinate_unit.strip() or len(coordinate_unit.strip()) > 32:
@@ -137,6 +165,7 @@ def transform_point_with_covariance(
     rotation = _rotation(rotation_matrix)
     point_cov = _project_covariance(point_covariance, "point_covariance")
     translation_cov = _project_covariance(transform_covariance, "transform_covariance")
+    rotation_variance = _rotation_variance(rotation_variance_radians2)
 
     r00, r01 = rotation[0]
     r10, r11 = rotation[1]
@@ -157,11 +186,38 @@ def transform_point_with_covariance(
     rotated01a = rc00 * r10 + rc01 * r11
     rotated01b = rc10 * r00 + rc11 * r01
     rotated11 = rc10 * r10 + rc11 * r11
+    rotated01 = (rotated01a + rotated01b) / 2.0
 
-    covariance = [
-        [rotated00 + translation_cov[0][0], (rotated01a + rotated01b) / 2.0 + translation_cov[0][1]],
-        [(rotated01a + rotated01b) / 2.0 + translation_cov[1][0], rotated11 + translation_cov[1][1]],
-    ]
+    rotation_jacobian = None
+    rotation_uncertainty_covariance = None
+    if rotation_variance is not None:
+        # For R = [[cos(theta), -sin(theta)], [sin(theta), cos(theta)]]:
+        # d(Rx)/d(theta) = [r01*x - r00*y, r00*x + r01*y].
+        jx = r01 * x - r00 * y
+        jy = r00 * x + r01 * y
+        rotation_jacobian = [jx, jy]
+        rotation_uncertainty_covariance = [
+            [rotation_variance * jx * jx, rotation_variance * jx * jy],
+            [rotation_variance * jx * jy, rotation_variance * jy * jy],
+        ]
+
+    if rotation_uncertainty_covariance is None:
+        # Preserve the exact legacy arithmetic for schema-v1 callers.
+        covariance = [
+            [rotated00 + translation_cov[0][0], rotated01 + translation_cov[0][1]],
+            [rotated01 + translation_cov[1][0], rotated11 + translation_cov[1][1]],
+        ]
+    else:
+        covariance = [
+            [
+                rotated00 + translation_cov[0][0] + rotation_uncertainty_covariance[0][0],
+                rotated01 + translation_cov[0][1] + rotation_uncertainty_covariance[0][1],
+            ],
+            [
+                rotated01 + translation_cov[1][0] + rotation_uncertainty_covariance[1][0],
+                rotated11 + translation_cov[1][1] + rotation_uncertainty_covariance[1][1],
+            ],
+        ]
     covariance = _project_covariance(covariance, "propagated covariance")
     if not all(isfinite(item) and abs(item) <= MAX_ABSOLUTE_INPUT for row in covariance for item in row):
         raise ValueError("propagated covariance exceeds finite numeric range")
@@ -172,15 +228,15 @@ def transform_point_with_covariance(
     if not all(isfinite(item) for item in (major_axis, minor_axis, orientation)):
         raise ValueError("uncertainty ellipse exceeds finite numeric range")
 
-    return {
+    result = {
         "schema_version": 1,
         "method": "linear_point_covariance_pushforward_plus_translation_covariance",
         "coordinate_unit": coordinate_unit.strip(),
         "transformed_point": [transformed_x, transformed_y],
         "covariance": covariance,
         "point_covariance_after_rotation": [
-            [rotated00, (rotated01a + rotated01b) / 2.0],
-            [(rotated01a + rotated01b) / 2.0, rotated11],
+            [rotated00, rotated01],
+            [rotated01, rotated11],
         ],
         "translation_covariance": translation_cov,
         "covariance_eigenvalues": {
@@ -208,3 +264,37 @@ def transform_point_with_covariance(
         "unrecorded_locations_inferred": False,
         "historical_or_future_reality_recovered": False,
     }
+
+    if rotation_variance is not None:
+        rotation_is_exact = rotation_variance == 0.0
+        result.update({
+            "schema_version": 2,
+            "method": "first_order_point_rotation_translation_covariance_propagation",
+            "rotation_variance_radians2": rotation_variance,
+            "rotation_standard_deviation_radians": sqrt(rotation_variance),
+            "rotation_standard_deviation_limit_radians": MAX_ROTATION_STD_RADIANS,
+            "rotation_jacobian_target_units_per_radian": rotation_jacobian,
+            "rotation_uncertainty_covariance": rotation_uncertainty_covariance,
+            "confidence_region_assumption": (
+                "Nominal 95% contour conditional on bivariate-Gaussian errors, "
+                "first-order small-angle rotation propagation, and mutual "
+                "independence of point, rotation and translation errors."
+                if not rotation_is_exact else
+                "Nominal 95% contour conditional on bivariate-Gaussian point "
+                "and translation errors; the declared rotation variance is zero."
+            ),
+            "assumptions": {
+                "rotation_treated_as_exact": rotation_is_exact,
+                "transform_covariance_is_translation_only": True,
+                "point_and_translation_errors_assumed_independent": True,
+                "rotation_parameter_uncertainty_included": True,
+                "rotation_parameter_error_assumed_independent": True,
+                "rotation_linearization": (
+                    "not_required_zero_declared_variance"
+                    if rotation_is_exact else "first_order_small_angle_delta_method"
+                ),
+                "cross_covariance_modelled": False,
+            },
+        })
+
+    return result
