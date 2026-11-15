@@ -275,11 +275,26 @@ The utility performs no geographic CRS conversion, camera-pose estimation, 3D re
 
 ## 2D spatial covariance propagation
 
-The core utility ssswet_core.vtt_spatial_uncertainty propagates a declared
-point covariance through a fixed proper 2D rotation and translation. It
-treats transform covariance as translation-only, assumes point and
-translation errors are independent, and excludes rotation-parameter
-uncertainty. Its nominal 95-percent ellipse is conditional on a
-bivariate-Gaussian error model. It performs no CRS conversion or geographic
-reconstruction. See the [spatial covariance methodology and regression
+The core utility `ssswet_core.vtt_spatial_uncertainty` propagates a declared
+point covariance through a fixed proper 2D rotation and translation. The
+legacy call (schema v1) treats rotation as exact and adds only the declared
+translation covariance, assuming independent point and translation errors.
+
+An opt-in schema-v2 call accepts `rotation_variance_radians2`, a caller-
+declared variance for a zero-mean scalar angular perturbation around the
+nominal rotation. It adds the first-order delta-method term
+`J Var(theta) J^T`, where `J = d(R(theta)x)/d(theta)`. This optional path
+assumes small-angle Gaussian rotation error independent of point and
+translation errors. It omits higher-order terms and cross-covariances and
+rejects angular standard deviations above 0.25 radians; that limit is an
+implementation guard, not an empirical accuracy threshold. Omitting the
+argument preserves the schema-v1 result, while explicitly declaring zero
+variance produces a schema-v2 record that distinguishes declared zero from
+missing information.
+
+The nominal 95-percent ellipse is conditional on the applicable
+bivariate-Gaussian and independence assumptions. Neither schema performs
+CRS/datum conversion, estimates a transform or rotation variance, validates
+the supplied covariance, establishes survey accuracy, or reconstructs
+unrecorded geography. See the [spatial covariance methodology and regression
 criteria](VTT_SPATIAL_UNCERTAINTY.md) before interpreting its output.
