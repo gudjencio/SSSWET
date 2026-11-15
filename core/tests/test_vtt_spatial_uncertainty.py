@@ -134,7 +134,10 @@ def test_rotation_variance_is_combined_with_point_and_translation_covariance():
     assert result["transformed_point"] == [10.0, 21.0]
     assert result["rotation_jacobian_target_units_per_radian"] == [-1.0, 0.0]
     assert result["rotation_uncertainty_covariance"] == [[0.01, 0.0], [0.0, 0.0]]
-    assert result["covariance"] == [[1.01, 0.0], [0.0, 1.0]]
+    assert result["covariance"][0][0] == pytest.approx(1.01)
+    assert result["covariance"][0][1] == pytest.approx(0.0)
+    assert result["covariance"][1][0] == pytest.approx(0.0)
+    assert result["covariance"][1][1] == pytest.approx(1.0)
 
 
 def test_explicit_zero_rotation_variance_uses_schema_v2_without_changing_covariance():
