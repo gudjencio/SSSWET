@@ -1,1 +1,12 @@
 *{box-sizing:border-box}body{margin:0;background:#050505;color:#eee;font:14px/1.5 Inter,system-ui,sans-serif}.shell{width:min(900px,100%);margin:auto;padding:28px 18px 60px}header,.heading{display:flex;align-items:center;justify-content:space-between;gap:16px}header{margin-bottom:35px;color:#999;font-size:11px;letter-spacing:.14em}header a{color:#fff;text-decoration:none;font-weight:900;font-size:18px}.panel{border:1px solid #292929;background:#0c0c0c;border-radius:18px;padding:22px;margin:16px 0}h1{font-size:25px;margin:0 0 8px}h2{font-size:16px;margin:25px 0 10px}p{color:#999}label{display:grid;gap:6px;margin:12px 0;color:#aaa;font-size:12px}input,select{width:100%;background:#111;color:#fff;border:1px solid #383838;border-radius:9px;padding:11px;font:inherit}button{background:#eee;color:#080808;border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer}button:hover{opacity:.88}.secondary{background:#222;color:#eee}.orders{display:grid;gap:9px;margin-top:18px}.order-card{display:grid;gap:5px;text-align:left;background:#121212;color:#eee;border:1px solid #303030}.order-card span{font-size:12px;color:#aaa}.actions{border-top:1px solid #292929;margin-top:22px;padding-top:10px}form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}form button{grid-column:1/-1}ol{color:#aaa;padding-left:22px}li{padding:4px 0;overflow-wrap:anywhere}footer{text-align:center;color:#777;font-size:11px;margin-top:25px}[hidden]{display:none!important}@media(max-width:560px){.panel{padding:16px}form{grid-template-columns:1fr}.heading{align-items:flex-start}h1{font-size:21px}}
+
+
+/* Keep keyboard focus clearly visible in the standalone administration page. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #f6d365;
+  outline-offset: 3px;
+}

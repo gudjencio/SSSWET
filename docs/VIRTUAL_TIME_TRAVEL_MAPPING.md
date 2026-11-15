@@ -272,3 +272,14 @@ The Python core now includes a separate hold-out validation utility. It applies 
 This is a screening check, not a general accuracy guarantee. At least three hold-out landmarks are required only to meet the utility's minimum screening-count flag; that count does not establish spatial coverage or statistical generalization. Distinct identifiers do not prove independent surveying. See [the dedicated local-frame validation guide](VTT_LOCAL_FRAME_VALIDATION.md) for the API, uncertainty semantics, limits and regression criteria.
 
 The utility performs no geographic CRS conversion, camera-pose estimation, 3D reconstruction, missing-location inference or historical/future recovery. It does not access browser storage or request camera, microphone or location permissions.
+
+## 2D spatial covariance propagation
+
+The core utility ssswet_core.vtt_spatial_uncertainty propagates a declared
+point covariance through a fixed proper 2D rotation and translation. It
+treats transform covariance as translation-only, assumes point and
+translation errors are independent, and excludes rotation-parameter
+uncertainty. Its nominal 95-percent ellipse is conditional on a
+bivariate-Gaussian error model. It performs no CRS conversion or geographic
+reconstruction. See the [spatial covariance methodology and regression
+criteria](VTT_SPATIAL_UNCERTAINTY.md) before interpreting its output.

@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 import pytest
 
+from ssswet_core.assurance_common import finite_number
+
 from ssswet_core.agent_handoff_contract import build_handoff, validate_handoff
 from ssswet_core.research_memory_snapshot import build_memory_snapshot, compare_memory_snapshots, retrieve_memory, verify_memory_snapshot
 from ssswet_core.media_source_lineage import analyze_source_lineage
@@ -231,6 +233,7 @@ def test_rescue_route_redundancy_finds_edge_disjoint_paths_and_unknown_cut_edges
     assert result["blocked_segment_ids"] == ["f"]
     assert result["unknown_segments_treated_as_open"] is False
     assert result["route_generated"] is False
+    assert result["directionality_assumption"] == "undirected_segments"
     bottleneck = analyze_route_redundancy([
         {"segment_id": "a", "from_node": "S", "to_node": "A", "status": "open"},
         {"segment_id": "b", "from_node": "A", "to_node": "T", "status": "open"},
@@ -289,3 +292,17 @@ def test_source_coverage_audit_reports_concentration_and_caller_defined_sampling
     with pytest.raises(ValueError, match="at most"):
         audit_source_coverage([{"source_id": str(i)} for i in range(5001)])
 
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf"), 10**1000])
+def test_finite_number_rejects_nonfinite_and_unrepresentable_values(value):
+    with pytest.raises(ValueError, match="finite number"):
+        finite_number(value, "value")
+
+
+@pytest.mark.parametrize("age_limit", [float("nan"), float("inf"), float("-inf"), 10**1000])
+def test_temporal_window_rejects_nonfinite_and_unrepresentable_age_limits(age_limit):
+    with pytest.raises(ValueError, match="finite number"):
+        audit_temporal_window(
+            [], now="2026-11-14T00:00:00Z", maximum_age_days=age_limit
+        )
