@@ -148,7 +148,7 @@ sensitive coordinate records in their existing local/private storage.
 
 The dedicated tests require:
 
-1. All seven existing schema-v1 behaviours to remain unchanged.
+1. All existing schema-v1 regression cases to remain unchanged.
 2. An analytic identity-rotation fixture to produce the exact expected
    first-order angular covariance.
 3. Rotation uncertainty to combine additively with declared point and
