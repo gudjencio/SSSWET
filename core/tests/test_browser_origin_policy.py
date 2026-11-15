@@ -178,3 +178,52 @@ def test_malformed_or_shared_origins_are_rejected_for_writes(tmp_path, origin):
     handler = make_handler(SSSWETEngine(store=store), store)
     local = SimpleNamespace(client_address=("127.0.0.1", 45678))
     assert not handler._public_browser_origin_allowed(local, origin)
+
+
+def test_private_admin_accepts_ipv6_loopback_host_header(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "ipv6-admin.sqlite3")
+    handler = make_handler(
+        SSSWETEngine(store=store), store, admin_token="test-admin-token"
+    )
+    ipv6_local = SimpleNamespace(
+        client_address=("::1", 45678),
+        headers={
+            "Host": "[::1]:8765",
+            "X-SSSWET-Admin-Token": "test-admin-token",
+        },
+    )
+    assert handler._private_admin_allowed(ipv6_local)
+
+    remote = SimpleNamespace(
+        client_address=("203.0.113.10", 45678),
+        headers={
+            "Host": "[::1]:8765",
+            "X-SSSWET-Admin-Token": "test-admin-token",
+        },
+    )
+    assert not handler._private_admin_allowed(remote)
+
+    malformed = SimpleNamespace(
+        client_address=("::1", 45678),
+        headers={
+            "Host": "[::1]:99999",
+            "X-SSSWET-Admin-Token": "test-admin-token",
+        },
+    )
+    assert not handler._private_admin_allowed(malformed)
+
+
+
+def test_private_admin_rejects_host_header_with_path(tmp_path):
+    store = SQLiteResearchStore(tmp_path / "host-path-admin.sqlite3")
+    handler = make_handler(
+        SSSWETEngine(store=store), store, admin_token="test-admin-token"
+    )
+    malformed = SimpleNamespace(
+        client_address=("127.0.0.1", 45678),
+        headers={
+            "Host": "localhost/private",
+            "X-SSSWET-Admin-Token": "test-admin-token",
+        },
+    )
+    assert not handler._private_admin_allowed(malformed)
