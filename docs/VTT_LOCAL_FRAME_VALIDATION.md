@@ -35,7 +35,9 @@ check_points = [
     {"landmark_id": "check-3", "source": [-1, 2], "target": [8, 19],
      "source_uncertainty": 0.02, "target_uncertainty": 0.03},
 ]
-report = validate_local_frame_alignment(alignment, check_points)
+report = validate_local_frame_alignment(
+    alignment, check_points, fit_landmarks=fit_points,
+)
 print(report["validation_status"])
 print(report["rms_residual"], report["maximum_residual"])
 ```
@@ -77,5 +79,47 @@ The dedicated tests require:
 6. Changed coordinates to change the validation-input fingerprint.
 7. Inconsistent matrices, non-finite values, negative uncertainty and oversized inputs to be rejected.
 8. Output to explicitly deny CRS conversion, missing-location inference and historical/future recovery.
+9. Equivalent fit-landmark orderings to produce the same fit-input fingerprint; changed fit inputs to be rejected.
+10. Hold-out points to be classified against source and target convex hulls without refitting.
+11. Collinear or numerically degenerate fit geometry to be reported as insufficient 2D support, never as inside or outside.
+12. Legacy alignment records without a fit-input fingerprint to remain usable for residual checks while reporting spatial support as not assessed.
 
 The tests use synthetic coordinates and do not measure real-world survey accuracy.
+
+
+## Spatial support screening against fitted-landmark hulls
+
+The current alignment utility adds a deterministic `fit_input_sha256` fingerprint
+covering the exact normalized fit-landmark IDs, source and target coordinates,
+declared source/target absolute bounds, source references, frame IDs and
+coordinate-unit label. This allows the validator to verify that the fit
+landmarks supplied for spatial-support screening are exactly those used by
+the fitted alignment. Reordered equivalent inputs retain the same digest;
+changed coordinates, bounds, references or IDs do not.
+
+Pass the original fit-landmark list using the keyword-only
+`fit_landmarks=fit_points` argument. The validator then constructs separate
+two-dimensional convex hulls in the source and target frames and classifies
+each hold-out point as `inside_fit_hull`, `boundary_fit_hull`,
+`outside_fit_hull`, or `insufficient_2d_fit_hull`. Source and target
+classifications are retained separately because a hold-out pair can have
+different support status in the two frames. The combined status is
+`within_fit_hulls`, `outside_fit_hull`, or `insufficient_2d_fit_hull`.
+
+The hull calculation normalizes each fit set to its own bounding-box scale.
+A normalized hull area at or below 1e-12, fewer than three hull vertices, or
+collinear fit geometry is reported as `insufficient_2d_fit_hull`; it is not
+silently treated as a valid two-dimensional support region. The numerical
+tolerance is a computational screening rule, not a geodetic accuracy
+threshold. A point outside a fit hull is outside the convex spatial support
+of the supplied fit landmarks in that frame. This is a geometric
+interpolation/extrapolation diagnostic only: it does not prove that a
+transformation generalizes inside the hull, and it does not estimate error
+outside the hull.
+
+For legacy alignment records without `fit_input_sha256`, spatial support
+remains `not_assessed`. Supplying fit landmarks to such a record fails
+closed rather than assuming that they match. The optional argument does not
+change the existing residual calculations, refit the transformation, or
+modify the input alignment. No coordinates are sent to a service; callers
+remain responsible for keeping sensitive landmarks in local/private storage.
