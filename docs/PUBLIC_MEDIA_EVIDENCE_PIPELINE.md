@@ -28,7 +28,7 @@ This extension builds on the public-media workbench introduced in the 14 Novembe
     )
     print(result["accepted_count"], result["rejected_entries"])
 
-The approved host list is exact. A lookalike subdomain, HTTP URL, IP literal, embedded credential or non-standard port is not accepted. The parser does not resolve redirects or follow links.
+The approved host list is exact: `www.example.com` and `example.com` are distinct hostnames and must be allowlisted separately. A lookalike subdomain, HTTP URL, IP literal, embedded credential or non-standard port is not accepted. The parser does not resolve redirects or follow links.
 
 ## Example: preserve transcript and claim provenance
 
