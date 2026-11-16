@@ -120,7 +120,7 @@ def _host_from_url(value: object, field: str) -> tuple[str, str]:
     else:
         raise ValueError(f"{field} must not use an IP-literal host")
     try:
-        host = raw_host.encode("idna").decode("ascii").removeprefix("www.")
+        host = raw_host.encode("idna").decode("ascii")
     except UnicodeError as exc:
         raise ValueError(f"{field} has an invalid hostname") from exc
     return host, url
@@ -141,7 +141,7 @@ def _approved_hosts(values: list[str] | tuple[str, ...]) -> set[str]:
         else:
             raise ValueError("approved_hosts must not contain IP literals")
         try:
-            host = host.encode("idna").decode("ascii").removeprefix("www.")
+            host = host.encode("idna").decode("ascii")
         except UnicodeError as exc:
             raise ValueError("approved host is not valid IDNA") from exc
         if "." not in host:
