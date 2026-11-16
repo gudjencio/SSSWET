@@ -115,6 +115,17 @@ def test_feed_rejects_unapproved_or_unsafe_item_links(link):
     assert result["rejected_count"] == 1
 
 
+@pytest.mark.parametrize(("approved_hosts", "link"), [
+    (["forum.example"], "https://www.forum.example/post/1"),
+    (["www.forum.example"], "https://forum.example/post/1"),
+])
+def test_feed_host_allowlist_requires_exact_hostname(approved_hosts, link):
+    result = parse_public_feed(rss_feed(link), captured_at=CAPTURED, approved_hosts=approved_hosts)
+    assert result["accepted_count"] == 0
+    assert result["rejected_count"] == 1
+    assert result["rejected_entries"][0]["reason"] == "item_host_not_allowlisted"
+
+
 def test_feed_missing_link_is_reported_without_silent_loss():
     result = parse_public_feed(rss_feed(""), captured_at=CAPTURED, approved_hosts=HOSTS)
     assert result["rejected_entries"][0]["reason"] == "item_link_missing"
