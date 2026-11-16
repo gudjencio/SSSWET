@@ -267,9 +267,11 @@ The digest is deterministic regardless of IndexedDB cursor order. Its regression
 
 ## Independent local-frame validation
 
-The Python core now includes a separate hold-out validation utility. It applies an already-fitted 2D rigid local-frame transform to distinct validation landmark IDs without refitting. The report includes per-check residuals, RMS and maximum residuals, declared-bound comparisons, and deterministic fingerprints for the transform and validation inputs.
+The Python core includes a separate hold-out validation utility. It applies an already-fitted 2D rigid local-frame transform to distinct validation landmark IDs without refitting. The report includes per-check residuals, RMS and maximum residuals, declared-bound comparisons, and deterministic fingerprints for the transform, fit inputs and validation inputs.
 
-This is a screening check, not a general accuracy guarantee. At least three hold-out landmarks are required only to meet the utility's minimum screening-count flag; that count does not establish spatial coverage or statistical generalization. Distinct identifiers do not prove independent surveying. See [the dedicated local-frame validation guide](VTT_LOCAL_FRAME_VALIDATION.md) for the API, uncertainty semantics, limits and regression criteria.
+When the original fit-landmark list is supplied again, the validator verifies its canonical fit-input fingerprint and screens hold-out positions against separate source- and target-frame convex hulls. Points outside those hulls are flagged as outside the supplied fit-point support; collinear or numerically degenerate fit geometry is reported as insufficient two-dimensional support. This is a geometric support diagnostic, not a guarantee of accuracy inside the hull or an estimate of error outside it. Legacy alignments without a fit-input fingerprint remain usable for residual checks, but their spatial support is reported as not assessed.
+
+This is a screening check, not a general accuracy guarantee. At least three hold-out landmarks are required only to meet the utility's minimum screening-count flag; that count does not establish measurement independence or statistical generalization. Distinct identifiers do not prove independent surveying. See [the dedicated local-frame validation guide](VTT_LOCAL_FRAME_VALIDATION.md) for the API, uncertainty semantics, limits and regression criteria.
 
 The utility performs no geographic CRS conversion, camera-pose estimation, 3D reconstruction, missing-location inference or historical/future recovery. It does not access browser storage or request camera, microphone or location permissions.
 

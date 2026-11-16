@@ -1,6 +1,8 @@
 """Local planar landmark alignment for Virtual Time Mapping."""
 from __future__ import annotations
 
+import hashlib
+import json
 from math import atan2, cos, hypot, isfinite, sin, sqrt
 from typing import Any
 
@@ -23,6 +25,14 @@ def _point(value: Any, field: str) -> tuple[float, float]:
     if not isinstance(value, (list, tuple)) or len(value) != 2:
         raise ValueError(f"{field} must contain exactly two coordinates")
     return _number(value[0], field), _number(value[1], field)
+
+
+def _canonical_digest(payload: dict[str, Any]) -> str:
+    encoded = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True,
+        separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 def fit_local_frame_alignment(
@@ -73,6 +83,8 @@ def fit_local_frame_alignment(
             raise ValueError("combined declared uncertainty bound exceeds finite numeric range")
         normalized.append({
             "landmark_id": landmark_id, "source": source, "target": target,
+            "source_uncertainty": source_bound,
+            "target_uncertainty": target_bound,
             "declared_bound": combined_bound,
             "source_ref": source_ref,
         })
@@ -113,6 +125,24 @@ def fit_local_frame_alignment(
         residual_values.append(residual)
     rms = hypot(*residual_values) / sqrt(len(residual_values))
     maximum = max((item["residual"] for item in residuals), default=0.0)
+    fit_input_payload = {
+        "schema_version": 1,
+        "source_frame_id": source_frame_id,
+        "target_frame_id": target_frame_id,
+        "coordinate_unit": coordinate_unit,
+        "landmarks": [
+            {
+                "landmark_id": item["landmark_id"],
+                "source": item["source"],
+                "target": item["target"],
+                "source_uncertainty": item["source_uncertainty"],
+                "target_uncertainty": item["target_uncertainty"],
+                "source_ref": item["source_ref"],
+            }
+            for item in sorted(normalized, key=lambda row: row["landmark_id"])
+        ],
+    }
+    fit_input_sha256 = _canonical_digest(fit_input_payload)
     return {
         "schema_version": 1,
         "source_frame_id": source_frame_id.strip(),
@@ -123,6 +153,7 @@ def fit_local_frame_alignment(
             "matrix": [[c, -s, tx], [s, c, ty], [0.0, 0.0, 1.0]],
         },
         "landmark_count": len(normalized),
+        "fit_input_sha256": fit_input_sha256,
         "residuals": residuals,
         "rms_residual": rms,
         "maximum_residual": maximum,
