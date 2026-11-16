@@ -170,15 +170,16 @@ def test_spatial_support_classifies_inside_boundary_and_outside_fit_hulls():
     assert report["fit_landmark_input_verified"] is True
     assert report["spatial_support_assessed"] is True
     assert report["fit_input_sha256"] == alignment["fit_input_sha256"]
-    assert [row["source_spatial_support"] for row in report["residuals"]] == [
-        "inside_fit_hull", "boundary_fit_hull", "outside_fit_hull",
-    ]
-    assert [row["target_spatial_support"] for row in report["residuals"]] == [
-        "inside_fit_hull", "boundary_fit_hull", "outside_fit_hull",
-    ]
-    assert [row["spatial_support_status"] for row in report["residuals"]] == [
-        "within_fit_hulls", "within_fit_hulls", "outside_fit_hull",
-    ]
+    support_by_id = {row["landmark_id"]: row for row in report["residuals"]}
+    assert support_by_id["inside"]["source_spatial_support"] == "inside_fit_hull"
+    assert support_by_id["boundary"]["source_spatial_support"] == "boundary_fit_hull"
+    assert support_by_id["outside"]["source_spatial_support"] == "outside_fit_hull"
+    assert support_by_id["inside"]["target_spatial_support"] == "inside_fit_hull"
+    assert support_by_id["boundary"]["target_spatial_support"] == "boundary_fit_hull"
+    assert support_by_id["outside"]["target_spatial_support"] == "outside_fit_hull"
+    assert support_by_id["inside"]["spatial_support_status"] == "within_fit_hulls"
+    assert support_by_id["boundary"]["spatial_support_status"] == "within_fit_hulls"
+    assert support_by_id["outside"]["spatial_support_status"] == "outside_fit_hull"
     assert report["within_fit_hulls_count"] == 2
     assert report["outside_fit_hull_count"] == 1
     assert report["indeterminate_spatial_support_count"] == 0
@@ -196,10 +197,11 @@ def test_spatial_support_requires_exact_fitted_input_digest_and_identifiers():
         "landmark_id": "check-one", "source": [1, 1], "target": [11, 21],
         "source_uncertainty": 0.01, "target_uncertainty": 0.01,
     }]
-    changed = deepcopy(fit)
-    changed[0]["source"] = [-1, 0]
-    with pytest.raises(ValueError, match="digest"):
-        validate_local_frame_alignment(alignment, checks, fit_landmarks=changed)
+    for field, value in (("source", [-1, 0]), ("source_uncertainty", 0.5), ("source_ref", "changed-ref")):
+        changed = deepcopy(fit)
+        changed[0][field] = value
+        with pytest.raises(ValueError, match="digest"):
+            validate_local_frame_alignment(alignment, checks, fit_landmarks=changed)
     wrong_ids = deepcopy(fit)
     wrong_ids[0]["landmark_id"] = "other-fit"
     with pytest.raises(ValueError, match="exactly match"):
@@ -249,3 +251,29 @@ def test_fit_input_fingerprint_is_order_independent_and_legacy_alignment_is_not_
     assert report["spatial_support_assessed"] is False
     assert report["not_assessed_spatial_support_count"] == 1
     assert report["residuals"][0]["spatial_support_status"] == "not_assessed"
+
+    legacy_alignment = deepcopy(alignment)
+    legacy_alignment.pop("fit_input_sha256")
+    legacy_report = validate_local_frame_alignment(legacy_alignment, checks)
+    assert legacy_report["spatial_support_assessed"] is False
+    with pytest.raises(ValueError, match="does not bind"):
+        validate_local_frame_alignment(legacy_alignment, checks, fit_landmarks=fit)
+
+
+
+def test_source_and_target_hull_support_are_reported_independently():
+    fit = support_fit_landmarks()
+    alignment = fit_local_frame_alignment(
+        fit, source_frame_id="local-a", target_frame_id="local-b",
+        coordinate_unit="m",
+    )
+    checks = [{
+        "landmark_id": "mixed-support", "source": [1, 1], "target": [20, 20],
+        "source_uncertainty": 0.01, "target_uncertainty": 0.01,
+    }]
+    report = validate_local_frame_alignment(alignment, checks, fit_landmarks=fit)
+    row = report["residuals"][0]
+    assert row["source_spatial_support"] == "inside_fit_hull"
+    assert row["target_spatial_support"] == "outside_fit_hull"
+    assert row["spatial_support_status"] == "outside_fit_hull"
+    assert report["outside_fit_hull_count"] == 1
