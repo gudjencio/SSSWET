@@ -526,8 +526,10 @@ def verify_pagination_checkpoint_chain(chain: dict) -> dict:
     previous_next_hash = previous_next_ref = None
     seen = set()
     valid = True
+    verified_count = 0
     for index, page in enumerate(pages):
-        if not isinstance(page, dict) or page.get("sequence") != index:
+        sequence = page.get("sequence") if isinstance(page, dict) else None
+        if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence != index:
             valid = False
             break
         if index == 0:
@@ -561,11 +563,17 @@ def verify_pagination_checkpoint_chain(chain: dict) -> dict:
         previous_chain = chain_hash
         previous_next_hash = next_hash
         previous_next_ref = page.get("next_cursor_reference_id")
-    if chain.get("page_count") != len(pages) or chain.get("head_sha256") != previous_chain:
+        verified_count = index + 1
+    declared_count = chain.get("page_count")
+    if (
+        isinstance(declared_count, bool) or not isinstance(declared_count, int)
+        or declared_count != len(pages)
+        or chain.get("head_sha256") != previous_chain
+    ):
         valid = False
     return {
         "valid": valid,
-        "verified_page_count": len(pages) if valid else index,
+        "verified_page_count": len(pages) if valid else verified_count,
         "head_sha256": previous_chain,
         "raw_cursor_tokens_persisted": False,
         "tampering_detected": not valid,
@@ -692,7 +700,7 @@ def _timestamp_ms(value: str) -> int:
         raise ValueError("caption timestamp is malformed")
     hours = int(match.group(1) or 0)
     minutes, seconds, millis = int(match.group(2)), int(match.group(3)), int(match.group(4))
-    if seconds > 59 or (match.group(1) is not None and minutes > 59):
+    if minutes > 59 or seconds > 59:
         raise ValueError("caption timestamp has an out-of-range minute or second")
     return ((hours * 60 + minutes) * 60 + seconds) * 1000 + millis
 
@@ -741,12 +749,10 @@ def parse_caption_transcript(
         lines = block.splitlines(keepends=True)
         if not lines:
             continue
-        header_prefix = 0
         if lines[0].lstrip("\ufeff").startswith("WEBVTT"):
-            header_prefix = len(lines[0])
-            lines = lines[1:]
-            if not lines:
-                continue
+            # The WebVTT header block may contain Kind/Language metadata.
+            # The blank-line split keeps that metadata separate from cues.
+            continue
         first = "".join(lines).lstrip()
         if first.startswith(("NOTE", "STYLE", "REGION")):
             continue
@@ -780,7 +786,7 @@ def parse_caption_transcript(
         cue_text = raw_body[left_trim:right_trim]
         if len(cue_text) > 20_000:
             raise ValueError("caption cue exceeds 20000 characters")
-        body_start = block_start + header_prefix + sum(len(line) for line in lines[:time_index + 1])
+        body_start = block_start + sum(len(line) for line in lines[:time_index + 1])
         cue_start, cue_end = body_start + left_trim, body_start + right_trim
         total_chars += len(cue_text)
         if total_chars > MAX_TRANSCRIPT_TEXT_CHARS:
@@ -1002,8 +1008,10 @@ def verify_publisher_status_ledger(ledger: dict) -> dict:
         raise ValueError("ledger events must be a bounded list")
     previous_hash = "0" * 64
     valid = True
+    verified_count = 0
     for index, item in enumerate(events):
-        if not isinstance(item, dict) or item.get("sequence") != index:
+        sequence = item.get("sequence") if isinstance(item, dict) else None
+        if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence != index:
             valid = False
             break
         event = {key: item.get(key) for key in (
@@ -1018,10 +1026,17 @@ def verify_publisher_status_ledger(ledger: dict) -> dict:
             valid = False
             break
         previous_hash = chain_hash
-    valid = valid and ledger.get("event_count") == len(events) and ledger.get("head_sha256") == previous_hash
+        verified_count = index + 1
+    declared_count = ledger.get("event_count")
+    valid = valid and (
+        not isinstance(declared_count, bool)
+        and isinstance(declared_count, int)
+        and declared_count == len(events)
+        and ledger.get("head_sha256") == previous_hash
+    )
     return {
         "valid": valid,
-        "verified_event_count": len(events) if valid else index,
+        "verified_event_count": len(events) if valid else verified_count,
         "head_sha256": previous_hash,
         "source_records_deleted": False,
         "tampering_detected": not valid,
