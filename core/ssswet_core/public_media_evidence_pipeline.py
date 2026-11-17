@@ -749,10 +749,17 @@ def parse_caption_transcript(
         lines = block.splitlines(keepends=True)
         if not lines:
             continue
+        header_prefix = 0
         if lines[0].lstrip("\ufeff").startswith("WEBVTT"):
-            # The WebVTT header block may contain Kind/Language metadata.
-            # The blank-line split keeps that metadata separate from cues.
-            continue
+            header_prefix = len(lines[0])
+            lines = lines[1:]
+            if not lines:
+                continue
+            # Header metadata is not a cue. Preserve compatibility with a
+            # first cue immediately following the WEBVTT line when no blank
+            # separator is supplied by the source.
+            if not any(_TIMESTAMP.match(line.strip()) for line in lines[:3]):
+                continue
         first = "".join(lines).lstrip()
         if first.startswith(("NOTE", "STYLE", "REGION")):
             continue
@@ -786,7 +793,7 @@ def parse_caption_transcript(
         cue_text = raw_body[left_trim:right_trim]
         if len(cue_text) > 20_000:
             raise ValueError("caption cue exceeds 20000 characters")
-        body_start = block_start + sum(len(line) for line in lines[:time_index + 1])
+        body_start = block_start + header_prefix + sum(len(line) for line in lines[:time_index + 1])
         cue_start, cue_end = body_start + left_trim, body_start + right_trim
         total_chars += len(cue_text)
         if total_chars > MAX_TRANSCRIPT_TEXT_CHARS:
