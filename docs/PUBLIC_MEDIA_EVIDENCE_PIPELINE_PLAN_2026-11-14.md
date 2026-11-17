@@ -40,3 +40,40 @@
 - A deterministic synthetic benchmark reports workload size, median and maximum latency, source/claim retention, packet byte growth and parser/claim reference integrity. The CI per-workload ceiling is 5 seconds; synthetic measurements are not production or intelligence claims.
 - Public documentation describes use, prior behavior, limitations and privacy/safety boundaries.
 - Any regression, missing CI result or unverified deployment is reported rather than described as complete.
+
+## Current-base review and follow-up acceptance criteria — 17 November 2026
+
+Before the follow-up hardening below, the current mainline was inspected at
+`a107b14d29eeda2beb132b26dcf8d1b765fc877b` and its immediately preceding
+revision at `df0b285badee8d360d752e1cc93baf7cd7d58ee4`. The one-commit
+comparison showed that the current revision adds VTT fit-input fingerprints
+and source/target convex-hull support diagnostics to local-frame validation;
+the public-media pipeline branch was updated to this exact mainline (zero
+commits behind) before review.
+
+The current-base PR head was inspected at
+`f2aaf84d6bf0900311a2eed4af7a2766f57e890b`. Its CI matrix passed on Python
+3.11, 3.12 and 3.13; the 3.12 run reported 827 passing core tests and completed
+all ten synthetic public-media workloads below their 5-second per-workload
+budget.
+
+The review identified two parser boundary cases and two verifier accounting
+edge cases. Before changing implementation, the following additional criteria
+were set:
+
+1. A valid WebVTT header block containing optional metadata lines must be
+   ignored as header metadata; cue text offsets must still round-trip exactly
+   to the original supplied transcript.
+2. Two-component WebVTT/SRT timestamps must reject minutes outside 00–59, just
+   as hour-bearing timestamps already reject out-of-range minute fields.
+3. Empty or metadata-tampered pagination and publisher ledgers must return an
+   invalid verification result rather than raising an unbound-local exception.
+4. When the final count or head digest is tampered after every entry itself
+   verifies, the verifier must report the full number of verified entries;
+   declared counts must be strict integers (booleans are not accepted).
+
+Regression risks: valid SRT/VTT cues, existing cue IDs and offsets, hash-chain
+digests, source order, public APIs and schema version must remain unchanged.
+The timestamp change intentionally rejects malformed time values only. No
+network, media retrieval, new dependency, privacy-policy change or automatic
+adjudication is introduced.
