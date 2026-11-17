@@ -15,6 +15,8 @@ MAX_IDENTIFIER_LENGTH = 160
 MAX_REFERENCE_LENGTH = 500
 MIN_SCREENING_LANDMARKS = 3
 _NUMERIC_TOLERANCE = 1e-9
+_HULL_CROSS_TOLERANCE = 1e-10
+_HULL_AREA_TOLERANCE = 1e-12
 
 
 def _number(value: Any, field: str, *, nonnegative: bool = False) -> float:
@@ -128,6 +130,14 @@ def _read_alignment(alignment: Any) -> dict[str, Any]:
     if not isfinite(determinant) or not _close(determinant, 1.0):
         raise ValueError("transform matrix is not a proper 2D rigid rotation")
 
+    fit_input_sha256 = alignment.get("fit_input_sha256")
+    if fit_input_sha256 is not None and (
+        not isinstance(fit_input_sha256, str)
+        or len(fit_input_sha256) != 64
+        or any(character not in "0123456789abcdef" for character in fit_input_sha256)
+    ):
+        raise ValueError("fit_input_sha256 must be a lowercase SHA-256 digest")
+
     normalized_transform = {
         "rotation_radians": angle,
         "translation": [tx, ty],
@@ -146,13 +156,165 @@ def _read_alignment(alignment: Any) -> dict[str, Any]:
         "coordinate_unit": coordinate_unit,
         "matrix": matrix,
         "fit_ids": fit_ids,
+        "fit_input_sha256": fit_input_sha256,
         "transform_sha256": _canonical_digest(transform_payload),
+    }
+
+
+def _normalize_and_verify_fit_landmarks(
+    fit_landmarks: Any, fitted: dict[str, Any],
+) -> tuple[list[dict[str, Any]], str]:
+    if (
+        not isinstance(fit_landmarks, list)
+        or not 2 <= len(fit_landmarks) <= 200
+    ):
+        raise ValueError("fit_landmarks must contain 2 to 200 records")
+    normalized = []
+    seen = set()
+    for item in fit_landmarks:
+        if not isinstance(item, dict):
+            raise ValueError("every fit landmark must be an object")
+        landmark_id = _identifier(item.get("landmark_id"), "fit landmark_id")
+        if landmark_id in seen:
+            raise ValueError("fit landmark IDs must be unique")
+        seen.add(landmark_id)
+        source = _point(item.get("source"), "fit source")
+        target = _point(item.get("target"), "fit target")
+        source_bound = _number(item.get("source_uncertainty"), "source_uncertainty", nonnegative=True)
+        target_bound = _number(item.get("target_uncertainty"), "target_uncertainty", nonnegative=True)
+        source_ref = item.get("source_ref", "")
+        if not isinstance(source_ref, str) or len(source_ref) > MAX_REFERENCE_LENGTH:
+            raise ValueError(f"source_ref must be text of at most {MAX_REFERENCE_LENGTH} characters")
+        combined_bound = source_bound + target_bound
+        if not isfinite(combined_bound):
+            raise ValueError("combined fit uncertainty bound exceeds finite numeric range")
+        normalized.append({
+            "landmark_id": landmark_id,
+            "source": [source[0], source[1]],
+            "target": [target[0], target[1]],
+            "source_uncertainty": source_bound,
+            "target_uncertainty": target_bound,
+            "source_ref": source_ref,
+        })
+    if seen != fitted["fit_ids"]:
+        raise ValueError("fit_landmarks IDs must exactly match the fitted alignment IDs")
+    normalized.sort(key=lambda row: row["landmark_id"])
+    payload = {
+        "schema_version": 1,
+        "source_frame_id": fitted["source_frame_id"],
+        "target_frame_id": fitted["target_frame_id"],
+        "coordinate_unit": fitted["coordinate_unit"],
+        "landmarks": normalized,
+    }
+    digest = _canonical_digest(payload)
+    if fitted["fit_input_sha256"] is None:
+        raise ValueError("alignment does not bind its fit-landmark inputs; refit with the current alignment utility")
+    if digest != fitted["fit_input_sha256"]:
+        raise ValueError("fit_landmarks digest does not match the fitted alignment inputs")
+    return normalized, digest
+
+
+def _cross(origin: tuple[float, float], left: tuple[float, float], right: tuple[float, float]) -> float:
+    return (
+        (left[0] - origin[0]) * (right[1] - origin[1])
+        - (left[1] - origin[1]) * (right[0] - origin[0])
+    )
+
+
+def _build_fit_hull(points: list[list[float]]) -> dict[str, Any]:
+    min_x = min(point[0] for point in points)
+    max_x = max(point[0] for point in points)
+    min_y = min(point[1] for point in points)
+    max_y = max(point[1] for point in points)
+    span_x, span_y = max_x - min_x, max_y - min_y
+    if not isfinite(span_x) or not isfinite(span_y):
+        raise ValueError("fit landmark extent exceeds finite numeric range")
+    scale = max(span_x, span_y)
+    if scale <= 0.0:
+        return {
+            "status": "insufficient_2d_fit_hull", "hull": [],
+            "min_x": min_x, "min_y": min_y, "span_x": span_x,
+            "span_y": span_y, "scale": scale, "vertex_count": 0,
+        }
+    normalized = sorted({
+        ((point[0] - min_x) / scale, (point[1] - min_y) / scale)
+        for point in points
+    })
+    lower: list[tuple[float, float]] = []
+    for point in normalized:
+        while len(lower) >= 2 and _cross(lower[-2], lower[-1], point) <= _HULL_CROSS_TOLERANCE:
+            lower.pop()
+        lower.append(point)
+    upper: list[tuple[float, float]] = []
+    for point in reversed(normalized):
+        while len(upper) >= 2 and _cross(upper[-2], upper[-1], point) <= _HULL_CROSS_TOLERANCE:
+            upper.pop()
+        upper.append(point)
+    hull = lower[:-1] + upper[:-1]
+    area = abs(sum(
+        hull[index][0] * hull[(index + 1) % len(hull)][1]
+        - hull[(index + 1) % len(hull)][0] * hull[index][1]
+        for index in range(len(hull))
+    )) / 2.0 if len(hull) >= 3 else 0.0
+    available = len(hull) >= 3 and area > _HULL_AREA_TOLERANCE
+    return {
+        "status": "available" if available else "insufficient_2d_fit_hull",
+        "hull": hull if available else [],
+        "min_x": min_x, "min_y": min_y,
+        "span_x": span_x, "span_y": span_y,
+        "scale": scale, "vertex_count": len(hull),
+    }
+
+
+def _classify_fit_hull_point(point: list[float], fit_hull: dict[str, Any]) -> str:
+    if fit_hull["status"] != "available":
+        return "insufficient_2d_fit_hull"
+    dx = point[0] - fit_hull["min_x"]
+    dy = point[1] - fit_hull["min_y"]
+    if not isfinite(dx) or not isfinite(dy):
+        return "outside_fit_hull"
+    x, y = dx / fit_hull["scale"], dy / fit_hull["scale"]
+    max_x = fit_hull["span_x"] / fit_hull["scale"]
+    max_y = fit_hull["span_y"] / fit_hull["scale"]
+    if (
+        x < -_HULL_CROSS_TOLERANCE
+        or y < -_HULL_CROSS_TOLERANCE
+        or x > max_x + _HULL_CROSS_TOLERANCE
+        or y > max_y + _HULL_CROSS_TOLERANCE
+    ):
+        return "outside_fit_hull"
+    normalized_point = (x, y)
+    crosses = [
+        _cross(
+            fit_hull["hull"][index],
+            fit_hull["hull"][(index + 1) % len(fit_hull["hull"])],
+            normalized_point,
+        )
+        for index in range(len(fit_hull["hull"]))
+    ]
+    if any(value < -_HULL_CROSS_TOLERANCE for value in crosses):
+        return "outside_fit_hull"
+    if any(abs(value) <= _HULL_CROSS_TOLERANCE for value in crosses):
+        return "boundary_fit_hull"
+    return "inside_fit_hull"
+
+
+def _support_summary(fit_hull: dict[str, Any], statuses: list[str]) -> dict[str, Any]:
+    return {
+        "fit_hull_status": fit_hull["status"],
+        "fit_hull_vertex_count": fit_hull["vertex_count"],
+        "inside_count": statuses.count("inside_fit_hull"),
+        "boundary_count": statuses.count("boundary_fit_hull"),
+        "outside_count": statuses.count("outside_fit_hull"),
+        "indeterminate_count": statuses.count("insufficient_2d_fit_hull"),
     }
 
 
 def validate_local_frame_alignment(
     alignment: dict[str, Any],
     validation_landmarks: list[dict[str, Any]],
+    *,
+    fit_landmarks: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Evaluate a fitted transform on separate landmark IDs without refitting.
 
@@ -204,6 +366,15 @@ def validate_local_frame_alignment(
         })
 
     normalized.sort(key=lambda row: row["landmark_id"])
+    fit_input_sha256 = fitted["fit_input_sha256"]
+    fit_input_verified = False
+    source_fit_hull = target_fit_hull = None
+    if fit_landmarks is not None:
+        fit_rows, fit_input_sha256 = _normalize_and_verify_fit_landmarks(fit_landmarks, fitted)
+        source_fit_hull = _build_fit_hull([item["source"] for item in fit_rows])
+        target_fit_hull = _build_fit_hull([item["target"] for item in fit_rows])
+        fit_input_verified = True
+
     matrix = fitted["matrix"]
     residuals = []
     residual_values = []
@@ -222,12 +393,26 @@ def validate_local_frame_alignment(
         tolerance = max(_NUMERIC_TOLERANCE, abs(bound) * 1e-12)
         within = residual <= bound + tolerance
         residual_values.append(residual)
+        if fit_input_verified:
+            source_support = _classify_fit_hull_point(item["source"], source_fit_hull)
+            target_support = _classify_fit_hull_point(item["target"], target_fit_hull)
+            if "outside_fit_hull" in (source_support, target_support):
+                combined_support = "outside_fit_hull"
+            elif source_support in ("inside_fit_hull", "boundary_fit_hull") and target_support in ("inside_fit_hull", "boundary_fit_hull"):
+                combined_support = "within_fit_hulls"
+            else:
+                combined_support = "insufficient_2d_fit_hull"
+        else:
+            source_support = target_support = combined_support = "not_assessed"
         residuals.append({
             "landmark_id": item["landmark_id"],
             "residual": residual,
             "declared_combined_uncertainty_bound": bound,
             "within_declared_bound": within,
             "source_ref": item["source_ref"],
+            "source_spatial_support": source_support,
+            "target_spatial_support": target_support,
+            "spatial_support_status": combined_support,
         })
 
     count = len(residuals)
@@ -243,12 +428,29 @@ def validate_local_frame_alignment(
     else:
         status = "holdout_residuals_exceed_declared_bounds"
 
+    support_statuses = [item["spatial_support_status"] for item in residuals]
+    source_support_statuses = [item["source_spatial_support"] for item in residuals]
+    target_support_statuses = [item["target_spatial_support"] for item in residuals]
+    if fit_input_verified:
+        spatial_support_summary = {
+            "method": "normalized_2d_convex_hull_screen_v1",
+            "source_frame": _support_summary(source_fit_hull, source_support_statuses),
+            "target_frame": _support_summary(target_fit_hull, target_support_statuses),
+        }
+    else:
+        spatial_support_summary = {
+            "method": "not_assessed",
+            "source_frame": None,
+            "target_frame": None,
+        }
+
     input_payload = {
         "schema_version": 1,
         "source_frame_id": fitted["source_frame_id"],
         "target_frame_id": fitted["target_frame_id"],
         "coordinate_unit": fitted["coordinate_unit"],
         "transform_sha256": fitted["transform_sha256"],
+        "fit_input_sha256": fit_input_sha256,
         "validation_landmarks": normalized,
     }
     return {
@@ -258,6 +460,8 @@ def validate_local_frame_alignment(
         "target_frame_id": fitted["target_frame_id"],
         "coordinate_unit": fitted["coordinate_unit"],
         "transform_sha256": fitted["transform_sha256"],
+        "fit_input_sha256": fit_input_sha256,
+        "fit_landmark_input_verified": fit_input_verified,
         "validation_input_sha256": _canonical_digest(input_payload),
         "validation_landmark_count": count,
         "minimum_screening_landmarks": MIN_SCREENING_LANDMARKS,
@@ -271,6 +475,12 @@ def validate_local_frame_alignment(
         ],
         "all_residuals_within_declared_bounds": all_within,
         "validation_status": status,
+        "spatial_support_assessed": fit_input_verified,
+        "spatial_support_summary": spatial_support_summary,
+        "within_fit_hulls_count": support_statuses.count("within_fit_hulls"),
+        "outside_fit_hull_count": support_statuses.count("outside_fit_hull"),
+        "indeterminate_spatial_support_count": support_statuses.count("insufficient_2d_fit_hull"),
+        "not_assessed_spatial_support_count": support_statuses.count("not_assessed"),
         "validation_ids_disjoint_from_fit_ids": True,
         "measurement_independence_established": False,
         "spatial_generalization_established": False,

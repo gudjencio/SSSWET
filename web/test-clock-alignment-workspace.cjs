@@ -225,6 +225,21 @@ async function main() {
     event("event-" + index, "2026-11-12T10:05:00Z", null)
   )), /5000/);
 
+  for (const workflowName of ["regression-watch-30m.yml", "hourly-regression-watch.yml"]) {
+    const workflowPath = path.join(__dirname, "..", ".github", "workflows", workflowName);
+    const workflow = fs.readFileSync(workflowPath, "utf8");
+    for (const command of [
+      "node --check web/temporal-clock.js",
+      "node --check web/clock-alignment-workspace.js",
+      "node --check web/gps-scenario-model.js",
+      "node web/test-temporal-clock.cjs",
+      "node web/test-clock-alignment-workspace.cjs",
+      "node web/test-gps-scenario-model.cjs"
+    ]) {
+      assert.ok(workflow.includes(command), workflowName + " must retain scheduled coverage for " + command);
+    }
+  }
+
   const html = fs.readFileSync(path.join(__dirname, "virtual-time-travel.html"), "utf8");
   const script = fs.readFileSync(path.join(__dirname, "clock-alignment-workspace.js"), "utf8");
   const css = fs.readFileSync(path.join(__dirname, "virtual-time-travel.css"), "utf8");

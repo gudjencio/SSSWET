@@ -134,3 +134,146 @@ def test_holdout_validation_is_deterministic_and_reports_declared_bound_semantic
     assert result["unrecorded_locations_inferred"] is False
     assert result["historical_or_future_reality_recovered"] is False
     assert isfinite(result["rms_residual"])
+
+
+
+def support_fit_landmarks():
+    return [
+        {"landmark_id": "fit-a", "source": [0, 0], "target": [10, 20],
+         "source_uncertainty": 0.01, "target_uncertainty": 0.02},
+        {"landmark_id": "fit-b", "source": [4, 0], "target": [14, 20],
+         "source_uncertainty": 0.01, "target_uncertainty": 0.02},
+        {"landmark_id": "fit-c", "source": [4, 4], "target": [14, 24],
+         "source_uncertainty": 0.01, "target_uncertainty": 0.02},
+        {"landmark_id": "fit-d", "source": [0, 4], "target": [10, 24],
+         "source_uncertainty": 0.01, "target_uncertainty": 0.02},
+    ]
+
+
+def test_spatial_support_classifies_inside_boundary_and_outside_fit_hulls():
+    fit = support_fit_landmarks()
+    alignment = fit_local_frame_alignment(
+        fit, source_frame_id="local-a", target_frame_id="local-b",
+        coordinate_unit="m",
+    )
+    checks = [
+        {"landmark_id": "inside", "source": [1, 1], "target": [11, 21],
+         "source_uncertainty": 0.01, "target_uncertainty": 0.01},
+        {"landmark_id": "boundary", "source": [2, 0], "target": [12, 20],
+         "source_uncertainty": 0.01, "target_uncertainty": 0.01},
+        {"landmark_id": "outside", "source": [5, 1], "target": [15, 21],
+         "source_uncertainty": 0.01, "target_uncertainty": 0.01},
+    ]
+    before = deepcopy(alignment)
+    report = validate_local_frame_alignment(alignment, checks, fit_landmarks=fit)
+
+    assert report["fit_landmark_input_verified"] is True
+    assert report["spatial_support_assessed"] is True
+    assert report["fit_input_sha256"] == alignment["fit_input_sha256"]
+    support_by_id = {row["landmark_id"]: row for row in report["residuals"]}
+    assert support_by_id["inside"]["source_spatial_support"] == "inside_fit_hull"
+    assert support_by_id["boundary"]["source_spatial_support"] == "boundary_fit_hull"
+    assert support_by_id["outside"]["source_spatial_support"] == "outside_fit_hull"
+    assert support_by_id["inside"]["target_spatial_support"] == "inside_fit_hull"
+    assert support_by_id["boundary"]["target_spatial_support"] == "boundary_fit_hull"
+    assert support_by_id["outside"]["target_spatial_support"] == "outside_fit_hull"
+    assert support_by_id["inside"]["spatial_support_status"] == "within_fit_hulls"
+    assert support_by_id["boundary"]["spatial_support_status"] == "within_fit_hulls"
+    assert support_by_id["outside"]["spatial_support_status"] == "outside_fit_hull"
+    assert report["within_fit_hulls_count"] == 2
+    assert report["outside_fit_hull_count"] == 1
+    assert report["indeterminate_spatial_support_count"] == 0
+    assert report["spatial_support_summary"]["source_frame"]["fit_hull_vertex_count"] == 4
+    assert alignment == before
+
+
+def test_spatial_support_requires_exact_fitted_input_digest_and_identifiers():
+    fit = support_fit_landmarks()
+    alignment = fit_local_frame_alignment(
+        fit, source_frame_id="local-a", target_frame_id="local-b",
+        coordinate_unit="m",
+    )
+    checks = [{
+        "landmark_id": "check-one", "source": [1, 1], "target": [11, 21],
+        "source_uncertainty": 0.01, "target_uncertainty": 0.01,
+    }]
+    for field, value in (("source", [-1, 0]), ("source_uncertainty", 0.5), ("source_ref", "changed-ref")):
+        changed = deepcopy(fit)
+        changed[0][field] = value
+        with pytest.raises(ValueError, match="digest"):
+            validate_local_frame_alignment(alignment, checks, fit_landmarks=changed)
+    wrong_ids = deepcopy(fit)
+    wrong_ids[0]["landmark_id"] = "other-fit"
+    with pytest.raises(ValueError, match="exactly match"):
+        validate_local_frame_alignment(alignment, checks, fit_landmarks=wrong_ids)
+
+
+def test_spatial_support_is_indeterminate_for_collinear_fit_landmarks():
+    fit = [
+        {"landmark_id": "line-a", "source": [0, 0], "target": [10, 20],
+         "source_uncertainty": 0.01, "target_uncertainty": 0.01},
+        {"landmark_id": "line-b", "source": [2, 0], "target": [12, 20],
+         "source_uncertainty": 0.01, "target_uncertainty": 0.01},
+        {"landmark_id": "line-c", "source": [4, 0], "target": [14, 20],
+         "source_uncertainty": 0.01, "target_uncertainty": 0.01},
+    ]
+    alignment = fit_local_frame_alignment(
+        fit, source_frame_id="line-a", target_frame_id="line-b",
+        coordinate_unit="m",
+    )
+    checks = [{
+        "landmark_id": "line-check", "source": [1, 0], "target": [11, 20],
+        "source_uncertainty": 0.01, "target_uncertainty": 0.01,
+    }]
+    report = validate_local_frame_alignment(alignment, checks, fit_landmarks=fit)
+    assert report["spatial_support_assessed"] is True
+    assert report["indeterminate_spatial_support_count"] == 1
+    assert report["residuals"][0]["source_spatial_support"] == "insufficient_2d_fit_hull"
+    assert report["residuals"][0]["target_spatial_support"] == "insufficient_2d_fit_hull"
+
+
+def test_fit_input_fingerprint_is_order_independent_and_legacy_alignment_is_not_assessed():
+    fit = support_fit_landmarks()
+    alignment = fit_local_frame_alignment(
+        fit, source_frame_id="local-a", target_frame_id="local-b",
+        coordinate_unit="m",
+    )
+    reversed_alignment = fit_local_frame_alignment(
+        list(reversed(fit)), source_frame_id="local-a", target_frame_id="local-b",
+        coordinate_unit="m",
+    )
+    assert alignment["fit_input_sha256"] == reversed_alignment["fit_input_sha256"]
+    checks = [{
+        "landmark_id": "legacy-check", "source": [1, 1], "target": [11, 21],
+        "source_uncertainty": 0.01, "target_uncertainty": 0.01,
+    }]
+    report = validate_local_frame_alignment(alignment, checks)
+    assert report["spatial_support_assessed"] is False
+    assert report["not_assessed_spatial_support_count"] == 1
+    assert report["residuals"][0]["spatial_support_status"] == "not_assessed"
+
+    legacy_alignment = deepcopy(alignment)
+    legacy_alignment.pop("fit_input_sha256")
+    legacy_report = validate_local_frame_alignment(legacy_alignment, checks)
+    assert legacy_report["spatial_support_assessed"] is False
+    with pytest.raises(ValueError, match="does not bind"):
+        validate_local_frame_alignment(legacy_alignment, checks, fit_landmarks=fit)
+
+
+
+def test_source_and_target_hull_support_are_reported_independently():
+    fit = support_fit_landmarks()
+    alignment = fit_local_frame_alignment(
+        fit, source_frame_id="local-a", target_frame_id="local-b",
+        coordinate_unit="m",
+    )
+    checks = [{
+        "landmark_id": "mixed-support", "source": [1, 1], "target": [20, 20],
+        "source_uncertainty": 0.01, "target_uncertainty": 0.01,
+    }]
+    report = validate_local_frame_alignment(alignment, checks, fit_landmarks=fit)
+    row = report["residuals"][0]
+    assert row["source_spatial_support"] == "inside_fit_hull"
+    assert row["target_spatial_support"] == "outside_fit_hull"
+    assert row["spatial_support_status"] == "outside_fit_hull"
+    assert report["outside_fit_hull_count"] == 1

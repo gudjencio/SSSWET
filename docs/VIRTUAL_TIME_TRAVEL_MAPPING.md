@@ -267,8 +267,36 @@ The digest is deterministic regardless of IndexedDB cursor order. Its regression
 
 ## Independent local-frame validation
 
-The Python core now includes a separate hold-out validation utility. It applies an already-fitted 2D rigid local-frame transform to distinct validation landmark IDs without refitting. The report includes per-check residuals, RMS and maximum residuals, declared-bound comparisons, and deterministic fingerprints for the transform and validation inputs.
+The Python core includes a separate hold-out validation utility. It applies an already-fitted 2D rigid local-frame transform to distinct validation landmark IDs without refitting. The report includes per-check residuals, RMS and maximum residuals, declared-bound comparisons, and deterministic fingerprints for the transform, fit inputs and validation inputs.
 
-This is a screening check, not a general accuracy guarantee. At least three hold-out landmarks are required only to meet the utility's minimum screening-count flag; that count does not establish spatial coverage or statistical generalization. Distinct identifiers do not prove independent surveying. See [the dedicated local-frame validation guide](VTT_LOCAL_FRAME_VALIDATION.md) for the API, uncertainty semantics, limits and regression criteria.
+When the original fit-landmark list is supplied again, the validator verifies its canonical fit-input fingerprint and screens hold-out positions against separate source- and target-frame convex hulls. Points outside those hulls are flagged as outside the supplied fit-point support; collinear or numerically degenerate fit geometry is reported as insufficient two-dimensional support. This is a geometric support diagnostic, not a guarantee of accuracy inside the hull or an estimate of error outside it. Legacy alignments without a fit-input fingerprint remain usable for residual checks, but their spatial support is reported as not assessed.
+
+This is a screening check, not a general accuracy guarantee. At least three hold-out landmarks are required only to meet the utility's minimum screening-count flag; that count does not establish measurement independence or statistical generalization. Distinct identifiers do not prove independent surveying. See [the dedicated local-frame validation guide](VTT_LOCAL_FRAME_VALIDATION.md) for the API, uncertainty semantics, limits and regression criteria.
 
 The utility performs no geographic CRS conversion, camera-pose estimation, 3D reconstruction, missing-location inference or historical/future recovery. It does not access browser storage or request camera, microphone or location permissions.
+
+## 2D spatial covariance propagation
+
+The core utility `ssswet_core.vtt_spatial_uncertainty` propagates a declared
+point covariance through a fixed proper 2D rotation and translation. The
+legacy call (schema v1) treats rotation as exact and adds only the declared
+translation covariance, assuming independent point and translation errors.
+
+An opt-in schema-v2 call accepts `rotation_variance_radians2`, a caller-
+declared variance for a zero-mean scalar angular perturbation around the
+nominal rotation. It adds the first-order delta-method term
+`J Var(theta) J^T`, where `J = d(R(theta)x)/d(theta)`. This optional path
+assumes small-angle Gaussian rotation error independent of point and
+translation errors. It omits higher-order terms and cross-covariances and
+rejects angular standard deviations above 0.25 radians; that limit is an
+implementation guard, not an empirical accuracy threshold. Omitting the
+argument preserves the schema-v1 result, while explicitly declaring zero
+variance produces a schema-v2 record that distinguishes declared zero from
+missing information.
+
+The nominal 95-percent ellipse is conditional on the applicable
+bivariate-Gaussian and independence assumptions. Neither schema performs
+CRS/datum conversion, estimates a transform or rotation variance, validates
+the supplied covariance, establishes survey accuracy, or reconstructs
+unrecorded geography. See the [spatial covariance methodology and regression
+criteria](VTT_SPATIAL_UNCERTAINTY.md) before interpreting its output.
