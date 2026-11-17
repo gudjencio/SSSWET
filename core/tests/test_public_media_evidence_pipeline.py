@@ -494,3 +494,70 @@ def test_vtt_header_and_first_cue_without_blank_line_keep_correct_offsets():
     payload = "WEBVTT\ncue-a\n00:00:01.000 --> 00:00:02.000\nA measured result.\n"
     cue = parse_caption_transcript(payload, format_hint="vtt")["cues"][0]
     assert payload[cue["start_char"]:cue["end_char"]] == cue["text"]
+
+def test_webvtt_header_metadata_is_skipped_and_cue_offsets_still_round_trip():
+    payload = (
+        "WEBVTT - Example\nKind: captions\nLanguage: en\n\n"
+        "cue-1\n00:00:01.000 --> 00:00:02.000 align:start\nA result.\n"
+    )
+    result = parse_caption_transcript(payload, language="en")
+    cue = result["cues"][0]
+    assert cue["cue_id"] == "cue-1"
+    assert payload[cue["start_char"]:cue["end_char"]] == cue["text"] == "A result."
+
+
+def test_two_component_caption_timestamp_rejects_minutes_over_59():
+    malformed = "1\n99:00.000 --> 99:01.000\nInvalid timestamp.\n"
+    with pytest.raises(ValueError, match="out-of-range"):
+        parse_caption_transcript(malformed, format_hint="srt")
+
+
+def test_empty_tampered_pagination_chain_returns_invalid_without_exception():
+    chain = build_pagination_checkpoint_chain([])
+    chain["page_count"] = 1
+    result = verify_pagination_checkpoint_chain(chain)
+    assert result["valid"] is False
+    assert result["verified_page_count"] == 0
+    assert result["tampering_detected"] is True
+
+
+def test_pagination_verifier_counts_all_verified_pages_when_head_is_tampered():
+    chain = build_pagination_checkpoint_chain([
+        page(0, None, "cursor-1", "page-0"),
+        page(1, "cursor-1", None, "page-1"),
+    ])
+    chain["head_sha256"] = "f" * 64
+    result = verify_pagination_checkpoint_chain(chain)
+    assert result["valid"] is False
+    assert result["verified_page_count"] == 2
+
+
+def test_empty_tampered_publisher_ledger_returns_invalid_without_exception():
+    ledger = build_publisher_status_ledger([])
+    ledger["event_count"] = 1
+    result = verify_publisher_status_ledger(ledger)
+    assert result["valid"] is False
+    assert result["verified_event_count"] == 0
+    assert result["tampering_detected"] is True
+
+
+def test_publisher_verifier_counts_all_verified_events_when_head_is_tampered():
+    ledger = build_publisher_status_ledger([
+        status_event("event-1", "updated", "a" * 64, "b" * 64, "2026-11-14T08:00:00Z"),
+        status_event("event-2", "corrected", "b" * 64, "c" * 64, "2026-11-14T09:00:00Z"),
+    ])
+    ledger["head_sha256"] = "f" * 64
+    result = verify_publisher_status_ledger(ledger)
+    assert result["valid"] is False
+    assert result["verified_event_count"] == 2
+
+
+def test_verifiers_reject_boolean_declared_entry_counts():
+    chain = build_pagination_checkpoint_chain([page(0, None, None, "page-0")])
+    chain["page_count"] = True
+    assert verify_pagination_checkpoint_chain(chain)["valid"] is False
+    ledger = build_publisher_status_ledger([
+        status_event("event-1", "updated", "a" * 64, "b" * 64, "2026-11-14T08:00:00Z")
+    ])
+    ledger["event_count"] = True
+    assert verify_publisher_status_ledger(ledger)["valid"] is False
