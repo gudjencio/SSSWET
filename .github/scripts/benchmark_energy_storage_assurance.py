@@ -103,11 +103,25 @@ def main():
     for name, result in results.items():
         if result["p95_ms"] >= 2000:
             raise SystemExit(f"{name} exceeded the 2000 ms p95 regression ceiling")
-    packet = build_evidence_packet(rows, protocol_a, {"synthetic_rows": len(rows)}, ["synthetic-calibration"])
+    packet_sizes = {}
+    for sample_count in (500, 1000, 2000):
+        subset = rows[:sample_count]
+        packet = build_evidence_packet(
+            subset, protocol_a, {"synthetic_rows": sample_count}, ["synthetic-calibration"]
+        )
+        packet_size = len(json.dumps(packet, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+        packet_sizes[str(sample_count)] = packet_size
+        if packet_size > 2_000_000:
+            raise SystemExit("evidence packet exceeded the 2 MB regression ceiling")
+    ordered_sizes = [packet_sizes[str(size)] for size in (500, 1000, 2000)]
+    if ordered_sizes != sorted(ordered_sizes):
+        raise SystemExit("evidence packet size did not scale monotonically in the synthetic fixture")
     print(json.dumps({
         "sample_count": len(rows),
         "workloads": results,
-        "evidence_packet_bytes": len(json.dumps(packet, sort_keys=True, separators=(",", ":")).encode("utf-8")),
+        "evidence_packet_bytes": packet_sizes["2000"],
+        "evidence_packet_size_by_sample_count": packet_sizes,
+        "packet_size_ceiling_bytes": 2_000_000,
         "p95_ceiling_ms": 2000,
         "synthetic_benchmark_only": True,
         "battery_safety_or_scientific_validity_established": False,
