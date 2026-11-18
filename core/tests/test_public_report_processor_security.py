@@ -119,8 +119,8 @@ def test_report_processor_checkout_does_not_persist_credentials_and_auth_is_set_
     workflow = WORKFLOW.read_text(encoding="utf-8")
     script = SCRIPT.read_text(encoding="utf-8")
     checkout = re.search(
-        r"uses:\\s*actions/checkout@[^\\n]+\\n\\s*with:\\n(?P<settings>(?:\\s+[^\\n]+\\n?)+)",
+        r"uses:\s*actions/checkout@[^\n]+\n\s*with:\n(?P<settings>(?:\s+[^\n]+\n?)+)",
         workflow,
     )
-    assert checkout and re.search(r"persist-credentials:\\s*false", checkout.group("settings"))
+    assert checkout and re.search(r"persist-credentials:\s*false", checkout.group("settings"))
     assert script.index('run(["gh","auth","setup-git"])') < script.index('run(["git","push","origin",branch])')
