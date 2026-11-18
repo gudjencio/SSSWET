@@ -165,3 +165,8 @@ def test_publisher_does_not_run_tests():
     publisher = (SCRIPT_DIR / "publish_public_report_patch.py").read_text(encoding="utf-8")
     assert "pytest" not in publisher
     assert '"gh", "pr", "create"' in publisher
+
+
+def test_processor_does_not_emit_duplicate_default_job_outputs():
+    script = SCRIPT.read_text(encoding="utf-8")
+    assert "emit_outputs(False)" not in script
