@@ -105,7 +105,9 @@ researcher. The functions do not retrieve or upload source files.
 - No runtime dependency, persistent database table, existing endpoint, existing
   research record, public catalogue or payment/customer setting is changed.
 
-## CI benchmark snapshot
+## Candidate PR #73 benchmark snapshot (historical)
+
+The following is the earlier candidate branch measurement; the current-main integration verification below supersedes it.
 
 The GitHub Actions run on Python 3.12 processed 2,000 synthetic samples. Five
 repetitions were measured per workload; the table reports the observed p95
@@ -176,3 +178,29 @@ Compared with prior behaviour, the new module adds the ten capabilities above wi
 The integration rejects numeric values whose float conversion overflows, prevents non-finite integration results from being emitted, flags out-of-range robust-MAD scores without serializing infinity, limits cycle-number precision to exact integer values, and reports protocol-list changes by index with the same depth limit applied to nested arrays. These are regression-hardening enhancements.
 
 Acceptance requires CI across Python 3.11, 3.12 and 3.13, five-repeat p95 benchmark limits, packet size under 2 MiB, deterministic manifests, tamper detection, and positive/negative tests for each capability plus the numerical/protocol edge cases.
+
+## Current-main integration verification — 18 November 2026
+
+The feature was integrated on top of main `85afc7f`, with `8099f6c` as the immediately preceding main revision. The integration restored the README and CI workflow after an early branch-path error, added the current-main acceptance plan, corrected a test expectation, and added numerical/resource-bound regression coverage.
+
+- **43 focused tests** cover this module. The  the final core suite passed **902 tests** on Python 3.11, 3.12 and 3.13.
+- Complete CI: [run 44278660670](https://github.com/gudjencio/SSSWET/actions/runs/44278660670) — all matrix jobs passed.
+- Core tests: [run 44278660770](https://github.com/gudjencio/SSSWET/actions/runs/44278660770) — passed.
+- The current synthetic benchmark used 2,000 samples and five repetitions. All ten workloads were below the 2,000 ms p95 ceiling.
+
+| Operation | Median | p95 |
+| --- | ---: | ---: |
+| Validated ingestion | 14.025 ms | 15.654 ms |
+| Cycle segmentation | 15.931 ms | 15.983 ms |
+| Capacity integration | 14.483 ms | 17.763 ms |
+| Energy / round-trip | 29.396 ms | 31.253 ms |
+| Capacity trend | 0.183 ms | 0.226 ms |
+| Temperature excursions | 19.281 ms | 21.845 ms |
+| Cell imbalance | 16.641 ms | 18.054 ms |
+| Signal anomaly screen | 16.334 ms | 16.657 ms |
+| Protocol revision diff | 0.065 ms | 0.153 ms |
+| Evidence packet | 24.380 ms | 26.829 ms |
+
+The synthetic evidence manifest was **2,111 bytes** for the 2,000-sample fixture. The benchmark is a software regression check only, not field performance or battery validation.
+
+Additional boundary tests verify scaled capacity trend fitting for large finite inputs, unrepresentable round-trip ratio rejection, protocol-size rejection before flattening, stable trapezoid averaging/unit conversion, and overflow-safe median calculations. Non-finite results are rejected or represented as explicit review states; no output is silently clipped.
