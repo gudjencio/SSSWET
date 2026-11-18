@@ -184,8 +184,8 @@ Acceptance requires CI across Python 3.11, 3.12 and 3.13, five-repeat p95 benchm
 The feature was integrated on top of main `85afc7f`, with `8099f6c` as the immediately preceding main revision. The integration restored the README and CI workflow after an early branch-path error, added the current-main acceptance plan, corrected a test expectation, and added numerical/resource-bound regression coverage.
 
 - **43 focused tests** cover this module. The final core suite passed **902 tests** on Python 3.11, 3.12 and 3.13.
-- Complete CI: [run 44279289639](https://github.com/gudjencio/SSSWET/actions/runs/44278660670) — all matrix jobs passed.
-- Core tests: [run 44279289609](https://github.com/gudjencio/SSSWET/actions/runs/44278660770) — passed.
+- Complete CI: [run 44279289639](https://github.com/gudjencio/SSSWET/actions/runs/44279289639) — all matrix jobs passed.
+- Core tests: [run 44279289609](https://github.com/gudjencio/SSSWET/actions/runs/44279289609) — passed.
 - The current synthetic benchmark used 2,000 samples and five repetitions. All ten workloads were below the 2,000 ms p95 ceiling.
 
 | Operation | Median | p95 |
