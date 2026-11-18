@@ -63,6 +63,7 @@ def test_patch_gate_rejects_unmatched_unified_diff_paths(processor):
         "docs/MONTHLY_TECHNOLOGY_FINANCING.md",
         "docs/PUBLICATION_POLICY.md",
         "docs/CONTRIBUTIONS.md",
+        "docs/APP_DISTRIBUTION.md",
     ],
 )
 def test_automatic_patch_allowlist_excludes_financial_legal_and_availability_files(processor, path):
@@ -74,6 +75,9 @@ def test_patch_gate_rejects_file_creation_deletion_and_mode_changes(processor):
     path = "core/tests/example.py"
     assert processor.validate_patch(make_patch(path).replace(
         "index 1111111..2222222 100644", "new file mode 100644\nindex 1111111..2222222 100644"
+    )) is None
+    assert processor.validate_patch(make_patch(path).replace(
+        "index 1111111..2222222 100644", "deleted file mode 100644\nindex 1111111..2222222 100644"
     )) is None
     assert processor.validate_patch(make_patch(path).replace(
         "index 1111111..2222222 100644", "old mode 100644\nnew mode 100755\nindex 1111111..2222222 100644"
