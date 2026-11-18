@@ -1,15 +1,16 @@
-"""Security regression tests for the public-report automation patch gate."""
+"""Security regression tests for the separated public-report patch pipeline."""
 from __future__ import annotations
-
 import importlib.util
 from pathlib import Path
 import re
-
+import sys
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / ".github" / "scripts" / "process_public_report.py"
+SCRIPT_DIR = ROOT / ".github" / "scripts"
+SCRIPT = SCRIPT_DIR / "process_public_report.py"
 WORKFLOW = ROOT / ".github" / "workflows" / "process-public-reports.yml"
+sys.path.insert(0, str(SCRIPT_DIR))
 
 
 @pytest.fixture
@@ -42,12 +43,11 @@ def test_patch_gate_accepts_small_existing_file_changes(processor):
     assert processor.validate_patch(make_patch(path)) == [(path, path)]
 
 
-def test_patch_gate_rejects_paths_outside_the_allowlist(processor):
-    path = ".github/workflows/ci.yml"
-    assert processor.validate_patch(make_patch(path)) is None
+def test_patch_gate_rejects_paths_outside_allowlist(processor):
+    assert processor.validate_patch(make_patch(".github/workflows/ci.yml")) is None
 
 
-def test_patch_gate_rejects_unmatched_unified_diff_paths(processor):
+def test_patch_gate_rejects_mismatched_unified_diff_paths(processor):
     patch = make_patch("core/tests/example.py").replace(
         "+++ b/core/tests/example.py", "+++ b/.github/workflows/ci.yml"
     )
@@ -59,6 +59,7 @@ def test_patch_gate_rejects_unmatched_unified_diff_paths(processor):
     [
         "web/donation-config.js",
         "web/product-purchase-config.js",
+        "web/product-availability.js",
         "web/platform-downloads.js",
         "docs/MONTHLY_TECHNOLOGY_FINANCING.md",
         "docs/PUBLICATION_POLICY.md",
@@ -66,27 +67,45 @@ def test_patch_gate_rejects_unmatched_unified_diff_paths(processor):
         "docs/LEGAL_POLICY.md",
         "docs/CONTRIBUTIONS.md",
         "docs/APP_DISTRIBUTION.md",
+        "docs/tax-refund.md",
+        "core/ssswet_core/payment_model.py",
     ],
 )
-def test_automatic_patch_allowlist_excludes_financial_legal_and_availability_files(processor, path):
+def test_automatic_patch_scope_excludes_sensitive_files(processor, path):
     assert not processor.allowed(path)
     assert processor.validate_patch(make_patch(path)) is None
 
 
-def test_patch_gate_rejects_file_creation_deletion_and_mode_changes(processor):
+def test_patch_gate_rejects_creation_deletion_mode_change_and_binary_patches(processor):
     path = "core/tests/example.py"
-    assert processor.validate_patch(make_patch(path).replace(
+    patch = make_patch(path)
+    assert processor.validate_patch(patch.replace(
         "index 1111111..2222222 100644", "new file mode 100644\nindex 1111111..2222222 100644"
     )) is None
-    assert processor.validate_patch(make_patch(path).replace(
+    assert processor.validate_patch(patch.replace(
         "index 1111111..2222222 100644", "deleted file mode 100644\nindex 1111111..2222222 100644"
     )) is None
-    assert processor.validate_patch(make_patch(path).replace(
+    assert processor.validate_patch(patch.replace(
         "index 1111111..2222222 100644", "old mode 100644\nnew mode 100755\nindex 1111111..2222222 100644"
+    )) is None
+    assert processor.validate_patch(patch.replace(
+        "@@ -1 +1 @@\n", "GIT binary patch\n@@ -1 +1 @@\n"
     )) is None
 
 
-def test_validation_environment_strips_credentials_but_keeps_required_tools(processor):
+def test_existing_test_files_may_only_receive_additions(processor):
+    path = "core/tests/test_example.py"
+    assert processor.validate_patch(make_patch(path)) is None
+    addition = make_patch(path).replace("-old\n", " context\n")
+    assert processor.validate_patch(addition) == [(path, path)]
+
+
+def test_patch_gate_rejects_duplicate_paths(processor):
+    assert processor.validate_patch(make_patch("docs/example.md") + make_patch("docs/example.md")) is None
+
+
+def test_validation_environment_removes_credentials(processor):
+    from public_report_patch_guard import validation_environment
     source = {
         "PATH": "/usr/bin",
         "GITHUB_API_URL": "https://api.github.com",
@@ -99,8 +118,7 @@ def test_validation_environment_strips_credentials_but_keeps_required_tools(proc
         "GIT_CONFIG_VALUE_0": "secret",
         "SSH_AUTH_SOCK": "/tmp/agent.sock",
     }
-    clean = processor.validation_environment(source)
-    assert clean == {
+    assert validation_environment(source) == {
         "PATH": "/usr/bin",
         "GITHUB_API_URL": "https://api.github.com",
         "SAFE_SETTING": "kept",
@@ -108,25 +126,42 @@ def test_validation_environment_strips_credentials_but_keeps_required_tools(proc
 
 
 def test_context_reader_never_follows_symlinks_outside_repository(processor, tmp_path):
+    from public_report_patch_guard import safe_context_path
     root = tmp_path / "repo"
     inside = root / "core" / "tests" / "linked.md"
     outside = tmp_path / "private.txt"
     inside.parent.mkdir(parents=True)
     outside.write_text("must not be read", encoding="utf-8")
     inside.symlink_to(outside)
-    processor.ROOT = root
-    assert processor.safe_context_path(inside) is None
+    assert safe_context_path(inside, root) is None
     regular = inside.parent / "normal.md"
     regular.write_text("allowed context", encoding="utf-8")
-    assert processor.safe_context_path(regular) == regular.resolve()
+    assert safe_context_path(regular, root) == regular.resolve()
 
 
-def test_report_processor_checkout_does_not_persist_credentials_and_auth_is_set_after_tests():
+def test_workflow_separates_secret_bearing_prepare_and_publish_from_validation():
     workflow = WORKFLOW.read_text(encoding="utf-8")
+    prepare = re.search(r"(?ms)^  prepare_report:(.*?)(?=^  validate_report:)", workflow).group(1)
+    validate = re.search(r"(?ms)^  validate_report:(.*?)(?=^  publish_report:)", workflow).group(1)
+    publish = re.search(r"(?ms)^  publish_report:(.*)\Z", workflow).group(1)
+    assert "OPENAI_API_KEY" in prepare and "GH_TOKEN" in prepare
+    assert "OPENAI_API_KEY" not in validate and "GH_TOKEN" not in validate
+    assert "permissions:\n      contents: read" in validate
+    assert "validate_public_report_patch.py" in validate
+    assert "pytest" not in prepare and "pytest" not in publish
+    assert "publish_public_report_patch.py" in publish and "GH_TOKEN" in publish
+    for job in (prepare, validate, publish):
+        assert "persist-credentials: false" in job
+
+
+def test_processor_only_prepares_patch_and_never_executes_or_publishes():
     script = SCRIPT.read_text(encoding="utf-8")
-    checkout = re.search(
-        r"uses:\s*actions/checkout@[^\n]+\n\s*with:\n(?P<settings>(?:\s+[^\n]+\n?)+)",
-        workflow,
-    )
-    assert checkout and re.search(r"persist-credentials:\s*false", checkout.group("settings"))
-    assert script.index('run(["gh","auth","setup-git"])') < script.index('run(["git","push","origin",branch])')
+    assert "pytest" not in script
+    assert "git push" not in script
+    assert "gh pr create" not in script
+
+
+def test_publisher_does_not_run_tests():
+    publisher = (SCRIPT_DIR / "publish_public_report_patch.py").read_text(encoding="utf-8")
+    assert "pytest" not in publisher
+    assert "gh pr create" in publisher
