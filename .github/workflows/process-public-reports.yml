@@ -2,39 +2,38 @@ name: Process public improvement reports
 on:
   issues:
     types: [opened, labeled]
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
 concurrency:
   group: ssswet-report-${{ github.event.issue.number }}
   cancel-in-progress: false
 jobs:
-  process-report:
+  prepare_report:
     if: (github.event.action == 'opened' || github.event.label.name == 'public report') && contains(github.event.issue.labels.*.name, 'public report') && !github.event.issue.pull_request
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      issues: write
+    outputs:
+      has_patch: ${{ steps.generate.outputs.has_patch }}
+      patch_b64: ${{ steps.generate.outputs.patch_b64 }}
     steps:
-      - name: Check out project
+      - name: Checkout without persisted credentials
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, Node 24
         with:
-          fetch-depth: 0
           persist-credentials: false
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0, Node 24
         with:
           python-version: "3.12"
-      - name: Install report validation tools
-        run: python -m pip install pytest
-      - name: Route every received report to the human-review queue
+      - name: Route report to human review
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_REPO: ${{ github.repository }}
         run: |
           gh label create needs-human-review --color E5A000 --description "Automatically triaged; awaiting maintainer review" || true
           gh issue edit "$ISSUE_NUMBER" --add-label "needs-human-review"
-      - name: Process report and prepare a tested improvement
+      - name: Prepare patch without executing it
+        id: generate
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -43,3 +42,52 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           SSSWET_REPORT_MODEL: gpt-4.1-mini
         run: python .github/scripts/process_public_report.py
+
+  validate_report:
+    needs: prepare_report
+    if: needs.prepare_report.outputs.has_patch == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, Node 24
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0, Node 24
+        with:
+          python-version: "3.12"
+      - name: Validate in a credential-free environment
+        env:
+          REPORT_PATCH_B64: ${{ needs.prepare_report.outputs.patch_b64 }}
+        run: python .github/scripts/validate_public_report_patch.py
+
+  publish_report:
+    needs: [prepare_report, validate_report]
+    if: needs.prepare_report.outputs.has_patch == 'true' && needs.validate_report.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1, Node 24
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0, Node 24
+        with:
+          python-version: "3.12"
+      - name: Publish validated patch as a pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          REPORT_PATCH_B64: ${{ needs.prepare_report.outputs.patch_b64 }}
+        run: python .github/scripts/publish_public_report_patch.py
