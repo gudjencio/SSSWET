@@ -62,6 +62,8 @@ def test_patch_gate_rejects_unmatched_unified_diff_paths(processor):
         "web/platform-downloads.js",
         "docs/MONTHLY_TECHNOLOGY_FINANCING.md",
         "docs/PUBLICATION_POLICY.md",
+        "docs/POLICY.md",
+        "docs/LEGAL_POLICY.md",
         "docs/CONTRIBUTIONS.md",
         "docs/APP_DISTRIBUTION.md",
     ],
