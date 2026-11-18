@@ -295,7 +295,10 @@ def round_trip_efficiency(
     discharge = integrate_energy(samples, cycle_id, "discharge", session_id, max_gap_seconds)
     if charge["metric"] <= 0:
         raise ValueError("integrated charge energy must be greater than zero")
-    efficiency = discharge["metric"] / charge["metric"] * 100.0
+    ratio = discharge["metric"] / charge["metric"]
+    efficiency = ratio * 100.0
+    if not math.isfinite(ratio) or not math.isfinite(efficiency):
+        raise ValueError("round-trip efficiency overflowed; no result was produced")
     return {
         "cycle_id": cycle_id,
         "session_id": charge["session_id"],
@@ -310,7 +313,7 @@ def round_trip_efficiency(
 
 
 def capacity_fade(cycle_measurements: object) -> dict:
-    """Fit a descriptive least-squares capacity trend; never extrapolate it."""
+    """Fit a descriptive least-squares capacity trend; never extrapolate."""
     if not isinstance(cycle_measurements, (list, tuple)) or len(cycle_measurements) > 5000:
         raise ValueError("cycle_measurements must contain at most 5000 records")
     points = []
@@ -343,22 +346,41 @@ def capacity_fade(cycle_measurements: object) -> dict:
     points.sort(key=lambda point: point[0])
     xs = [float(point[0]) for point in points]
     ys = [point[1] for point in points]
-    x_mean = sum(xs) / len(xs)
-    y_mean = sum(ys) / len(ys)
-    denominator = sum((x - x_mean) ** 2 for x in xs)
-    if denominator <= 0:
-        raise ValueError("cycle numbers must span a non-zero range")
-    slope = sum((x - x_mean) * (y - y_mean) for x, y in zip(xs, ys)) / denominator
-    intercept = y_mean - slope * x_mean
-    residual = sum((y - (intercept + slope * x)) ** 2 for x, y in zip(xs, ys))
-    total = sum((y - y_mean) ** 2 for y in ys)
+
+    # Scale capacities before fitting so finite large measurements cannot make
+    # intermediate sums/squares overflow. The fit is unchanged by this scale.
+    scale = max(ys)
+    scaled_ys = [value / scale for value in ys]
+    x_mean = math.fsum(xs) / len(xs)
+    y_mean_scaled = math.fsum(scaled_ys) / len(scaled_ys)
+    denominator = math.fsum((x - x_mean) ** 2 for x in xs)
+    if denominator <= 0 or not math.isfinite(denominator):
+        raise ValueError("cycle numbers must span a valid non-zero range")
+    slope_scaled = math.fsum(
+        (x - x_mean) * (y - y_mean_scaled)
+        for x, y in zip(xs, scaled_ys)
+    ) / denominator
+    slope = slope_scaled * scale
+    if not math.isfinite(slope):
+        raise ValueError("capacity trend slope overflowed; no result was produced")
+    residual = math.fsum(
+        (y - (y_mean_scaled + slope_scaled * (x - x_mean))) ** 2
+        for x, y in zip(xs, scaled_ys)
+    )
+    total = math.fsum((y - y_mean_scaled) ** 2 for y in scaled_ys)
     r_squared = 1.0 if total == 0 and residual == 0 else (0.0 if total == 0 else 1.0 - residual / total)
+    relative_ratio = ys[-1] / ys[0]
+    relative_change = (relative_ratio - 1.0) * 100.0
+    if not math.isfinite(relative_ratio) or not math.isfinite(relative_change):
+        raise ValueError("capacity trend relative-change overflowed; no result was produced")
+    if not math.isfinite(residual) or not math.isfinite(total) or not math.isfinite(r_squared):
+        raise ValueError("capacity trend fit overflowed; no result was produced")
     return {
         "sample_count": len(points),
         "first_cycle": int(xs[0]),
         "last_cycle": int(xs[-1]),
         "slope_ah_per_cycle": slope,
-        "relative_change_percent": (ys[-1] - ys[0]) / ys[0] * 100.0,
+        "relative_change_percent": relative_change,
         "r_squared_descriptive": max(0.0, min(1.0, r_squared)),
         "trend_direction": "decreasing" if slope < 0 else ("increasing" if slope > 0 else "flat"),
         "source_ids": sorted({point[2] for point in points if point[2] is not None}),
@@ -370,7 +392,6 @@ def capacity_fade(cycle_measurements: object) -> dict:
         "extrapolation_performed": False,
         "cycle_numbers": [int(value) for value in xs],
     }
-
 
 def temperature_excursions(
     samples: object,
@@ -565,10 +586,11 @@ def compare_protocols(previous: object, current: object) -> dict:
     """Fingerprint and compare bounded JSON-compatible protocol revisions."""
     if not isinstance(previous, dict) or not isinstance(current, dict):
         raise ValueError("protocol revisions must be objects")
-    old, new = _flatten_protocol(previous), _flatten_protocol(current)
     previous_text, current_text = _canonical(previous), _canonical(current)
     if len(previous_text.encode("utf-8")) > MAX_PROTOCOL_BYTES or len(current_text.encode("utf-8")) > MAX_PROTOCOL_BYTES:
         raise ValueError("protocol revision exceeds the 1 MB limit")
+    # Reject oversized payloads before constructing the flattened comparison map.
+    old, new = _flatten_protocol(previous), _flatten_protocol(current)
     old_keys, new_keys = set(old), set(new)
     added = sorted(new_keys - old_keys)
     removed = sorted(old_keys - new_keys)
