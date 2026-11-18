@@ -240,7 +240,7 @@ def _integrate(
         else:
             v0 = left["current_a"] * left["voltage_v"]
             v1 = right["current_a"] * right["voltage_v"]
-        average = (v0 + v1) / 2.0
+        average = v0 / 2.0 + v1 / 2.0
         contribution = average * dt / 3600.0
         updated_total = total + contribution
         if not all(math.isfinite(value) for value in (v0, v1, average, contribution, updated_total)):
