@@ -1,42 +1,163 @@
-# Upgrade plan — current-main integration, 18 November 2026
+# SSSWET
 
-## Baseline inspected before transplant/integration
-- Current main: `85afc7f649edf2e3a42e85bb167c9478d06dab06` (85afc7f)
-- Immediately preceding main commit: `8099f6c232e60d5541c76544b59686d16c41f12f` (8099f6c)
-- The latest baseline isolates public-report patch validation from secret-bearing workflow context; the preceding commit upgrades the public report processor to Node 24. Neither includes energy-storage assurance.
-- Existing candidate PR #73 (head `e75934323e264079a73dffac01b2fc69457c4728`) was inspected: 659-line core module, 32 focused tests, guide, benchmark, workflow, README and acceptance plan. Its branch is based on the immediately preceding main commit, so this integration transplants only feature files and re-applies additive CI/docs changes onto current main. Pre-merge candidate CI passed 867 core tests on Python 3.11/3.12/3.13; the Python 3.12 benchmark completed. The existing PR is not merged.
+**Super Soldier Space Warping Engineering Tech**  
+*French interface name: Équipements et technologies de distorsions spatiales pour super-soldats (ETDESS).*
 
-## Ten acceptance criteria
-1. Validate supplied sample logs with a hard 20,000-row cap, unique IDs, explicit timezone, strictly monotonic per-session timestamps, finite fields, provenance and whitelist-only normalized records.
-2. Segment only researcher-declared session/cycle IDs; preserve incomplete cycles and mode-order anomalies.
-3. Integrate capacity by trapezoidal method, preserve source/calibration refs and reject caller-defined excessive gaps.
-4. Integrate voltage-current energy and report round-trip ratio unchanged, including >100% with review flags.
-5. Fit descriptive trend only with >=3 unique cycle observations; retain uncertainty and evidence refs, no extrapolation.
-6. Count caller-limit temperature observations and only confirmed same-side adjacent spans; never claim clearance.
-7. Screen declared cell-voltage spread using a caller threshold; retain missing/insufficient observations.
-8. Flag robust-MAD anomalies with provenance and retain original observations.
-9. Canonicalize/fingerprint protocol revisions and diff field/list paths under a 16-level nesting and 1 MiB input limit.
-10. Create deterministic evidence manifests with sample/protocol digests, provenance and calibration refs, tamper verification, explicit not-reviewed/not-release state, and <=2 MiB cap.
+SSSWET is an experimental research-software initiative. Its public website presents the project, selected research themes and general progress information.
 
-## Additional regression criteria
-- Conversion of huge integers must return a bounded validation error, not raise OverflowError.
-- Integration must refuse non-finite intermediate or accumulated results.
-- Robust anomaly scores that overflow must be flagged with null numeric score; outputs must remain strict JSON.
-- Cycle numbers must remain exactly representable in trend analysis.
-- Nested protocol arrays are diffed by index; nesting limit applies to arrays as well as objects; malformed key types return ValueError.
+The project is exploratory. Public descriptions are intentionally high-level and must not be interpreted as claims that a proposed technology exists, is feasible, has been validated or is available for purchase.
 
-## Measurable validation
-- Focused tests for all ten capabilities and the new edge cases.
-- Full core suite across Python 3.11, 3.12 and 3.13.
-- Synthetic benchmark: 2,000 samples, five repeats; every workload p95 < 2,000 ms.
-- Evidence packet <= 2 MiB; deterministic digest; tampered packet and mismatched source-sample digest fail.
-- No runtime dependency, hardware-control endpoint or existing UI/API modification.
+## Research catalogue
 
-## Regression risks and mitigation
-- Validation is stricter than untrusted input ingestion: errors remain explicit and are documented.
-- Current is represented as non-negative magnitude; declared mode determines charge/discharge. Mixed/rest intervals are not integrated across.
-- Caller thresholds are review values, never operating/safety guidance.
-- Incomplete cycles, missing values, anomalies and negative findings remain visible.
-- Manifests do not include raw sample rows and do not authenticate instrument/source authorship.
-- Benchmark data is synthetic, not field testing or battery safety validation.
-- CI workflow edit is additive and restricted to Python 3.12 benchmark execution; the mainline security patch remains intact.
+The latest expansion adds ten curated programmes, including [Virtual Time Travel Mapping](docs/VIRTUAL_TIME_TRAVEL_MAPPING.md). This is a local-first research concept for consented 3D spatial capture, replay of recorded observations, and explicitly uncertain modelling of unrecorded past or future scenarios. It does not recover unrecorded history or predict the future with certainty.
+
+
+The scientific registry contains **1,000 research-programme dossiers**, organized into ten super-categories of 100. The public contribution interface separately presents **606 selected themes** across eight translated categories. These entries are research scopes, not demonstrated technologies. Browse the [technology catalogue](docs/TECHNOLOGY_CATALOGUE.md), the [protective systems and exoskeleton portfolio](docs/PROTECTIVE_SYSTEMS_AND_EXOSKELETON_PORTFOLIO.md), and the [protective system technical specification framework](docs/PROTECTIVE_SYSTEM_TECHNICAL_SPECIFICATION_FRAMEWORK.md).
+
+The cellular programme now includes dedicated draft workstreams covering cellular recovery, tissue and organ preservation, neural preservation and post-mortem biological limits. These remain research proposals and do not claim that human resurrection is currently possible.
+
+Research into protective equipment may cover lawful military, civil-protection, emergency-response and occupational applications. The public scope is non-offensive: protection, injury prevention, mobility assistance, environmental resilience, rescue and medical support. Weapons, weapon integration, targeting and offensive autonomy are outside the project scope.
+
+The proposed, currently disabled [monthly technology financing model](docs/MONTHLY_TECHNOLOGY_FINANCING.md) documents subscription sequencing, tax transparency, cancellation, refunds and repair safeguards.
+
+## Virtual Time Travel Mapping
+
+Try the [standalone Virtual Time Travel Mapping prototype](https://gudjencio.github.io/SSSWET/virtual-time-travel.html). It supports consent-based local spatial capture, recorded observation replay and clearly labelled short-horizon scenarios. It does not recover unrecorded history or guarantee future outcomes.
+
+## Continuous scientific and engineering improvement
+
+The purpose of the SSSWET research bots is not only to catalogue ideas: they are intended to help advance scientific understanding and develop technologies toward greater usefulness, performance, durability, efficiency, maintainability, safety and evidence quality.
+
+SSSWET applies a formal **non-regression principle**: a successor technology revision must not knowingly reduce a documented capability of the previous revision. Evidence-backed capability floors are checked before a revision can supersede an earlier one. See [Continuous Scientific and Engineering Improvement](docs/TECHNOLOGY_CONTINUOUS_IMPROVEMENT.md).
+
+The project also adopts a **persistence principle**. A failed experiment, blocked hypothesis or unsuccessful prototype is not treated as a reason to abandon the underlying research objective. Instead, the result should identify the limiting mechanism, preserve the negative result, revise the hypothesis or design, seek independent review, and continue through a safer or better-supported research route.
+
+Persistence does not override safety, ethics, biosafety, human-subject protections, environmental protections, applicable law or scientific evidence. The project must never make a technology less safe merely to preserve a performance score, and it must never hide a regression or fabricate an improvement.
+
+## Applications
+
+Install SSSWET on supported mobile devices from the website, or download the Windows, macOS and Linux desktop builds from [official releases](https://github.com/gudjencio/SSSWET/releases). Mobile installation and package availability are explained in [Application distribution](docs/APP_DISTRIBUTION.md).
+
+## Version and update centre
+
+The website checks the official GitHub Releases feed for published versions, shows release notes and available installers, and links to SHA-256 checksum files when provided. Release availability is determined by published assets; a build workflow alone does not mean that an installer is ready.
+
+## Public information
+
+This repository contains the public website, general project information and selected software components. Public material is not a complete description of the project's research programme, internal plans, unpublished concepts, implementation roadmap or confidential working material.
+
+The project may change its public descriptions and availability as research, review and governance progress.
+
+## Research principles
+
+- Distinguish hypotheses, simulations, observations and independently reviewed findings.
+- Preserve uncertainty and limitations in public claims.
+- Do not present speculative concepts as established capabilities.
+- Seek measurable improvement rather than merely a new version number.
+- Prevent documented capability regressions between successive revisions.
+- Treat negative results as reusable scientific knowledge.
+- Continue research after setbacks through safer, better-supported and independently reviewed routes.
+- Require appropriate human, scientific, safety and legal review before real-world use.
+- Protect personal information, credentials and confidential material from publication.
+- Record declared risks and uncertainties without inventing probability, impact or safety conclusions; see [Research Risk & Uncertainty Register](docs/RESEARCH_RISK_UNCERTAINTY_REGISTER.md).
+- For protective systems, distinguish design targets from observed and independently verified performance.
+- Do not describe equipment as certified, bulletproof, blast-proof, chemical-proof, radiation-proof or military-grade without configuration-specific independent evidence.
+
+## Contributions
+
+Voluntary research support and general contribution information are described in [Research contributions](docs/CONTRIBUTIONS.md). A contribution is not a purchase, reservation or guarantee of a future product.
+
+## Publication and intellectual property
+
+Read the [Public information and disclosure policy](docs/PUBLICATION_POLICY.md) before reusing, submitting or publishing project material. Public availability does not make confidential or unpublished material suitable for disclosure. The repository's current license governs reuse of the files it covers; it does not grant rights to trademarks, patents, confidential know-how or third-party material.
+
+## Copyright and project identity
+
+Copyright © 2026 Gudjencio MARTIN. All rights reserved in the SSSWET project identity, including its name, acronym, logo and official branding, except where a separate written permission applies.
+
+The name **SSSWET**, its acronym and official visual identity may not be used to present an independent copy, fork, derivative project or service as the official SSSWET project, or to imply endorsement or affiliation. A copy or fork must use a clearly distinct name and branding and must identify its own maintainers.
+
+The code license and the project name are separate matters. See [NOTICE.md](NOTICE.md) for attribution and project-identity guidance. This notice does not claim that a trademark registration exists.
+
+## Security
+
+Please do not publish credentials, private data or suspected vulnerabilities in public issues. See [SECURITY.md](SECURITY.md) for responsible reporting.
+
+## Project links
+
+- Website: https://gudjencio.github.io/SSSWET/
+- Google Sites mirror: https://sites.google.com/view/ssswet
+- X: https://x.com/ssswetech
+- Instagram: https://www.instagram.com/ssswetech
+- YouTube: https://www.youtube.com/@ssswetech
+- Contact: ssswetindustries@gmail.com
+
+---
+
+SSSWET is an evolving research initiative. Public summaries are informational and do not constitute technical, medical, legal, investment or product advice.
+
+## Language availability
+
+The public interface offers **300 selectable language entries**. The catalogue includes all **189 unique language codes** in the project's current reference list, covering the named languages, regional varieties and grouped language families. Each option has a language code and a native-language label. This confirms selector availability, not complete translation: the principal interface is maintained in a limited set of core locales, selected additional sections have further translations, and untranslated strings use the English fallback. Language availability must not be mistaken for a complete professional translation. Contributions from qualified native speakers are welcome, especially for scientific, medical, safety and accessibility terminology.
+
+## Continuous improvement and regression monitoring
+
+SSSWET uses two complementary maintenance tracks:
+
+- Daily maintenance reviews reproducible defects, security, accessibility, links, tests and deployment health, and applies low-risk corrections with regression tests.
+- Each scheduled feature run targets ten substantial improvements to research workflows, scientific memory, agent coordination, accessibility, reliability, performance or protective technology when all can meet their acceptance criteria. A shortfall is reported rather than padded with cosmetic edits.
+- The repository defines 30-minute and hourly GitHub Actions regression watches that run Python and JavaScript checks and the core test suite. GitHub may delay scheduled runs, so each successful run is a point-in-time check rather than a guarantee of continuous monitoring. The workflows do not autonomously rewrite or merge code. Failures require investigation and a reviewed correction.
+
+No update may knowingly reduce documented usefulness, performance, durability, efficiency, safety, maintainability, accessibility or evidence quality. Benchmark gains and claims about agent capability require repeatable measurements. Scientific, ethical, privacy, cybersecurity and legal safeguards remain mandatory.
+
+## Cross-agent research memory
+
+The persistent agent memory layer supports bounded team-wide retrieval for shared research questions. Results preserve agent identity and source provenance, use deterministic ranking, and remain research notes rather than verified conclusions. See [Cross-agent memory retrieval](docs/CROSS_AGENT_MEMORY_RETRIEVAL.md).
+
+## Context-aware claim comparison
+
+Context-aware claim comparison separates differences in scope, conditions, units and observation dates before flagging review leads. See [Context-aware research claim comparison](docs/CONTEXT_AWARE_CLAIM_COMPARISON.md).
+
+## Independent reviewer selection
+
+SSSWET can prepare auditable reviewer-panel proposals that exclude prior reviewers and declared conflicts, avoid repeated campaigns, and flag shared evidence sources for disclosure. Proposals do not execute assignments or certify independence. See [Independent reviewer selection safeguards](docs/INDEPENDENT_REVIEWER_SELECTION.md).
+
+## Research decision lineage
+
+The persistent research decision ledger preserves decision rationales, evidence references, reviewer identifiers and constrained review-state changes. Corrections create new linked decisions rather than overwriting earlier records, so abandoned interpretations and negative findings remain traceable. Recorded statuses are review history, not scientific truth or certification. See [Research decision lineage](docs/RESEARCH_DECISION_LINEAGE.md).
+
+## Agent memory evidence review
+
+Agent memories now carry explicit, append-only source-review states. Researchers can flag a note for reassessment, record a referenced recheck, or mark it superseded or withdrawn. Search results expose the latest review status and reviewer provenance; unreviewed notes remain visibly unreviewed. These workflow annotations do not establish scientific truth or infer staleness from age. See [Agent memory evidence review](docs/AGENT_MEMORY_EVIDENCE_REVIEW.md).
+
+## Research knowledge graph
+
+The research knowledge graph connects individual memories, claims, decisions, experiments, evidence, technology dossiers and hypotheses through explicit, provenance-linked relationships. Bounded impact tracing helps identify downstream artefacts that may need review when upstream evidence or interpretations change. It complements the technology dependency graph rather than replacing it. See [Research Knowledge Graph](docs/RESEARCH_KNOWLEDGE_GRAPH.md).
+
+## Research workflow quality
+
+The core research toolkit now adds deterministic provenance-graph diagnostics, versioned agent-capability matching, dataset governance review flags, preregistration deviation records, verifiable reproducibility manifests, uncertainty-aware temporal alignment, fair civil-rescue resource allocation, static accessibility checks, localization QA and dossier-level provenance audits. These are decision-support and review tools; they do not automate scientific approval, legal compliance, dispatch or real-world operations. See [Research workflow quality upgrades](docs/RESEARCH_WORKFLOW_QUALITY_UPGRADES_2026-11-06.md).
+
+## Research workbench — 13 November 2026
+
+Ten additional opt-in core utilities extend hypothesis operationalisation, append-only replication comparison, claim-level evidence coverage, source-audit calibration, aggregate dataset-shift monitoring, dependency critical-path planning, multi-objective design comparison, structured safety-case review, local-frame alignment for Virtual Time Mapping and civil-rescue route accessibility screening.
+
+They are bounded, deterministic decision-support tools with regression tests. They do not replace existing research APIs, establish scientific truth, certify designs, approve safety cases or authorize operational rescue decisions. See the [Research Workbench guide](docs/RESEARCH_WORKBENCH_2026-11-13_RUN_2.md) and its [pre-implementation acceptance plan](docs/UPGRADE_PLAN_2026-11-13_RUN_2.md).
+
+## Research continuity and evidence workflows
+
+The 12 November 2026 research upgrade adds bounded agent context packs, human-review triage, contradiction-aware graph neighbourhoods, paginated scientific-memory lineage, literature-watch comparisons, expanded scholarly metadata discovery, and dataset-governed reproducibility checks. It also records the temporal identity, browser-origin security and reduced-motion safeguards.
+
+See the public implementation and limitations record: [Research continuity and evidence workflow upgrades](docs/DAILY_UPGRADES_2026-11-12.md).
+
+
+The extended research-continuity API routes are local-administrator interfaces. They require a loopback request and the configured `SSSWET_ADMIN_TOKEN`; they are not exposed as unauthenticated public research-data endpoints. The public website displays only the selected project information described above.
+
+
+## Research assurance utilities — 14 November 2026
+
+SSSWET adds ten opt-in, bounded Python decision-support utilities for agent handoff contracts, provenance-preserving memory snapshots, declared source lineage, claim-context comparability, translation-integrity prompts, reviewer concordance, temporal evidence windows, source-coverage audits, 2D spatial covariance propagation and civil-rescue graph redundancy. These tools preserve uncertainty and conflicting records; they do not establish scientific truth, translation accuracy, source independence, physical-system feasibility, operational route safety or responder dispatch. Civil-rescue segment analysis treats declared segments as undirected and must not be used for one-way routing. See the [Research Assurance guide](docs/RESEARCH_ASSURANCE_UPGRADES_2026-11-14.md) and its [pre-implementation acceptance plan](docs/RESEARCH_ASSURANCE_UPGRADE_PLAN_2026-11-14.md).
+
+## Field energy-storage assurance
+
+Ten bounded retrospective utilities support researcher-supplied field-power logs: validated samples and declared-cycle segmentation; trapezoidal capacity and energy calculations; round-trip ratios; descriptive capacity trends; caller-limit temperature and cell-voltage screening; robust anomaly flags; protocol comparisons; and integrity-checked evidence manifests. These tools do not control hardware, prescribe operating limits, predict thermal runaway or certify equipment. See the [field energy-storage assurance guide](docs/ENERGY_STORAGE_ASSURANCE_2026-11-10.md) and [acceptance plan](docs/UPGRADE_PLAN_2026-11-18_RUN_6.md).
