@@ -25,7 +25,7 @@ def test_ci_scheduled_and_pages_workflows_pin_node24_actions():
         content = (ROOT / workflow).read_text(encoding="utf-8")
         for action in actions:
             expected = PINS[action]
-            pattern = rf"^\\s*uses:\\s*{re.escape(action)}@{expected}(?:\\s+#.*)?$"
+            pattern = rf"^\s*uses:\s*{re.escape(action)}@{expected}(?:\s+#.*)?$"
             assert re.search(pattern, content, re.MULTILINE), f"{workflow} must pin {action} to its verified Node 24 release"
         if "actions/setup-node" in actions:
-            assert re.search(r"^\\s*package-manager-cache:\\s*false\\s*$", content, re.MULTILINE), f"{workflow} must disable unused Node package-manager caching"
+            assert re.search(r"^\s*package-manager-cache:\s*false\s*$", content, re.MULTILINE), f"{workflow} must disable unused Node package-manager caching"
