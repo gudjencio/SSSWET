@@ -1,4 +1,4 @@
-"""Guard the Node 24-compatible action pins used by CI, scheduled and Pages workflows."""
+"""Guard Node 24-compatible action pins across CI, schedules, Pages and report processing."""
 from pathlib import Path
 import re
 
@@ -9,6 +9,7 @@ WORKFLOWS = {
     ".github/workflows/hourly-regression-watch.yml": ("actions/checkout", "actions/setup-python", "actions/setup-node"),
     ".github/workflows/regression-watch-30m.yml": ("actions/checkout", "actions/setup-python", "actions/setup-node", "actions/github-script"),
     ".github/workflows/pages-deploy.yml": ("actions/checkout", "actions/upload-pages-artifact", "actions/deploy-pages"),
+    ".github/workflows/process-public-reports.yml": ("actions/checkout", "actions/setup-python"),
 }
 PINS = {
     "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",  # v7.0.1, node24
@@ -20,7 +21,7 @@ PINS = {
 }
 
 
-def test_ci_scheduled_and_pages_workflows_pin_node24_actions():
+def test_all_active_ci_and_side_effect_workflows_pin_node24_actions():
     for workflow, actions in WORKFLOWS.items():
         content = (ROOT / workflow).read_text(encoding="utf-8")
         for action in actions:
