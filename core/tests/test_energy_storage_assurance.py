@@ -385,5 +385,5 @@ def test_protocol_revision_diffs_list_items_and_bounds_nested_arrays():
 
 
 def test_protocol_comparison_normalizes_mixed_key_errors():
-    with pytest.raises(ValueError, match="JSON-compatible"):
+    with pytest.raises(ValueError, match="protocol keys must be non-empty strings"):
         compare_protocols({"a": 1}, {"a": 1, 2: "invalid"})
