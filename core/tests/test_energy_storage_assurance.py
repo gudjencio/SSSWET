@@ -387,3 +387,34 @@ def test_protocol_revision_diffs_list_items_and_bounds_nested_arrays():
 def test_protocol_comparison_normalizes_mixed_key_errors():
     with pytest.raises(ValueError, match="protocol keys must be non-empty strings"):
         compare_protocols({"a": 1}, {"a": 1, 2: "invalid"})
+
+
+def test_capacity_fade_uses_scaled_fit_for_large_finite_measurements():
+    result = capacity_fade([
+        {"cycle_number": 1, "capacity_ah": 1e308},
+        {"cycle_number": 2, "capacity_ah": 1e308},
+        {"cycle_number": 3, "capacity_ah": 1e308},
+    ])
+    assert result["slope_ah_per_cycle"] == 0.0
+    assert result["relative_change_percent"] == 0.0
+    assert result["r_squared_descriptive"] == 1.0
+    json.dumps(result, allow_nan=False)
+
+
+def test_round_trip_efficiency_rejects_unrepresentable_ratio():
+    rows = [
+        make_sample(0, "charge", seconds=0, current=1e-308, voltage=1.0),
+        make_sample(1, "charge", seconds=60, current=1e-308, voltage=1.0),
+        make_sample(2, "discharge", seconds=120, current=1e308, voltage=1.0),
+        make_sample(3, "discharge", seconds=180, current=1e308, voltage=1.0),
+    ]
+    with pytest.raises(ValueError, match="efficiency overflowed"):
+        round_trip_efficiency(rows, "cycle-1", max_gap_seconds=120)
+
+
+def test_protocol_size_limit_is_checked_before_flattening(monkeypatch):
+    import ssswet_core.energy_storage_assurance as module
+    monkeypatch.setattr(module, "_flatten_protocol", lambda *_args, **_kwargs: pytest.fail("oversized input must not be flattened"))
+    oversized = {"payload": "x" * (module.MAX_PROTOCOL_BYTES + 1)}
+    with pytest.raises(ValueError, match="1 MB limit"):
+        compare_protocols(oversized, {})
