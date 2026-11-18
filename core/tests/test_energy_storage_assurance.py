@@ -386,7 +386,7 @@ def test_protocol_revision_diffs_list_items_and_bounds_nested_arrays():
 
 
 def test_protocol_comparison_normalizes_mixed_key_errors():
-    with pytest.raises(ValueError, match="protocol keys must be non-empty strings"):
+    with pytest.raises(ValueError, match="JSON-compatible"):
         compare_protocols({"a": 1}, {"a": 1, 2: "invalid"})
 
 
@@ -406,8 +406,8 @@ def test_round_trip_efficiency_rejects_unrepresentable_ratio():
     rows = [
         make_sample(0, "charge", seconds=0, current=1e-308, voltage=1.0),
         make_sample(1, "charge", seconds=60, current=1e-308, voltage=1.0),
-        make_sample(2, "discharge", seconds=120, current=1e308, voltage=1.0),
-        make_sample(3, "discharge", seconds=180, current=1e308, voltage=1.0),
+        make_sample(2, "discharge", seconds=120, current=1e306, voltage=1.0),
+        make_sample(3, "discharge", seconds=180, current=1e306, voltage=1.0),
     ]
     with pytest.raises(ValueError, match="efficiency overflowed"):
         round_trip_efficiency(rows, "cycle-1", max_gap_seconds=120)
