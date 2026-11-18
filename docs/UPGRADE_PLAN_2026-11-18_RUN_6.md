@@ -49,3 +49,4 @@
 - Trapezoid averaging must avoid false overflow for large finite endpoints when the average and integrated result are representable; test this positive case alongside overflow rejection.
 - Integrate finite endpoint values using multiplication by the hour-fraction before current/energy magnitude, so representable integrals are not rejected by intermediate multiplication overflow.
 - Median calculations use an overflow-safe midpoint for large finite values; anomaly screening returns strict-JSON review states rather than non-finite outputs when numeric ranges exceed representable dispersion.
+- Measure evidence-manifest serialized size at 500, 1,000 and 2,000 synthetic samples; each remains <=2 MiB and size growth is monotonic for the declared fixture.
