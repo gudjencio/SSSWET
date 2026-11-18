@@ -9,7 +9,7 @@ PREFIXES = ("web/", "docs/", "core/ssswet_core/", "core/tests/")
 ROOT_FILES = {"README.md"}
 SUFFIXES = {".py", ".js", ".css", ".html", ".md", ".json", ".yml", ".yaml", ".toml"}
 SENSITIVE_PATH_PATTERN = re.compile(
-    r"(?i)(?:^|[/_.-])(?:payments?|donations?|subscriptions?|refunds?|tax|billing|finance|financing|financial|legal|polic(?:y|ies)|customers?|product[-_]purchase|platform[-_]downloads?|version[-_]center|app[-_]distribution|releases?|downloads?|contributions?)(?:$|[/_.-])"
+    r"(?i)(?:^|[/_.-])(?:payments?|donations?|subscriptions?|refunds?|tax|billing|finance|financing|financial|legal|polic(?:y|ies)|customers?|product[-_]purchase|product[-_]availability|platform[-_]downloads?|version[-_]center|app[-_]distribution|releases?|downloads?|contributions?)(?:$|[/_.-])"
 )
 SENSITIVE_ENV_PATTERN = re.compile(
     r"(?i)(?:token|secret|password|passwd|api_key|access_key|private_key|credential|authorization|cookie|(?:^|_)pat(?:$|_))"
