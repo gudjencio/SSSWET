@@ -22,5 +22,5 @@ def test_ci_and_scheduled_workflows_pin_node24_actions():
         content = (ROOT / workflow).read_text(encoding="utf-8")
         for action in actions:
             expected = PINS[action]
-            pattern = rf"^\\s*uses:\\s*{re.escape(action)}@{expected}(?:\\s+#.*)?$"
+            pattern = rf"^\s*uses:\s*{re.escape(action)}@{expected}(?:\s+#.*)?$"
             assert re.search(pattern, content, re.MULTILINE), f"{workflow} must pin {action} to its verified Node 24 release"
