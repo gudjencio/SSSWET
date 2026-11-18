@@ -52,7 +52,6 @@ def emit_outputs(has_patch=False, patch_b64=""):
 
 
 def main():
-    emit_outputs(False)
     issue = request_json(f"{API}/repos/{REPO}/issues/{ISSUE_NUMBER}")
     labels = {x["name"].lower() for x in issue.get("labels", [])}
     if "public report" not in labels or "pull_request" in issue:
