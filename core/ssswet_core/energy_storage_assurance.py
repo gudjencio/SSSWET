@@ -10,7 +10,6 @@ from datetime import datetime, timezone
 from hashlib import sha256
 import json
 import math
-from statistics import median
 
 MAX_SAMPLES = 20_000
 MAX_CELLS = 128
@@ -70,6 +69,17 @@ def _positive_limit(value: object, name: str) -> float:
     if result <= 0:
         raise ValueError(f"{name} must be greater than zero")
     return result
+
+
+def _safe_median(values: list[float]) -> float:
+    """Median with an overflow-safe midpoint for finite numeric inputs."""
+    ordered = sorted(values)
+    if not ordered:
+        raise ValueError("median requires at least one value")
+    middle = len(ordered) // 2
+    if len(ordered) % 2:
+        return ordered[middle]
+    return ordered[middle - 1] / 2.0 + ordered[middle] / 2.0
 
 
 def validate_energy_samples(samples: object) -> list[dict]:
@@ -480,7 +490,7 @@ def cell_imbalance(samples: object, review_spread_v: float) -> dict:
     return {
         "sample_count": len(results),
         "maximum_spread_v": max(measured) if measured else None,
-        "median_spread_v": median(measured) if measured else None,
+        "median_spread_v": _safe_median(measured) if measured else None,
         "review_spread_limit_v": threshold,
         "source_ids": sorted({row["source_id"] for row in normalized if row.get("cell_voltages_v") is not None}),
         "calibration_refs": sorted({ref for row in normalized for ref in row.get("calibration_refs", []) if row.get("cell_voltages_v") is not None}),
@@ -509,8 +519,19 @@ def detect_signal_anomalies(
         if len(values) < 5:
             summaries.append({"field": field, "sample_count": len(values), "status": "insufficient_samples"})
             continue
-        centre = median(values)
-        mad = median([abs(value - centre) for value in values])
+        centre = _safe_median(values)
+        mad = _safe_median([abs(value - centre) for value in values])
+        if not math.isfinite(mad):
+            summaries.append({
+                "field": field,
+                "sample_count": len(values),
+                "median": centre,
+                "mad": None,
+                "status": "numeric_range_overflow_review_required",
+                "review_required_sample_ids": [row["sample_id"] for row in rows],
+                "method": "median_absolute_deviation",
+            })
+            continue
         field_anomalies = []
         for row in rows:
             delta = row[field] - centre
