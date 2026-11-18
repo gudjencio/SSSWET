@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 import json
+import math
 
 import pytest
 
@@ -427,4 +428,4 @@ def test_integrator_avoids_overflowing_average_for_large_finite_values():
     ]
     result = integrate_capacity(rows, "cycle-1", max_gap_seconds=120)
     assert math.isfinite(result["metric"])
-    assert result["metric"] == pytest.approx(1e308 * 60 / 3600)
+    assert result["metric"] == pytest.approx(1e308 * (60 / 3600))
