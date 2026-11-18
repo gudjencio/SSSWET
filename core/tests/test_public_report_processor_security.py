@@ -164,4 +164,4 @@ def test_processor_only_prepares_patch_and_never_executes_or_publishes():
 def test_publisher_does_not_run_tests():
     publisher = (SCRIPT_DIR / "publish_public_report_patch.py").read_text(encoding="utf-8")
     assert "pytest" not in publisher
-    assert "gh pr create" in publisher
+    assert '"gh", "pr", "create"' in publisher
