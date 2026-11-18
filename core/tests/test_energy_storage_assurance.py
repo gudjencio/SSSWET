@@ -418,3 +418,13 @@ def test_protocol_size_limit_is_checked_before_flattening(monkeypatch):
     oversized = {"payload": "x" * (module.MAX_PROTOCOL_BYTES + 1)}
     with pytest.raises(ValueError, match="1 MB limit"):
         compare_protocols(oversized, {})
+
+
+def test_integrator_avoids_overflowing_average_for_large_finite_values():
+    rows = [
+        make_sample(0, "discharge", seconds=0, current=1e308, voltage=1.0),
+        make_sample(1, "discharge", seconds=60, current=1e308, voltage=1.0),
+    ]
+    result = integrate_capacity(rows, "cycle-1", max_gap_seconds=120)
+    assert math.isfinite(result["metric"])
+    assert result["metric"] == pytest.approx(1e308 * 60 / 3600)
