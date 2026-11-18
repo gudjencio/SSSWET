@@ -102,3 +102,8 @@ jobs:
           python -m py_compile .github/scripts/benchmark_public_media_evidence_pipeline.py
           python -m py_compile core/ssswet_core/public_media_evidence_pipeline.py
           python .github/scripts/benchmark_public_media_evidence_pipeline.py
+      - name: Benchmark field energy-storage assurance
+        if: matrix.python-version == '3.12'
+        run: |
+          python -m py_compile .github/scripts/benchmark_energy_storage_assurance.py core/ssswet_core/energy_storage_assurance.py
+          python .github/scripts/benchmark_energy_storage_assurance.py
