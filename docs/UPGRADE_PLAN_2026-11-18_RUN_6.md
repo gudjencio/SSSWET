@@ -40,3 +40,9 @@
 - Packets omit raw samples and do not authenticate source/instrument authorship.
 - Synthetic benchmarks are not field tests or battery safety validation.
 - CI changes are additive and must preserve the current security workflow and all existing checks.
+
+## Additional numerical/resource acceptance — after initial CI review
+- Trend fitting must remain finite for large-but-valid capacity measurements by using scaled calculations; any unrepresentable slope/relative-change is rejected rather than serialized as NaN or infinity.
+- Round-trip ratios must reject unrepresentable numeric results instead of returning non-finite percentages.
+- Protocol size limits are checked before flattening to prevent oversized inputs from causing avoidable expansion.
+- Tests cover constant 1e308 capacities, an extreme but finite-input energy ratio, and a payload just over the 1 MB protocol limit with flattening disabled.
