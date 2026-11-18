@@ -10,7 +10,7 @@ API=os.environ.get("GITHUB_API_URL","https://api.github.com")
 MODEL=os.environ.get("SSSWET_REPORT_MODEL","gpt-4.1-mini")
 PREFIXES=("web/","docs/","core/ssswet_core/","core/tests/")
 ROOT_FILES={"README.md"}; SUFFIXES={".py",".js",".css",".html",".md",".json",".yml",".yaml",".toml"}
-SENSITIVE_PATH_PATTERN = re.compile(r"(?i)(?:^|[/_.-])(?:payments?|donations?|subscriptions?|refunds?|tax|billing|finance|financing|financial|legal|policies?|customers?|product-purchase|platform-downloads|version-center|app[-_]distribution|releases?|downloads?|contributions?)(?:$|[/_.-])")
+SENSITIVE_PATH_PATTERN = re.compile(r"(?i)(?:^|[/_.-])(?:payments?|donations?|subscriptions?|refunds?|tax|billing|finance|financing|financial|legal|polic(?:y|ies)|customers?|product-purchase|platform-downloads|version-center|app[-_]distribution|releases?|downloads?|contributions?)(?:$|[/_.-])")
 SENSITIVE_ENV_PATTERN = re.compile(r"(?i)(?:token|secret|password|passwd|api_key|access_key|private_key|credential|authorization|cookie|(?:^|_)pat(?:$|_))")
 
 def request_json(url,payload=None,openai=False):
@@ -61,7 +61,7 @@ def validate_patch(patch):
     """Accept only small modifications whose Git and unified-diff paths agree."""
     if not isinstance(patch, str) or not patch.startswith("diff --git "):
         return None
-    sections=re.split(r"(?m)(?=^diff --git )",patch)
+    sections=[section for section in re.split(r"(?m)(?=^diff --git )",patch) if section.strip()]
     if not sections or len(sections)>6:
         return None
     pairs=[]
