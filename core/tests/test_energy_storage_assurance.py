@@ -429,3 +429,12 @@ def test_integrator_avoids_overflowing_average_for_large_finite_values():
     result = integrate_capacity(rows, "cycle-1", max_gap_seconds=120)
     assert math.isfinite(result["metric"])
     assert result["metric"] == pytest.approx(1e308 * (60 / 3600))
+
+
+def test_anomaly_median_is_finite_for_large_equal_samples():
+    rows = [make_sample(i, temperature=1e308) for i in range(6)]
+    result = detect_signal_anomalies(rows, fields=("temperature_c",))
+    assert result["fields"][0]["median"] == 1e308
+    assert result["fields"][0]["mad"] == 0.0
+    assert result["anomalies"] == []
+    json.dumps(result, allow_nan=False)
