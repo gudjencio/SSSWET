@@ -184,24 +184,34 @@ Acceptance requires CI across Python 3.11, 3.12 and 3.13, five-repeat p95 benchm
 The feature was integrated on top of main `85afc7f`, with `8099f6c` as the immediately preceding main revision. The integration restored the README and CI workflow after an early branch-path error, added the current-main acceptance plan, corrected a test expectation, and added numerical/resource-bound regression coverage.
 
 - **43 focused tests** cover this module. The final core suite passed **902 tests** on Python 3.11, 3.12 and 3.13.
-- Complete CI: [run 44278660670](https://github.com/gudjencio/SSSWET/actions/runs/44278660670) — all matrix jobs passed.
-- Core tests: [run 44278660770](https://github.com/gudjencio/SSSWET/actions/runs/44278660770) — passed.
+- Complete CI: [run 44279289639](https://github.com/gudjencio/SSSWET/actions/runs/44278660670) — all matrix jobs passed.
+- Core tests: [run 44279289609](https://github.com/gudjencio/SSSWET/actions/runs/44278660770) — passed.
 - The current synthetic benchmark used 2,000 samples and five repetitions. All ten workloads were below the 2,000 ms p95 ceiling.
 
 | Operation | Median | p95 |
 | --- | ---: | ---: |
-| Validated ingestion | 14.025 ms | 15.654 ms |
-| Cycle segmentation | 15.931 ms | 15.983 ms |
-| Capacity integration | 14.483 ms | 17.763 ms |
-| Energy / round-trip | 29.396 ms | 31.253 ms |
-| Capacity trend | 0.183 ms | 0.226 ms |
-| Temperature excursions | 19.281 ms | 21.845 ms |
-| Cell imbalance | 16.641 ms | 18.054 ms |
-| Signal anomaly screen | 16.334 ms | 16.657 ms |
-| Protocol revision diff | 0.065 ms | 0.153 ms |
-| Evidence packet | 24.380 ms | 26.829 ms |
+| Validated ingestion | 15.248 ms | 23.476 ms |
+| Cycle segmentation | 17.018 ms | 17.256 ms |
+| Capacity integration | 15.183 ms | 19.145 ms |
+| Energy / round-trip | 30.006 ms | 30.080 ms |
+| Capacity trend | 0.186 ms | 0.242 ms |
+| Temperature excursions | 19.423 ms | 22.485 ms |
+| Cell imbalance | 17.360 ms | 17.625 ms |
+| Signal anomaly screen | 16.787 ms | 16.952 ms |
+| Protocol revision diff | 0.049 ms | 0.141 ms |
+| Evidence packet | 25.762 ms | 27.841 ms |
 
-The synthetic evidence manifest was **2,111 bytes** for the 2,000-sample fixture. The benchmark is a software regression check only, not field performance or battery validation.
+Serialized evidence-manifest size scaled as follows in the synthetic fixture:
+
+| Samples | Manifest bytes |
+| ---: | ---: |
+| 500 | 1,284 |
+| 1,000 | 1,561 |
+| 2,000 | 2,111 |
+
+The benchmark enforces monotonic growth for this fixture and a 2 MiB cap. These sizes are determined largely by declared metadata (including unique cycle identifiers), not raw sample rows. They are fixture-specific measurements, not a general storage forecast.
+
+The benchmark is a software regression check only, not field performance or battery validation.
 
 Additional boundary tests verify scaled capacity trend fitting for large finite inputs, unrepresentable round-trip ratio rejection, protocol-size rejection before flattening, stable trapezoid averaging/unit conversion, and overflow-safe median calculations. Non-finite results are rejected or represented as explicit review states; no output is silently clipped.
 
