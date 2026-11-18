@@ -204,3 +204,7 @@ The feature was integrated on top of main `85afc7f`, with `8099f6c` as the immed
 The synthetic evidence manifest was **2,111 bytes** for the 2,000-sample fixture. The benchmark is a software regression check only, not field performance or battery validation.
 
 Additional boundary tests verify scaled capacity trend fitting for large finite inputs, unrepresentable round-trip ratio rejection, protocol-size rejection before flattening, stable trapezoid averaging/unit conversion, and overflow-safe median calculations. Non-finite results are rejected or represented as explicit review states; no output is silently clipped.
+
+### Evidence-manifest size scaling
+
+The current benchmark also measures deterministic JSON manifest size at three input sizes (500, 1,000 and 2,000 synthetic samples). The exact values are emitted by the CI benchmark and are a fixture-specific measurement: the packet retains summary identifiers and digests, not raw rows. The benchmark asserts monotonic size growth and the 2 MiB cap; it does not imply that all real datasets will have the same metadata density.
