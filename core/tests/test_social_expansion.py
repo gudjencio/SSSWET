@@ -253,3 +253,17 @@ def test_public_feed_rejects_dtd_and_entity_declarations(monkeypatch):
     monkeypatch.setattr("ssswet_core.social_expansion.build_opener", lambda *a: Opener())
     with pytest.raises(ValueError, match="DTD and entity"):
         PublicRSSFeedProvider(["https://example.org/feed"])._read("https://example.org/feed")
+
+
+@pytest.mark.parametrize("sample,expected", [
+    ("বাংলা ভাষা গবেষণা", "bn"),
+    ("עברית מחקר", "he"),
+    ("українська наука", "uk"),
+    ("മലയാളം ഗവേഷണം", "ml"),
+    ("ਪੰਜਾਬੀ ਖੋਜ", "pa"),
+    ("తెలుగు పరిశోధన", "te"),
+    ("தமிழ் ஆய்வு", "ta"),
+])
+def test_additional_script_language_hints_are_conservative(sample, expected):
+    from ssswet_core.social_expansion import _lang_from_text
+    assert _lang_from_text(sample) == expected
