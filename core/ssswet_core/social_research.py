@@ -14,7 +14,7 @@ import re
 from typing import Callable, Iterable
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request, HTTPRedirectHandler, build_opener
 
 from .providers import ProviderResult
 
@@ -224,10 +224,23 @@ def build_claim_review_packet(claim: str, items: Iterable[SocialItem], limit: in
     }
 
 
-def _fetch_json(url: str, headers: dict[str, str], timeout: float = DEFAULT_TIMEOUT) -> dict:
-    request = Request(url, headers={**headers, "Accept": "application/json", "User-Agent": USER_AGENT})
+class _NoRedirect(HTTPRedirectHandler):
+    """Reject redirects before credential-bearing API requests can change origin."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ValueError("Redirects are disabled for credential-bearing research API requests.")
+
+
+def _fetch_payload(url: str, headers: dict[str, str], timeout: float = DEFAULT_TIMEOUT):
+    """Fetch a bounded JSON object/list from a fixed provider endpoint without redirects."""
+    request = Request(
+        url,
+        headers={"Accept": "application/json", "User-Agent": USER_AGENT, **headers},
+    )
     try:
-        with urlopen(request, timeout=max(2.0, min(float(timeout), 20.0))) as response:
+        with build_opener(_NoRedirect()).open(
+            request, timeout=max(2.0, min(float(timeout), 20.0))
+        ) as response:
             declared = response.headers.get("Content-Length")
             if declared and int(declared) > MAX_RESPONSE_BYTES:
                 raise ValueError("Social API response exceeds the configured size limit.")
@@ -237,12 +250,20 @@ def _fetch_json(url: str, headers: dict[str, str], timeout: float = DEFAULT_TIME
     if len(raw) > MAX_RESPONSE_BYTES:
         raise ValueError("Social API response exceeds the configured size limit.")
     payload = json.loads(raw.decode("utf-8"))
-    if not isinstance(payload, dict):
+    if not isinstance(payload, (dict, list)):
         raise ValueError("Social API returned an unexpected response shape.")
-    if payload.get("error"):
+    if isinstance(payload, dict) and payload.get("error"):
         error = payload["error"]
         message = error.get("message", "API error") if isinstance(error, dict) else "API error"
         raise RuntimeError(str(message)[:240])
+    return payload
+
+
+def _fetch_json(url: str, headers: dict[str, str], timeout: float = DEFAULT_TIMEOUT) -> dict:
+    """Fetch an object-shaped JSON response from a fixed provider endpoint."""
+    payload = _fetch_payload(url, headers, timeout)
+    if not isinstance(payload, dict):
+        raise ValueError("Social API returned an unexpected response shape.")
     return payload
 
 

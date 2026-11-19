@@ -69,19 +69,24 @@ def test_facebook_adapter_is_limited_to_explicit_page_ids():
     assert item.metadata["access_scope"] == "configured_public_page"
 
 
-def test_qiita_api_parses_japanese_technical_articles(monkeypatch):
-    class Response:
-        def __enter__(self): return self
-        def __exit__(self, *args): return False
-        def read(self, size):
-            return json.dumps([{"id": "q1", "title": "量子材料の研究", "url": "https://qiita.com/lab/items/q1",
-                                "body": "実験データと方法", "created_at": "2026-11-01T00:00:00Z",
-                                "user": {"id": "lab"}, "tags": [{"name": "science"}]}]).encode()
-    monkeypatch.setattr("ssswet_core.social_expansion.urlopen", lambda *a, **k: Response())
-    item = QiitaSearchProvider().search("量子材料")[0]
+def test_qiita_api_parses_japanese_technical_articles():
+    seen = {}
+    def fake(url, headers, timeout):
+        seen.update({"url": url, "headers": headers, "timeout": timeout})
+        return [{"id": "q1", "title": "量子材料の研究", "url": "https://qiita.com/lab/items/q1",
+                 "body": "実験データと方法", "created_at": "2026-11-01T00:00:00Z",
+                 "user": {"id": "lab"}, "tags": [{"name": "science"}]}]
+    item = QiitaSearchProvider(request_json=fake).search("量子材料")[0]
     assert item.platform == "qiita"
     assert item.metadata["language"] == "ja"
     assert item.title == "量子材料の研究"
+    assert seen["headers"]["User-Agent"] == "SSSWET/0.3 Qiita API client"
+    assert "Authorization" not in seen["headers"]
+
+
+def test_qiita_default_uses_the_redirect_rejecting_bounded_fetcher():
+    from ssswet_core.social_research import _fetch_payload
+    assert QiitaSearchProvider().request_json is _fetch_payload
 
 
 def test_public_feed_rejects_non_https_and_private_networks(monkeypatch):

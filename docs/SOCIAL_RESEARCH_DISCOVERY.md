@@ -186,6 +186,8 @@ Configured RSS/Atom feeds are restricted to HTTPS on port 443. DNS results are c
 
 Individual feed failures are retained as bounded host/error-type diagnostics and surfaced through the social provider's error list. A failed feed does not suppress successful feeds or scholarly discovery.
 
+Credential-bearing official API adapters use a shared response-size/time-bounded JSON fetcher that rejects HTTP redirects before an authorization header or query-string API key can be forwarded to another origin. Qiita uses this same helper for list-shaped responses. Redirects must be resolved by the operator by configuring the documented canonical endpoint; no credential-bearing adapter follows them automatically.
+
 Optional DeepL translation uses only the two official HTTPS API endpoints, pins validated public addresses, disables proxies and redirects, and preserves original text. Translation is best-effort and never changes verification status.
 
 

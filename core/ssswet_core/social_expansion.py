@@ -16,10 +16,10 @@ import socket
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
 import http.client
-from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler, ProxyHandler, urlopen
+from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler, ProxyHandler
 import xml.etree.ElementTree as ET
 
-from .social_research import SocialItem, _fetch_json, MAX_RESPONSE_BYTES, DEFAULT_TIMEOUT
+from .social_research import SocialItem, _fetch_json, _fetch_payload, MAX_RESPONSE_BYTES, DEFAULT_TIMEOUT
 
 
 def _lang_from_text(value: str) -> str:
@@ -308,7 +308,7 @@ class QiitaSearchProvider:
     name = "qiita-api-v2"
     endpoint = "https://qiita.com/api/v2/items"
 
-    def __init__(self, access_token="", max_results=10, request_json=_fetch_json):
+    def __init__(self, access_token="", max_results=10, request_json=_fetch_payload):
         self.token = access_token.strip()
         self.max_results = max(1, min(int(max_results), 20))
         self.request_json = request_json
@@ -317,14 +317,10 @@ class QiitaSearchProvider:
         if not query.strip():
             return []
         url = self.endpoint + "?" + urlencode({"query": query[:200], "per_page": self.max_results})
-        headers = {"Authorization": "Bearer " + self.token} if self.token else {}
-        request = Request(url, headers={"Accept": "application/json", **headers,
-                                        "User-Agent": "SSSWET/0.3 Qiita API client"})
-        with urlopen(request, timeout=DEFAULT_TIMEOUT) as response:
-            raw = response.read(MAX_RESPONSE_BYTES + 1)
-        if len(raw) > MAX_RESPONSE_BYTES:
-            raise ValueError("Qiita response exceeds the configured size limit.")
-        payload = json.loads(raw.decode("utf-8"))
+        headers = {"User-Agent": "SSSWET/0.3 Qiita API client"}
+        if self.token:
+            headers["Authorization"] = "Bearer " + self.token
+        payload = self.request_json(url, headers, DEFAULT_TIMEOUT)
         output = []
         for row in payload[:self.max_results] if isinstance(payload, list) else []:
             ident, title, link = str(row.get("id") or ""), str(row.get("title") or ""), str(row.get("url") or "")

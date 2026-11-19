@@ -54,3 +54,15 @@ Run the full existing Python matrix, core tests, web/accessibility/localization 
 ## Benchmark acceptance budgets
 
 The deterministic synthetic benchmark enforces p95 ceilings of 500 ms for 250-item query relevance, 500 ms for 250-item multilingual triage and 1,000 ms for a 500-record bibliographic audit. These budgets are CI guardrails, not production service-level objectives.
+
+
+## Security-review refinement before merge
+
+The adapter review identified a credential-forwarding risk in the generic standard-library redirect path. Acceptance was tightened before merge:
+
+- Every fixed official API JSON request, including YouTube API-key query requests and bearer-token adapters, must use a shared byte/time-bounded fetcher that rejects redirects.
+- Qiita list-shaped responses must use the same redirect-rejecting bounded fetcher rather than a separate direct URL opener.
+- Regression tests must verify that the redirect guard is installed and rejects a cross-origin redirect, and that Qiita is wired to the shared helper.
+- Existing HTTPS-only feed and DeepL DNS pinning, TLS hostname verification, proxy disabling and redirect rejection remain unchanged.
+
+This is security hardening within the ten accepted capabilities, not an eleventh feature.

@@ -308,3 +308,44 @@ def test_social_provider_surfaces_bounded_feed_errors():
     items, errors = provider.search("battery")
     assert items == []
     assert any("forum.example" in error and "TimeoutError" in error for error in errors)
+
+
+def test_official_api_json_fetch_rejects_redirects_before_forwarding_credentials(monkeypatch):
+    from ssswet_core import social_research
+
+    captured = {}
+
+    class Response:
+        headers = {"Content-Length": "2"}
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+        def read(self, size): return b"{}"
+
+    class Opener:
+        def open(self, request, timeout):
+            captured["request"] = request
+            captured["timeout"] = timeout
+            return Response()
+
+    def fake_build_opener(*handlers):
+        captured["handlers"] = handlers
+        return Opener()
+
+    monkeypatch.setattr(social_research, "build_opener", fake_build_opener)
+    payload = social_research._fetch_json(
+        "https://api.example.test/search",
+        {"Authorization": "Bearer test-secret"},
+        timeout=4,
+    )
+    assert payload == {}
+    assert captured["request"].get_header("Authorization") == "Bearer test-secret"
+    assert captured["timeout"] == 4
+    redirect_guard = next(
+        handler for handler in captured["handlers"]
+        if isinstance(handler, social_research._NoRedirect)
+    )
+    with pytest.raises(ValueError, match="Redirects are disabled"):
+        redirect_guard.redirect_request(
+            captured["request"], None, 302, "Found", {},
+            "https://attacker.example/collect",
+        )
