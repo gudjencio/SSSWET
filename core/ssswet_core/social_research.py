@@ -474,7 +474,7 @@ class SocialResearchProvider:
                                 f"({str(failure.get('error') or 'unavailable')[:60]})"
                             )
                 except Exception as exc:
-                    errors.append(f"{provider.name}: {type(exc).__name__}: {str(exc)[:180]}")
+                    errors.append(f"{provider.name}: {type(exc).__name__}")
         unique: dict[str, SocialItem] = {}
         for item in items:
             unique.setdefault(item.source_id, item)
