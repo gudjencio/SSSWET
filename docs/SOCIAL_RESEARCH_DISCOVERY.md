@@ -106,7 +106,7 @@ Optional DeepL translation stores the translation beside the untouched original 
 4. Public RSS/Atom feeds are HTTPS-only, size-bounded, redirect-disabled and rejected when DNS resolves to non-public IP addresses.
 5. Social source retrieval uses no more than eight concurrent workers and remains bounded by the existing ten-record research-pass cap.
 6. The original language text remains unchanged when a translation is attached; translation failure cannot discard the source.
-7. At least 15 language/script families have deterministic clickbait review fixtures; all triage outputs remain `not_verified`.
+7. At least 23 language/script families have deterministic clickbait review fixtures; all triage outputs remain `not_verified`.
 8. No automated language heuristic or translation is allowed to mark a claim true, false, confirmed or disproven.
 9. Missing credentials, unavailable platform APIs and unsupported platforms do not trigger scraping, login automation or fabricated results.
 10. Existing YouTube, X, Instagram, Crossref, OpenAlex, daemon and CLI behaviours remain available.
