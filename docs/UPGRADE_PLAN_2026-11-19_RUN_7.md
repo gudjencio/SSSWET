@@ -49,3 +49,8 @@
 ## Verification plan
 
 Run the full existing Python matrix, core tests, web/accessibility/localization checks and all existing research benchmarks. Add focused adapter, security, provenance, integration and bibliographic tests. Run the separate read-only live smoke workflow without credentials and inspect its bounded artifact. No payment, tax, refund, customer-data, credential, legal-policy or commercial-promise settings are in scope.
+
+
+## Benchmark acceptance budgets
+
+The deterministic synthetic benchmark enforces p95 ceilings of 500 ms for 250-item query relevance, 500 ms for 250-item multilingual triage and 1,000 ms for a 500-record bibliographic audit. These budgets are CI guardrails, not production service-level objectives.
