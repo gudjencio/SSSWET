@@ -4,6 +4,10 @@ from __future__ import annotations
 import json
 import statistics
 import time
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "core"))
 
 from ssswet_core.bibliographic_integrity import analyze_bibliographic_integrity
 from ssswet_core.social_research import SocialItem, query_relevance, triage_social_item
