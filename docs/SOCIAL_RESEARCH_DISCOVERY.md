@@ -190,3 +190,6 @@ Optional DeepL translation uses only the two official HTTPS API endpoints, pins 
 
 
 XML feed parsing rejects DTD and entity declarations before parsing, in addition to the response-size bound, to avoid entity-expansion payloads.
+
+
+The 23 phrase sets are multilingual review heuristics, not a validated language classifier. Script hints were extended for Bengali, Hebrew, Ukrainian-specific Cyrillic letters, Malayalam, Punjabi, Telugu and Tamil. Latin-script languages such as Polish are phrase-matched when configured, but are not guessed from script alone; provider-declared language metadata takes precedence where available.
