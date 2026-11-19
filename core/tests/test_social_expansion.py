@@ -228,3 +228,20 @@ def test_deepl_endpoint_rejects_redirects():
     from ssswet_core.social_expansion import _NoRedirect
     with pytest.raises(ValueError, match="Redirects are disabled"):
         _NoRedirect().redirect_request(None, None, 302, "Found", {}, "https://attacker.example/")
+
+
+def test_public_feed_rejects_dtd_and_entity_declarations(monkeypatch):
+    xml = b'<!DOCTYPE feed [<!ENTITY x "expanded">]><feed><entry><title>&x;</title></entry></feed>'
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+        def read(self, size): return xml
+    class Opener:
+        def open(self, *args, **kwargs): return Response()
+    monkeypatch.setattr(
+        "ssswet_core.social_expansion.socket.getaddrinfo",
+        lambda *a, **k: [(None, None, None, None, ("93.184.216.34", 443))],
+    )
+    monkeypatch.setattr("ssswet_core.social_expansion.build_opener", lambda *a: Opener())
+    with pytest.raises(ValueError, match="DTD and entity"):
+        PublicRSSFeedProvider(["https://example.org/feed"])._read("https://example.org/feed")
