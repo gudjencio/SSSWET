@@ -44,16 +44,26 @@ def main():
         }
         for i in range(500)
     ]
+    workloads = {
+        "query_relevance_250": measure(lambda: [
+            query_relevance("battery research", item.title + " " + item.text) for item in items
+        ]),
+        "triage_250": measure(lambda: [triage_social_item(item) for item in items]),
+        "bibliographic_integrity_500": measure(lambda: analyze_bibliographic_integrity(records)),
+    }
+    budgets = {
+        "query_relevance_250": 500.0,
+        "triage_250": 500.0,
+        "bibliographic_integrity_500": 1000.0,
+    }
+    for name, result in workloads.items():
+        if result["p95_ms"] > budgets[name]:
+            raise SystemExit(f"{name} exceeded p95 budget: {result['p95_ms']} ms > {budgets[name]} ms")
     results = {
         "schema_version": 1,
         "synthetic_only": True,
-        "workloads": {
-            "query_relevance_250": measure(lambda: [
-                query_relevance("battery research", item.title + " " + item.text) for item in items
-            ]),
-            "triage_250": measure(lambda: [triage_social_item(item) for item in items]),
-            "bibliographic_integrity_500": measure(lambda: analyze_bibliographic_integrity(records)),
-        },
+        "budgets_p95_ms": budgets,
+        "workloads": workloads,
         "limitations": [
             "Synthetic microbenchmarks are not production latency or provider-availability guarantees.",
             "No scientific accuracy or misinformation-classification accuracy is measured.",
