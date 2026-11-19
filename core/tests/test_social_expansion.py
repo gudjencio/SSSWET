@@ -125,6 +125,14 @@ def test_deepl_translation_preserves_original_and_marks_translation_unverified(m
     ("기적의 치료, 위험 제로", "clickbait_language_ko"),
     ("шокирующий прорыв", "clickbait_language_ru"),
     ("mucize tedavi, sıfır risk", "clickbait_language_tr"),
+    ("অলৌকিক চিকিৎসা, ঝুঁকি নেই", "clickbait_language_bn"),
+    ("תרופת פלא ללא סיכון", "clickbait_language_he"),
+    ("чудодійний засіб, нульовий ризик", "clickbait_language_uk"),
+    ("അത്ഭുത ചികിത്സ, പൂജ്യം അപകടസാധ്യത", "clickbait_language_ml"),
+    ("cudowny lek, zerowe ryzyko", "clickbait_language_pl"),
+    ("ਚਮਤਕਾਰੀ ਇਲਾਜ, ਜ਼ੀਰੋ ਜੋਖਮ", "clickbait_language_pa"),
+    ("అద్భుత చికిత్స, సున్నా ప్రమాదం", "clickbait_language_te"),
+    ("அற்புத சிகிச்சை, பூஜ்ஜிய ஆபத்து", "clickbait_language_ta"),
 ])
 def test_multilingual_clickbait_flags_never_assign_truth(phrase, expected):
     item = SocialItem("forum-test", "source:1", phrase, phrase, "https://example.org/post")
