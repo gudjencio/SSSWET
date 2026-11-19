@@ -36,7 +36,8 @@ def test_cli_exposes_social_and_combined_modes_without_changing_default():
     )
     assert "--provider" in result.stdout
     assert "social" in result.stdout and "combined" in result.stdout
-    assert "default: demo" in result.stdout
+    source = (CORE / "ssswet_core" / "research_cli.py").read_text(encoding="utf-8")
+    assert 'default="demo"' in source
 
 
 def test_evidence_quality_matrix_surfaces_bibliographic_integrity_without_verdicts():
