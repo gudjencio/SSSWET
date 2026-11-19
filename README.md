@@ -110,6 +110,12 @@ SSSWET uses two complementary maintenance tracks:
 
 No update may knowingly reduce documented usefulness, performance, durability, efficiency, safety, maintainability, accessibility or evidence quality. Benchmark gains and claims about agent capability require repeatable measurements. Scientific, ethical, privacy, cybersecurity and legal safeguards remain mandatory.
 
+## Global public social and community research discovery
+
+The optional research provider can search public YouTube, X, allowlisted professional Instagram accounts, Bluesky, Reddit, Threads, configured public Facebook Pages, Qiita, indexed public-web/forum pages and operator-configured RSS/Atom feeds. MeWe, Snapchat and regional forums are supported only when a lawful public feed is actually available; no unrestricted API, scraping or login bypass is implied. Social material remains unverified discovery context. See [Global social and community research discovery](docs/SOCIAL_RESEARCH_DISCOVERY.md).
+
+To enable social discovery in the continuous daemon, set `SSSWET_ENABLE_SOCIAL_DISCOVERY=1`. The local CLI also offers `--provider social` and `--provider combined`; its default remains unchanged.
+
 ## Cross-agent research memory
 
 The persistent agent memory layer supports bounded team-wide retrieval for shared research questions. Results preserve agent identity and source provenance, use deterministic ranking, and remain research notes rather than verified conclusions. See [Cross-agent memory retrieval](docs/CROSS_AGENT_MEMORY_RETRIEVAL.md).

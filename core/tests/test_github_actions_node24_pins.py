@@ -10,6 +10,7 @@ WORKFLOWS = {
     ".github/workflows/regression-watch-30m.yml": ("actions/checkout", "actions/setup-python", "actions/setup-node", "actions/github-script"),
     ".github/workflows/pages-deploy.yml": ("actions/checkout", "actions/upload-pages-artifact", "actions/deploy-pages"),
     ".github/workflows/process-public-reports.yml": ("actions/checkout", "actions/setup-python"),
+    ".github/workflows/social-live-smoke.yml": ("actions/checkout", "actions/setup-python", "actions/upload-artifact"),
     ".github/workflows/release-apps.yml": (
         "actions/checkout",
         "actions/setup-node",

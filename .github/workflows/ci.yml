@@ -107,3 +107,8 @@ jobs:
         run: |
           python -m py_compile .github/scripts/benchmark_energy_storage_assurance.py core/ssswet_core/energy_storage_assurance.py
           python .github/scripts/benchmark_energy_storage_assurance.py
+      - name: Benchmark social research discovery and bibliographic review
+        if: matrix.python-version == '3.12'
+        run: |
+          python -m py_compile .github/scripts/benchmark_social_research.py core/ssswet_core/social_research.py core/ssswet_core/social_expansion.py core/ssswet_core/bibliographic_integrity.py
+          python .github/scripts/benchmark_social_research.py
