@@ -7,7 +7,7 @@ from urllib.parse import urlsplit
 
 from .accessibility_audit import audit_html
 
-DEFAULT_PAGES = ("index.html", "virtual-time-travel.html")
+DEFAULT_PAGES = ("index.html", "virtual-time-travel.html", "admin.html")
 DEFAULT_BUDGETS = {
     "total_javascript_bytes": 3_000_000,
     "total_css_bytes": 350_000,
