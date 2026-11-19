@@ -38,21 +38,21 @@ def test_all_active_ci_and_side_effect_workflows_pin_node24_actions():
         content = (ROOT / workflow).read_text(encoding="utf-8")
         for action in actions:
             expected = PINS[action]
-            pattern = rf"^\\s*uses:\\s*{re.escape(action)}@{expected}(?:\\s+#.*)?$"
+            pattern = rf"^\s*uses:\s*{re.escape(action)}@{expected}(?:\s+#.*)?$"
             assert re.search(pattern, content, re.MULTILINE), f"{workflow} must pin {action} to its verified Node 24 release"
         if "actions/setup-node" in actions:
-            assert re.search(r"^\\s*package-manager-cache:\\s*false\\s*$", content, re.MULTILINE), f"{workflow} must disable unused Node package-manager caching"
+            assert re.search(r"^\s*package-manager-cache:\s*false\s*$", content, re.MULTILINE), f"{workflow} must disable unused Node package-manager caching"
 
 
 def test_release_workflow_keeps_build_permissions_read_only_and_publish_tag_only():
     content = (ROOT / ".github/workflows/release-apps.yml").read_text(encoding="utf-8")
     workflow_permissions = content.split("jobs:", 1)[0]
-    assert re.search(r"(?m)^permissions:\\n  contents: read$", workflow_permissions)
+    assert re.search(r"(?m)^permissions:\n  contents: read$", workflow_permissions)
     assert "contents: write" not in workflow_permissions
 
-    release = re.search(r"(?ms)^  release:(.*)\\Z", content)
+    release = re.search(r"(?ms)^  release:(.*)\Z", content)
     assert release is not None
     assert "if: startsWith(github.ref, 'refs/tags/v')" in release.group(1)
-    assert re.search(r"(?m)^    permissions:\\n      contents: write$", release.group(1))
-    assert re.search(r"(?m)^  pull_request:\\n    paths:$", workflow_permissions)
+    assert re.search(r"(?m)^    permissions:\n      contents: write$", release.group(1))
+    assert re.search(r"(?m)^  pull_request:\n    paths:$", workflow_permissions)
     assert content.count("persist-credentials: false") == 2
