@@ -33,8 +33,22 @@ def _lang_from_text(value: str) -> str:
         return "zh"
     if any("\u0600" <= c <= "\u06ff" for c in sample):
         return "ar"
+    if any("\u0980" <= c <= "\u09ff" for c in sample):
+        return "bn"
+    if any("\u0590" <= c <= "\u05ff" for c in sample):
+        return "he"
+    if any(c in "іїєґІЇЄҐ" for c in sample):
+        return "uk"
     if any("\u0400" <= c <= "\u04ff" for c in sample):
         return "ru"
+    if any("\u0d00" <= c <= "\u0d7f" for c in sample):
+        return "ml"
+    if any("\u0a00" <= c <= "\u0a7f" for c in sample):
+        return "pa"
+    if any("\u0c00" <= c <= "\u0c7f" for c in sample):
+        return "te"
+    if any("\u0b80" <= c <= "\u0bff" for c in sample):
+        return "ta"
     if any("\u0900" <= c <= "\u097f" for c in sample):
         return "hi"
     return ""
