@@ -20,7 +20,7 @@
 6. Threads keyword search through the official endpoint, with approved scope requirement documented.
 7. Facebook public Page posts restricted to explicitly configured numeric Page IDs.
 8. Regional and public-web discovery through Qiita, optional Brave Search and operator-configured public RSS/Atom feeds; MeWe/Snapchat are feed-only when a lawful public feed exists.
-9. Multilingual review triage across 15 language/script families, CJK-aware lexical relevance, bounded provider concurrency/deduplication/diversity, and optional translation that preserves originals.
+9. Multilingual review triage across 23 language/script families, CJK-aware lexical relevance, bounded provider concurrency/deduplication/diversity, and optional translation that preserves originals.
 10. Bibliographic integrity review in the evidence-quality matrix: DOI and exact-title/year duplicate candidates, correction/retraction/preprint metadata signals, missing-field warnings, and no automatic deduplication or truth verdict.
 
 ## Measurable acceptance criteria
