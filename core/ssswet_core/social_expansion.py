@@ -374,6 +374,9 @@ class PublicRSSFeedProvider:
             raw = response.read(MAX_RESPONSE_BYTES + 1)
         if len(raw) > MAX_RESPONSE_BYTES:
             raise ValueError("Feed exceeds the configured response-size limit.")
+        upper = raw.upper()
+        if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
+            raise ValueError("DTD and entity declarations are not accepted.")
         root = ET.fromstring(raw)
         entries = []
         for node in root.iter():
