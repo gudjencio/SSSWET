@@ -294,3 +294,28 @@ def test_invalid_optional_translation_configuration_preserves_original_items(mon
     assert result[0].metadata["translation"] == {
         "status": "unavailable", "original_preserved": True,
     }
+
+
+
+def test_facebook_empty_query_returns_without_request():
+    calls = []
+    provider = FacebookPublicPageProvider(
+        "token", ["123"],
+        request_json=lambda *args: calls.append(args) or {"data": []},
+    )
+    assert provider.search("   ") == []
+    assert calls == []
+
+
+def test_facebook_cjk_short_query_uses_character_aware_relevance():
+    provider = FacebookPublicPageProvider(
+        "token", ["123"],
+        request_json=lambda *args: {
+            "data": [{
+                "id": "123_456", "message": "量子材料の研究",
+                "permalink_url": "https://www.facebook.com/123/posts/456",
+            }],
+        },
+    )
+    items = provider.search("量子")
+    assert [item.source_id for item in items] == ["facebook:123_456"]

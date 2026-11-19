@@ -349,3 +349,22 @@ def test_official_api_json_fetch_rejects_redirects_before_forwarding_credentials
             captured["request"], None, 302, "Found", {},
             "https://attacker.example/collect",
         )
+
+
+
+def test_instagram_cjk_short_query_uses_character_aware_relevance():
+    provider = InstagramBusinessDiscoveryProvider(
+        "token", "123", ["science_lab"],
+        request_json=lambda *args: {
+            "business_discovery": {
+                "username": "science_lab",
+                "media": {"data": [{
+                    "id": "jp1", "caption": "量子材料の研究",
+                    "permalink": "https://www.instagram.com/p/jp1/",
+                    "media_type": "IMAGE",
+                }]},
+            },
+        },
+    )
+    items = provider.search("量子")
+    assert [item.source_id for item in items] == ["instagram:jp1"]

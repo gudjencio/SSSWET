@@ -195,3 +195,8 @@ XML feed parsing rejects DTD and entity declarations before parsing, in addition
 
 
 The 23 phrase sets are multilingual review heuristics, not a validated language classifier. Script hints were extended for Bengali, Hebrew, Ukrainian-specific Cyrillic letters, Malayalam, Punjabi, Telugu and Tamil. Latin-script languages such as Polish are phrase-matched when configured, but are not guessed from script alone; provider-declared language metadata takes precedence where available.
+
+
+### Short CJK query handling
+
+The allowlisted Instagram Business Discovery and Facebook Page adapters use the same CJK-aware lexical coverage helper as the cross-platform result stage. Short Japanese, Chinese and Korean query phrases are no longer discarded by whitespace-oriented tokenization. Empty queries return no Page results and do not issue API requests. These remain lexical discovery filters, not semantic relevance or evidence-quality judgments.

@@ -74,3 +74,11 @@ This is security hardening within the ten accepted capabilities, not an eleventh
 - Original title, text and source URL must remain byte-for-byte unchanged when translator construction or an individual translation fails.
 - The item must carry an explicit bounded `translation.status=unavailable` marker.
 - A regression test supplies an unapproved endpoint and verifies original-source retention.
+
+
+## Multilingual adapter-filter refinement
+
+- Instagram Business Discovery and configured Facebook Page filters must use the shared CJK-aware lexical relevance helper, not only whitespace-oriented token extraction.
+- A short two-character Japanese query must retain a matching configured-account result in the deterministic fixture.
+- An empty Facebook query must return no items and make zero API calls.
+- These checks improve discovery recall/precision on declared fixtures only; they do not establish multilingual classifier accuracy.

@@ -404,8 +404,7 @@ class InstagramBusinessDiscoveryProvider:
         self.request_json = request_json
 
     def search(self, query: str) -> list[SocialItem]:
-        terms = _tokens(query)
-        if not terms:
+        if not query.strip():
             return []
         results: dict[str, SocialItem] = {}
         for username in self.usernames:
@@ -419,7 +418,7 @@ class InstagramBusinessDiscoveryProvider:
                 if not isinstance(media, dict):
                     continue
                 caption = str(media.get("caption") or "")
-                if not (terms & _tokens(caption)):
+                if query_relevance(query, caption)[0] <= 0.0:
                     continue
                 permalink, media_id = str(media.get("permalink") or ""), str(media.get("id") or "")
                 if not permalink.startswith("https://www.instagram.com/") or not media_id:

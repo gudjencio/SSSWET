@@ -19,7 +19,7 @@ import http.client
 from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler, ProxyHandler
 import xml.etree.ElementTree as ET
 
-from .social_research import SocialItem, _fetch_json, _fetch_payload, MAX_RESPONSE_BYTES, DEFAULT_TIMEOUT
+from .social_research import SocialItem, _fetch_json, _fetch_payload, query_relevance, MAX_RESPONSE_BYTES, DEFAULT_TIMEOUT
 
 
 def _lang_from_text(value: str) -> str:
@@ -274,7 +274,8 @@ class FacebookPublicPageProvider:
         self.request_json = request_json
 
     def search(self, query: str) -> list[SocialItem]:
-        terms = {x.casefold() for x in re.findall(r"[\w-]{3,}", query)}
+        if not query.strip():
+            return []
         output = {}
         for page_id in self.page_ids:
             url = self.endpoint + "/" + page_id + "/posts?" + urlencode({
@@ -287,7 +288,7 @@ class FacebookPublicPageProvider:
                 link = str(row.get("permalink_url") or "")
                 if not ident or not link.startswith("https://www.facebook.com/"):
                     continue
-                if terms and not any(term in message.casefold() for term in terms):
+                if query_relevance(query, message)[0] <= 0.0:
                     continue
                 output.setdefault(ident, SocialItem(
                     platform="facebook", source_id="facebook:" + ident,
