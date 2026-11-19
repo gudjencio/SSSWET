@@ -285,6 +285,9 @@ def test_web_quality_gate_checks_accessibility_assets_and_budgets(tmp_path):
     (tmp_path / "virtual-time-travel.html").write_text(
         '<!doctype html><html lang="en"><main><h1>Map</h1></main></html>', encoding="utf-8"
     )
+    (tmp_path / "admin.html").write_text(
+        '<!doctype html><html lang="en"><main><h1>Admin</h1></main></html>', encoding="utf-8"
+    )
     (tmp_path / "app.js").write_text("void 0;", encoding="utf-8")
     (tmp_path / "app.css").write_text("body{margin:0}", encoding="utf-8")
     report = audit_web_root(tmp_path)
