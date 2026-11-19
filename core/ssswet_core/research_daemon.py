@@ -10,6 +10,7 @@ from pathlib import Path
 from .persistence import SQLiteResearchStore
 from .pipeline import ResearchPipeline
 from .providers import MultiSourceLiteratureProvider
+from .social_research import MultiSourceResearchProvider
 from .apps_script_relay import AppsScriptSuccessRelay
 
 TECHNOLOGY_OBJECTIVES = [
@@ -116,6 +117,17 @@ TECHNOLOGY_OBJECTIVES = [
 ]
 
 
+def build_research_provider(mailto: str = ""):
+    """Keep the daemon scholarly-only by default; enable social sources explicitly."""
+    literature = MultiSourceLiteratureProvider(mailto=mailto)
+    enabled = os.getenv("SSSWET_ENABLE_SOCIAL_DISCOVERY", "").strip().casefold() in {
+        "1", "true", "yes", "on",
+    }
+    if not enabled:
+        return literature
+    return MultiSourceResearchProvider(literature_provider=literature)
+
+
 def run_pass(
     database: str,
     mailto: str = "",
@@ -123,7 +135,7 @@ def run_pass(
     progress_callback=None,
 ) -> list[dict]:
     store = SQLiteResearchStore(database)
-    provider = MultiSourceLiteratureProvider(mailto=mailto)
+    provider = build_research_provider(mailto)
     pipeline = ResearchPipeline(provider=provider, store=store)
     completed: list[dict] = []
     cycle_started_at = datetime.now(timezone.utc).isoformat()
