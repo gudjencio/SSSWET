@@ -188,7 +188,7 @@ Individual feed failures are retained as bounded host/error-type diagnostics and
 
 Credential-bearing official API adapters use a shared response-size/time-bounded JSON fetcher that rejects HTTP redirects before an authorization header or query-string API key can be forwarded to another origin. Qiita uses this same helper for list-shaped responses. Redirects must be resolved by the operator by configuring the documented canonical endpoint; no credential-bearing adapter follows them automatically.
 
-Optional DeepL translation uses only the two official HTTPS API endpoints, pins validated public addresses, disables proxies and redirects, and preserves original text. Translation is best-effort and never changes verification status.
+Optional DeepL translation uses only the two official HTTPS API endpoints, pins validated public addresses, disables proxies and redirects, and preserves original text. Translation is best-effort and never changes verification status. Invalid optional endpoint configuration or a per-item translation failure marks translation unavailable and retains the original item; it does not fail the social discovery pass.
 
 
 XML feed parsing rejects DTD and entity declarations before parsing, in addition to the response-size bound, to avoid entity-expansion payloads.

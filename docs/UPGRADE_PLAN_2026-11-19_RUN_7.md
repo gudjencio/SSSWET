@@ -66,3 +66,11 @@ The adapter review identified a credential-forwarding risk in the generic standa
 - Existing HTTPS-only feed and DeepL DNS pinning, TLS hostname verification, proxy disabling and redirect rejection remain unchanged.
 
 This is security hardening within the ten accepted capabilities, not an eleventh feature.
+
+
+## Optional-translation failure-isolation refinement
+
+- Invalid DeepL endpoint configuration must not discard successful discovery results.
+- Original title, text and source URL must remain byte-for-byte unchanged when translator construction or an individual translation fails.
+- The item must carry an explicit bounded `translation.status=unavailable` marker.
+- A regression test supplies an unapproved endpoint and verifies original-source retention.

@@ -529,10 +529,20 @@ def translate_items_if_configured(items):
     key = os.getenv("SSSWET_DEEPL_AUTH_KEY", "").strip()
     if not key:
         return items
-    translator = DeepLTranslationClient(
-        key, os.getenv("SSSWET_TRANSLATION_TARGET_LANG", "EN"),
-        os.getenv("SSSWET_DEEPL_API_URL", "https://api-free.deepl.com/v2/translate"),
-    )
+    try:
+        translator = DeepLTranslationClient(
+            key, os.getenv("SSSWET_TRANSLATION_TARGET_LANG", "EN"),
+            os.getenv("SSSWET_DEEPL_API_URL", "https://api-free.deepl.com/v2/translate"),
+        )
+    except Exception:
+        # Invalid optional configuration must not discard successfully discovered originals.
+        return [
+            replace(item, metadata={
+                **item.metadata,
+                "translation": {"status": "unavailable", "original_preserved": True},
+            })
+            for item in items
+        ]
     output = []
     for item in items:
         try:

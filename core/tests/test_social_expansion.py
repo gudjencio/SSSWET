@@ -272,3 +272,25 @@ def test_public_feed_rejects_dtd_and_entity_declarations(monkeypatch):
 def test_additional_script_language_hints_are_conservative(sample, expected):
     from ssswet_core.social_expansion import _lang_from_text
     assert _lang_from_text(sample) == expected
+
+
+
+def test_invalid_optional_translation_configuration_preserves_original_items(monkeypatch):
+    from ssswet_core.social_expansion import translate_items_if_configured
+
+    monkeypatch.setenv("SSSWET_DEEPL_AUTH_KEY", "test-key")
+    monkeypatch.setenv("SSSWET_DEEPL_API_URL", "https://attacker.example/translate")
+    item = SocialItem(
+        "qiita", "qiita:original", "原文タイトル", "原文の研究内容",
+        "https://qiita.com/lab/items/original", metadata={"language": "ja"},
+    )
+
+    result = translate_items_if_configured([item])
+
+    assert len(result) == 1
+    assert result[0].title == item.title
+    assert result[0].text == item.text
+    assert result[0].url == item.url
+    assert result[0].metadata["translation"] == {
+        "status": "unavailable", "original_preserved": True,
+    }
