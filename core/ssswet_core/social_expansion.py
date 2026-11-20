@@ -17,6 +17,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
 import http.client
 from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler, ProxyHandler
+import xml.parsers.expat as expat
 import xml.etree.ElementTree as ET
 
 from .social_research import SocialItem, _fetch_json, _fetch_payload, query_relevance, MAX_RESPONSE_BYTES, DEFAULT_TIMEOUT
@@ -58,6 +59,23 @@ class _NoRedirect(HTTPRedirectHandler):
     """Reject redirects so credentials and feed requests cannot change origin."""
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         raise ValueError("Redirects are disabled for configured public providers.")
+
+def _reject_xml_dtd(raw: bytes) -> None:
+    """Reject document type declarations before ElementTree builds an XML tree.
+
+    Expat recognizes XML encodings such as UTF-8 and UTF-16, unlike a raw
+    byte-string search for the ASCII spelling of a DOCTYPE declaration.
+    """
+    parser = expat.ParserCreate()
+
+    def reject(*_args):
+        raise ValueError("DTD and entity declarations are not accepted.")
+
+    parser.StartDoctypeDeclHandler = reject
+    parser.EntityDeclHandler = reject
+    parser.ExternalEntityRefHandler = lambda *_args: reject()
+    parser.Parse(raw, True)
+
 
 
 class _PinnedHTTPSConnection(http.client.HTTPSConnection):
@@ -385,9 +403,7 @@ class PublicRSSFeedProvider:
             raw = response.read(MAX_RESPONSE_BYTES + 1)
         if len(raw) > MAX_RESPONSE_BYTES:
             raise ValueError("Feed exceeds the configured response-size limit.")
-        upper = raw.upper()
-        if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
-            raise ValueError("DTD and entity declarations are not accepted.")
+        _reject_xml_dtd(raw)
         root = ET.fromstring(raw)
         entries = []
         for node in root.iter():
