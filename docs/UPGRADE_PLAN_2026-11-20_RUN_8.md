@@ -30,7 +30,7 @@
 - A synthetic directed fixture must reach only zones connected by `available` links; `unknown` and `blocked` links must never create reachability.
 - Failure analysis must identify a known bridge relay and bridge link, while leaving a parallel-path fixture non-critical.
 - Coverage must report a zone served through two distinct gateways as multi-gateway and must not infer coverage from unknown links.
-- A two-path capacity fixture must produce the exact max-flow value and identify a minimum-cut link set; unknown capacity must not be treated as zero-capacity evidence or infinite capacity.
+- A two-path capacity fixture must produce the exact max-flow value and identify a minimum-cut link set; unknown link or service-node capacity must not be imputed, and incomplete service capacity must suppress shortage claims.
 - Power autonomy must match hand-calculated Wh/W results and report unknown when any required quantity is absent.
 - Message route estimates must match hand-calculated hop latency plus serialization, separately report no-path and TTL-exceeded states, and terminate deterministically for zero-latency/zero-payload cycles.
 - Traffic-load screening must report utilization above 1.0 as overload without mutating the plan or claiming packet delivery.
