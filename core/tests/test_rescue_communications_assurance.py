@@ -336,3 +336,15 @@ def test_bandwidth_does_not_impute_unknown_service_capacity():
     assert zone["shortage_kbps"] is None
     assert zone["capacity_status"] == "incomplete_service_capacity_data"
     assert zone["service_capacity_unknown_node_ids"] == ["endpoint-a"]
+
+
+
+def test_bandwidth_minimum_cut_can_identify_service_node_bottleneck():
+    plan = sample_plan()
+    plan["nodes"][4]["service_capacity_kbps"] = 20
+    result = assess_communications_bandwidth(plan)
+    zone = next(item for item in result["zones"] if item["zone_id"] == "zone-a")
+    assert zone["maximum_flow_kbps"] == pytest.approx(20)
+    assert zone["shortage_kbps"] == pytest.approx(110)
+    assert zone["minimum_cut_link_ids"] == []
+    assert zone["minimum_cut_service_node_ids"] == ["endpoint-a"]
