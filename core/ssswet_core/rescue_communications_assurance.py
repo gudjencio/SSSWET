@@ -789,21 +789,28 @@ def compare_communications_outage_scenarios(plan: dict, scenarios: list[dict]) -
     }
 
 
+def _assessment_digests(assessments: dict) -> dict[str, str]:
+    if not isinstance(assessments, dict) or len(assessments) > 10:
+        raise ValueError("assessments must be an object with at most 10 named results")
+    if any(not isinstance(name, str) for name in assessments):
+        raise ValueError("assessment names must be strings")
+    result = {}
+    for name in sorted(assessments):
+        key = identifier(name, "assessment_name", 80)
+        if key in result:
+            raise ValueError("assessment names must remain unique after normalization")
+        encoded = canonical_bytes(assessments[name])
+        if len(encoded) > 100_000:
+            raise ValueError("each assessment must not exceed 100000 canonical bytes")
+        result[key] = digest(assessments[name])
+    return result
+
+
 def build_communications_assurance_manifest(plan: dict, assessments: dict, *,
                                              evidence_refs=()) -> dict:
     """Build a deterministic metadata-only integrity manifest for reviewed outputs."""
     normalized = _normalize_plan(plan)
-    if not isinstance(assessments, dict) or len(assessments) > 10:
-        raise ValueError("assessments must be an object with at most 10 named results")
-    assessment_hashes = {}
-    for name, value in sorted(assessments.items()):
-        key = identifier(name, "assessment_name", 80)
-        encoded = canonical_bytes(value)
-        if len(encoded) > 100_000:
-            raise ValueError("each assessment must not exceed 100000 canonical bytes")
-        if key in assessment_hashes:
-            raise ValueError("assessment names must remain unique after normalization")
-        assessment_hashes[key] = digest(value)
+    assessment_hashes = _assessment_digests(assessments)
     refs = _refs(evidence_refs, "evidence_refs", MAX_EVIDENCE_REFS)
     body = {
         "schema_version": SCHEMA_VERSION,
@@ -816,6 +823,7 @@ def build_communications_assurance_manifest(plan: dict, assessments: dict, *,
             "max_zones": MAX_ZONES, "max_messages": MAX_MESSAGES,
             "max_traffic_flows": MAX_TRAFFIC_FLOWS,
             "max_scenarios": MAX_SCENARIOS,
+            "max_bandwidth_zones_per_call": MAX_BANDWIDTH_ZONES,
         },
         "unknown_links_are_traversable": False,
         "message_content_included": False,
@@ -832,13 +840,14 @@ def verify_communications_assurance_manifest(manifest: dict, *, plan: dict | Non
     """Verify manifest integrity and, when supplied, the referenced input digests."""
     if not isinstance(manifest, dict):
         return {"valid": False, "reasons": ["manifest_not_object"], "authorship_authenticated": False}
-    if set(manifest) != {
+    required = {
         "schema_version", "plan_id", "plan_sha256", "assessment_sha256",
         "evidence_refs", "limits", "unknown_links_are_traversable",
         "message_content_included", "live_network_activity_performed",
         "dispatch_authorized", "safety_certified", "interpretation",
         "manifest_sha256",
-    }:
+    }
+    if set(manifest) != required:
         return {"valid": False, "reasons": ["manifest_schema_invalid"], "authorship_authenticated": False}
     body = {key: value for key, value in manifest.items() if key != "manifest_sha256"}
     reasons = []
@@ -846,7 +855,45 @@ def verify_communications_assurance_manifest(manifest: dict, *, plan: dict | Non
         expected = digest(body)
     except ValueError:
         return {"valid": False, "reasons": ["manifest_not_canonical"], "authorship_authenticated": False}
-    if manifest.get("schema_version") != SCHEMA_VERSION or manifest.get("manifest_sha256") != expected:
+    if isinstance(manifest.get("schema_version"), bool) or manifest.get("schema_version") != SCHEMA_VERSION:
+        reasons.append("manifest_schema_version_invalid")
+    try:
+        identifier(manifest.get("plan_id"), "plan_id", 160)
+    except ValueError:
+        reasons.append("manifest_plan_id_invalid")
+    plan_hash = manifest.get("plan_sha256")
+    if not isinstance(plan_hash, str) or len(plan_hash) != 64 or any(ch not in "0123456789abcdef" for ch in plan_hash):
+        reasons.append("manifest_plan_digest_invalid")
+    assessment_hashes = manifest.get("assessment_sha256")
+    if not isinstance(assessment_hashes, dict) or len(assessment_hashes) > 10:
+        reasons.append("manifest_assessment_digests_invalid")
+    else:
+        try:
+            if _assessment_digests({key: value for key, value in assessment_hashes.items()}) != assessment_hashes:
+                reasons.append("manifest_assessment_digests_invalid")
+        except (ValueError, TypeError):
+            reasons.append("manifest_assessment_digests_invalid")
+    try:
+        _refs(manifest.get("evidence_refs"), "evidence_refs", MAX_EVIDENCE_REFS)
+    except ValueError:
+        reasons.append("manifest_evidence_refs_invalid")
+    expected_limits = {
+        "max_nodes": MAX_NODES, "max_links": MAX_LINKS,
+        "max_zones": MAX_ZONES, "max_messages": MAX_MESSAGES,
+        "max_traffic_flows": MAX_TRAFFIC_FLOWS,
+        "max_scenarios": MAX_SCENARIOS,
+        "max_bandwidth_zones_per_call": MAX_BANDWIDTH_ZONES,
+    }
+    if manifest.get("limits") != expected_limits:
+        reasons.append("manifest_limits_invalid")
+    if any(manifest.get(name) is not False for name in (
+        "unknown_links_are_traversable", "message_content_included",
+        "live_network_activity_performed", "dispatch_authorized", "safety_certified",
+    )):
+        reasons.append("manifest_safety_flags_invalid")
+    if not isinstance(manifest.get("interpretation"), str):
+        reasons.append("manifest_interpretation_invalid")
+    if manifest.get("manifest_sha256") != expected:
         reasons.append("manifest_digest_mismatch")
     if plan is not None:
         try:
@@ -856,17 +903,9 @@ def verify_communications_assurance_manifest(manifest: dict, *, plan: dict | Non
             reasons.append("plan_invalid")
     if assessments is not None:
         try:
-            if not isinstance(assessments, dict) or len(assessments) > 10:
-                raise ValueError("assessments must be an object with at most 10 named results")
-            actual = {}
-            for name, value in sorted(assessments.items()):
-                key = identifier(name, "assessment_name", 80)
-                if key in actual:
-                    raise ValueError("assessment names must remain unique after normalization")
-                actual[key] = digest(value)
-            if manifest.get("assessment_sha256") != actual:
+            if manifest.get("assessment_sha256") != _assessment_digests(assessments):
                 reasons.append("assessment_digest_mismatch")
-        except (ValueError, AttributeError):
+        except (ValueError, TypeError):
             reasons.append("assessments_invalid")
     return {
         "valid": not reasons,
