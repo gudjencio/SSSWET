@@ -377,7 +377,7 @@ def assess_communications_zone_coverage(plan: dict) -> dict:
             "reachable_gateway_ids": gateway_ids,
             "reachable_gateway_count": len(gateway_ids),
             "coverage_status": (
-                "no_verified_path" if not gateway_ids else
+                "no_declared_path" if not gateway_ids else
                 "multi_gateway_path" if len(gateway_ids) >= 2 else
                 "single_gateway_path"
             ),
