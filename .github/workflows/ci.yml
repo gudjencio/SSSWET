@@ -112,3 +112,9 @@ jobs:
         run: |
           python -m py_compile .github/scripts/benchmark_social_research.py core/ssswet_core/social_research.py core/ssswet_core/social_expansion.py core/ssswet_core/bibliographic_integrity.py
           python .github/scripts/benchmark_social_research.py
+
+      - name: Benchmark civil-rescue communications assurance
+        if: matrix.python-version == '3.12'
+        run: |
+          python -m py_compile core/ssswet_core/rescue_communications_assurance.py .github/scripts/benchmark_rescue_communications_assurance.py
+          python .github/scripts/benchmark_rescue_communications_assurance.py

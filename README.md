@@ -167,3 +167,10 @@ SSSWET adds ten opt-in, bounded Python decision-support utilities for agent hand
 ## Field energy-storage assurance
 
 Ten bounded retrospective utilities support researcher-supplied field-power logs: validated samples and declared-cycle segmentation; trapezoidal capacity and energy calculations; round-trip ratios; descriptive capacity trends; caller-limit temperature and cell-voltage screening; robust anomaly flags; protocol comparisons; and integrity-checked evidence manifests. These tools do not control hardware, prescribe operating limits, predict thermal runaway or certify equipment. See the [field energy-storage assurance guide](docs/ENERGY_STORAGE_ASSURANCE_2026-11-10.md) and [acceptance plan](docs/UPGRADE_PLAN_2026-11-18_RUN_6.md).
+
+
+## Civil-rescue communications assurance — 20 November 2026
+
+The core adds ten bounded offline planning capabilities for declared civil-rescue communications networks: strict topology validation, directed gateway reachability, single-point-of-failure analysis, service-zone coverage and gateway redundancy, per-zone bandwidth max-flow bounds, relay power-autonomy estimates, metadata-only message path/TTL estimates, aggregate traffic-load screening, outage-scenario comparison and deterministic integrity manifests.
+
+These utilities do not scan, connect to, configure or transmit over real networks. Unknown links remain unavailable; capacity, latency and power estimates require explicit caller-supplied values. They do not establish geographic radio coverage, message delivery, safety certification, dispatch authority or legal authorization. See the [Civil-rescue communications assurance guide](docs/RESCUE_COMMUNICATIONS_ASSURANCE_2026-11-20.md) and [Run 8 pre-implementation acceptance plan](docs/UPGRADE_PLAN_2026-11-20_RUN_8.md).
