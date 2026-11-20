@@ -348,3 +348,19 @@ def test_bandwidth_minimum_cut_can_identify_service_node_bottleneck():
     assert zone["shortage_kbps"] == pytest.approx(110)
     assert zone["minimum_cut_link_ids"] == []
     assert zone["minimum_cut_service_node_ids"] == ["endpoint-a"]
+
+
+
+def test_bandwidth_does_not_claim_shortage_when_an_available_link_capacity_is_unknown():
+    plan = sample_plan()
+    link = next(item for item in plan["links"] if item["link_id"] == "a-gw-relay")
+    link["capacity_kbps"] = None
+    result = assess_communications_bandwidth(plan)
+    zone = next(item for item in result["zones"] if item["zone_id"] == "zone-a")
+    assert zone["maximum_flow_kbps"] == pytest.approx(50)
+    assert zone["maximum_flow_is_complete"] is False
+    assert zone["minimum_cut_is_complete"] is False
+    assert zone["shortage_kbps"] is None
+    assert zone["capacity_status"] == "incomplete_link_capacity_data"
+    assert zone["capacity_unknown_link_ids"] == ["a-gw-relay"]
+    assert result["independent_per_zone_upper_bounds"] is False
