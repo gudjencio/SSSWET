@@ -85,8 +85,8 @@ def synthetic_plan() -> dict:
     for index in range(20):
         links.append({
             "link_id": f"relay-mesh-{index:02d}",
-            "from_node": f"relay-{index:02d}",
-            "to_node": f"relay-{(index + 1) % 16:02d}",
+            "from_node": f"relay-{index % 16:02d}",
+            "to_node": f"relay-{(index + 1) % 16:02d}" if index < 16 else f"relay-{(index + 5) % 16:02d}",
             "direction": "bidirectional", "status": "available",
             "capacity_kbps": 300.0, "reserved_kbps": 30.0, "latency_ms": 12.0,
         })
