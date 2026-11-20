@@ -560,7 +560,7 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
 
 
 def assess_communications_bandwidth(plan: dict, *, zone_ids=None) -> dict:
-    """Compute independent max-flow upper bounds for up to 50 selected service zones."""
+    """Compute per-zone declared-capacity max-flow and flag incomplete zones."""
     normalized = _normalize_plan(plan)
     all_zone_ids = {item["zone_id"] for item in normalized["zones"]}
     if zone_ids is None:
