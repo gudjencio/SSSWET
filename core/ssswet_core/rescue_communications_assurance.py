@@ -626,14 +626,16 @@ def _shortest_route(plan: dict, source: str, zone_id: str, *, payload_kb: float 
     initial = (0.0, (source,), (), source)
     heap = [initial]
     best = {source: (0.0, (source,), ())}
+    settled = set()
     while heap:
         cost, path, link_path, current = heapq.heappop(heap)
-        if best.get(current) != (cost, path, link_path):
+        if current in settled or best.get(current) != (cost, path, link_path):
             continue
+        settled.add(current)
         if current in targets:
             return {"nodes": list(path), "links": list(link_path), "delay_ms": cost}
         for target, link, residual in graph.get(current, []):
-            if residual is None or residual <= 0 or link["latency_ms"] is None:
+            if target in settled or residual is None or residual <= 0 or link["latency_ms"] is None:
                 continue
             serialization_ms = payload_kb * 8.0 / residual * 1000.0
             candidate = (
