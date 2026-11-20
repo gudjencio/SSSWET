@@ -432,8 +432,10 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
     source, sink = "__ssswet_source__", "__ssswet_sink__"
     graph: dict[str, list[list]] = {}
     original_edges = []
+    original_service_edges = []
 
-    def add_edge(start: str, end: str, capacity: float, link_id: str | None = None):
+    def add_edge(start: str, end: str, capacity: float, link_id: str | None = None,
+                 service_node_id: str | None = None):
         left = graph.setdefault(start, [])
         right = graph.setdefault(end, [])
         forward = [end, capacity, len(right), link_id, capacity]
@@ -442,6 +444,8 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
         right.append(reverse)
         if link_id is not None:
             original_edges.append((start, len(left) - 1, link_id, capacity))
+        if service_node_id is not None:
+            original_service_edges.append((start, len(left) - 1, service_node_id, capacity))
 
     capacities = []
     for link in plan["links"]:
@@ -481,7 +485,8 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
     for node in service_rows:
         capacity, reserved = node["service_capacity_kbps"], node["service_reserved_kbps"]
         if capacity is not None and reserved is not None and capacity > reserved:
-            add_edge("node:" + node["node_id"], sink, capacity - reserved)
+            add_edge("node:" + node["node_id"], sink, capacity - reserved,
+                     service_node_id=node["node_id"])
     for link in plan["links"]:
         if link["status"] != "available" or link["link_id"] in failed_links:
             continue
@@ -536,9 +541,14 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
         link_id for start, index, link_id, capacity in original_edges
         if capacity > 0 and start in reachable and graph[start][index][0] not in reachable
     })
+    service_cut = sorted({
+        node_id for start, index, node_id, capacity in original_service_edges
+        if capacity > 0 and start in reachable and graph[start][index][0] not in reachable
+    })
     return {
         "maximum_flow_kbps": flow,
         "minimum_cut_link_ids": cut,
+        "minimum_cut_service_node_ids": service_cut,
         "service_node_ids": service_nodes,
         "capacity_known_link_count": len(capacities),
         "service_capacity_unknown_node_ids": service_capacity_unknown,
@@ -588,6 +598,7 @@ def assess_communications_bandwidth(plan: dict, *, zone_ids=None) -> dict:
                 "declared_capacity_covers_demand"
             ),
             "minimum_cut_link_ids": result["minimum_cut_link_ids"],
+            "minimum_cut_service_node_ids": result["minimum_cut_service_node_ids"],
             "service_node_ids": result["service_node_ids"],
             "service_capacity_unknown_node_ids": result["service_capacity_unknown_node_ids"],
             "service_capacity_known_node_count": result["service_capacity_known_node_count"],
