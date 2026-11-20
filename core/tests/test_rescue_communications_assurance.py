@@ -240,3 +240,45 @@ def test_bounded_message_and_scenario_collections():
         plan_communications_message_routes(sample_plan(), [{}] * 501)
     with pytest.raises(ValueError, match="at most 100"):
         compare_communications_outage_scenarios(sample_plan(), [{}] * 101)
+
+
+
+def test_bandwidth_analysis_requires_explicit_batches_above_fifty_zones():
+    plan = sample_plan()
+    plan["zones"] = [
+        {"zone_id": f"zone-{index:02d}", "demand_kbps": 1, "priority": 1}
+        for index in range(51)
+    ]
+    plan["nodes"][0]["service_zones"] = ["zone-00"]
+    with pytest.raises(ValueError, match="50 zones per call"):
+        assess_communications_bandwidth(plan)
+    batch = assess_communications_bandwidth(plan, zone_ids=["zone-00", "zone-01"])
+    assert batch["analyzed_zone_ids"] == ["zone-00", "zone-01"]
+    assert len(batch["unassessed_zone_ids"]) == 49
+
+
+def test_manifest_rejects_authorization_flags_even_with_recomputed_hash():
+    from ssswet_core.assurance_common import digest
+
+    plan = sample_plan()
+    manifest = build_communications_assurance_manifest(plan, {"coverage": {"ok": True}})
+    altered = dict(manifest)
+    altered["dispatch_authorized"] = True
+    body = {key: value for key, value in altered.items() if key != "manifest_sha256"}
+    altered["manifest_sha256"] = digest(body)
+    result = verify_communications_assurance_manifest(altered)
+    assert result["valid"] is False
+    assert "manifest_safety_flags_invalid" in result["reasons"]
+
+
+def test_manifest_rejects_boolean_schema_version_even_with_recomputed_hash():
+    from ssswet_core.assurance_common import digest
+
+    manifest = build_communications_assurance_manifest(sample_plan(), {})
+    altered = dict(manifest)
+    altered["schema_version"] = True
+    body = {key: value for key, value in altered.items() if key != "manifest_sha256"}
+    altered["manifest_sha256"] = digest(body)
+    result = verify_communications_assurance_manifest(altered)
+    assert result["valid"] is False
+    assert "manifest_schema_version_invalid" in result["reasons"]
