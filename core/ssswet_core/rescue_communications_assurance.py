@@ -77,8 +77,9 @@ def _normalize_plan(plan: dict) -> dict:
     allowed = {"schema_version", "plan_id", "nodes", "links", "zones", "gateways"}
     if set(plan) - allowed:
         raise ValueError("plan contains unsupported fields")
-    if isinstance(plan.get("schema_version"), bool) or plan.get("schema_version") != SCHEMA_VERSION:
-        raise ValueError(f"schema_version must equal {SCHEMA_VERSION}")
+    version = plan.get("schema_version")
+    if isinstance(version, bool) or not isinstance(version, int) or version != SCHEMA_VERSION:
+        raise ValueError(f"schema_version must be integer {SCHEMA_VERSION}")
     plan_id = identifier(plan.get("plan_id"), "plan_id", 160)
     nodes = _records(plan.get("nodes"), "nodes", MAX_NODES)
     links = _records(plan.get("links"), "links", MAX_LINKS)
@@ -114,7 +115,7 @@ def _normalize_plan(plan: dict) -> dict:
             raise ValueError("node contains unsupported fields")
         node_id = identifier(item.get("node_id"), "node_id", 160)
         role = item.get("role")
-        if role not in ROLES:
+        if not isinstance(role, str) or role not in ROLES:
             raise ValueError("node role must be gateway, relay or endpoint")
         service_zones = item.get("service_zones", [])
         if not isinstance(service_zones, list) or len(service_zones) > MAX_ZONES:
@@ -153,9 +154,9 @@ def _normalize_plan(plan: dict) -> dict:
             raise ValueError("link references an unknown node")
         direction = item.get("direction")
         status = item.get("status")
-        if direction not in LINK_DIRECTIONS:
+        if not isinstance(direction, str) or direction not in LINK_DIRECTIONS:
             raise ValueError("link direction must be directed or bidirectional")
-        if status not in LINK_STATES:
+        if not isinstance(status, str) or status not in LINK_STATES:
             raise ValueError("link status must be available, blocked or unknown")
         capacity = _optional_number(item, "capacity_kbps")
         reserved = _optional_number(item, "reserved_kbps")
@@ -855,7 +856,8 @@ def verify_communications_assurance_manifest(manifest: dict, *, plan: dict | Non
         expected = digest(body)
     except ValueError:
         return {"valid": False, "reasons": ["manifest_not_canonical"], "authorship_authenticated": False}
-    if isinstance(manifest.get("schema_version"), bool) or manifest.get("schema_version") != SCHEMA_VERSION:
+    version = manifest.get("schema_version")
+    if isinstance(version, bool) or not isinstance(version, int) or version != SCHEMA_VERSION:
         reasons.append("manifest_schema_version_invalid")
     try:
         identifier(manifest.get("plan_id"), "plan_id", 160)
