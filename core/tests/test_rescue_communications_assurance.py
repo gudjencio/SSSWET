@@ -91,6 +91,9 @@ def test_plan_validation_normalizes_order_and_rejects_unknown_fields():
 
 @pytest.mark.parametrize("mutation,match", [
     (lambda p: p.update(schema_version=True), "schema_version"),
+    (lambda p: p.update(schema_version=1.0), "schema_version"),
+    (lambda p: p["nodes"][0].update(role=[]), "node role"),
+    (lambda p: p["links"][0].update(direction={}), "link direction"),
     (lambda p: p["links"].append(dict(p["links"][0])), "link_id"),
     (lambda p: p["links"][0].update(to_node="missing"), "unknown node"),
     (lambda p: p["links"][0].update(reserved_kbps=101), "reserved_kbps"),
@@ -279,6 +282,20 @@ def test_manifest_rejects_boolean_schema_version_even_with_recomputed_hash():
     manifest = build_communications_assurance_manifest(sample_plan(), {})
     altered = dict(manifest)
     altered["schema_version"] = True
+    body = {key: value for key, value in altered.items() if key != "manifest_sha256"}
+    altered["manifest_sha256"] = digest(body)
+    result = verify_communications_assurance_manifest(altered)
+    assert result["valid"] is False
+    assert "manifest_schema_version_invalid" in result["reasons"]
+
+
+
+def test_manifest_rejects_float_schema_version_even_with_recomputed_hash():
+    from ssswet_core.assurance_common import digest
+
+    manifest = build_communications_assurance_manifest(sample_plan(), {})
+    altered = dict(manifest)
+    altered["schema_version"] = 1.0
     body = {key: value for key, value in altered.items() if key != "manifest_sha256"}
     altered["manifest_sha256"] = digest(body)
     result = verify_communications_assurance_manifest(altered)
