@@ -77,7 +77,8 @@ plan = {
     "nodes": [
         {"node_id": "gateway-1", "role": "gateway", "service_zones": [],
          "battery_wh": 120, "load_w": 10, "usable_fraction": 0.8},
-        {"node_id": "relay-1", "role": "relay", "service_zones": ["shelter-a"]},
+        {"node_id": "relay-1", "role": "relay", "service_zones": ["shelter-a"],
+         "service_capacity_kbps": 256, "service_reserved_kbps": 32},
     ],
     "links": [
         {"link_id": "link-1", "from_node": "gateway-1", "to_node": "relay-1",
