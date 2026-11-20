@@ -305,3 +305,18 @@ def test_manifest_rejects_float_schema_version_even_with_recomputed_hash():
     result = verify_communications_assurance_manifest(altered)
     assert result["valid"] is False
     assert "manifest_schema_version_invalid" in result["reasons"]
+
+
+
+def test_zero_latency_zero_payload_routes_terminate_without_cycles():
+    plan = sample_plan()
+    for link in plan["links"]:
+        if link["status"] == "available":
+            link["latency_ms"] = 0
+    result = plan_communications_message_routes(plan, [
+        {"message_id": "zero", "from_node": "gateway-a", "to_zone": "zone-a",
+         "payload_kb": 0, "ttl_seconds": 1}
+    ])
+    row = result["messages"][0]
+    assert row["status"] == "estimated_within_ttl"
+    assert len(row["path_node_ids"]) == len(set(row["path_node_ids"]))
