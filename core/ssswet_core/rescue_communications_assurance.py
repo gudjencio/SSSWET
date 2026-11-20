@@ -448,6 +448,7 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
             original_service_edges.append((start, len(left) - 1, service_node_id, capacity))
 
     capacities = []
+    capacity_unknown_links = []
     for link in plan["links"]:
         if link["status"] != "available" or link["link_id"] in failed_links:
             continue
@@ -455,6 +456,7 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
             continue
         capacity, reserved = link["capacity_kbps"], link["reserved_kbps"]
         if capacity is None or reserved is None:
+            capacity_unknown_links.append(link["link_id"])
             continue
         residual = capacity - reserved
         if residual <= 0:
@@ -551,6 +553,7 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
         "minimum_cut_service_node_ids": service_cut,
         "service_node_ids": service_nodes,
         "capacity_known_link_count": len(capacities),
+        "capacity_unknown_link_ids": sorted(capacity_unknown_links),
         "service_capacity_unknown_node_ids": service_capacity_unknown,
         "service_capacity_known_node_count": len(service_rows) - len(service_capacity_unknown),
     }
@@ -579,25 +582,35 @@ def assess_communications_bandwidth(plan: dict, *, zone_ids=None) -> dict:
         zone = zone_by_id[zone_id]
         result = _max_flow_for_zone(normalized, zone_id)
         demand = zone["demand_kbps"]
-        complete = not result["service_capacity_unknown_node_ids"]
+        complete = not result["service_capacity_unknown_node_ids"] and not result["capacity_unknown_link_ids"]
         shortage = (
             None if demand is None or not complete
             else max(0.0, demand - result["maximum_flow_kbps"])
         )
+        if result["service_capacity_unknown_node_ids"] and result["capacity_unknown_link_ids"]:
+            capacity_status = "incomplete_link_and_service_capacity_data"
+        elif result["service_capacity_unknown_node_ids"]:
+            capacity_status = "incomplete_service_capacity_data"
+        elif result["capacity_unknown_link_ids"]:
+            capacity_status = "incomplete_link_capacity_data"
+        elif result["maximum_flow_kbps"] <= 0:
+            capacity_status = "no_declared_capacity_path"
+        elif shortage > 1e-9:
+            capacity_status = "declared_capacity_shortfall"
+        else:
+            capacity_status = "declared_capacity_covers_demand"
+        if demand is None:
+            capacity_status = "demand_unknown"
         rows.append({
             "zone_id": zone_id,
             "demand_kbps": demand,
             "maximum_flow_kbps": result["maximum_flow_kbps"],
             "maximum_flow_is_complete": complete,
             "shortage_kbps": shortage,
-            "capacity_status": (
-                "demand_unknown" if demand is None else
-                "incomplete_service_capacity_data" if not complete else
-                "no_declared_capacity_path" if result["maximum_flow_kbps"] <= 0 else
-                "declared_capacity_shortfall" if shortage > 1e-9 else
-                "declared_capacity_covers_demand"
-            ),
+            "capacity_status": capacity_status,
+            "minimum_cut_is_complete": complete,
             "minimum_cut_link_ids": result["minimum_cut_link_ids"],
+            "capacity_unknown_link_ids": result["capacity_unknown_link_ids"],
             "minimum_cut_service_node_ids": result["minimum_cut_service_node_ids"],
             "service_node_ids": result["service_node_ids"],
             "service_capacity_unknown_node_ids": result["service_capacity_unknown_node_ids"],
@@ -610,7 +623,8 @@ def assess_communications_bandwidth(plan: dict, *, zone_ids=None) -> dict:
         "analyzed_zone_ids": selected,
         "unassessed_zone_ids": sorted(all_zone_ids - set(selected)),
         "max_zones_per_call": MAX_BANDWIDTH_ZONES,
-        "independent_per_zone_upper_bounds": True,
+        "independent_per_zone_upper_bounds": all(item["maximum_flow_is_complete"] for item in rows),
+        "declared_capacity_assessment_complete": all(item["maximum_flow_is_complete"] for item in rows),
         "shared_bandwidth_jointly_allocated": False,
         "measured_throughput_established": False,
     }
