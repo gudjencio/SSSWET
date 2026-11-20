@@ -324,6 +324,17 @@ def analyze_communications_connectivity(plan: dict, *, failed_node_ids=(),
     }
 
 
+def _demand_impact(plan: dict, lost_zone_ids: list[str]) -> dict:
+    demand_by_zone = {item["zone_id"]: item["demand_kbps"] for item in plan["zones"]}
+    known = [zone_id for zone_id in lost_zone_ids if demand_by_zone[zone_id] is not None]
+    unknown = sorted(zone_id for zone_id in lost_zone_ids if demand_by_zone[zone_id] is None)
+    return {
+        "lost_declared_demand_kbps": sum(demand_by_zone[zone_id] for zone_id in known),
+        "demand_unknown_zone_ids": unknown,
+        "lost_demand_complete": not unknown,
+    }
+
+
 def identify_communications_single_points_of_failure(plan: dict) -> dict:
     """Find individual node/link removals that disconnect currently served zones."""
     normalized = _normalize_plan(plan)
@@ -336,13 +347,19 @@ def identify_communications_single_points_of_failure(plan: dict) -> dict:
         after = _connectivity(normalized, [node_id], [])
         lost = sorted(baseline_zones - set(after["reachable_zone_ids"]))
         if lost:
-            node_failures.append({"node_id": node_id, "lost_zone_ids": lost})
+            node_failures.append({
+                "node_id": node_id, "lost_zone_ids": lost,
+                **_demand_impact(normalized, lost),
+            })
     for link in normalized["links"]:
         link_id = link["link_id"]
         after = _connectivity(normalized, [], [link_id])
         lost = sorted(baseline_zones - set(after["reachable_zone_ids"]))
         if lost:
-            link_failures.append({"link_id": link_id, "lost_zone_ids": lost})
+            link_failures.append({
+                "link_id": link_id, "lost_zone_ids": lost,
+                **_demand_impact(normalized, lost),
+            })
     return {
         "plan_id": normalized["plan_id"],
         "critical_node_failures": node_failures,
@@ -776,6 +793,7 @@ def compare_communications_outage_scenarios(plan: dict, scenarios: list[dict]) -
             "reachable_zone_ids": sorted(reachable),
             "lost_zone_ids": sorted(baseline_zones - reachable),
             "newly_unreachable_zone_ids": sorted(baseline_zones - reachable),
+            **_demand_impact(normalized, sorted(baseline_zones - reachable)),
             "reachable_zone_count": len(reachable),
             "baseline_reachable_zone_count": len(baseline_zones),
         })
