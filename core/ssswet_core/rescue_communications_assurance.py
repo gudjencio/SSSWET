@@ -20,6 +20,7 @@ MAX_ZONES = 250
 MAX_MESSAGES = 500
 MAX_TRAFFIC_FLOWS = 500
 MAX_SCENARIOS = 100
+MAX_BANDWIDTH_ZONES = 50
 MAX_PLAN_BYTES = 1_048_576
 MAX_EVIDENCE_REFS = 500
 ROLES = {"gateway", "relay", "endpoint"}
@@ -365,11 +366,8 @@ def assess_communications_zone_coverage(plan: dict) -> dict:
             node_id for node_id, node in nodes.items()
             if zone_id in node["service_zones"]
         )
-        providers = [
-            node_id for node_id in service_nodes
-            if any(node_id in _reachable(connectivity["graph"], gateway)
-                   for gateway in normalized["gateways"] if gateway in connectivity["graph"])
-        ]
+        reachable_nodes = set(connectivity["reachable_node_ids"])
+        providers = [node_id for node_id in service_nodes if node_id in reachable_nodes]
         gateway_ids = connectivity["zone_gateway_ids"][zone_id]
         rows.append({
             "zone_id": zone_id,
@@ -508,16 +506,32 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
     }
 
 
-def assess_communications_bandwidth(plan: dict) -> dict:
-    """Compute an independent declared max-flow upper bound for each service zone."""
+def assess_communications_bandwidth(plan: dict, *, zone_ids=None) -> dict:
+    """Compute independent max-flow upper bounds for up to 50 selected service zones."""
     normalized = _normalize_plan(plan)
+    all_zone_ids = {item["zone_id"] for item in normalized["zones"]}
+    if zone_ids is None:
+        selected = sorted(all_zone_ids)
+    else:
+        if not isinstance(zone_ids, (list, tuple)) or len(zone_ids) > MAX_BANDWIDTH_ZONES:
+            raise ValueError(f"zone_ids must contain at most {MAX_BANDWIDTH_ZONES} zones")
+        selected = [identifier(value, "zone_id", 160) for value in zone_ids]
+        if len(selected) != len(set(selected)):
+            raise ValueError("zone_ids must not contain duplicates")
+        if set(selected) - all_zone_ids:
+            raise ValueError("zone_ids references an unknown service zone")
+        selected = sorted(selected)
+    if len(selected) > MAX_BANDWIDTH_ZONES:
+        raise ValueError(f"bandwidth analysis is limited to {MAX_BANDWIDTH_ZONES} zones per call; use zone_ids batches")
     rows = []
-    for zone in normalized["zones"]:
-        result = _max_flow_for_zone(normalized, zone["zone_id"])
+    zone_by_id = {item["zone_id"]: item for item in normalized["zones"]}
+    for zone_id in selected:
+        zone = zone_by_id[zone_id]
+        result = _max_flow_for_zone(normalized, zone_id)
         demand = zone["demand_kbps"]
         shortage = None if demand is None else max(0.0, demand - result["maximum_flow_kbps"])
         rows.append({
-            "zone_id": zone["zone_id"],
+            "zone_id": zone_id,
             "demand_kbps": demand,
             "maximum_flow_kbps": result["maximum_flow_kbps"],
             "shortage_kbps": shortage,
@@ -534,6 +548,9 @@ def assess_communications_bandwidth(plan: dict) -> dict:
     return {
         "plan_id": normalized["plan_id"],
         "zones": rows,
+        "analyzed_zone_ids": selected,
+        "unassessed_zone_ids": sorted(all_zone_ids - set(selected)),
+        "max_zones_per_call": MAX_BANDWIDTH_ZONES,
         "independent_per_zone_upper_bounds": True,
         "shared_bandwidth_jointly_allocated": False,
         "measured_throughput_established": False,
