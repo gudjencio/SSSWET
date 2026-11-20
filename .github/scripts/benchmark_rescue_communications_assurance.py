@@ -63,6 +63,7 @@ def synthetic_plan() -> dict:
         nodes.append({
             "node_id": f"endpoint-{index:03d}", "role": "endpoint",
             "service_zones": [f"zone-{index % 20:02d}"],
+            "service_capacity_kbps": 1000.0, "service_reserved_kbps": 0.0,
         })
 
     links = []
