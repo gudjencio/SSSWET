@@ -121,7 +121,7 @@ Coverage is not geographic radio coverage, signal-strength measurement, building
 
 ### Single points of failure
 
-Each declared node and link is removed individually from a copy of the in-memory graph. The report lists baseline-reachable zones that become unreachable. It does not test correlated failures, common power sources, shared spectrum, shared physical ducts, weather, cyber incidents or simultaneous failures unless those are represented by a caller-supplied outage scenario.
+Each declared node and link is removed individually from a copy of the in-memory graph. The report lists baseline-reachable zones that become unreachable and sums their declared demand; zones with unknown demand are listed separately and make the demand total incomplete. It does not test correlated failures, common power sources, shared spectrum, shared physical ducts, weather, cyber incidents or simultaneous failures unless those are represented by a caller-supplied outage scenario.
 
 ### Bandwidth
 
@@ -151,7 +151,7 @@ Flows are routed independently on deterministic lowest-latency paths. The tool a
 
 ### Outage scenarios
 
-Each scenario names failed nodes and links. The baseline is retained and compared with each scenario. The plan is never mutated and no live outage is performed. The result does not trigger automatic failover.
+Each scenario names failed nodes and links. The baseline is retained and compared with each scenario, including lost declared demand and any zones whose demand is unknown. The plan is never mutated and no live outage is performed. The result does not trigger automatic failover.
 
 ### Assurance manifests
 
