@@ -243,8 +243,13 @@ def test_deepl_endpoint_rejects_redirects():
         _NoRedirect().redirect_request(None, None, 302, "Found", {}, "https://attacker.example/")
 
 
-def test_public_feed_rejects_dtd_and_entity_declarations(monkeypatch):
-    xml = b'<!DOCTYPE feed [<!ENTITY x "expanded">]><feed><entry><title>&x;</title></entry></feed>'
+@pytest.mark.parametrize("encoding", ["utf-8", "utf-16"])
+def test_public_feed_rejects_dtd_and_entity_declarations(monkeypatch, encoding):
+    xml = (
+        f'<?xml version="1.0" encoding="{encoding}"?>'
+        '<!DOCTYPE feed [<!ENTITY x "expanded">]>'
+        '<feed><entry><title>&x;</title></entry></feed>'
+    ).encode(encoding)
     class Response:
         def __enter__(self): return self
         def __exit__(self, *args): return False
@@ -258,6 +263,31 @@ def test_public_feed_rejects_dtd_and_entity_declarations(monkeypatch):
     monkeypatch.setattr("ssswet_core.social_expansion.build_opener", lambda *a: Opener())
     with pytest.raises(ValueError, match="DTD and entity"):
         PublicRSSFeedProvider(["https://example.org/feed"])._read("https://example.org/feed")
+
+
+def test_public_feed_accepts_utf16_atom_without_dtd(monkeypatch):
+    xml = (
+        '<?xml version="1.0" encoding="utf-16"?>'
+        '<feed xmlns="http://www.w3.org/2005/Atom">'
+        '<entry><id>post-utf16</id><title>Battery research</title>'
+        '<summary>Experimental measurements</summary>'
+        '<link href="https://example.org/posts/utf16"/>'
+        '</entry></feed>'
+    ).encode("utf-16")
+    class Response:
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+        def read(self, size): return xml
+    class Opener:
+        def open(self, *args, **kwargs): return Response()
+    monkeypatch.setattr(
+        "ssswet_core.social_expansion.socket.getaddrinfo",
+        lambda *a, **k: [(None, None, None, None, ("93.184.216.34", 443))],
+    )
+    monkeypatch.setattr("ssswet_core.social_expansion.build_opener", lambda *a: Opener())
+    items = PublicRSSFeedProvider(["https://example.org/feed"]).search("battery")
+    assert len(items) == 1
+    assert items[0].source_id == "forum-example:post-utf16"
 
 
 @pytest.mark.parametrize("sample,expected", [

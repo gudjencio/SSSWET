@@ -191,7 +191,7 @@ Credential-bearing official API adapters use a shared response-size/time-bounded
 Optional DeepL translation uses only the two official HTTPS API endpoints, pins validated public addresses, disables proxies and redirects, and preserves original text. Translation is best-effort and never changes verification status. Invalid optional endpoint configuration or a per-item translation failure marks translation unavailable and retains the original item; it does not fail the social discovery pass.
 
 
-XML feed parsing rejects DTD and entity declarations before parsing, in addition to the response-size bound, to avoid entity-expansion payloads.
+XML feed parsing runs an Expat preflight that rejects every document type declaration before ElementTree builds the feed. The check recognizes UTF-8 and UTF-16 XML encodings, so encoding the markup cannot bypass the DTD/entity restriction; the response-size bound remains in force.
 
 
 The 23 phrase sets are multilingual review heuristics, not a validated language classifier. Script hints were extended for Bengali, Hebrew, Ukrainian-specific Cyrillic letters, Malayalam, Punjabi, Telugu and Tamil. Latin-script languages such as Polish are phrase-matched when configured, but are not guessed from script alone; provider-declared language metadata takes precedence where available.
