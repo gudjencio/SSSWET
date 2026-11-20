@@ -883,6 +883,8 @@ def verify_communications_assurance_manifest(manifest: dict, *, plan: dict | Non
                 reasons.append("manifest_assessment_digests_invalid")
                 break
     try:
+        if not isinstance(manifest.get("evidence_refs"), list):
+            raise ValueError("manifest evidence_refs must be a list")
         _refs(manifest.get("evidence_refs"), "evidence_refs", MAX_EVIDENCE_REFS)
     except ValueError:
         reasons.append("manifest_evidence_refs_invalid")
