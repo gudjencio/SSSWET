@@ -249,6 +249,8 @@ def test_bandwidth_analysis_requires_explicit_batches_above_fifty_zones():
         {"zone_id": f"zone-{index:02d}", "demand_kbps": 1, "priority": 1}
         for index in range(51)
     ]
+    for node in plan["nodes"]:
+        node["service_zones"] = []
     plan["nodes"][0]["service_zones"] = ["zone-00"]
     with pytest.raises(ValueError, match="50 zones per call"):
         assess_communications_bandwidth(plan)
