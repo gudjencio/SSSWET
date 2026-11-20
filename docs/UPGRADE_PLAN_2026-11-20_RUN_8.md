@@ -32,7 +32,7 @@
 - Coverage must report a zone served through two distinct gateways as multi-gateway and must not infer coverage from unknown links.
 - A two-path capacity fixture must produce the exact max-flow value and identify a minimum-cut link set; unknown capacity must not be treated as zero-capacity evidence or infinite capacity.
 - Power autonomy must match hand-calculated Wh/W results and report unknown when any required quantity is absent.
-- Message route estimates must match hand-calculated hop latency plus serialization, and separately report no-path and TTL-exceeded states.
+- Message route estimates must match hand-calculated hop latency plus serialization, separately report no-path and TTL-exceeded states, and terminate deterministically for zero-latency/zero-payload cycles.
 - Traffic-load screening must report utilization above 1.0 as overload without mutating the plan or claiming packet delivery.
 - Scenario output must be deterministic and preserve the baseline; unknown links remain unavailable in every scenario.
 - Equivalent normalized plans/assessment maps must produce identical SHA-256 manifests; any altered plan/assessment digest must fail verification.
@@ -47,7 +47,7 @@
 - **Power overclaim:** require all three declared inputs; no manufacturer, battery-health or field-performance assumptions.
 - **Privacy/security:** accept identifiers and aggregate metadata only; reject unrecognized fields; never accept endpoints, credentials, message bodies, personal data or device secrets.
 - **Operational misuse:** no network scanning, packet transmission, configuration writes, dispatch, evacuation decisions or automatic failover.
-- **Performance:** bounded graph sizes and deterministic algorithms; per-zone max-flow is separately capped at 50 zones per call; CI benchmark p95 budget <= 2,000 ms for the documented synthetic workload.
+- **Performance:** bounded graph sizes and deterministic algorithms; route search settles nodes to prevent zero-cost-cycle churn; per-zone max-flow is separately capped at 50 zones per call; CI benchmark p95 budget <= 2,000 ms for the documented synthetic workload.
 - **Compatibility:** new opt-in module only; no existing APIs, data stores, workflows, credentials, payment settings or public web assets are changed.
 
 ## Verification plan
