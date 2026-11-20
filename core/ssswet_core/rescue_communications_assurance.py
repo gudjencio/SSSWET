@@ -868,11 +868,20 @@ def verify_communications_assurance_manifest(manifest: dict, *, plan: dict | Non
     if not isinstance(assessment_hashes, dict) or len(assessment_hashes) > 10:
         reasons.append("manifest_assessment_digests_invalid")
     else:
-        try:
-            if _assessment_digests({key: value for key, value in assessment_hashes.items()}) != assessment_hashes:
+        seen_assessment_names = set()
+        for key, value in assessment_hashes.items():
+            try:
+                normalized_name = identifier(key, "assessment_name", 80)
+            except ValueError:
                 reasons.append("manifest_assessment_digests_invalid")
-        except (ValueError, TypeError):
-            reasons.append("manifest_assessment_digests_invalid")
+                break
+            if normalized_name != key or normalized_name in seen_assessment_names:
+                reasons.append("manifest_assessment_digests_invalid")
+                break
+            seen_assessment_names.add(normalized_name)
+            if not isinstance(value, str) or len(value) != 64 or any(ch not in "0123456789abcdef" for ch in value):
+                reasons.append("manifest_assessment_digests_invalid")
+                break
     try:
         _refs(manifest.get("evidence_refs"), "evidence_refs", MAX_EVIDENCE_REFS)
     except ValueError:
