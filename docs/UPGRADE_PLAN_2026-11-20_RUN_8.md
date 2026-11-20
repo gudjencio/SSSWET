@@ -25,7 +25,7 @@
 
 ## Measurable acceptance criteria
 
-- Plan limits: at most 250 nodes, 1,000 links, 250 zones, 500 messages/traffic flows and 100 outage scenarios; canonical plan <= 1 MiB.
+- Plan limits: at most 250 nodes, 1,000 links, 250 zones, 500 messages/traffic flows and 100 outage scenarios; canonical plan <= 1 MiB. Per-zone max-flow is limited to 50 selected zones per call; larger plans must use explicit batches and report unassessed zones.
 - Reject duplicate IDs, dangling node/zone/gateway references, unknown object fields, booleans used as numbers, non-finite values, negative capacities/loads, invalid fractions and invalid enums.
 - A synthetic directed fixture must reach only zones connected by `available` links; `unknown` and `blocked` links must never create reachability.
 - Failure analysis must identify a known bridge relay and bridge link, while leaving a parallel-path fixture non-critical.
@@ -47,7 +47,7 @@
 - **Power overclaim:** require all three declared inputs; no manufacturer, battery-health or field-performance assumptions.
 - **Privacy/security:** accept identifiers and aggregate metadata only; reject unrecognized fields; never accept endpoints, credentials, message bodies, personal data or device secrets.
 - **Operational misuse:** no network scanning, packet transmission, configuration writes, dispatch, evacuation decisions or automatic failover.
-- **Performance:** bounded graph sizes and deterministic algorithms; CI benchmark p95 budget <= 2,000 ms for the documented synthetic workload.
+- **Performance:** bounded graph sizes and deterministic algorithms; per-zone max-flow is separately capped at 50 zones per call; CI benchmark p95 budget <= 2,000 ms for the documented synthetic workload.
 - **Compatibility:** new opt-in module only; no existing APIs, data stores, workflows, credentials, payment settings or public web assets are changed.
 
 ## Verification plan
