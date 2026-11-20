@@ -121,12 +121,15 @@ def test_connectivity_uses_only_declared_available_links_and_direction():
 
 def test_single_point_analysis_distinguishes_bridge_and_redundant_paths():
     result = identify_communications_single_points_of_failure(sample_plan())
-    critical_nodes = {item["node_id"]: item["lost_zone_ids"] for item in result["critical_node_failures"]}
-    critical_links = {item["link_id"]: item["lost_zone_ids"] for item in result["critical_link_failures"]}
-    assert "zone-b" in critical_nodes["relay-a"]
-    assert "zone-a" not in critical_nodes.get("relay-a", [])
-    assert "zone-b" in critical_links["a-gw-relay"]
-    assert "zone-a" not in critical_links.get("a-gw-relay", [])
+    critical_nodes = {item["node_id"]: item for item in result["critical_node_failures"]}
+    critical_links = {item["link_id"]: item for item in result["critical_link_failures"]}
+    assert "zone-b" in critical_nodes["relay-a"]["lost_zone_ids"]
+    assert "zone-a" not in critical_nodes["relay-a"]["lost_zone_ids"]
+    assert critical_nodes["relay-a"]["lost_declared_demand_kbps"] == 20
+    assert critical_nodes["relay-a"]["lost_demand_complete"] is True
+    assert "zone-b" in critical_links["a-gw-relay"]["lost_zone_ids"]
+    assert "zone-a" not in critical_links["a-gw-relay"]["lost_zone_ids"]
+    assert critical_links["a-gw-relay"]["lost_declared_demand_kbps"] == 20
 
 
 def test_zone_coverage_reports_gateway_redundancy_without_geographic_claim():
@@ -201,6 +204,7 @@ def test_outage_scenarios_compare_against_unchanged_baseline():
     ])
     rows = {item["scenario_id"]: item for item in result["scenarios"]}
     assert rows["relay-a-down"]["lost_zone_ids"] == ["zone-b"]
+    assert rows["relay-a-down"]["lost_declared_demand_kbps"] == 20
     assert rows["link-b-down"]["lost_zone_ids"] == []
     assert result["plan_mutated"] is False
     with pytest.raises(ValueError, match="unknown node or link"):
