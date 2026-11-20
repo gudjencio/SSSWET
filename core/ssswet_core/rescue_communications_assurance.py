@@ -110,7 +110,7 @@ def _normalize_plan(plan: dict) -> dict:
     for item in nodes:
         if set(item) - {
             "node_id", "role", "service_zones", "battery_wh", "load_w",
-            "usable_fraction", "evidence_refs",
+            "usable_fraction", "service_capacity_kbps", "service_reserved_kbps", "evidence_refs",
         }:
             raise ValueError("node contains unsupported fields")
         node_id = identifier(item.get("node_id"), "node_id", 160)
@@ -128,6 +128,10 @@ def _normalize_plan(plan: dict) -> dict:
         battery = _optional_number(item, "battery_wh")
         load = _optional_number(item, "load_w")
         usable = _optional_number(item, "usable_fraction", minimum=0.000000001, maximum=1.0)
+        service_capacity = _optional_number(item, "service_capacity_kbps")
+        service_reserved = _optional_number(item, "service_reserved_kbps")
+        if service_capacity is not None and service_reserved is not None and service_reserved > service_capacity:
+            raise ValueError("service_reserved_kbps must not exceed service_capacity_kbps")
         normalized_nodes.append({
             "node_id": node_id,
             "role": role,
@@ -135,6 +139,8 @@ def _normalize_plan(plan: dict) -> dict:
             "battery_wh": battery,
             "load_w": load,
             "usable_fraction": usable,
+            "service_capacity_kbps": service_capacity,
+            "service_reserved_kbps": service_reserved,
             "evidence_refs": _refs(item.get("evidence_refs"), "node evidence_refs"),
         })
 
@@ -450,18 +456,32 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
         if residual <= 0:
             continue
         capacities.append(residual)
-    infinity = sum(capacities) + 1.0
+    service_rows = [
+        node for node in plan["nodes"]
+        if node["node_id"] in active and zone_id in node["service_zones"]
+    ]
+    service_nodes = sorted(node["node_id"] for node in service_rows)
+    service_capacity_unknown = sorted(
+        node["node_id"] for node in service_rows
+        if node["service_capacity_kbps"] is None or node["service_reserved_kbps"] is None
+    )
+    service_capacities = [
+        node["service_capacity_kbps"] - node["service_reserved_kbps"]
+        for node in service_rows
+        if node["service_capacity_kbps"] is not None
+        and node["service_reserved_kbps"] is not None
+        and node["service_capacity_kbps"] > node["service_reserved_kbps"]
+    ]
+    infinity = sum(capacities) + sum(service_capacities) + 1.0
     if infinity <= 1.0:
         infinity = 1.0
     for gateway in plan["gateways"]:
         if gateway in active:
             add_edge(source, "node:" + gateway, infinity)
-    service_nodes = sorted(
-        node["node_id"] for node in plan["nodes"]
-        if node["node_id"] in active and zone_id in node["service_zones"]
-    )
-    for node_id in service_nodes:
-        add_edge("node:" + node_id, sink, infinity)
+    for node in service_rows:
+        capacity, reserved = node["service_capacity_kbps"], node["service_reserved_kbps"]
+        if capacity is not None and reserved is not None and capacity > reserved:
+            add_edge("node:" + node["node_id"], sink, capacity - reserved)
     for link in plan["links"]:
         if link["status"] != "available" or link["link_id"] in failed_links:
             continue
@@ -521,6 +541,8 @@ def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
         "minimum_cut_link_ids": cut,
         "service_node_ids": service_nodes,
         "capacity_known_link_count": len(capacities),
+        "service_capacity_unknown_node_ids": service_capacity_unknown,
+        "service_capacity_known_node_count": len(service_rows) - len(service_capacity_unknown),
     }
 
 
@@ -547,20 +569,28 @@ def assess_communications_bandwidth(plan: dict, *, zone_ids=None) -> dict:
         zone = zone_by_id[zone_id]
         result = _max_flow_for_zone(normalized, zone_id)
         demand = zone["demand_kbps"]
-        shortage = None if demand is None else max(0.0, demand - result["maximum_flow_kbps"])
+        complete = not result["service_capacity_unknown_node_ids"]
+        shortage = (
+            None if demand is None or not complete
+            else max(0.0, demand - result["maximum_flow_kbps"])
+        )
         rows.append({
             "zone_id": zone_id,
             "demand_kbps": demand,
             "maximum_flow_kbps": result["maximum_flow_kbps"],
+            "maximum_flow_is_complete": complete,
             "shortage_kbps": shortage,
             "capacity_status": (
                 "demand_unknown" if demand is None else
+                "incomplete_service_capacity_data" if not complete else
                 "no_declared_capacity_path" if result["maximum_flow_kbps"] <= 0 else
                 "declared_capacity_shortfall" if shortage > 1e-9 else
                 "declared_capacity_covers_demand"
             ),
             "minimum_cut_link_ids": result["minimum_cut_link_ids"],
             "service_node_ids": result["service_node_ids"],
+            "service_capacity_unknown_node_ids": result["service_capacity_unknown_node_ids"],
+            "service_capacity_known_node_count": result["service_capacity_known_node_count"],
             "capacity_known_link_count": result["capacity_known_link_count"],
         })
     return {
