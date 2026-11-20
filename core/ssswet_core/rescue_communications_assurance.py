@@ -76,7 +76,7 @@ def _normalize_plan(plan: dict) -> dict:
     allowed = {"schema_version", "plan_id", "nodes", "links", "zones", "gateways"}
     if set(plan) - allowed:
         raise ValueError("plan contains unsupported fields")
-    if plan.get("schema_version") != SCHEMA_VERSION:
+    if isinstance(plan.get("schema_version"), bool) or plan.get("schema_version") != SCHEMA_VERSION:
         raise ValueError(f"schema_version must equal {SCHEMA_VERSION}")
     plan_id = identifier(plan.get("plan_id"), "plan_id", 160)
     nodes = _records(plan.get("nodes"), "nodes", MAX_NODES)
@@ -784,6 +784,8 @@ def build_communications_assurance_manifest(plan: dict, assessments: dict, *,
         encoded = canonical_bytes(value)
         if len(encoded) > 100_000:
             raise ValueError("each assessment must not exceed 100000 canonical bytes")
+        if key in assessment_hashes:
+            raise ValueError("assessment names must remain unique after normalization")
         assessment_hashes[key] = digest(value)
     refs = _refs(evidence_refs, "evidence_refs", MAX_EVIDENCE_REFS)
     body = {
@@ -837,10 +839,14 @@ def verify_communications_assurance_manifest(manifest: dict, *, plan: dict | Non
             reasons.append("plan_invalid")
     if assessments is not None:
         try:
-            actual = {
-                identifier(name, "assessment_name", 80): digest(value)
-                for name, value in sorted(assessments.items())
-            }
+            if not isinstance(assessments, dict) or len(assessments) > 10:
+                raise ValueError("assessments must be an object with at most 10 named results")
+            actual = {}
+            for name, value in sorted(assessments.items()):
+                key = identifier(name, "assessment_name", 80)
+                if key in actual:
+                    raise ValueError("assessment names must remain unique after normalization")
+                actual[key] = digest(value)
             if manifest.get("assessment_sha256") != actual:
                 reasons.append("assessment_digest_mismatch")
         except (ValueError, AttributeError):
