@@ -100,6 +100,7 @@ def test_plan_validation_normalizes_order_and_rejects_unknown_fields():
     (lambda p: p["links"][0].update(to_node="missing"), "unknown node"),
     (lambda p: p["links"][0].update(reserved_kbps=101), "reserved_kbps"),
     (lambda p: p["nodes"][0].update(usable_fraction=1.1), "usable_fraction"),
+    (lambda p: p["nodes"][4].update(service_capacity_kbps=1, service_reserved_kbps=2), "service_reserved_kbps"),
 ])
 def test_plan_validation_rejects_invalid_boundaries(mutation, match):
     plan = sample_plan()
