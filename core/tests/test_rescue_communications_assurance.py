@@ -32,8 +32,10 @@ def sample_plan():
             {"node_id": "gateway-b", "role": "gateway", "service_zones": []},
             {"node_id": "relay-a", "role": "relay", "service_zones": []},
             {"node_id": "relay-b", "role": "relay", "service_zones": []},
-            {"node_id": "endpoint-a", "role": "endpoint", "service_zones": ["zone-a"]},
-            {"node_id": "endpoint-b", "role": "endpoint", "service_zones": ["zone-b"]},
+            {"node_id": "endpoint-a", "role": "endpoint", "service_zones": ["zone-a"],
+             "service_capacity_kbps": 200, "service_reserved_kbps": 0},
+            {"node_id": "endpoint-b", "role": "endpoint", "service_zones": ["zone-b"],
+             "service_capacity_kbps": 100, "service_reserved_kbps": 0},
         ],
         "links": [
             {
@@ -320,3 +322,16 @@ def test_zero_latency_zero_payload_routes_terminate_without_cycles():
     row = result["messages"][0]
     assert row["status"] == "estimated_within_ttl"
     assert len(row["path_node_ids"]) == len(set(row["path_node_ids"]))
+
+
+
+def test_bandwidth_does_not_impute_unknown_service_capacity():
+    plan = sample_plan()
+    del plan["nodes"][4]["service_capacity_kbps"]
+    result = assess_communications_bandwidth(plan)
+    zone = next(item for item in result["zones"] if item["zone_id"] == "zone-a")
+    assert zone["maximum_flow_kbps"] == 0
+    assert zone["maximum_flow_is_complete"] is False
+    assert zone["shortage_kbps"] is None
+    assert zone["capacity_status"] == "incomplete_service_capacity_data"
+    assert zone["service_capacity_unknown_node_ids"] == ["endpoint-a"]
