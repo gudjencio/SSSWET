@@ -269,6 +269,21 @@ def test_bandwidth_analysis_requires_explicit_batches_above_fifty_zones():
     assert len(batch["unassessed_zone_ids"]) == 49
 
 
+def test_bandwidth_batch_completeness_does_not_overstate_unassessed_zones():
+    plan = sample_plan()
+
+    partial = assess_communications_bandwidth(plan, zone_ids=["zone-a"])
+    assert partial["unassessed_zone_ids"] == ["zone-b"]
+    assert partial["independent_per_zone_upper_bounds"] is True
+    assert partial["declared_capacity_assessment_complete"] is False
+
+    empty = assess_communications_bandwidth(plan, zone_ids=[])
+    assert empty["zones"] == []
+    assert empty["unassessed_zone_ids"] == ["zone-a", "zone-b"]
+    assert empty["independent_per_zone_upper_bounds"] is False
+    assert empty["declared_capacity_assessment_complete"] is False
+
+
 def test_manifest_rejects_authorization_flags_even_with_recomputed_hash():
     from ssswet_core.assurance_common import digest
 
