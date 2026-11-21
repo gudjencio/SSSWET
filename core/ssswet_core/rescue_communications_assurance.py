@@ -282,7 +282,9 @@ def _reachable(graph: dict[str, list], start: str) -> set[str]:
 
 
 def _connectivity(plan: dict, failed_nodes=None, failed_links=None) -> dict:
-    failed_nodes, failed_links = _validate_failures(plan, failed_nodes or (), failed_links or ())
+    failed_nodes = () if failed_nodes is None else failed_nodes
+    failed_links = () if failed_links is None else failed_links
+    failed_nodes, failed_links = _validate_failures(plan, failed_nodes, failed_links)
     graph = _adjacency(plan, failed_nodes, failed_links)
     gateways = [value for value in plan["gateways"] if value in graph]
     per_gateway = {gateway: _reachable(graph, gateway) for gateway in gateways}
@@ -427,7 +429,9 @@ def assess_communications_zone_coverage(plan: dict) -> dict:
 
 def _max_flow_for_zone(plan: dict, zone_id: str, failed_nodes=None,
                        failed_links=None) -> dict:
-    failed_nodes, failed_links = _validate_failures(plan, failed_nodes or (), failed_links or ())
+    failed_nodes = () if failed_nodes is None else failed_nodes
+    failed_links = () if failed_links is None else failed_links
+    failed_nodes, failed_links = _validate_failures(plan, failed_nodes, failed_links)
     active = {item["node_id"] for item in plan["nodes"]} - failed_nodes
     source, sink = "__ssswet_source__", "__ssswet_sink__"
     graph: dict[str, list[list]] = {}

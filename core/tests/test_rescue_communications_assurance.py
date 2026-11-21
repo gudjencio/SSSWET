@@ -122,6 +122,17 @@ def test_connectivity_uses_only_declared_available_links_and_direction():
     assert "zone-b" in reverse["unreachable_zone_ids"]
 
 
+@pytest.mark.parametrize("field,value", [
+    ("failed_node_ids", ""),
+    ("failed_node_ids", 0),
+    ("failed_link_ids", ""),
+    ("failed_link_ids", 0),
+])
+def test_connectivity_rejects_falsey_non_collection_failure_inputs(field, value):
+    with pytest.raises(ValueError, match="bounded collection"):
+        analyze_communications_connectivity(sample_plan(), **{field: value})
+
+
 def test_single_point_analysis_distinguishes_bridge_and_redundant_paths():
     result = identify_communications_single_points_of_failure(sample_plan())
     critical_nodes = {item["node_id"]: item for item in result["critical_node_failures"]}
