@@ -623,8 +623,12 @@ def assess_communications_bandwidth(plan: dict, *, zone_ids=None) -> dict:
         "analyzed_zone_ids": selected,
         "unassessed_zone_ids": sorted(all_zone_ids - set(selected)),
         "max_zones_per_call": MAX_BANDWIDTH_ZONES,
-        "independent_per_zone_upper_bounds": all(item["maximum_flow_is_complete"] for item in rows),
-        "declared_capacity_assessment_complete": all(item["maximum_flow_is_complete"] for item in rows),
+        "independent_per_zone_upper_bounds": bool(rows) and all(item["maximum_flow_is_complete"] for item in rows),
+        "declared_capacity_assessment_complete": (
+            bool(rows)
+            and set(selected) == all_zone_ids
+            and all(item["maximum_flow_is_complete"] for item in rows)
+        ),
         "shared_bandwidth_jointly_allocated": False,
         "measured_throughput_established": False,
     }
