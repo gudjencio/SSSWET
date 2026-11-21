@@ -54,7 +54,7 @@ Unrecognized fields are rejected. This prevents credentials, URLs, message bodie
 | Canonical size per assessment | 100,000 bytes |
 | Bandwidth zones per call | 50 |
 
-For a plan with more than 50 zones, call \`assess_communications_bandwidth(plan, zone_ids=[...])\` in explicit batches. The result identifies unassessed zones; it never implies that omitted zones passed.
+For a plan with more than 50 zones, call \`assess_communications_bandwidth(plan, zone_ids=[...])\` in explicit batches. The result identifies unassessed zones; it never implies that omitted zones passed. The `independent_per_zone_upper_bounds` flag describes only analyzed rows and is false for an empty batch. `declared_capacity_assessment_complete` is true only when every plan zone was selected and all required capacity inputs are known; partial and empty batches keep it false.
 
 Unknown links are never traversable, never count as redundancy, and never contribute capacity. A link with unknown capacity/reservation or latency can still be used for topological reachability when its status is explicitly \`available\`, but it is excluded from calculations that require the missing quantity.
 
