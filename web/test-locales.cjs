@@ -598,7 +598,7 @@ const publicBrandingSources = [source, appSource, pageSource, readmeSource].join
 if (publicBrandingSources.includes("ETDESS")) {
   throw new Error("The superseded French acronym ETDESS must not appear in public branding.");
 }
-if (!/fr:\\s*\\["ETDSSS"/.test(appSource)) {
+if (!appSource.includes('fr: ["ETDSSS"')) {
   throw new Error("French branding must display ETDSSS.");
 }
 if (!appSource.includes(frenchBrandName) || !locales.fr.tagline.includes(frenchBrandName) || !readmeSource.includes(frenchBrandName)) {
