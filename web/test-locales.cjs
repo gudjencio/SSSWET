@@ -70,8 +70,8 @@ for (const [code, locale] of Object.entries(locales)) {
 const appSource = fs.readFileSync(new URL("./app.js", `file://${__filename}`), "utf8");
 const pageSource = fs.readFileSync(new URL("./index.html", `file://${__filename}`), "utf8");
 
-if (!/fr:\s*\["ETDESS"/.test(appSource)) throw new Error("French branding must display ETDESS");
-if (!appSource.includes('networkLabel.textContent = code === "fr"')) throw new Error("French live research network branding must use ETDESS");
+if (!/fr:\s*\["ETDSSS"/.test(appSource)) throw new Error("French branding must display ETDSSS");
+if (!appSource.includes('networkLabel.textContent = code === "fr"')) throw new Error("French live research network branding must use ETDSSS");
 if (!appSource.includes('timeZone === "Europe/Paris"')) throw new Error("French locale should be detected from the metropolitan France time zone");
 const interfaceTranslationKeys = [...new Set([...pageSource.matchAll(/data-i18n(?:-aria|-placeholder)?="([^"]+)"/g)].map(match => match[1]))];
 for (const key of interfaceTranslationKeys) {
@@ -154,7 +154,7 @@ for (const technology of ["cellular", "longevity", "armor", "jetpack", "translat
 if (!pageSource.includes('id="technology-dialog"') || !pageSource.includes('id="technology-grid"')) throw new Error("Technology showcase or contribution dialog is missing");
 console.log("Validated the technology catalogue and contribution-window integration.");
 const brandingSource = appSource;
-for (const required of ["SSSWET", "Ingénierie et technologies de distorsion de l’espace pour super-soldats", "超兵士向け空間歪曲工学・技術", "applyProjectBranding", "automaticVoiceRetried", "dashboard-foldout"]) {
+for (const required of ["SSSWET", "Équipements et Technologies de Distorsions Spatiales pour Super Soldats", "超兵士向け空間歪曲工学・技術", "applyProjectBranding", "automaticVoiceRetried", "dashboard-foldout"]) {
   if (!brandingSource.includes(required)) throw new Error(`Branding, startup or compact layout feature missing: ${required}`);
 }
 for (const social of ["data-social=\"Instagram\"", "data-social=\"YouTube\"", "mailto:ssswetindustries@gmail.com", "<svg"]) {
@@ -590,3 +590,33 @@ if (!pageSource.includes('src="repair-project.js"') || !pageSource.includes('src
 if (!pageSource.includes('href="mobile-repair.css"')) {
   throw new Error("Project support controls must load their responsive stylesheet");
 }
+
+
+// The French project name is a public identity string and must stay consistent.
+const frenchBrandName = "Équipements et Technologies de Distorsions Spatiales pour Super Soldats";
+const publicBrandingSources = [source, appSource, pageSource, readmeSource].join("\n");
+if (publicBrandingSources.includes("ETDESS")) {
+  throw new Error("The superseded French acronym ETDESS must not appear in public branding.");
+}
+if (!appSource.includes('fr: ["ETDSSS"')) {
+  throw new Error("French branding must display ETDSSS.");
+}
+if (!appSource.includes(frenchBrandName) || !locales.fr.tagline.includes(frenchBrandName) || !readmeSource.includes(frenchBrandName)) {
+  throw new Error("The official French project name must match across the app, locale catalogue and README.");
+}
+if (!pageSource.includes("ETDSSS is the French designation of SSSWET.")) {
+  throw new Error("The static page fallback must use the current French project acronym.");
+}
+const localesWithFooter = Object.entries(locales).filter(([, locale]) => typeof locale.footer === "string");
+if (localesWithFooter.length !== 25) {
+  throw new Error(`Expected 25 localized project footers; found ${localesWithFooter.length}.`);
+}
+for (const [code, locale] of localesWithFooter) {
+  if (!locale.footer.includes("ETDSSS")) {
+    throw new Error(`Locale ${code} must use the current French project acronym.`);
+  }
+}
+if (source.includes("Engeriening")) {
+  throw new Error("The English project name must use the spelling Engineering.");
+}
+console.log("Validated the ETDSSS French name and consistent project branding across all public locales.");
