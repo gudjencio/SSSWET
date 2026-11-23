@@ -607,8 +607,12 @@ if (!appSource.includes(frenchBrandName) || !locales.fr.tagline.includes(frenchB
 if (!pageSource.includes("ETDSSS is the French designation of SSSWET.")) {
   throw new Error("The static page fallback must use the current French project acronym.");
 }
-for (const [code, locale] of Object.entries(locales)) {
-  if (typeof locale.footer !== "string" || !locale.footer.includes("ETDSSS")) {
+const localesWithFooter = Object.entries(locales).filter(([, locale]) => typeof locale.footer === "string");
+if (localesWithFooter.length !== 25) {
+  throw new Error(`Expected 25 localized project footers; found ${localesWithFooter.length}.`);
+}
+for (const [code, locale] of localesWithFooter) {
+  if (!locale.footer.includes("ETDSSS")) {
     throw new Error(`Locale ${code} must use the current French project acronym.`);
   }
 }
