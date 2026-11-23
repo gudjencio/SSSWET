@@ -107,7 +107,7 @@
 
   const brandNames = {
     en: ["SSSWET", "Super Soldier's Space Warping Engineering & Tech"],
-    fr: ["ETDESS", "Ingénierie et technologies de distorsion de l’espace pour super-soldats"],
+    fr: ["ETDSSS", "Équipements et Technologies de Distorsions Spatiales pour Super Soldats"],
     ja: ["SSSWET", "超兵士向け空間歪曲工学・技術"],
     es: ["SSSWET", "Ingeniería y tecnología de distorsión espacial para supersoldados"],
     de: ["SSSWET", "Weltraumkrümmungsingenieurwesen und -technologie für Supersoldaten"],
@@ -144,7 +144,7 @@
     if (botBrand) botBrand.textContent = pair[0];
     const networkLabel = document.getElementById("bot-control-network-label");
     if (networkLabel) networkLabel.textContent = code === "fr"
-      ? "ETDESS · RÉSEAU DE RECHERCHE EN DIRECT"
+      ? "ETDSSS · RÉSEAU DE RECHERCHE EN DIRECT"
       : "SSSWET · LIVE RESEARCH NETWORK";
     document.title = pair[0] + " — " + pair[1];
     document.querySelectorAll(".social-corner a").forEach(link => {
