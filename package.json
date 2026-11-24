@@ -17,6 +17,7 @@
     "@capacitor/core": "^7.4.3",
     "@capacitor/android": "^7.4.3"
   },
+  "desktopName": "org.ssswet.platform",
   "build": {
     "appId": "org.ssswet.platform",
     "productName": "SSSWET",
@@ -54,7 +55,8 @@
       "target": [
         "AppImage"
       ],
-      "category": "Science"
+      "category": "Science",
+      "syncDesktopName": true
     }
   }
 }
